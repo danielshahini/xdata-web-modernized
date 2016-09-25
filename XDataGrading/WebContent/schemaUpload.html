@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="scripts/wufoo.js"></script>
+<link rel="stylesheet" href="css/structure.css" type="text/css" />
+<link rel="canonical"
+	href="http://www.wufoo.com/gallery/designs/template.html">
+<title>Upload New Schema</title>
+
+<script>
+	function checkValue1() {
+
+		if (document.getElementById("upload").value != "") {
+			return true;
+		} else {
+			alert("Please upload file");
+			return false;
+		}
+
+	}
+
+	function trim(str, chars) {
+		return ltrim(rtrim(str, chars), chars);
+	}
+
+	function ltrim(str, chars) {
+		chars = chars || "\\s";
+		return str.replace(new RegExp("^[" + chars + "]+", "g"), "");
+	}
+
+	function rtrim(str, chars) {
+		chars = chars || "\\s";
+		return str.replace(new RegExp("[" + chars + "]+$", "g"), "");
+	}
+</script>
+
+</head>
+
+<body class="stop-scrolling" id="public" name="public">
+
+	<div class="name">
+
+
+		<form name="schemaForm" enctype="multipart/form-data"
+			action="schemaUpload.jsp" method="post">
+
+			<div class="fieldset">
+
+				<fieldset>
+					<legend> Upload Schema File</legend>
+
+					<p>
+						<label class="field">Upload the SQL script containing the
+							schema </label>
+					</p>
+					<p></p>
+					<input style="width: 300px; height: 20px;" placeholder="Give name of schema, default will be file name" name="schemaname" id="schemaname"/> <br/>
+					<br/>
+					<label class="field">Choose File: </label> 
+					<input	type="file" required name="schemaFile" size="20"> 
+					<input name="submit" onclick="return checkValue1();" type="submit" id="upload" value="Upload">
+				</fieldset>
+			</div>
+
+		</form>
+	</div>
+</body>
+</html>
+

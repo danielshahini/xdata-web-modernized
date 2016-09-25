@@ -1,0 +1,414 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@page import="partialMarking.MarkInfo"%>
+<%@ page import="java.io.*"%>
+<%@ page import="java.util.*"%>
+<%@ page import="java.text.*"%>
+<%@page import="java.sql.*"%>
+<%@page import="database.*"%>
+<%@page import="java.math.BigDecimal"%>
+<%@page import="partialMarking.*" %>
+<%@page import = "com.google.gson.Gson" %>
+<%!
+	public String listToString(List<String> list1, List<String> list2){
+		String ret = "<ul>";
+		for(String s:list1){
+			if(list2.contains(s)){
+				ret += "<li>" + s + "</li>";
+			}else{
+				ret += "<li style='color:red;'>" + s + "</li>";
+			}		 
+		}
+		ret += "</ul>";
+		return ret;
+	}
+
+public float roundToDecimal(float marks){
+	return BigDecimal.valueOf(marks).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+}
+%>
+<html> 
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+ <link rel="stylesheet" href="css/structure.css" type="text/css"/>
+<script type="text/javascript" src = "scripts/jquery.js"></script>
+
+<title>Student Mark Details</title>
+<style>
+label {
+	font-size: 15px;
+	font-weight: bold; 
+	color: #666;
+} 
+
+fieldset.action {
+	background: #9da2a6;
+	border-color: #e5e5e5 #797c80 #797c80 #e5e5e5;
+	margin-top: -20px;
+}
+legend {
+	background: -webkit-linear-gradient(top, #657B9E, #4E5663);
+	background: -moz-linear-gradient(top, #657B9E, #4E5663);
+	color: #fff;
+	font: 17px/21px Calibri, Arial, Helvetica, sans-serif;
+	padding: 0 10px;
+	margin: 0 0 0 -11px;
+	/* font-weight: bold; */
+	border: 1px solid #fff;
+	border-color: #3D5783 #3D5783 #3D5783 #3D5783;
+	text-align: left;
+}
+	
+label
+span,.required {
+	color: red;
+	font-weight: bold;
+	font-size: 17px;
+}
+
+font{
+font: 15px/16px Arial, Helvetica, sans-serif;
+padding: 0;
+}
+
+.topDiv{
+	float: left; 
+	width: 400px;
+	padding-top: 15px;
+}
+
+
+.querypartialmark{
+	  margin: 0;
+  	  padding: 0;
+      margin-bottom: 20px; 
+}
+
+.querypartialmark ul{
+	  margin: 0;
+  	  padding: 0;
+      padding-left: 20px;
+}
+
+.querypartialmark ul li{
+      padding-bottom: 5px;
+      list-style: circle;
+}
+
+.querypartialmark .number{
+	text-align: right;
+}
+
+.querypartialmark h4{
+	margin: 5px;
+}
+
+.emph{
+	font-weight: bold;
+}
+
+</style>
+</head>
+<body>
+<body>
+<%
+if (session.getAttribute("LOGIN_USER") == null) {
+	response.sendRedirect("index.jsp?TimeOut=true");
+	return;
+}
+%>
+	<div>
+		<div class="fieldset">
+		<fieldset>
+		<legend>Mark Details</legend> 
+  		<div align = "left">  
+   		       <%
+   		       int assignID = Integer.parseInt(request.getParameter("assignment_id"));
+   		       int questionID = Integer.parseInt(request.getParameter("question_id"));
+   		       String userId = request.getParameter("user_id");
+   		       Connection conn = (new DatabaseConnection()).dbConnection();
+   		       %>
+   		       	<p><h4>Assignment: <label id='assignId'><%= assignID %></label></h4></p>
+   		        <p><h4>Question: <label id='questionId'><%= questionID %></label></h4></p>
+   		        <p><h4>Roll Number: <label id='userId'><%= userId %></label></h4></p>
+   		        	    		    	
+   		       <%
+   		       
+  		       PreparedStatement stmt = conn.prepareStatement("select * from xdata_instructor_query where assignment_id = ? and question_id = ?");
+  		       stmt.setInt(1, assignID);
+		       stmt.setInt(2, questionID);
+  		       ResultSet rs = stmt.executeQuery();
+  		     while(rs.next()){
+ 		    	  %>
+ 		    	 <p><h4>Instructor Query: <%= rs.getString("sql")%></h4></p>
+ 		       <%
+ 		       } 		       
+
+  		       stmt = conn.prepareStatement("select * from xdata_student_queries where rollnum = ? and assignment_id = ? and question_id = ?");
+  		       stmt.setString(1, userId);
+  		       stmt.setInt(2, assignID);
+  		       stmt.setInt(3, questionID);
+  		       rs = stmt.executeQuery();
+  		       
+  		       if(rs.next()){
+  		    	%> 
+  		    		  <p><h4>Student Query: <%= rs.getString("querystring")%></h4></p>
+  		    		   <% }
+   		       
+   		       stmt = conn.prepareStatement("select * from xdata_student_queries where rollnum = ? and assignment_id = ? and question_id = ?");
+   		       stmt.setString(1, userId);
+   		       stmt.setInt(2, assignID);
+   		       stmt.setInt(3, questionID);
+   		       rs = stmt.executeQuery();
+   		       if(rs.next()){
+   		    	   String data = rs.getString("markinfo");
+   		    	   %>
+   		    	   <p><h4>Marks: <label id = 'queryMarks'><%= Math.round(rs.getFloat("score")) %></label></h4></p>  
+   		    	   <%
+   		    	   if(!data.isEmpty()){
+   		    	   
+   		    	   Gson gson = new Gson();
+   		    	   MarkInfo marks = gson.fromJson(data, MarkInfo.class);
+   		    	   List<QueryInfo> queryInfo = marks.SubqueryData;
+   		    	     		    	   
+   		    	   Collections.sort(queryInfo, new Comparator<QueryInfo>(){
+   		    		public int compare(QueryInfo o1, QueryInfo o2) {
+   		    			 return (o1.Level - o2.Level);
+   		    	   }});
+   		       %>
+   		        <fieldset>
+				<legend>Query Details</legend> 
+		  		<div align = "left">
+		  		<%
+		  		for(QueryInfo q: queryInfo)
+		  		{
+		  			 //CALCULATE the number of items and scale the score accordingly
+		  			//COUNT the number of items available to calculate scaling factor
+		  			int countScale = 0;
+		  			if(q.StudentPredicates!= null && q.StudentPredicates.size() > 0
+			  			|| (q.InstructorPredicates != null && q.InstructorPredicates.size() > 0)){
+		  				countScale++;
+		  			}if(q.StudentProjections!= null && q.StudentProjections.size() > 0
+				  			|| (q.InstructorProjections != null && q.InstructorProjections.size() > 0)){
+		  				countScale++;
+		  			}if(q.StudentRelations!= null && q.StudentRelations.size() > 0
+				  			|| (q.InstructorRelations != null && q.InstructorRelations.size() > 0)){
+		  				countScale++;
+		  			}if(q.StudentGroupBy != null && q.StudentGroupBy.size() > 0
+				  			|| (q.InstructorGroupBy != null && q.InstructorGroupBy.size() > 0)){ 
+		  				countScale++;
+		  			}if(q.StudentHavingClause != null && q.StudentHavingClause.size() > 0
+				  			|| (q.InstructorHavingClause != null && q.InstructorHavingClause.size() > 0)){
+		  				countScale++;
+		  			}if(q.StudentSubQConnective != null && q.StudentSubQConnective.size() > 0
+				  			|| (q.InstructorSubQConnective != null && q.InstructorSubQConnective.size() > 0)){ 
+		  				countScale++;
+		  			}if(q.StudentSetOperators != null && q.StudentSetOperators.size() > 0
+				  			||( q.InstructorSetOperators != null && q.InstructorSetOperators.size() > 0)){
+		  				countScale++;
+		  			}if(q.studentDistinct || q.instructorDistinct){
+		  				countScale++;
+		  			}if(q.StudentInnerJoins  > 0 || q.InstructorInnerJoins > 0){ 
+		  				countScale++;
+		  			}if(q.StudentOuterJoins  > 0 || q.StudentOuterJoins > 0){
+		  				countScale++;
+		  			}
+		  			System.out.println("Count Scale ******* = "+countScale);
+		  			//Usually marks are calculated based on 100.
+		  			int scalingFactor = 100/countScale;
+		  			/*System.out.println("******scaling factr = "+scalingFactor);
+		  			
+		  			System.out.println("q.studentPredicateMarks = "+q.studentPredicateMarks);
+		  			System.out.println("q.instructorPredicateMark = "+q.instructorPredicateMarks);
+		  			System.out.println("q.studentProjectionMarks = "+q.studentProjectionMarks);
+		  			System.out.println("q.instructorProjection = "+q.instructorProjectionMarks);
+		  			System.out.println("studentRelationsMarks = "+q.studentRelationsMarks);
+		  			System.out.println("instr relation marks = "+q.instructorRelationMarks);
+		  			System.out.println("studentGroupbyMarks = "+q.studentGroupbyMarks);
+		  			System.out.println("instr grp by marks = "+ q.instructorGroupbyMarks);
+		  			System.out.println("studentHavingMarks = "+q.studentHavingMarks);
+		  			System.out.println("instr havng marks = "+q.instructorHavingMarks);
+		  			System.out.println("studentSubqMarks = "+q.studentSubqMarks);
+		  			System.out.println("instrSubqMarks"+ q.instructorSubqMarks);
+		  			System.out.println("studentSetOperatorMarks = "+q.studentSetOperatorMarks);
+		  			System.out.println("instructor set op = "+q.instructorSetOperatorMarks);
+		  			System.out.println("studentDistinctMarks = "+q.studentDistinctMarks);
+		  			System.out.println("instr distinct = "+q.instructorDistinctMarks);
+		  			System.out.println("studentinnserjoin = "+q.studentInnerJoinMarks);
+		  			System.out.println("inst inner join  = "+q.instructorInnerJoinMarks);
+		  			System.out.println("studentouterjoin = "+q.studentOuterJoinMarks);
+		  			System.out.println("inst outer join  = "+q.instructorOuterJoinMarks);
+		  			*/
+			  		%>
+			  		<div class="querypartialmark" style="margin-left:<%=(q.Level) *30 %>px;">
+			  		<%	if(queryInfo.size() > 1){%>
+			  			<h4>Level: <%= q.Level %></h4>
+					<%} %>
+			  		<table class="queryTable" width="70%" cellpadding="3" cellspacing="1">
+			  		<tr>
+			  		<th width="20%">&nbsp;</th>
+			  		<th width="20%">Student</th>
+			  		<th width="20%">Instructor</th>
+			  		<th width="5%">Student Marks</th>
+			  		<th width="5%">Instructor Marks</th>
+			  		</tr> 
+			  		<%if(q.StudentPredicates!= null && q.StudentPredicates.size() > 0
+			  			|| (q.InstructorPredicates != null && q.InstructorPredicates.size() > 0)){ %>
+			  		<tr>
+			  		<td class="emph">Predicates</td>
+			  		<td width="20%"><%= listToString(q.StudentPredicates,q.InstructorPredicates)%></td>
+			  		<td width="20%"><%= listToString(q.InstructorPredicates,q.StudentPredicates)%></td>
+			  		
+					<td width="20%"><%if(q.studentPredicateMarks != 0.0f && q.instructorPredicateMarks!=0.0f){ %><%=roundToDecimal(q.studentPredicateMarks*(scalingFactor/ q.instructorPredicateMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		<td width="20%"><%if(q.instructorPredicateMarks != 0.0f){ %><%=roundToDecimal(q.instructorPredicateMarks*( scalingFactor/ q.instructorPredicateMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
+			  		
+			  		</tr>
+			  		<%} %>
+			  		<%if(q.StudentProjections!= null && q.StudentProjections.size() > 0
+			  			|| (q.InstructorProjections != null && q.InstructorProjections.size() > 0)){ %>
+			  		<tr> 
+			  		
+			  		<td class="emph">Projections</td>
+			  		<td><%= listToString(q.StudentProjections,q.InstructorProjections)%></td>
+			  		<td><%= listToString(q.InstructorProjections,q.StudentProjections)%></td>
+			  		<td rowspan="2" width="20%"><%if(q.studentProjectionMarks != 0.0f && q.instructorProjectionMarks!=0.0f){ %><%=roundToDecimal(q.studentProjectionMarks*(scalingFactor/ q.instructorProjectionMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		<td rowspan="2"><%if(q.instructorProjectionMarks != 0.0f){ %><%=roundToDecimal(q.instructorProjectionMarks*( scalingFactor/ q.instructorProjectionMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		
+			  		<%if(q.studentDistinct || q.instructorDistinct){ %>
+			  		<tr>
+			  		<td class="emph">Distinct</td>
+			  		<% if(q.studentDistinct != q.instructorDistinct){%>
+			  			<td class="number" style="color: red;">
+			  			<%}else{ %>
+			  			<td class="number">
+			  			<%} %>
+			  			<% if(q.studentDistinct){%>1<%}else { %>0<%} %> </td>
+			  		
+			  		
+			  		<%if(q.studentDistinct != q.instructorDistinct){%>
+			  			<td class="number" style="color: red;">
+			  			<%}else{ %>
+			  			<td class="number">
+			  			<%} %>
+			  			
+			  			<%if(q.instructorDistinct) {%>1<%}else {%>0<%} %></td>
+			  			</tr>
+			  		
+			  		<%} %> 
+			  		</tr>
+			  		<%} %>
+			  		<%if(q.StudentRelations!= null && q.StudentRelations.size() > 0
+			  			|| (q.InstructorRelations != null && q.InstructorRelations.size() > 0)){ %>
+			  		<tr>
+			  		<td class="emph">Relations</td>
+			  		<td><%= listToString(q.StudentRelations,q.InstructorRelations)%></td>
+			  		<td><%= listToString(q.InstructorRelations,q.StudentRelations)%></td>
+			  		<td><% if(q.studentRelationsMarks != 0.0f &&q.instructorRelationMarks != 0.0f){ %><%=roundToDecimal(q.studentRelationsMarks*(scalingFactor/ q.instructorRelationMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
+			  		<td><%if(q.instructorRelationMarks != 0.0f){%><%=roundToDecimal(q.instructorRelationMarks*( scalingFactor/ q.instructorRelationMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		</tr>
+			  		<%} %>
+			  		<%if(q.StudentGroupBy != null && q.StudentGroupBy.size() > 0
+			  			|| (q.InstructorGroupBy != null && q.InstructorGroupBy.size() > 0)){ %>
+			  		<tr>
+			  		<td class="emph">Group By</td>
+			  		<td><%= listToString(q.StudentGroupBy,q.InstructorGroupBy)%></td>
+			  		<td><%= listToString(q.InstructorGroupBy,q.StudentGroupBy)%></td>
+			  		<td><%if(q.studentGroupbyMarks != 0.0f && q.instructorGroupbyMarks!= 0.0f){ %><%= roundToDecimal(q.studentGroupbyMarks*(scalingFactor/ q.instructorGroupbyMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
+			  		<td><%if(q.instructorGroupbyMarks != 0.0f){%><%=roundToDecimal(q.instructorGroupbyMarks*(scalingFactor/ q.instructorGroupbyMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		</tr>
+			  			<%} %>
+			  		<%if(q.StudentHavingClause != null && q.StudentHavingClause.size() > 0
+			  			|| (q.InstructorHavingClause != null && q.InstructorHavingClause.size() > 0)){ %>
+			  		<tr>
+			  		<td class="emph">Having Clause</td>
+			  		<td><%= listToString(q.StudentHavingClause,q.InstructorHavingClause)%></td>
+			  		<td><%= listToString(q.InstructorHavingClause,q.StudentHavingClause)%></td>
+			  		<td><%if(q.studentHavingMarks != 0.0f && q.instructorHavingMarks!= 0.0f){%><%= roundToDecimal(q.studentHavingMarks*(scalingFactor/ q.instructorHavingMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
+			  		<td><%if(q.instructorHavingMarks != 0.0f){%><%=roundToDecimal(q.instructorHavingMarks*(scalingFactor/ q.instructorHavingMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		</tr>
+			  		<%} %>
+			  		<%if(q.StudentSubQConnective != null && q.StudentSubQConnective.size() > 0
+			  			|| (q.InstructorSubQConnective != null && q.InstructorSubQConnective.size() > 0)){ %>
+			  		<tr>
+			  		<td class="emph">SubQuery Connective</td>
+			  		<td><%= listToString(q.StudentSubQConnective,q.InstructorSubQConnective)%></td>
+			  		<td><%= listToString(q.InstructorSubQConnective,q.StudentSubQConnective)%></td>
+			  		<td><%if(q.studentSubqMarks != 0.0f && q.instructorSubqMarks != 0.0f){%><%= roundToDecimal(q.studentSubqMarks*(scalingFactor/ q.instructorSubqMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		<td><%if(q.instructorSubqMarks != 0.0f){ %><%=roundToDecimal(q.instructorSubqMarks*(scalingFactor/ q.instructorSubqMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		</tr>
+			  		<%} %>
+			  		<!-- <tr>
+			  		<td class="emph">Aggregates</td>
+			  		<td><%//= listToString(q.StudentAggregates,q.InstructorAggregates)%></td>
+			  		<td><%//= listToString(q.InstructorAggregates,q.StudentAggregates)%></td>
+			  		</tr>
+			  		-->
+			  		<%if(q.StudentSetOperators != null && q.StudentSetOperators.size() > 0
+			  			||( q.InstructorSetOperators != null && q.InstructorSetOperators.size() > 0)){ %>
+			  		<tr>
+			  		<td class="emph">Set Operators</td>
+			  		<td class="number"><%= listToString(q.StudentSetOperators,q.InstructorSetOperators)%></td>
+			  		<td class="number"><%= listToString(q.InstructorSetOperators,q.StudentSetOperators)%></td>
+			  		<td><%if(q.studentSetOperatorMarks != 0.0f && q.instructorSetOperatorMarks != 0.0f){ %><%= roundToDecimal(q.studentSetOperatorMarks*(scalingFactor/ q.instructorSetOperatorMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
+			  		<td><%if(q.instructorSetOperatorMarks != 0.0f){%><%=roundToDecimal(q.instructorSetOperatorMarks*(scalingFactor/ q.instructorSetOperatorMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		</tr>
+			  		<%} %>
+			  		
+			  		<%if(q.StudentInnerJoins  > 0 || q.InstructorInnerJoins > 0){ %>
+			  		<tr>
+			  		<td class="emph">Inner Joins</td>
+			  			<% if(q.StudentInnerJoins !=q.InstructorInnerJoins){%>
+			  			<td class="number" style="color: red;">
+			  			<%}else{ %>
+			  			<td class="number">
+			  			<%} %>
+			  			
+			  		<%=q.StudentInnerJoins %></td>
+			  		<% if(q.StudentInnerJoins !=q.InstructorInnerJoins){%>
+			  			<td class="number" style="color: red;">
+			  			<%}else{ %>
+			  			<td class="number">
+			  			<%} %>
+			  			<%=q.InstructorInnerJoins %></td>
+			  			
+			  		<td><%if(q.studentInnerJoinMarks != 0.0f && q.instructorInnerJoinMarks != 0.0f){%><%=roundToDecimal(q.studentInnerJoinMarks*(scalingFactor/ q.instructorInnerJoinMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
+			  		<td><%if(q.instructorInnerJoinMarks != 0.0f){%><%=roundToDecimal(q.instructorInnerJoinMarks*(scalingFactor/ q.instructorInnerJoinMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		
+			  		</tr>
+			  		<%} %> 
+			  		<%if(q.StudentOuterJoins  > 0 || q.InstructorOuterJoins > 0){ %>
+			  		<tr>
+			  		<td class="emph">Outer Joins</td>
+			  		
+			  		<% if(q.StudentOuterJoins != q.InstructorOuterJoins){%>
+			  			<td class="number" style="color: red;">
+			  			<%}else{ %>
+			  			<td class="number">
+			  			<%} %><%=q.StudentOuterJoins %></td>
+			  		
+						<% if(q.StudentOuterJoins != q.InstructorOuterJoins){%>
+			  			<td class="number" style="color: red;">
+			  			<%}else{ %>
+			  			<td class="number">
+			  			<%} %>
+			  			
+			  			<%=q.InstructorOuterJoins %></td>
+			  			<td><%if(q.studentInnerJoinMarks != 0.0f && q.instructorInnerJoinMarks != 0.0f){%><%=roundToDecimal(q.studentInnerJoinMarks*(scalingFactor/ q.instructorInnerJoinMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
+			  			<td><%if(q.instructorInnerJoinMarks != 0.0f){%><%=roundToDecimal(q.instructorInnerJoinMarks*(scalingFactor/ q.instructorInnerJoinMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		
+			  		</tr>
+			  		<%} %> 
+			  		</table>
+			  		</div>
+			  		<%
+		  			}
+   		    	   }
+   		       }
+		  		%>
+		  		</div>
+		  		</fieldset> 
+		  		</div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Generate assignment</title>
+
+<!-- java script function to generate query details box -->
+<script>
+function queryDetails(){
+	var mydiv=document.getElementById("myDiv");
+	var quest=document.getElementById("NOQ");
+	var num=quest.value;
+	<!-- validte whether it is number or not --> 
+	<!-- if isNaN(quest) {alert("Not Numeric")}; -->
+	
+	var newdiv=document.createElement("div");
+	<!-- generate three fileds for each query to get query related information --> 
+	var str="\<table>";
+	for(var temp=0;temp<num;temp++){
+	<!--	str=str.concat("<label><strong>Question ID</strong></label>\-->
+	<!--			<input type=\"text\" name=\"quesID\"  size=\"10\">"); -->
+	   str=str.concat("<tr><td>Question ID</td>\
+ 	  			 	<td> <input type=\"text\" name=\"quesID\"  size=\"10\"></td>\
+ 	  	  		  <td>Question Text</td>\
+	  					<td><input type=\"text\" name=\"quesTxt\" size=\"50\"></td> \
+  				  <td>Correct Query</td>\
+	  	  	  			<td><textarea  name=\"query\" rows=\"6\" cols=\"57\"></textarea></td>\
+				  </tr>");
+	}
+	str=str.concat("<\table>");
+	<!-- alert(str); -->
+	newdiv.innerHTML=str;
+	mydiv.appendChild(newdiv);
+	
+}
+</script>
+</head>
+<body>
+<form action="assignmentCreation.jsp" method="post">
+   <div id="myDiv">
+		<label><strong>Assignment Name</strong></label>   
+			<label><input type="text" size="50" name="AssignmentName" size="30" placeholder="Type Your Assignment Name"></label><br/>
+		<label><strong>Number Of Questions</strong></label>
+			 <input type="text" name="NumberOfQuestions" size="30" id="NOQ" placeholder="Type Only Integer Values" onchange="javascript:queryDetails()"><br/><!-- To generate form for questions depending on number of questions I have used on change  -->
+	</div>		 
+		<label><strong>Start Time</strong></label>
+			<input type="datetime-local" placeholder="YYYY-MM-DDTHH:MM:SS:NN" name="starttime"><br/>
+		<label><strong>End Time</strong></label>
+			<input type="datetime-local"placeholder="YYYY-MM-DDTHH:MM:SS:NN"  name="endtime"><br/>
+		<input type="submit" value="Submit"><br/>
+	
+</form>
+</body>
+</html>
