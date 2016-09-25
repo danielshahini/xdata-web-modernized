@@ -1,2 +1,3 @@
-.class
-.log
+*.class
+*.log
+build/
