@@ -88,7 +88,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 	<div><br/>
 		<div class="fieldset">
 			<fieldset>
-			<%if(((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase('guest') ){%>
+			<%if(((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase("guest") ){%>
 					<!-- <legend> Assignment Details</legend> -->
 			<%}else{%>	
 				<legend> Assignment Details</legend>
@@ -106,7 +106,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			</fieldset>
 			<fieldset>
 				<legend> Assignment Instructions</legend>
-			<%if(((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase('guest') ){%>
+			<%if(((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase("guest") ){%>
 				<ul> 
 					<li>Click edit to enter your answer. The selection conditions are case sensitive</li>
 					<li>Please take a look on <a href='http://www.cse.iitb.ac.in/infolab/xdata/universitySchema.pdf' target='_blank'>Schema diagram</a> of the default schema being used</li>
