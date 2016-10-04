@@ -27,14 +27,14 @@ import javax.servlet.http.HttpSession;
 
 import testDataGen.PopulateTestData;
 import util.DataSetValue;
-import util.FailedColumnValues;
-import util.FailedDataSetValues;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import database.CommonFunctions;
 import database.DatabaseConnection;
+import evaluation.FailedColumnValues;
+import evaluation.FailedDataSetValues;
 
 /**
  * Servlet implementation class FailedTestCases

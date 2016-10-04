@@ -16,10 +16,10 @@ import javax.servlet.http.HttpSession;
 
 
 import database.DatabaseConnection;
+import evaluation.FailedDataSetValues;
 
-import testDataGen.TestAnswer;
-import testDataGen.TestAssignment;
-import util.FailedDataSetValues;
+import evaluation.TestAnswer;
+import evaluation.TestAssignment;
 
 /**
  * Servlet implementation class checkQueryEquivalence

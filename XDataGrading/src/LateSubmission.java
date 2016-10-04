@@ -13,10 +13,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import testDataGen.QueryStatusData;
-import testDataGen.TestAssignment;
+import evaluation.TestAssignment;
 
 import database.DatabaseConnection;
+import evaluation.QueryStatusData;
 
 /**
  * Servlet implementation class LateSubmission

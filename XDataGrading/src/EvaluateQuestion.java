@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import testDataGen.GenerateDataset_new;
-import testDataGen.TestAssignment;
+import evaluation.TestAssignment;
 import database.*;
 /**
  * Servlet implementation class EvaluateQuestion

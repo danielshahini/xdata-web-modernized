@@ -28,14 +28,16 @@ import javax.servlet.http.HttpSession;
 import org.apache.derby.client.am.Statement;
 
 import database.*;
+import evaluation.FailedColumnValues;
+import evaluation.FailedDataSetValues;
+
 import com.google.gson.Gson;
 import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonArray;
+
 import testDataGen.PopulateTestData;
 import util.DataSetValue;
-import util.FailedColumnValues;
-import util.FailedDataSetValues;
 import util.TesterDatasource;
 
 import com.google.gson.Gson;

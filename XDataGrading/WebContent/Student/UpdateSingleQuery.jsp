@@ -1,10 +1,10 @@
 <%@page import="com.sun.mail.imap.protocol.Status"%>
 <%@page import="util.TesterDatasource"%>
 <%@page import="database.CommonFunctions"%>
-<%@page import="testDataGen.TestAssignment"%>
-<%@page import="testDataGen.QueryStatusData" %>
-<%@page import="testDataGen.QueryStatusData.QueryStatus" %>
-<%@page import = "util.FailedDataSetValues" %>
+<%@page import="evaluation.TestAssignment"%> 
+<%@page import="evaluation.QueryStatusData" %>
+<%@page import="evaluation.QueryStatusData.QueryStatus" %>
+<%@page import = "evaluation.FailedDataSetValues" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
 <%@page import="java.sql.*"%>
