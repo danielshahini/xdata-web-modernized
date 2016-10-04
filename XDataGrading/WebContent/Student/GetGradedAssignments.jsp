@@ -60,12 +60,7 @@ a:hover {
 } /* mouse over link */
 </style>
 <body>
-<%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-		}
-%>
+
 	<div>
 		<br /> <br />
 		<div class="fieldset">

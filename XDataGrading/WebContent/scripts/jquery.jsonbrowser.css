@@ -14,7 +14,7 @@
 
 .jsonbrowser li.collapsible > .key {
   cursor : pointer;
-  text-decoration : underline;
+ /*text-decoration : underline; */
 }
 
 .jsonbrowser ul.collapsed { display : none; }

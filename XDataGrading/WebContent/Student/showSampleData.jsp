@@ -30,10 +30,7 @@ breadcrumbs();
 </head> 
 <body>  
 <%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-}
+
 if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 <div id="breadcrumbs"> 
   <a id="bcrumb_link" href="../CourseHome.jsp" target="_top">Home</a> &nbsp; >> &nbsp;

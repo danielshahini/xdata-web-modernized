@@ -25,6 +25,11 @@ textarea,select {
 	font: 12px/12px Arial, Helvetica, sans-serif;
 	padding: 0;
 }
+.questionelement .answer .editbutton a{
+	text-decoration:none;
+	color: #353275;
+	float:right;
+}
 .separator{
 	border-right:1px solid black; 
 	margin:0px; 
@@ -82,31 +87,40 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
  
 	<div><br/>
 		<div class="fieldset">
-		
 			<fieldset>
+			<%if(((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase('guest') ){%>
+					<!-- <legend> Assignment Details</legend> -->
+			<%}else{%>	
 				<legend> Assignment Details</legend>
+			<%}%>
+				
 				<%			
 					String courseID = (String) request.getSession().getAttribute(
 								"context_label");
 				String user =(String) request.getSession().getAttribute(
 						"LOGIN_USER"); 
- 
-						int assignID = Integer.parseInt(request.getParameter("assignmentid"));					
-						String instructions = (new CommonFunctions()).getStudentAssignmentInstructions(courseID, assignID);
+ 						int assignID = Integer.parseInt(request.getParameter("assignmentid"));					
+						String instructions = (new CommonFunctions()).getStudentAssignmentInstructions(courseID, assignID, user);
 						out.println(instructions);
 				%>		
-			</fieldset><br />
+			</fieldset>
 			<fieldset>
 				<legend> Assignment Instructions</legend>
+			<%if(((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase('guest') ){%>
 				<ul> 
+					<li>Click edit to enter your answer. The selection conditions are case sensitive</li>
+					<li>Please take a look on <a href='http://www.cse.iitb.ac.in/infolab/xdata/universitySchema.pdf' target='_blank'>Schema diagram</a> of the default schema being used</li>
+				</ul>
+			<%}else{%>
+						<ul> 
 					<li>Click edit to enter your answer</li>
 					<li>Be cautious, the selection conditions are case sensitive</li>
 					<li>On editing, the query will be run against datasets</li>
 					<li>You will be forwarded to a page where the result of submission would be shown</li>
 					<li>You can see the ER diagram of the default schema being used <a href='http://www.cse.iitb.ac.in/infolab/xdata/universitySchema.pdf' target='_blank'>here</a></li>
 				</ul>
-				<p></p>
-				<p></p>
+			<%}%>
+			<p></p>
 			</fieldset> 
 			<br/>
 			<fieldset>
@@ -298,13 +312,14 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								</div>
 								<div class="answer">
 								<pre><code class="sql"><label style="font-style:bold;font-weight: bold">Ans. </label><%= studentAnswer %></code></pre>
-								</div>
-								<div class="editbutton"><a href=' <%=yes?viewGrade:remote %>'>
-								<%=yes?"View Grade":"Edit" %></a>
-								<% if(studentAnswer != null && !yes && studentAnswer.length() > 0 && isInteractiveAssignment){ %>
+								</div></br>
+								<div class="editbutton" style='float:left;'><a href=' <%=yes?viewGrade:remote %>'><%=yes?"View Grade":"Edit" %></a>
+								</br>
+								<% if(studentAnswer != null && !yes && studentAnswer.length() > 0 && isInteractiveAssignment && !user.equalsIgnoreCase("guest")){ %>
 									<span class = "separator">&nbsp;</span>
 									<a href='../StudentTestCase?user_id=<%=studentId%>&&assignment_id=<%=assignID %>&&question_id=<%=qID %>&&status=<%=isCorrect%>&&query=<%=CommonFunctions.encodeURIComponent(studentAnswer)%>&&Error=Incorrect Query Syntax'>Show Result</a>
-								<%} %> 
+								<%}
+								if(!user.equalsIgnoreCase("guest")) {%> 
 								 
 								<div class = "status"><span style='font-weight:bold;'>Status:</span>
 								 
@@ -322,16 +337,19 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 										<font color='#353275'> Not Graded
 										<%}else {%>
 											<font color='red'> Incorrect 
-										<%}%>
+										<%}
+										%>
 								</font></div>
 								</div>							
 							</div> 
-						<% 
+						<% }else{%>
+							</div>
+						<%}
 									}
 								rs1.close();
 								stmt1.close();
 								output = "";
-						}
+								}
 							else {
 								%>
 									<div class="questionelement">
@@ -342,7 +360,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									</div>
 								<%
 							}
-					
+								
 						
 						if(status != null){
 							if(status.equals("NoDataset")){

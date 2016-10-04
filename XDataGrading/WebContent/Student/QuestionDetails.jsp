@@ -18,14 +18,24 @@
 <script src="../scripts/codemirror/addon/hint/show-hint.js"></script>
 <script src="../scripts/codemirror/addon/hint/sql-hint.js"></script>
 <script type="text/javascript" src = "../scripts/jquery.js"></script>
-<script type="text/javascript" src = "../scripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src = "../scripts/wufoo.js"></script>
+<script type="text/javascript" src = "../scripts/jquery-ui-min.js"></script>
 <script src="../scripts/codemirror/lib/codemirror.js"></script>
 <script src="../scripts/codemirror/mode/sql/sql.js"></script>
+ 
+<link rel="stylesheet" href="../highlight/styles/xcode.css"> 
+<link rel="stylesheet" href="../highlight/styles/default.css">
+<script src="../highlight/highlight.pack.js"></script>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Details of the Question</title>
 
-<style>
+<style> 
+table {
+	border: 0px;
+	border-collapse: collapse;
+}
+
 #breadcrumbs
 {
   position: absolute;
@@ -73,13 +83,54 @@ label span,.required {
 	/*overflow: hidden;*/
 }
 </style>
-<script type="text/javascript" src="scripts/ManageQuery.js"></script>
-<script>
+<script type="text/javascript" src="../scripts/ManageQuery.js"></script>
 
+<script>
+hljs.initHighlightingOnLoad();
 $(document).ready(function(e) {
     var $input = $('#refresh');
 
     $input.val() == 'yes' ? location.reload(true) : $input.val('yes');
+    
+   //alert("Comes to onload");
+   var user = '<%=session.getAttribute("LOGIN_USER")%>';
+   var peramQuery = getParameterByName("query");
+    if(user == 'guest'){
+    	//alert("user == "+user);
+    	//alert("asgn Id = "+getParameterByName("AssignmentID "));
+	    var dataString = "user_id=" + getParameterByName("studentID")
+	    		+"&&assignment_id=" + getParameterByName("AssignmentID") 
+			+ "&&question_id=" + getParameterByName("questionId")
+			+"&&query=" +encodeURI(peramQuery) + 
+			"&&status=" + getParameterByName("status")
+			+"&&marks="+getParameterByName("marks")
+			+"&&Error="+getParameterByName("Error");
+			
+	  //  alert("DataString = "+dataString);
+	    
+	    var urlt = "../GuestStudentTestCase";
+	 //  alert("URL = "+ urlt);
+		if(getParameterByName("isGuestUser")){
+			
+		 $.ajax({ 
+			        type: "GET",  
+			        url: urlt, 
+			        data: dataString,
+			        context:$(this),        
+			        success: function(data) {
+			        	//alert("Comes to success");
+			        	$('#showGuestUserDetails').show();
+			        	$('#showGuestUserDetails').html(data);
+			        	 $('html,body').animate({ scrollTop: $("#showGuestUserDetails").offset().top-10});
+			        	
+			        }
+			});
+			
+		}else{
+			$('#showGuestUserDetails').hide();
+		}
+    }
+	
 });
 
 	window.onload = function() {
@@ -96,7 +147,7 @@ $(document).ready(function(e) {
 	    matchBrackets : false,
 	    lineWrapping: true,
 	    autofocus: true,
-	    extraKeys: {"Ctrl-Space": "autocomplete"},
+	    extraKeys: {"Ctrl-Space": "autocomplete"}, 
 	    hintOptions: {tables: {
 	      users: {name: null, score: null, birthDate: null},
 	      countries: {name: null, population: null, size: null}
@@ -117,6 +168,7 @@ $(document).ready(function(e) {
 		var quer = "query".concat(qid);
 		var que = document.getElementById(quer).value;
 		if (selected == "1") {
+			
 			var out = "UpdateSingleQuery.jsp?assignmentId=" + encodeURIComponent(asID)
 					+ "&questionId=" + encodeURIComponent(qid) + "&query=" + encodeURIComponent(que) + "&studentId="
 					+ encodeURIComponent(sid);
@@ -128,14 +180,21 @@ $(document).ready(function(e) {
 					+ "&&studentId=" + encodeURIComponent(sid);
 			window.location.href = out;
 		}
-
 	}
+
+	function getParameterByName(name) { 		
+	    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+	    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+	        results = regex.exec(location.search);
+	    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	} 
+
 </script>
 </head>
-<body> 
+<body > 
 <%
 if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
+	response.sendRedirect("../index.jsp?TimeOut=true");
 	return;
 }
 
@@ -154,7 +213,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 		<br />
 		<div class="fieldset">
 					<fieldset>
-				<legend> Assignment Details</legend>
+				<!-- <legend> Assignment Details</legend> -->
 				
 				<%
 					int assignID = Integer.parseInt(request.getParameter("AssignmentID"));
@@ -163,14 +222,17 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 						String courseID = (String) request.getParameter("courseId").trim();
 						String studentId = (String) request.getParameter("studentId")
 								.trim();
-								String instructions = (new CommonFunctions()).getStudentAssignmentInstructions(courseID, assignID);
+						String user_id = (String) request.getSession().getAttribute(
+								"user_id");
+						String user = (String)session.getAttribute("LOGIN_USER");
+								String instructions = (new CommonFunctions()).getStudentAssignmentInstructions(courseID, assignID,user);
 								out.println(instructions);
 				%>
 			</fieldset><br /> 
 			<fieldset> 
 				<legend> Assignment Instructions</legend>
 				<ul>
-					<li>Click submit after entering the answer</li>
+					<li>Click submit after entering the answer to see the result and mark details</li>
 				</ul>
 				<p></p>
 				<p></p>
@@ -303,6 +365,8 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 			</fieldset>
 		</div>
 	</div>
-
+<div id="showGuestUserDetails" style="display:none;">
+<label>Show the details</label>
+</div>
 </body>
 </html>

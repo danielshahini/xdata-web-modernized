@@ -89,12 +89,7 @@ a:visited{
 </style>
 </head>
 <body style="font-family: helvetica;text-decoration: none;">
-<%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-		}
-%>
+
 <div id="navigation">
 		  
 		<ul class="vertical_menu">

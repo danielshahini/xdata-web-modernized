@@ -34,12 +34,7 @@ function sendToStudent(courseId,path){
 
 </head>
 <body>
-<%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-}
-%>
+
 <div>
 		<div class="fieldset">
 			<fieldset>

@@ -107,7 +107,7 @@
 				
 			}else{
 				TestAssignment ta = new TestAssignment();
-				String args[] = {String.valueOf(asID), String.valueOf(questionID.trim()), studentID,courseID, correctquery};
+				String args[] = {String.valueOf(asID), String.valueOf(questionID.trim()), studentID,courseID, correctquery,role};
 				
 				FailedDataSetValues failedDSValue;
 				failedDSValue = ta.evaluateGuestAnswer(dbcon, testConn, args);
@@ -121,13 +121,18 @@
 					session.setAttribute("displayTestCase", false);						
 				}
 			    
+			    float marks = failedDSValue.getMarks();
 			    if(status.equals("Failed")){
-				    float marks = failedDSValue.getMarks();
+				  
 				    //forward to new student test case page to show result
-				    String remoteLink = request.getContextPath() + "/GuestStudentTestCase?user_id=" + studentID +"&assignment_id=" + asID 
+				   /* String remoteLink = request.getContextPath() + "/GuestStudentTestCase?user_id=" + studentID +"&assignment_id=" + asID 
 							+ "&question_id=" + questionID +"&query=" + CommonFunctions.encodeURIComponent(correctquery) + 
-							"&status=" + status.toString()+"&marks="+marks;
-					 
+							"&status=" + status.toString()+"&marks="+marks;*/
+							
+					String remoteLink = "QuestionDetails.jsp?isGuestUser=true&&AssignmentID="+asID+"&&questionId="+questionID+"&&courseId="+courseID+"&&studentId="+studentID
+   						+"&&marks="+marks+"&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);		
+							
+					session.setAttribute("failedDS", failedDSValue) ;
 					//System.out.println(remoteLink);
 					
 					if(status.equals(QueryStatus.Error)){
@@ -136,8 +141,33 @@
 					
 					response.sendRedirect(remoteLink);
 					
-			    }else{
+			    }
+			    else if(status.equals("Error")){
+			    	
+			    	 /* String remoteLink = request.getContextPath() + "/GuestStudentTestCase?user_id=" + studentID +"&assignment_id=" + asID 
+								+ "&question_id=" + questionID +"&query=" + CommonFunctions.encodeURIComponent(correctquery) + 
+								"&status=" + status.toString()+"&marks="+marks;*/
+				
+						String remoteLink = "QuestionDetails.jsp?isGuestUser=true&&AssignmentID="+asID+"&&questionId="+questionID+"&&courseId="+courseID+"&&studentId="+studentID
+	    						+"&&marks="+marks+"&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);
+			    
+			    	remoteLink += "&&Error=" + CommonFunctions.encodeURIComponent(failedDSValue.getErrorMessage());
+			    	response.sendRedirect(remoteLink);
+			    }
+			    	else{
+			    
 			    	//forward to  new student test case page if status is correct
+			    	/* String remoteLink = request.getContextPath() + "/GuestStudentTestCase?user_id=" + studentID +"&assignment_id=" + asID 
+								+ "&question_id=" + questionID +"&query=" + CommonFunctions.encodeURIComponent(correctquery) + 
+								"&status=" + status.toString()+"&marks=100.00";
+			    	*/
+			    	String remoteLink = "QuestionDetails.jsp?isGuestUser=true&&AssignmentID="+asID+"&&questionId="+questionID+"&&courseId="+courseID+"&&studentId="+studentID
+			    						+"&&marks=100.00&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);
+			    	
+			    	 if(status.equals(QueryStatus.Error)){
+							remoteLink += "&&Error=" + CommonFunctions.encodeURIComponent(failedDSValue.getErrorMessage());
+						}
+			    	 response.sendRedirect(remoteLink);
 			    }
 			    
 			  

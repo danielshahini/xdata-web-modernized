@@ -52,7 +52,9 @@
 		HttpSession checkUserSession = request.getSession(false);
 		if (checkUserSession!= null && checkUserSession .isNew() && checkUserSession.getAttribute( "uname" ) == null ) {
 		 //Its a new session. So it can proceed	   
-		}  
+		} else if (checkUserSession!= null && !checkUserSession .isNew() && checkUserSession.getAttribute( "uname" ) != null ) {
+			checkUserSession.invalidate();
+		}
 		else if(checkUserSession != null){ 			  
 		  // If a session exists, get the user name and password for reloading the same session
 		  String uname = (String)checkUserSession.getAttribute( "uname" );
@@ -63,12 +65,18 @@
 				if(uname.equalsIgnoreCase("instructor")){
 					checkUserSession.setAttribute("LOGIN_USER", "ADMIN"); 
 				}
+				if(uname.equalsIgnoreCase("admin")){
+					checkUserSession.setAttribute("LOGIN_USER", "ADMIN"); 
+				}
 				if(uname.equalsIgnoreCase("tester")){
 					checkUserSession.setAttribute("LOGIN_USER", "Tester"); 
 				}
 				if(uname.equalsIgnoreCase("student")){
 					checkUserSession.setAttribute("LOGIN_USER", "student");
 				} 
+				if(uname.equalsIgnoreCase("guest")){
+					checkUserSession.setAttribute("LOGIN_USER", "guest");
+				}
 				//Redirect the user to the main page of the application
 				response.sendRedirect("Empty.html");
 				return;			 	

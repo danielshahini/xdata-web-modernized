@@ -16,12 +16,7 @@
 <title>Download data files</title>
 </head>
 <body>
-<%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-}
-%>
+
 	<div class="fieldset">
 		<fieldset>
 			<legend> File Download </legend>

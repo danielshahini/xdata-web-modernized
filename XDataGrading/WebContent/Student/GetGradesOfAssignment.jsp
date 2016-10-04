@@ -10,10 +10,7 @@
 <body>
 
 <%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-		}
+
 String assignID = (String)request.getParameter("assignmentid");
 if (assignID == null)
 	assignID = (String) request.getSession().getAttribute(

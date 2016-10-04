@@ -15,10 +15,6 @@
 <strong font-size:15px>XData</strong>
 
 <%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-}
 
 String name = (String) request.getSession().getAttribute("lis_person_name_full");
 

@@ -55,8 +55,6 @@ public class CommonFunctions {
 	public String getAssignmentInstructions(String courseID, int assignID,
 			String link) throws Exception {
 
-
-		
 		// get connection
 		Timestamp end = null;
 		int defaultSchemaId = 0;
@@ -79,20 +77,13 @@ public class CommonFunctions {
 						else{
 							assignmentType="Grading Mode";
 						}
-						// start=rs.getString("end_date");
 						defaultSchemaId = rs.getInt("defaultschemaid");
 						assignmentName = rs.getString("assignmentName");
 						instructions += "<p></p><label><b>Assignment Name: </b></label> <b><label style='color:#353275'>"
 								+ assignmentName + "</b></label>";
 						instructions += "<p></p><label>Assignment Mode: </b></label> <b><label style='color:#353275'>"
 								+ assignmentType + "</b></label>";
-						//instructions += "<p></p><label>Assignment Description: "
-							//	+ rs.getString("description") + "</label>"; 
-						//if (!link.isEmpty())
-							//instructions += "<p><button id='my-button' data-clipboard-text='"
-							//		+ link
-								//	+ "' title='Click to copy to clipboard.'>Copy external tool link</button></p>";
-						try(PreparedStatement stmt1 = dbcon
+					try(PreparedStatement stmt1 = dbcon
 								.prepareStatement("SELECT schema_name from xdata_schemainfo where course_id=? and schema_id=?")){
 							stmt1.setInt(2, defaultSchemaId);
 							stmt1.setString(1, courseID);
@@ -115,7 +106,6 @@ public class CommonFunctions {
 							try(ResultSet rs1 = stmt1.executeQuery()){
 								if (rs1.next()) { 
 									instructions += "<p></p><label><b>Default dataset for data generation: </b></label> <b><label style='color:#353275'>"
-											//+ rs1.getString("schema_name")
 											+ "<span>&nbsp;</span>";
 									instructions += "<a style=\"color:#353275;\" href=\"showSampleData.jsp?schema_id="
 											+defaultSchemaId+"&sampledata_id="+rs1.getString("sampledata_id")+"\">"+ rs1.getString("sample_data_name")+"</a></label></b>&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -150,9 +140,7 @@ public class CommonFunctions {
 						                    }
 											else{
 											 instructions += "</label></b>&nbsp;&nbsp;&nbsp;&nbsp;";
-										   // instructions += "<a style=\"\" href=\"showSampleData.jsp?schema_id="
-											//		+defaultSchemaId+"&sampledata_id="+rs1.getString("sampledata_id")+">"+ rs1.getString("sample_data_name")+"</a> <br/>";
-											}
+										  }
 							
 							}
 						}
@@ -185,8 +173,6 @@ public class CommonFunctions {
 					}//try block for resultset ends
 			}//try block for statement ends
 			}//try block for conn ends
-		// instructions +=
-		// "<h2 style=\"text-align:left;\">General instructions</h2><ul><li>Do not use semicolon (;) to end the answer</li> </ul>";
 		return instructions;
 	} 
 
@@ -198,17 +184,25 @@ public class CommonFunctions {
 	 * @return
 	 * @throws Exception
 	 */
-	public String getStudentAssignmentInstructions(String courseID, int assignID)
+	public String getStudentAssignmentInstructions(String courseID, int assignID,String user)
 			throws Exception {
 		// get connection
 		Timestamp end = null;
 		int defaultSchemaId = 0;
 		String assignmentType = "";
 		String assignmentName = null;
-		String instructions = "<label>Assignment Id: </b></label> <b><label style='color:#353275'>" + assignID
-				+ "</b></label><br/> ";
+		String instructions = "";
+		if(user.equals("guest")){ 
+			instructions += "<table border='0'><tr><td width='15%' style='padding: 0px;border:0px solid black;'>";
+		}
+		
+		instructions += "<label><b>Assignment Id: </b></label> <b><label style='color:#353275'>" + assignID
+				+ "</b></label>";
+		if(user.equals("guest")){ 
+			instructions += "</td>"; 
+		}
 		try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
-			
+			 
 			try(PreparedStatement stmt = dbcon
 					.prepareStatement("SELECT * FROM xdata_assignment where assignment_id=? and course_id=?")){
 			stmt.setInt(1, assignID);
@@ -223,12 +217,32 @@ public class CommonFunctions {
 					assignmentType="Grading Mode";
 				}
 				// start=rs.getString("end_date");
-				defaultSchemaId = rs.getInt("defaultschemaid");
+				defaultSchemaId = rs.getInt("defaultschemaid"); 
 				assignmentName = rs.getString("assignmentName");
-				instructions += "<p></p><label><b>Assignment Name: </b></label> <b><label style='color:#353275'>"
+				if(!user.equals("guest")){ 
+					instructions += "<p></p>";
+				}else{ 
+					//instructions += "<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>";
+				}
+				if(user.equals("guest")){ 
+					instructions += "<td width='15%' style='padding: 0px;border:0px solid black;'>";
+				}
+				instructions += "<label><b>Assignment Name: </b></label> <b><label style='color:#353275' >"
 						+ assignmentName + "</b></label>";
-				instructions += "<p></p><label><b>Assignment Mode: </b></label> <b><label style='color:#353275'>"
+				if(user.equals("guest")){ 
+					instructions += "</td>";
+				}
+				if(!user.equals("guest")){ 
+					instructions += "<p></p>";
+				}else{
+					//instructions += "<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>";
+					instructions += "<td width='15%' style='padding: 0px;border:0px solid black;'>";
+				}
+				instructions += "<label><b>Assignment Mode: </b></label> <b><label style='color:#353275'>"
 						+ assignmentType + "</b></label>";
+				if(user.equals("guest")){ 
+					instructions += "</td></tr><tr><td width='30%' style='padding: 0px;border:0px solid black;'>";
+				}
 				try(PreparedStatement stmt1 = dbcon
 						.prepareStatement("SELECT schema_name from xdata_schemainfo where course_id=? and schema_id=?")){
 				stmt1.setInt(2, defaultSchemaId);
@@ -239,25 +253,32 @@ public class CommonFunctions {
 						instructions += "<a style=\"color:#353275;\" href=\"showSchemaFile.jsp?schema_id="
 								+ defaultSchemaId + "\">"
 								+ rs1.getString("schema_name")
-								+ "</a>&nbsp;&nbsp;&nbsp;</b></label>";
+								+ "</a></b></label>";
 					}
 				} 
 				}
-				 
+				if(!user.equals("guest")){ 
+					instructions += "<p></p>";
+				}
+				else{
+					instructions += "</td><td width='30%' style='padding: 0px;border:0px solid black;'>";
+				}
 				try(PreparedStatement stmt1 = dbcon
 						.prepareStatement("SELECT sample_data_name,sampledata_id from xdata_sampledata where course_id=? and schema_id=?")){
 					stmt1.setInt(2, defaultSchemaId);
 					stmt1.setString(1, courseID);
 					try(ResultSet rs1 = stmt1.executeQuery()){
 						if (rs1.next()) { 
-							instructions += "<p></p><label><b>Default dataset for data generation: </b></label> <b><label style='color:#353275'>"
-									//+ rs1.getString("schema_name")
+							instructions += "<label><b>Default dataset for data generation: </b></label> <b><label style='color:#353275;'>"
 									+ "<span>&nbsp;</span>";
 							instructions += "<a style=\"color:#353275;\" href=\"showSampleData.jsp?schema_id="
 									+defaultSchemaId+"&sampledata_id="+rs1.getString("sampledata_id")+"\">"+ rs1.getString("sample_data_name")+"</a></label></b>&nbsp;&nbsp;&nbsp;&nbsp;";
 						}
 					}
-					 
+					if(user.equals("guest")){ 
+						instructions += "</td></tr></table>";
+					}
+					if(!user.equals("guest")){ 
 							Gson gson = new Gson();
 							Type listType = new TypeToken<String[]>() {}.getType();
 							  if(rs.getString("defaultdsetid") != null || 
@@ -265,7 +286,6 @@ public class CommonFunctions {
 				                    String[] dsList = new Gson().fromJson(rs.getString("defaultdsetid"), listType);
 				                  
 									instructions += "<p></p><label><b>Default dataset(s) for evaluation: </b></label><label style='color:#353275'>"
-										//+ rs1.getString("schema_name")
 										+ "<span>&nbsp;</span>";
 									
 									if(dsList != null && dsList.length != 0){
@@ -285,17 +305,15 @@ public class CommonFunctions {
 				                    }
 									else{
 									 instructions += "</label></b>&nbsp;&nbsp;&nbsp;&nbsp;";
-								   // instructions += "<a style=\"\" href=\"showSampleData.jsp?schema_id="
-									//		+defaultSchemaId+"&sampledata_id="+rs1.getString("sampledata_id")+">"+ rs1.getString("sample_data_name")+"</a> <br/>";
 									}
 					
 					}
 				}
+			}
 				SimpleDateFormat formatter = new SimpleDateFormat(
 						"yyyy-MM-dd HH:mm:ss");
 				formatter.setLenient(false);
 				String ending = formatter.format(end);
-				// String oldTime = "2012-07-11 10:55:21";
 				java.util.Date oldDate = formatter.parse(ending);
 				// get current date
 				Calendar c = Calendar.getInstance();
@@ -306,27 +324,20 @@ public class CommonFunctions {
 
 					CommonFunctions util = new CommonFunctions();
 					String dueTime = util.timeDifference(current, oldDate);
-					instructions +="<p><label> <b>Assignment end date: </b></label> <b><label style='color:#353275'>"+end+ " </b></label></p>";
-					
+							instructions +="<p><label> <b>Assignment end date: </b></label> <b><label style='color:#353275'>"+end+ " </b></label></p>";					
 					instructions += "<p><label><b> Assignment is over due by </b></label> <b><label style='color:#353275'>"
-							+ dueTime + "</b></label></p>";
+							+ dueTime + "</b></label></p>";					
 				} else {
 					instructions += "<p><label> <b>Assignment is due on </b></label> <b><label style='color:#353275'>" + end
 							+ " </b></label></p>";
 				}
-				// instructions +=
-				// "<div class=\"showDownload\" id='"+assignID+"' style='display:none;'><label>Download other schemas for this assignment:</label>&nbsp;&nbsp;&nbsp;";
-				// instructions +=
-				// "<a class=\"getFile\" style='text-decoration:none;'  href=\"../DownloadOtherSchemas?schemaId="+defaultSchemaId+"&&assignmentId="+assignID+"\">";
-				// instructions += "<button>Download</button></a></div>";
+			
 			}
 			}//try block for resultset ends
 			}//try/block for stmnt ends
 		}//try block for conn close
 		
-		// instructions +=
-		// "<h2 style=\"text-align:left;\">General instructions</h2><ul><li>Do not use semicolon (;) to end the answer</li> </ul>";
-		return instructions;
+			return instructions;
 	}
 
 	
@@ -420,37 +431,10 @@ public class CommonFunctions {
 							
 							}
 						}
-						
-						
-						/*SimpleDateFormat formatter = new SimpleDateFormat(
-								"yyyy-MM-dd HH:mm:ss");
-						formatter.setLenient(false);
-						String ending = formatter.format(end);
-						// String oldTime = "2012-07-11 10:55:21";
-						java.util.Date oldDate = formatter.parse(ending);
-						// get current date
-						Calendar c = Calendar.getInstance();
-						String currentDate = formatter.format(c.getTime());
-						java.util.Date current = formatter.parse(currentDate);
-						// compare times
-						if (current.compareTo(oldDate) >= 0) {
-		
-							CommonFunctions util = new CommonFunctions();
-							String dueTime = util.timeDifference(current, oldDate);
-							instructions +="<p><label><b> Assignment end date: </b></label> <b><label style='color:#353275'>"+end+ "  </b></label></p>";
-							instructions += "<p><label> <b>Assignment is over due by </b></label> <b><label style='color:#353275'>"
-									+ dueTime + "</b></label></p>";
-						} else {
-							instructions += "<p><label> <b>Assignment is due on </b></label> <b><label style='color:#353275'>"+ end
-									+ "</label> </b></p>";
-						}*/
-		
 					}
 					}//try block for resultset ends
 			}//try block for statement ends
 			}//try block for conn ends
-		// instructions +=
-		// "<h2 style=\"text-align:left;\">General instructions</h2><ul><li>Do not use semicolon (;) to end the answer</li> </ul>";
 		return instructions;
 	} 
 	
@@ -495,7 +479,6 @@ public class CommonFunctions {
 			s = s.replaceAll("\\+", "%2B");
 			result = URLDecoder.decode(s, "UTF-8");
 		}
-
 		// This exception should never occur.
 		catch (UnsupportedEncodingException e) {
 			result = s;

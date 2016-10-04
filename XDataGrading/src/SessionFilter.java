@@ -40,14 +40,16 @@ public class SessionFilter implements Filter {
 	    	response.setContentType("text/html"); 
 			PrintWriter out = response.getWriter();
 			//System.out.println(" session is: -------- ++ "+req.getSession(false));
-			out.write("<script>window.parent.location.href='"+req.getContextPath() + "/index.jsp"+"'</script>"); 
+			//out.write("<script>window.parent.location.href='"+req.getContextPath() + "/index.jsp"+"'</script>");
+			out.write("<script>window.parent.location.href='/index.jsp'></script>");
 		    out.close();   
 	    }
 	    if (session != null && session.getAttribute("LOGIN_USER") == null) { //checks if there's a LOGIN_USER set in session...
 	    	response.setContentType("text/html"); 
 			PrintWriter out = response.getWriter();
 			//System.out.println(" session is:******* "+req.getSession(false));
-			out.write("<script>window.parent.location.href='"+req.getContextPath() + "/index.jsp?TimeOut=true"+"'</script>"); 
+			//out.write("<script>window.parent.location.href='"+req.getContextPath() + "/index.jsp?TimeOut=true"+"'</script>"); 
+			out.write("<script>window.parent.location.href='/index.jsp?TimeOut=true'</script>");
 		    out.close();  //or page where you want to redirect
 	    } else { 
 	      String userType = (String) req.getSession().getAttribute("LOGIN_USER"); 

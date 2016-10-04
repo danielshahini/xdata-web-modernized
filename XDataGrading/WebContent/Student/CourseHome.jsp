@@ -32,11 +32,6 @@ function LoadPage(){
  
 
 <body>
-<%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-		}
-%>
+
 </body>
 </html>

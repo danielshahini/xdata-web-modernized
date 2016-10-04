@@ -145,7 +145,7 @@ public class LoginChecker extends HttpServlet {
 			logger.log(Level.SEVERE,"SQLException: " + ex.getMessage(),ex);
 			throw new ServletException(ex);
 		}
-
+		
 		if (request.getParameter("name") != null) {
 			session.invalidate();
 			session = request.getSession(true);
@@ -252,7 +252,6 @@ public class LoginChecker extends HttpServlet {
 								pstmt1.setString(4, config.getProperty("adminPassword"));
 								
 								pstmt1.executeQuery(); 
-								logger.log(Level.FINE,"PWD to test = DigestUtils.md5Hex(pwd) =="+DigestUtils.md5Hex(pwd));
 								session.setAttribute("LOGIN_USER", "ADMIN");
 								session.setAttribute("role",role);
 								response.sendRedirect("adminHome.jsp");

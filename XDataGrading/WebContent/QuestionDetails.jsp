@@ -180,7 +180,19 @@ $(function() {
     $element.rangeslider('update', true);
 
 });
-		  
+	
+function getParameterByName(name) { 		
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+} 
+
+if(getParameterByName("PSQLError") != null){
+	  //Show error div with error message above the Incorrect Query Text Area
+	$('.showError'+getParameterByName("queryId")).show();
+}
+
 $(document).ready(function(){
 	$('#loadDefaultDataSets').show();
 	//alert("Loads on ready");
@@ -193,12 +205,6 @@ $(document).ready(function(){
 		  $('#matchAll').hide(); 
 	  }
 	  
-	  function getParameterByName(name) { 		
-		    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-		    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-		        results = regex.exec(location.search);
-		    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-		} 	
 	  	//Added for Modal Start
 	  	  $("#PartialParamModal").on("show.bs.modal", function(e) {
         	    var link = $(e.relatedTarget);
@@ -208,33 +214,32 @@ $(document).ready(function(){
 	  	
 	 
 		  
-	  	//ADded for Modal End
-
+	  	//Added for Modal End
 		$('#optionalschemaid').on('change',function(e){
 			//alert("OnChange---");
 			var schemaSel = $(this).val(); 
 			//window.location = "NewAssignmentCreation.jsp?selectedOption=" + $(this).val();
 			var course_id=$(this).attr('class');
 			if(schemaSel != 'select'){
-			//$('#test').attr('class');   
-			var dataString = "schemaId="+schemaSel+"&&course_id="+course_id;
-			//alert("--DataString--"+dataString);
-			$.ajax({ 
-		        type: "POST",  
-		        url: 'GetDefaultDataSets', 
-		        data: dataString,
-		        context:$(this),        
-		        success: function(data) {
-		        	try{
-		        		//alert("Success Function");
-		        		 $('#loadDefaultDataSets').html(data);
-		        		// alert(data);
-		        		 $('#loadDefaultDataSets').show();
-		        	}catch(err){ 
-			        	 alert("Error in loading default datasets.");
-		        	}
-		        }	        
-		      });
+				//$('#test').attr('class');   
+				var dataString = "schemaId="+schemaSel+"&&course_id="+course_id;
+				//alert("--DataString--"+dataString);
+				$.ajax({ 
+			        type: "POST",  
+			        url: 'GetDefaultDataSets', 
+			        data: dataString,
+			        context:$(this),        
+			        success: function(data) {
+			        	try{
+			        		//alert("Success Function");
+			        		 $('#loadDefaultDataSets').html(data);
+			        		// alert(data);
+			        		 $('#loadDefaultDataSets').show();
+			        	}catch(err){ 
+				        	 alert("Error in loading default datasets.");
+			        	}
+			        }	        
+			      });
 			}else{
 				$('#loadDefaultDataSets').hide();
 			}
@@ -243,6 +248,7 @@ $(document).ready(function(){
 		//Added for displaying default sample data end
 });  
 
+//Function to add a new query text area for adding new queries
 $(document).on('click', '.queryBox' ,function (event) { 
  	//alert("Onclick Query Box");
  	 var $this = $(this);

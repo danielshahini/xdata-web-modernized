@@ -59,7 +59,8 @@ public class SessionTimeOutFilter implements Filter {
 		   if (isSessionControlRequiredForThisResource(req)) {  
 			   //If session is not valid
 			   if (isSessionInvalid(req)) { 
-				String timeoutUrl = req.getContextPath() + "/index.jsp?TimeOut=true";      
+				   //req.getContextPath() +"/"+
+				String timeoutUrl =  "index.jsp?TimeOut=true";      
 				System.out.println("Request ContextPath for redirection : "+req.getContextPath());
 				System.out.println("Local address for redirection : "+request.getLocalAddr());
 				System.out.println("Servlet contet - contect path -  for redirection on timeput :  "+ request.getServletContext().getContextPath());
@@ -97,7 +98,10 @@ public class SessionTimeOutFilter implements Filter {
 	    boolean controlRequired = false;
 		// If it is a  new session or no session exists, check whether the servlet path contains login page
 		 if(httpServletRequest.getSession(false) == null || httpServletRequest.getSession(false).isNew()){
-			 controlRequired  = !httpServletRequest.getServletPath() .contains("index.jsp") && !httpServletRequest.getServletPath().contains("tool.jsp") && !httpServletRequest.getServletPath().contains("LtiLogout.jsp"); 		 
+			 
+			 controlRequired  = !httpServletRequest.getServletPath() .contains("index.jsp") 
+					 && !httpServletRequest.getServletPath().contains("tool.jsp") 
+					 && !httpServletRequest.getServletPath().contains("LtiLogout.jsp"); 		 
 		 }   
 		 //check if the request is from the login page. case on refreshing login page
 		 else{ 

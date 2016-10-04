@@ -73,10 +73,6 @@ span,.required {
 <body>
 <body>
 <%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-}
 
 if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 		%>
@@ -99,7 +95,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 							//get connection
 							Connection dbcon = (new DatabaseConnection()).dbConnection();
 							String output = "<ul>";
-
+ 
 							try {
 								PreparedStatement stmt;
 								stmt = dbcon

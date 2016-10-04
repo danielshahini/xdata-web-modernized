@@ -62,15 +62,7 @@ label span,.required {
 </head>
 
 <body>
-
-<%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-		}
-%>
-
-	<div>
+<div>
 
 		<br />
 		<br />

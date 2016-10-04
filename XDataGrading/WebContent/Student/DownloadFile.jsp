@@ -20,10 +20,6 @@ pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
 <body>
 
 <%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-		}
 
 String courseId = (String) request.getSession().getAttribute(
 		"context_label");
