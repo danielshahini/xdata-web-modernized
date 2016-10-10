@@ -427,7 +427,7 @@ font-style: normal;
 .fieldset #loadDefaultDataSets label{
 	float:left;
 	height: 20px;
-	width: 73%;
+	width: 89%;
 }
 .fieldset #loadDefaultDataSets label#dsname{
 	width:20%;
@@ -606,7 +606,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						                    String[] dsList = new Gson().fromJson(value, listType);
 						                    
 						                    if(dsList != null && dsList.length != 0 ){
-						                    	 instr += "<p></p><label style='float:left;'>Please select the default datasets for evaluation.</label><p></p>"; 
+						                    	 instr += "<p></p><label style='float:left;'>Please select the default datasets for evaluation.</label><p></p><br/>"; 
 								                for(int i=0;i<dsList.length;i++){
 						                    		while(rs2.next()){
 						                    			if(rs2.getString("sampledata_id").equalsIgnoreCase(dsList[i])){
@@ -639,7 +639,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 											instr += "<div id='dSet'><input type=\"checkbox\" name=\"defaultDSId\" value=\""+rs2.getString("sampledata_id")+"\"/><label id=\"dsname\">"+rs2.getString("sample_data_name")+"</label>";
 											instr+="</div>";
 				        					}
-										instr += "<p></p></div></div>";
+										instr += "<p></p></div></div>";	
 									}	 //instr += "<div><div id=\"loadDefaultDataSets\" style='display:none;'></div></div></div>";
 										out.println(instr); 
 										rs2.close();
@@ -655,6 +655,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								<input type ="hidden" name="question_id" id="qsId" value=<%=qID %> >
 								<input type ="hidden" name="assignment_id" id="assgnID" value=<%=assignID %> >
 								<input type="hidden" name="desc" value=<%=description %>>
+								<input type="hidden" name="assignmentName" value=<%=assignmentName %>>
 								
 									<div class="question">
 									<span>Qustion Id: <%= qID %>. </span>

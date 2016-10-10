@@ -51,6 +51,7 @@ public class EditCourse extends HttpServlet {
 		int year = Integer.parseInt(request.getParameter("year"));
 		String semester = request.getParameter("semester");
 		String description = request.getParameter("desc");
+		// Update course_id in all tables of XDAta as it is a part of primary key 
 		try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 			try(PreparedStatement stmt = dbcon
 					.prepareStatement("update xdata_course set instructor_course_id=?,course_name=?,year=?,semester=?,description=? where course_id=?")){

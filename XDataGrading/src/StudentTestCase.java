@@ -203,7 +203,7 @@ public class StudentTestCase extends HttpServlet {
 								+ assignment_id + "&&courseId=" + course_id
 								+ "&&questionId=" + question_id + "&&studentId="
 								+ user_id +"\" target=\"_self\">Edit Question</a>&nbsp; >> &nbsp;"
-						+"<a style='color:#0E0E0E;text-decoration: none;font-weight: normal;' href=\"#\">Stdent Result</a>"
+						+"<a style='color:#0E0E0E;text-decoration: none;font-weight: normal;' href=\"#\">Student Result</a>"
 						+"</div>");
 		}			
 		out_assignment.println("<div id=\"fieldset\">"+ 

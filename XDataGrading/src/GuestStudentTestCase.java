@@ -76,7 +76,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		String course_id = (String) request.getSession().getAttribute("context_label");
 		String user_id=request.getParameter("user_id");
 		String status = request.getParameter("status");
-		float marks = Float.parseFloat((String)request.getParameter("marks"));
+		int marks = Integer.parseInt((String)request.getParameter("marks"));
+		int maxMarks = Integer.parseInt((String)request.getParameter("maxMarks"));
 		Boolean learningMode = false;
 
 		//Instead of getting it from sessin, get it from student table - tajudgement attribute

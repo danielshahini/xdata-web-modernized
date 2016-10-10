@@ -121,7 +121,10 @@
 					session.setAttribute("displayTestCase", false);						
 				}
 			    
-			    float marks = failedDSValue.getMarks();
+			    Float marks1 = failedDSValue.getMarks();
+			    int marks = marks1.intValue();
+			    Float maxMarks1 = failedDSValue.getMaxMarks();
+			    int maxMarks = maxMarks1.intValue();
 			    if(status.equals("Failed")){
 				  
 				    //forward to new student test case page to show result
@@ -130,12 +133,12 @@
 							"&status=" + status.toString()+"&marks="+marks;*/
 							
 					String remoteLink = "QuestionDetails.jsp?isGuestUser=true&&AssignmentID="+asID+"&&questionId="+questionID+"&&courseId="+courseID+"&&studentId="+studentID
-   						+"&&marks="+marks+"&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);		
+   						+"&&marks="+marks+"&&maxMarks="+maxMarks+"&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);		
 							
 					session.setAttribute("failedDS", failedDSValue) ;
 					//System.out.println(remoteLink);
 					
-					if(status.equals(QueryStatus.Error)){
+					if(status.equals(QueryStatus.Error) && failedDSValue.getErrorMessage() != null){
 						remoteLink += "&Error=" + CommonFunctions.encodeURIComponent(failedDSValue.getErrorMessage());
 					}
 					
@@ -149,9 +152,10 @@
 								"&status=" + status.toString()+"&marks="+marks;*/
 				
 						String remoteLink = "QuestionDetails.jsp?isGuestUser=true&&AssignmentID="+asID+"&&questionId="+questionID+"&&courseId="+courseID+"&&studentId="+studentID
-	    						+"&&marks="+marks+"&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);
-			    
+	    						+"&&marks="+marks+"&&maxMarks="+maxMarks+"&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);
+			    if(failedDSValue.getErrorMessage() != null){
 			    	remoteLink += "&&Error=" + CommonFunctions.encodeURIComponent(failedDSValue.getErrorMessage());
+			    }
 			    	response.sendRedirect(remoteLink);
 			    }
 			    	else{
@@ -162,9 +166,9 @@
 								"&status=" + status.toString()+"&marks=100.00";
 			    	*/
 			    	String remoteLink = "QuestionDetails.jsp?isGuestUser=true&&AssignmentID="+asID+"&&questionId="+questionID+"&&courseId="+courseID+"&&studentId="+studentID
-			    						+"&&marks=100.00&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);
+			    						+"&&marks="+marks+"&&maxMarks="+maxMarks+"&&status="+status+"&&query="+ CommonFunctions.encodeURIComponent(correctquery);
 			    	
-			    	 if(status.equals(QueryStatus.Error)){
+			    	 if(status.equals(QueryStatus.Error) && failedDSValue.getErrorMessage() != null){
 							remoteLink += "&&Error=" + CommonFunctions.encodeURIComponent(failedDSValue.getErrorMessage());
 						}
 			    	 response.sendRedirect(remoteLink);

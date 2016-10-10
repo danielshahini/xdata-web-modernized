@@ -310,26 +310,28 @@ public class CommonFunctions {
 					}
 				}
 			}
-				SimpleDateFormat formatter = new SimpleDateFormat(
-						"yyyy-MM-dd HH:mm:ss");
-				formatter.setLenient(false);
-				String ending = formatter.format(end);
-				java.util.Date oldDate = formatter.parse(ending);
-				// get current date
-				Calendar c = Calendar.getInstance();
-				String currentDate = formatter.format(c.getTime());
-				java.util.Date current = formatter.parse(currentDate);
-				// compare times
-				if (current.compareTo(oldDate) >= 0) {
-
-					CommonFunctions util = new CommonFunctions();
-					String dueTime = util.timeDifference(current, oldDate);
-							instructions +="<p><label> <b>Assignment end date: </b></label> <b><label style='color:#353275'>"+end+ " </b></label></p>";					
-					instructions += "<p><label><b> Assignment is over due by </b></label> <b><label style='color:#353275'>"
-							+ dueTime + "</b></label></p>";					
-				} else {
-					instructions += "<p><label> <b>Assignment is due on </b></label> <b><label style='color:#353275'>" + end
-							+ " </b></label></p>";
+				if(!user.equals("guest")){ 
+					SimpleDateFormat formatter = new SimpleDateFormat(
+							"yyyy-MM-dd HH:mm:ss");
+					formatter.setLenient(false);
+					String ending = formatter.format(end);
+					java.util.Date oldDate = formatter.parse(ending);
+					// get current date
+					Calendar c = Calendar.getInstance();
+					String currentDate = formatter.format(c.getTime());
+					java.util.Date current = formatter.parse(currentDate);
+					// compare times
+					if (current.compareTo(oldDate) >= 0) {
+	
+						CommonFunctions util = new CommonFunctions();
+						String dueTime = util.timeDifference(current, oldDate);
+								instructions +="<p><label> <b>Assignment end date: </b></label> <b><label style='color:#353275'>"+end+ " </b></label></p>";					
+						instructions += "<p><label><b> Assignment is over due by </b></label> <b><label style='color:#353275'>"
+								+ dueTime + "</b></label></p>";					
+					} else {
+						instructions += "<p><label> <b>Assignment is due on </b></label> <b><label style='color:#353275'>" + end
+								+ " </b></label></p>";
+					}
 				}
 			
 			}

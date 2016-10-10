@@ -94,8 +94,13 @@
 			<input type="password" name="password">
 			<label id="loginMessage">The username or password you entered is incorrect.</label>		
 			<div id ="lower">
-			<div>
+			<div>			
+			<label style='font: 14px/14px Arial, Lucida Grande;'>To login as guest, enter user name and password as 'guest'.</label>
+			<label style='font: 14px/14px Arial, Lucida Grande;'>To login as instructor, please drop a mail to xdata@cse.iitb.ac.in</label>
+			
 			<input type="submit" id="login" value="Login"/>
+			
+			
 			</div>
 			<div>
 	<!-- <label><a style='color:#353275;font-size: 15px;' href="forgotPwd.jsp">Forgot your password?</a></label> --> 

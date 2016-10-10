@@ -87,14 +87,50 @@ label span,.required {
 
 <script>
 hljs.initHighlightingOnLoad();
+
+function getParameterByName(name) { 		
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+} 
+
+
 $(document).ready(function(e) {
     var $input = $('#refresh');
 
     $input.val() == 'yes' ? location.reload(true) : $input.val('yes');
     
+    window.onload = function() {
+  	  var mime = 'text/x-mariadb';
+  	  // get mime type
+  	  if (window.location.href.indexOf('mime=') > -1) {
+  	    mime = window.location.href.substr(window.location.href.indexOf('mime=') + 5);
+  	  }
+  	  window.editor = CodeMirror.fromTextArea(document.getElementById('query<%=(String) request.getParameter("questionId")%>'), {
+  	    mode: mime,
+  	    indentWithTabs: true,
+  	    smartIndent: true,
+  	    lineNumbers: true,
+  	    matchBrackets : false,
+  	    lineWrapping: true,
+  	    autofocus: true,
+  	    extraKeys: {"Ctrl-Space": "autocomplete"}, 
+  	    hintOptions: {tables: {
+  	      users: {name: null, score: null, birthDate: null},
+  	      countries: {name: null, population: null, size: null}
+  	    }}
+  	  });
+  	  CodeMirror.commands.autocomplete = function(cm) {
+  	  }
+  	};
+  	
+  	
    //alert("Comes to onload");
    var user = '<%=session.getAttribute("LOGIN_USER")%>';
    var peramQuery = getParameterByName("query");
+
+  
     if(user == 'guest'){
     	//alert("user == "+user);
     	//alert("asgn Id = "+getParameterByName("AssignmentID "));
@@ -104,17 +140,20 @@ $(document).ready(function(e) {
 			+"&&query=" +encodeURI(peramQuery) + 
 			"&&status=" + getParameterByName("status")
 			+"&&marks="+getParameterByName("marks")
+			+"&&maxMarks="+getParameterByName("maxMarks")
 			+"&&Error="+getParameterByName("Error");
 			
-	  //  alert("DataString = "+dataString);
+	    //alert("DataString = "+dataString);
+	  	var questionID = "query"+getParameterByName("questionId");
+	  	//alert("questionID == "+ questionID);
 	    
 	    var urlt = "../GuestStudentTestCase";
 	 //  alert("URL = "+ urlt);
 		if(getParameterByName("isGuestUser")){
 			
 		 $.ajax({ 
-			        type: "GET",  
-			        url: urlt, 
+			        type: "GET",
+			        url: urlt,
 			        data: dataString,
 			        context:$(this),        
 			        success: function(data) {
@@ -122,6 +161,7 @@ $(document).ready(function(e) {
 			        	$('#showGuestUserDetails').show();
 			        	$('#showGuestUserDetails').html(data);
 			        	 $('html,body').animate({ scrollTop: $("#showGuestUserDetails").offset().top-10});
+			        	 editor.setValue(peramQuery);
 			        	
 			        }
 			});
@@ -133,29 +173,7 @@ $(document).ready(function(e) {
 	
 });
 
-	window.onload = function() {
-	  var mime = 'text/x-mariadb';
-	  // get mime type
-	  if (window.location.href.indexOf('mime=') > -1) {
-	    mime = window.location.href.substr(window.location.href.indexOf('mime=') + 5);
-	  }
-	  window.editor = CodeMirror.fromTextArea(document.getElementById('query<%=(String) request.getParameter("questionId")%>'), {
-	    mode: mime,
-	    indentWithTabs: true,
-	    smartIndent: true,
-	    lineNumbers: true,
-	    matchBrackets : false,
-	    lineWrapping: true,
-	    autofocus: true,
-	    extraKeys: {"Ctrl-Space": "autocomplete"}, 
-	    hintOptions: {tables: {
-	      users: {name: null, score: null, birthDate: null},
-	      countries: {name: null, population: null, size: null}
-	    }}
-	  });
-	  CodeMirror.commands.autocomplete = function(cm) {
-	  }
-	};
+	
 	
 	
 	function report(btn, selected) {
@@ -181,14 +199,6 @@ $(document).ready(function(e) {
 			window.location.href = out;
 		}
 	}
-
-	function getParameterByName(name) { 		
-	    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-	    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-	        results = regex.exec(location.search);
-	    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-	} 
-
 </script>
 </head>
 <body > 

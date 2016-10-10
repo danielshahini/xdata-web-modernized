@@ -207,6 +207,17 @@
     <servlet-name>ViewReport</servlet-name>
     <url-pattern>/ViewReport</url-pattern>
   </servlet-mapping>
+  
+    <servlet>
+    <servlet-name>GuestStudentTestCase</servlet-name>
+    <servlet-class>GuestStudentTestCase</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GuestStudentTestCase</servlet-name>
+    <url-pattern>/GuestStudentTestCase</url-pattern>
+  </servlet-mapping>
+  
+  
   <servlet>
     <servlet-name>UpdateServlet</servlet-name>
     <servlet-class>database.UpdateServlet</servlet-class>

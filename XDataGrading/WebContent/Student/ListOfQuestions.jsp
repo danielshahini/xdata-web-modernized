@@ -28,9 +28,9 @@ textarea,select {
 .questionelement .answer .editbutton a{
 	text-decoration:none;
 	color: #353275;
-	float:right;
+	float:left;
 }
-.separator{
+.separator{ 
 	border-right:1px solid black; 
 	margin:0px; 
 	float: right; 
@@ -109,7 +109,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			<%if(((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase("guest") ){%>
 				<ul> 
 					<li>Click edit to enter your answer. The selection conditions are case sensitive</li>
-					<li>Please take a look on <a href='http://www.cse.iitb.ac.in/infolab/xdata/universitySchema.pdf' target='_blank'>Schema diagram</a> of the default schema being used</li>
+					<li>Please take a look on <a href='../images/universitySchema.pdf' target='_blank'>Schema diagram</a> of the default schema being used</li>
 				</ul>
 			<%}else{%>
 						<ul> 
@@ -117,7 +117,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 					<li>Be cautious, the selection conditions are case sensitive</li>
 					<li>On editing, the query will be run against datasets</li>
 					<li>You will be forwarded to a page where the result of submission would be shown</li>
-					<li>You can see the ER diagram of the default schema being used <a href='http://www.cse.iitb.ac.in/infolab/xdata/universitySchema.pdf' target='_blank'>here</a></li>
+					<li>Please take a look on <a href='../images/universitySchema.pdf' target='_blank'>Schema diagram</a> of the default schema being used</li>
 				</ul>
 			<%}%>
 			<p></p>
@@ -250,12 +250,12 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									String remote = "QuestionDetails.jsp?AssignmentID="
 											+ assignID + "&&courseId=" + courseID
 											+ "&&questionId=" + qID + "&&studentId="
-											+ studentId + "'\"target = \"rightPage\"";
+											+ studentId + "\" target = \"rightPage\"";
 
 									String viewGrade = "ViewGradesOfAssignment.jsp?AssignmentID="
 											+ assignID + "&&courseId=" + courseID 
 											+ "&&questionId=" + qID + "&&studentId=" 
-											+ studentId + "'\"target = \"rightPage\"";
+											+ studentId + "\" target = \"rightPage\"";
 									if (yes == false){
 										output += "<tr><td>Question: "
 												+ qID 
@@ -308,19 +308,25 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									<%}%>
 									</div>
 								<%}
-									}%> 
+									}%>
 								</div>
 								<div class="answer">
 								<pre><code class="sql"><label style="font-style:bold;font-weight: bold">Ans. </label><%= studentAnswer %></code></pre>
 								</div></br>
-								<div class="editbutton" style='float:left;'><a href=' <%=yes?viewGrade:remote %>'><%=yes?"View Grade":"Edit" %></a>
-								</br>
+								<%if(user.equalsIgnoreCase("guest")){ %>
+									<div class="editbutton" ><a style="text-decoration:none;color: #353275;float:left;padding-left:20px;" href="<%=yes?viewGrade:remote %>"><%=yes?"View Grade":"Edit" %></a>
+								<%}else{ %>
+										<div class="editbutton" ><a style="text-decoration:none;color: #353275;float:right;padding-left:20px;" href="<%=yes?viewGrade:remote %>"><%=yes?"View Grade":"Edit" %></a>
+								<%} %>
+							
 								<% if(studentAnswer != null && !yes && studentAnswer.length() > 0 && isInteractiveAssignment && !user.equalsIgnoreCase("guest")){ %>
-									<span class = "separator">&nbsp;</span>
+									
 									<a href='../StudentTestCase?user_id=<%=studentId%>&&assignment_id=<%=assignID %>&&question_id=<%=qID %>&&status=<%=isCorrect%>&&query=<%=CommonFunctions.encodeURIComponent(studentAnswer)%>&&Error=Incorrect Query Syntax'>Show Result</a>
+									
 								<%}
+								
 								if(!user.equalsIgnoreCase("guest")) {%> 
-								 
+								
 								<div class = "status"><span style='font-weight:bold;'>Status:</span>
 								 
 								<% if(verified && questionGraded){ %> 
@@ -341,7 +347,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 										%>
 								</font></div>
 								</div>							
-							</div> 
+						
 						<% }else{%>
 							</div>
 						<%}
