@@ -1916,7 +1916,9 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 				markInfo.Marks = maxMarks - reduceLateSubmissionMarks;
 			}else{
 				markInfo.Marks = maxMarks;
-			}	
+			}
+			failedDataSets.setMaxMarks(maxMarks);
+			failedDataSets.setMarks(markInfo.Marks);
 		}
 		else{
 			if(!studRole.equals("guest")){
@@ -1961,6 +1963,7 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 			if(!studRole.equals("guest")){
 				DatabaseHelper.InsertIntoScores(conn, assignmentId, questionId, 1, course_id, maxMarks, user, info, markInfo.Marks);
 			}
+			failedDataSets.setMaxMarks(maxMarks);
 			failedDataSets.setMarks(markInfo.Marks);
 	}catch(Exception e){
 		logger.log(Level.SEVERE, e.getMessage(),e);

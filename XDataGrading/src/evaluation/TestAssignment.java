@@ -699,14 +699,14 @@ public class TestAssignment {
 		} else if (queryStatus == QueryStatus.Correct) {
 			String qryUpdate = "update xdata_student_queries set verifiedcorrect = true,score = 100 where assignment_id = '"
 					+ assignment_id + "' and question_id='" + question_id + "' and rollnum = '" + rollNum
-					+ "'and course_id= '" + courseId + "'";
+					+ "' and course_id= '" + courseId + "'";
 			try (PreparedStatement pstmt3 = dbcon.prepareStatement(qryUpdate)) {
 				pstmt3.executeUpdate();
 			}
 		} else {
 			String qryUpdate = "update xdata_student_queries set verifiedcorrect = false, result=? where assignment_id = '"
 					+ assignment_id + "' and question_id='" + question_id + "' and rollnum = '" + rollNum
-					+ "'and course_id= '" + courseId + "'";
+					+ "' and course_id= '" + courseId + "'";
 			try (PreparedStatement pstmt3 = dbcon.prepareStatement(qryUpdate)) {
 				pstmt3.setString(1, json1);
 				pstmt3.executeUpdate();
