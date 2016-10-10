@@ -1,4 +1,4 @@
-package evaluation;
+package util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +15,7 @@ public class FailedDataSetValues {
 
 	private String status = "passed";
 	private float Marks = 0.0f;
+	private float maxMarks = 0.0f;
 	private String ErrorMessage = "";
 	//This query id is used for displaying failed datasets when query equivalence is tested in TESTER mode
 	private int queryId = 0;
@@ -200,6 +201,12 @@ public class FailedDataSetValues {
 	}
 	public void setMarks(float marks) {
 		Marks = marks;
+	}
+	public float getMaxMarks() {
+		return maxMarks;
+	}
+	public void setMaxMarks(float maxMarks) {
+		this.maxMarks = maxMarks;
 	}
 	
 }
