@@ -100,6 +100,24 @@ public class QueryDetails {
 	}
 		
 	}
+	
+	QueryStructure qStructure;
+	
+	public void startProcessing(int assignmentId, int questionId, String query) throws Exception {
+
+		GenerateCVC1 cvc = new GenerateCVC1();
+				
+		cvc.initializeConnectionDetails(assignmentId, questionId, 1,"");		
+
+		qStructure=new QueryStructure(cvc.getTableMap());
+		
+		cvc.closeConn();
+
+		qStructure.parseQuery("q1", query);
+		
+		qStructure.initializeQueryListStructures();
+		
+	}
 
 	
 	public void initialize(int assignmentId, int questionId, String query) throws Exception {

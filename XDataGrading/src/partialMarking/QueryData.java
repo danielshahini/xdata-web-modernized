@@ -1099,23 +1099,6 @@ public class QueryData {
 		}
 	}
 	
-	private void flatten(JoinTreeNode root){		
-		invertRightJoins(root);
-		
-		Boolean change = true;
-		
-		while(change){
-			change = false;
-			change = flattenInnerJoin(root, change);			
-		}
-		
-		nullifyFlattenNodes(root);
-	}
-	
-	private void nullifyFlattenNodes(JoinTreeNode root){
-		if(root == null)
-			return;		
-	}
 	
 	// Traverses through the join tree to the get the information about the relations involved in the joins
 	private void traverseJoinTree(JoinTreeNode root){
@@ -1138,6 +1121,25 @@ public class QueryData {
 			this.joinTables.add(root.getTableNameNo());
 		}
 	}
+	
+	private void flatten(JoinTreeNode root){		
+		invertRightJoins(root);
+		
+		Boolean change = true;
+		
+		while(change){
+			change = false;
+			change = flattenInnerJoin(root, change);			
+		}
+		
+		nullifyFlattenNodes(root);
+	}
+	
+	private void nullifyFlattenNodes(JoinTreeNode root){
+		if(root == null)
+			return;		
+	}
+
 	
 	// Converts all the right joins to corresponding left joins
 	private void invertRightJoins(JoinTreeNode root){

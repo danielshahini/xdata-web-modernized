@@ -32,11 +32,49 @@ public class SerializeXML {
 		  out.flush();
 		  out.close();
 	}
+	
+	
+	public static void serializeXML(String fileName, QueryStructure qData) throws IOException, CloneNotSupportedException{
+		  out = new PrintWriter(new FileWriter(fileName));
+		  printHead();
+		  printHasDistinct(qData);
+		  printProjectedColumns(qData);
+		  printJoinConditions(qData);
+		  printSelectionConditions(qData);
+		  printGroupByColumns(qData);
+		  printHavingConditions(qData);
+		  printJoinTables(qData);
+		  printRedundantTables(qData);
+		  printSubqueryConnectives(qData);
+		  printTail();
+		  out.flush();
+		  out.close();
+	}
+	
+	public static void printProjectedColumns(QueryStructure qData){
+		 out.println("<item text=\"Projected Columns\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:toSetOfNodes(qData.getLstProjectedCols())){
+			 out.println(spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
+	
 	public static void printProjectedColumns(QueryData qData){
 		 out.println("<item text=\"Projected Columns\" open=\"1\" id=\""+ idCounter++ +"\">");
 		 for(parsing.Node n:toSetOfNodes(qData.getProjectionList())){
 			 out.println(spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>");
 		 }
+		 out.println("</item>");
+	}
+	
+	public static void printHasDistinct(QueryStructure qData){
+		 out.println("<item text=\"Distinct Present\" open=\"1\" id=\""+ idCounter++ +"\">");
+		if(qData.getIsDistinct()){
+			 out.println(spaceTab+"<item text=\"True\" id=\""+ idCounter++ +"\"/>");
+		 }
+		else{
+			out.println(spaceTab+"<item text=\"False\" id=\""+ idCounter++ +"\"/>");
+		}
 		 out.println("</item>");
 	}
 	
@@ -53,21 +91,47 @@ public class SerializeXML {
 	
 	public static Set<Node> toSetOfNodes(List<Node> nodes){
 		Set<Node> tempSet=new HashSet<Node>();
-		for(Node n:nodes)
-			tempSet.add(n);
+		if(nodes!=null){
+			for(Node n:nodes)
+				tempSet.add(n);
+		}
 		return tempSet;
 	}
 	
 	public static parsing.Node cloneNodeForXMLserialization(parsing.Node m) throws CloneNotSupportedException{
 		parsing.Node n=m.clone();
-		if(n.getOperator().equals("<")){
-			n.setOperator("&lt;");
-		}
-		else if(n.getOperator().equals("<=")){
-			n.setOperator("&lt;=");
+		if(n!=null&&n.getOperator()!=null){
+			if(n.getOperator().equals("<")){
+				n.setOperator("&lt;");
+			}
+			else if(n.getOperator().equals("<=")){
+				n.setOperator("&lt;=");
+			}
 		}
 		return n;
 		
+	}
+	
+	public static void printJoinConditions(QueryStructure qData) throws CloneNotSupportedException{
+		 out.println("<item text=\"Join Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 out.println("<item text=\"Outer\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:toSetOfNodes(qData.getLstJoinConditions())){
+			 if(n.getJoinType()!=null&&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+					 ||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+					 ||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin)))
+			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+		 out.println("<item text=\"Inner\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:toSetOfNodes(qData.getLstJoinConditions())){
+			 if(n.getJoinType()!=null&& !n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+					 && !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+					 && !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
+
+			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+		 out.println("</item>");
 	}
 	
 	public static void printJoinConditions(QueryData qData) throws CloneNotSupportedException{
@@ -91,10 +155,28 @@ public class SerializeXML {
 		 out.println("</item>");
 		 out.println("</item>");
 	}
+	
+	public static void printSelectionConditions(QueryStructure qData) throws  CloneNotSupportedException{
+		 out.println("<item text=\"Selection Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:toSetOfNodes(qData.getLstSelectionConditions())){
+			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
+	
 	public static void printSelectionConditions(QueryData qData) throws  CloneNotSupportedException{
 		 out.println("<item text=\"Selection Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
 		 for(parsing.Node n:toSetOfNodes(qData.getSelectionConditions())){
 			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
+	
+	public static void printSubqueryConnectives(QueryStructure qData){
+		
+		 out.println("<item text=\"Subquery Connectives\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(String str:qData.getLstSubQConnectives()){
+			 out.println(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>");
 		 }
 		 out.println("</item>");
 	}
@@ -108,6 +190,14 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
+	public static void printHavingConditions(QueryStructure qData) throws CloneNotSupportedException{
+		 out.println("<item text=\"Having Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:toSetOfNodes(qData.getLstHavingConditions())){
+			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
+	
 	public static void printHavingConditions(QueryData qData) throws CloneNotSupportedException{
 		 out.println("<item text=\"Having Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
 		 for(parsing.Node n:toSetOfNodes(qData.getHavingClause())){
@@ -115,6 +205,15 @@ public class SerializeXML {
 		 }
 		 out.println("</item>");
 	}
+	
+	public static void printGroupByColumns(QueryStructure qData) {
+		 out.println("<item text=\"GroupBy Columns\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:toSetOfNodes(qData.getLstGroupByNodes())){
+			 out.println(spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
+
 	
 	public static void printGroupByColumns(QueryData qData) {
 		 out.println("<item text=\"GroupBy Columns\" open=\"1\" id=\""+ idCounter++ +"\">");
@@ -124,10 +223,31 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
+	public static void printJoinTables(QueryStructure qData){
+		 out.println("<item text=\"Tables\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 if(qData.getLstRelations()!=null){
+		 for(String str:qData.getLstRelations()){
+			 out.println(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 }
+		 out.println("</item>");
+	}
+
+	
 	public static void printJoinTables(QueryData qData){
 		 out.println("<item text=\"Tables\" open=\"1\" id=\""+ idCounter++ +"\">");
 		 for(String str:qData.getRelations()){
 			 out.println(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
+	
+	public static void printRedundantTables(QueryStructure qData){
+		 out.println("<item text=\"Redundant Tables\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 if(qData.lstRedundantRelations!=null){
+			 for(String str:qData.lstRedundantRelations){
+				 out.println(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>");
+			 }
 		 }
 		 out.println("</item>");
 	}
