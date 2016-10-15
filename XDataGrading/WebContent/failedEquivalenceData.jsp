@@ -11,7 +11,7 @@
 <%@page import="com.google.gson.JsonArray"%>
 <%@page import="evaluation.FailedDataSetValues" %>
 <%@page import="testDataGen.PopulateTestData" %>
-<%@page import="testDataGen.TestAnswer"%>
+<%@page import="evaluation.TestAnswer"%>
 <%@page import="parsing.QueryParser"%>
 <%@page import="util.TesterDatasource"%>
 <%@page import="util.DataSetValue"%>

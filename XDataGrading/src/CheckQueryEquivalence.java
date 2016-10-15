@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,9 +16,7 @@ import javax.servlet.http.HttpSession;
 
 
 import database.DatabaseConnection;
-import evaluation.FailedDataSetValues;
 
-import evaluation.TestAnswer;
 import evaluation.TestAssignment;
 
 /**

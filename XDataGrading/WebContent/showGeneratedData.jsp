@@ -12,7 +12,7 @@
 <%@page import="evaluation.FailedDataSetValues" %>
 <%@page import="testDataGen.PopulateTestData" %>
 <%@page import="java.util.logging.Logger"%>
-<%@page import="testDataGen.TestAnswer"%>
+<%@page import="evaluation.TestAnswer"%>
 <%@page import="parsing.QueryParser"%>
 <%@page import="util.TesterDatasource"%>
 <%@page import="util.DataSetValue"%>
