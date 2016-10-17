@@ -9,16 +9,269 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import parsing.Table;
+import util.Graph;
+import parsing.Column;
+import parsing.ForeignKey;
+import parsing.FromListElement;
+import parsing.JoinClauseInfo;
+import parsing.Node;
 
 /**
  * @author mathew
  *
  */
 public class Util {
+	private static Logger logger = Logger.getLogger(Util.class.getName()); 
+
+
+	public static Node getNodeForCount(Vector<FromListElement> fle, QueryStructure qParser) {
+		
+		for(FromListElement f:fle){
+			String fromTableName = f.getTableName();
+			if (fromTableName != null && f.getTableNameNo()!= null &&!f.getTableNameNo().isEmpty()) {
+				Table t=qParser.getTableMap().getTable(fromTableName);
+				Column col = t.getColumn(0);
+				if (col == null)
+					return null;
+
+				Node n = new Node();
+				n.setTable(t);
+				n.setTableAlias(t.getAliasName());
+				n.setColumn(col);
+				if(f.getTableNameNo() != null && ! f.getTableNameNo().isEmpty()){
+					n.setTableNameNo(f.getTableNameNo());
+				}//This may not be correct - FIXME Test and fix
+				else{
+					n.setTableNameNo(f.getTableName()+"1");
+				}
+				n.setType(Node.getColRefType());
+				return n;
+			} else if (f.getTabs()!=null && !f.getTabs().isEmpty()){
+				for (int i = 0; i < f.getTabs().size(); i++) {
+					Node n = getNodeForCount(f.getTabs().get(i), qParser);
+					n.setType(Node.getColRefType());
+					if (n != null) {
+						return n;
+					}
+				}
+			}
+			else if(f.getSubQueryParser()!=null){
+				Node n=getNodeForCount(f.getSubQueryParser().fromListElements,f.getSubQueryParser());
+				if(n!=null){
+					n.setType(Node.getColRefType());
+					return n;
+				}
+			}
+		}
+		return null;
+}
+	
+	public static Node getNodeForCount(FromListElement f, QueryStructure qParser) {
+		
+		String fromTableName = f.getTableName();
+		if (fromTableName != null && qParser.getQuery().getFromTables().get(fromTableName.toUpperCase()) != null 
+				&& f.getTableNameNo()!= null &&!f.getTableNameNo().isEmpty()) {
+			
+			Table t = qParser.getQuery().getFromTables().get(fromTableName.toUpperCase());
+			Column col = t.getColumn(0);
+			if (col == null)
+				return null;
+
+			Node n = new Node();
+			n.setTable(t);
+			n.setTableAlias(t.getAliasName());
+			n.setColumn(col);
+			if(f.getTableNameNo() != null && ! f.getTableNameNo().isEmpty()){
+				n.setTableNameNo(f.getTableNameNo());
+			}//This may not be correct - FIXME Test and fix
+			else{
+				n.setTableNameNo(f.getTableName()+"1");
+			}
+			n.setType(Node.getColRefType());
+			return n;
+		} else{
+		for (int i = 0; i < f.getTabs().size(); i++) {
+				Node n = getNodeForCount(f.getTabs().get(i), qParser);
+				n.setType(Node.getColRefType());
+				if (n != null) {
+					return n;
+				}
+			}
+		}
+		return null;
+}	
+	
+	/*
+	 * Convert the foreignKeyClosure of type Vector<JoinClauseInfo> to a type of
+	 * Vector<Node>.
+	 */
+
+	public static void foreignKeyInNode(QueryStructure qParser) {
+		for (int i = 0; i < qParser.getForeignKeyVector().size(); i++) {
+			Node left = new Node();
+			left.setColumn(qParser.getForeignKeyVector().get(i).getJoinAttribute1());
+			left.setTable(qParser.getForeignKeyVector().get(i).getJoinAttribute1()
+					.getTable());
+			left.setLeft(null);
+			left.setRight(null);
+			left.setOperator(null);
+			left.setType(Node.getColRefType());
+
+			Node right = new Node();
+			right.setColumn(qParser.getForeignKeyVector().get(i).getJoinAttribute2());
+			right.setTable(qParser.getForeignKeyVector().get(i).getJoinAttribute2()
+					.getTable());
+			right.setLeft(null);
+			right.setRight(null);
+			right.setOperator(null);
+			right.setType(Node.getColRefType());
+
+			Node refJoin = new Node();
+			refJoin.setColumn(null);
+			refJoin.setTable(null);
+			refJoin.setLeft(left);
+			refJoin.setRight(right);
+			refJoin.setType(Node.getBaoNodeType());
+			refJoin.setOperator("=");
+			refJoin.setStrConst(qParser.getForeignKeyVector().get(i).getConstant());
+			qParser.getForeignKeys().add(refJoin);
+		}
+	}
+	
+	/* Getting Foreign Key closure */
+	public static void foreignKeyClosure(QueryStructure qParser) {
+		Vector<Table> fkClosure = new Vector<Table>();
+		LinkedList<Table> fkClosureQueue = new LinkedList<Table>();
+		logger.log(Level.INFO,"FOREIGN KEY GRAPH : \n"+qParser.getTableMap().foreignKeyGraph);
+		for (String tableName : qParser.getQuery().getFromTables().keySet()) {
+			fkClosure.add( qParser.getTableMap().getTables().get(tableName.toUpperCase()));
+			fkClosureQueue.addLast(qParser.getTableMap().getTables().get(tableName.toUpperCase()));
+			logger.log(Level.INFO,"fkClosureQueue.add tables: \n "+qParser.getTableMap().getTables().get(tableName.toUpperCase()));
+		}
+		while(!fkClosureQueue.isEmpty())
+		{
+			Table table = fkClosureQueue.removeFirst();
+			logger.log(Level.INFO,"fkClosureQueue Not Empty and contains table \n"+table.getTableName());
+			for(Table tempTable : qParser.getTableMap().foreignKeyGraph.getAllVertex())
+			{  
+				Map<Table,Vector<ForeignKey>> neighbours = qParser.getTableMap().foreignKeyGraph.getNeighbours(tempTable);
+				for(Table neighbourTable : neighbours.keySet())
+				{
+					if(neighbourTable.equals(table) && !fkClosure.contains(tempTable))
+					{
+						fkClosure.add(tempTable);
+						fkClosureQueue.addLast(tempTable);
+					}
+				}
+			}
+		}
+		Graph<Table, ForeignKey> tempForeignKeyGraph = qParser.getTableMap().foreignKeyGraph.createSubGraph();
+		for(Table table : fkClosure)
+			tempForeignKeyGraph.add(qParser.getTableMap().foreignKeyGraph, table);
+		fkClosure = tempForeignKeyGraph.topSort();
+
+		for(Table table : fkClosure)
+			fkClosureQueue.addFirst(table);
+		fkClosure.removeAllElements();
+		fkClosure.addAll(fkClosureQueue);
+
+		while(!fkClosureQueue.isEmpty())
+		{
+			Table table = fkClosureQueue.removeFirst();
+
+			if(table.getForeignKeys() != null)
+			{
+				for (String fKeyName : table.getForeignKeys().keySet())
+				{
+					ForeignKey fKey = table.getForeignKey(fKeyName);
+					qParser.getForeignKeyVectorModified().add(fKey);
+					Vector<Column> fKeyColumns = fKey.getFKeyColumns();
+					for (Column fKeyColumn : fKeyColumns)
+					{
+						JoinClauseInfo foreignKey = new JoinClauseInfo(fKeyColumn, fKeyColumn.getReferenceColumn(),JoinClauseInfo.FKType);
+						foreignKey.setConstant(fKeyName);
+						qParser.getForeignKeyVector().add(foreignKey);
+					}
+				}
+			}
+		}
+	//Changed by Biplab till here
+		qParser.setForeignKeyVectorOriginal((Vector<JoinClauseInfo>) qParser.getForeignKeyVector().clone());
+
+		// Now taking closure of foreign key conditions
+		/*
+		 * Altered closure algorithm so that the last foreign key in the chain is not added if it is nullable
+		 * If the foreign key from this relation to other relations is nullale, 
+		 * then this relation must not appear in the closure.
+		 */
+
+		//Commented out by Biplab
+		/*for (int i = 0; i < this.foreignKeyVector.size(); i++) {
+			JoinClauseInfo jci1 = this.foreignKeyVector.get(i);
+
+			for (int j = i + 1; j < this.foreignKeyVector.size(); j++) {
+				JoinClauseInfo jci2 = this.foreignKeyVector.get(j);
+				if (jci1.getJoinTable2() == jci2.getJoinTable1()
+						&& jci1.getJoinAttribute2() == jci2.getJoinAttribute1()) {
+					//Check to see if the from column is nullable. If so, do not add the FK.
+					//if(jci1.getJoinAttribute1().isNullable()){
+					//	continue;
+					//}
+					JoinClauseInfo foreignKey = new JoinClauseInfo(jci1.getJoinAttribute1(), jci2.getJoinAttribute2(),JoinClauseInfo.FKType);
+					if (!this.foreignKeyVector.contains(foreignKey)) {
+						this.foreignKeyVector.add(foreignKey);
+					}
+				}
+			}
+		}*/
+		//Commented out by Biplab till here
+
+		// Convert the closure to type Vector<Node>
+		foreignKeyInNode(qParser);
+	}
+	
+	
+	public static Vector<Node> getAllProjectedColumns(Vector<FromListElement> visitedFLEs, QueryStructure qParser){
+		Vector<Node> projectedColumns=new Vector<Node>();
+		for(FromListElement fle:visitedFLEs){
+			if(fle!=null && fle.getTableName()!=null){
+				Table t=qParser.getTableMap().getTable(fle.getTableName());
+				if(t!=null){
+					Iterator colItr=t.getColumns().values().iterator();
+					while(colItr.hasNext()){
+						Column col=(Column)colItr.next();
+						Node n = new Node();
+						n.setColumn(col);
+						n.setTable(col.getTable());
+						n.setLeft(null);
+						n.setRight(null);
+						n.setOperator(null);
+						n.setType(Node.getColRefType());
+						n.setTableNameNo(fle.getTableNameNo());
+						projectedColumns.add(n);
+					}
+				}
+			}
+			else if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
+				projectedColumns.addAll(getAllProjectedColumns(fle.getTabs(),qParser));				
+			}
+			else if(fle!=null && fle.getSubQueryParser()!=null){
+				projectedColumns.addAll(fle.getSubQueryParser().getProjectedCols());
+			}
+		}
+		return projectedColumns;
+	}
 	
 
-	
 
 	public static void copyDatabaseTables(Connection srcConn, Connection tarConn, String tableName) throws Exception{
 		String selQuery="SELECT * FROM "+tableName;

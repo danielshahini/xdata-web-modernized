@@ -103,6 +103,10 @@ public class QueryDetails {
 	
 	QueryStructure qStructure;
 	
+	public QueryStructure getQueryStructure(){
+		return qStructure;
+	}
+	
 	public void startProcessing(int assignmentId, int questionId, String query) throws Exception {
 
 		GenerateCVC1 cvc = new GenerateCVC1();

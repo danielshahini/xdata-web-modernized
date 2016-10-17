@@ -65,8 +65,8 @@ import parsing.ProcessResultSetNode;
 import parsing.Query;
 import parsing.QueryParser;
 import parsing.Table;
-import parsing.Util;
 import parsing.WhereClauseVectorJSQL;
+import parsing.Util;
 import partialMarking.QueryStructure;
 
 public class ProcessSelectClause {
@@ -143,7 +143,7 @@ public class ProcessSelectClause {
 			}
 		}
 		
-		Util.foreignKeyClosure(qParser);
+		partialMarking.Util.foreignKeyClosure(qParser);
 		if(qParser.isDeleteNode){
 			return;
 		}
@@ -822,7 +822,7 @@ public class ProcessSelectClause {
 					else if(af.getFunc().toUpperCase().contains("COUNT") && an.isAllColumns()){				
 						if(af.getAggExp() == null){
 									//Node n1 = Util.getNodeForCount(fle, qParser);
-								Node n1 = Util.getNodeForCount(fle, qParser);
+								Node n1 = partialMarking.Util.getNodeForCount(fle, qParser);
 									af.setAggExp(n1);
 									af.setFunc(funcName.toUpperCase());
 									af.setDistinct(an.isDistinct());

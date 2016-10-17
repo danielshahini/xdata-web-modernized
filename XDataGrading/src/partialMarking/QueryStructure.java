@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +58,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import parsing.ANDNode;
 import parsing.AggregateFunction;
 import parsing.CaseCondition;
+import parsing.Column;
 import parsing.Conjunct;
 import parsing.Disjunct;
 import parsing.ForeignKey;
@@ -270,46 +273,57 @@ class QueryAliasMap {
 		// Equivalence classes
 		private ArrayList<ArrayList<Node>> lstEqClasses;
 		
+		private ArrayList<ForeignKey> lstForeignKeysModified;
+		
+		
 		public void initializeQueryListStructures(){
-			this.lstSelectionConds=new ArrayList<Node>();
-			this.lstJoinConditions=new ArrayList<Node>();
-			this.lstHavingConditions=new ArrayList<Node>();
-			this.lstProjectedCols=new ArrayList<Node>();
-			this.lstGroupByNodes=new ArrayList<Node>();
-			this.lstOrderByNodes=new ArrayList<Node>();
-			this.lstSubQConnectives=new ArrayList<String>();
-			this.lstSetOperators=new ArrayList<String>();
-			this.lstAggregateList=new ArrayList<AggregateFunction>();
-			this.lstRelations=new ArrayList<String>();
-			this.lstRelationInstances=new ArrayList<String>();
-			this.lstJoinTables=new ArrayList<String>();
-			this.lstRedundantRelations=new ArrayList<String>();
-			this.lstEqClasses=new ArrayList<ArrayList<Node>>();
-			for(QueryStructure fromSubQuery:this.FromClauseSubqueries)
-				fromSubQuery.initializeQueryListStructures();
-			for(QueryStructure whereSubQuery:this.WhereClauseSubqueries)
-				whereSubQuery.initializeQueryListStructures();			
-			for(Conjunct con:this.conjuncts){
-				getSelectionConditionsAndEqClasses(con);
-			}
-			
-			this.lstJoinConditions.addAll(this.getAllConds());
+			if(setOperator==null||setOperator.isEmpty()){
+				this.lstSelectionConds=new ArrayList<Node>();
+				this.lstJoinConditions=new ArrayList<Node>();
+				this.lstHavingConditions=new ArrayList<Node>();
+				this.lstProjectedCols=new ArrayList<Node>();
+				this.lstGroupByNodes=new ArrayList<Node>();
+				this.lstOrderByNodes=new ArrayList<Node>();
+				this.lstSubQConnectives=new ArrayList<String>();
+				this.lstSetOperators=new ArrayList<String>();
+				this.lstAggregateList=new ArrayList<AggregateFunction>();
+				this.lstRelations=new ArrayList<String>();
+				this.lstRelationInstances=new ArrayList<String>();
+				this.lstJoinTables=new ArrayList<String>();
+				this.lstRedundantRelations=new ArrayList<String>();
+				this.lstEqClasses=new ArrayList<ArrayList<Node>>();
+				this.lstForeignKeysModified = new ArrayList<ForeignKey>( getForeignKeyVectorModified());
+				
+				for(QueryStructure fromSubQuery:this.FromClauseSubqueries)
+					fromSubQuery.initializeQueryListStructures();
+				for(QueryStructure whereSubQuery:this.WhereClauseSubqueries)
+					whereSubQuery.initializeQueryListStructures();			
+				for(Conjunct con:this.conjuncts){
+					getSelectionConditionsAndEqClasses(con);
+				}
 
-			if(this.getHavingClause()!=null)
-				this.lstHavingConditions.add(this.getHavingClause());
-			
-			this.lstProjectedCols.addAll(this.getProjectedCols());
-			
-			this.lstGroupByNodes.addAll(this.getGroupByNodes());
-			
-			this.lstOrderByNodes.addAll(this.getOrderByNodes());
-			
-			if(this.setOperator!=null&&!this.setOperator.isEmpty())
-				this.lstSetOperators.add(this.setOperator);
-			
-			this.lstAggregateList.addAll(this.getAggFunc());
-			
-			getFromTablesAndInstances(this.fromListElements);
+				this.lstJoinConditions.addAll(this.getAllConds());
+
+				if(this.getHavingClause()!=null)
+					this.lstHavingConditions.add(this.getHavingClause());
+
+				this.lstProjectedCols.addAll(this.getProjectedCols());
+
+				this.lstGroupByNodes.addAll(this.getGroupByNodes());
+
+				this.lstOrderByNodes.addAll(this.getOrderByNodes());
+
+				if(this.setOperator!=null&&!this.setOperator.isEmpty())
+					this.lstSetOperators.add(this.setOperator);
+
+				this.lstAggregateList.addAll(this.getAggFunc());
+
+				getFromTablesAndInstances(this.fromListElements);
+			}
+			else{
+				this.leftQuery.initializeQueryListStructures();
+				this.rightQuery.initializeQueryListStructures();
+			}
 		}
 		
 		private void getFromTablesAndInstances(Vector<FromListElement> fromListElements) {
@@ -526,6 +540,30 @@ class QueryAliasMap {
 		// Sets the number of inner joins
 		public void setNumberOfInnerJoins(int joins){
 			this.numberOfInnerJoins = joins;
+		}
+		
+		public ArrayList<ArrayList<Node>> getLstEqClasses(){
+			return lstEqClasses;
+		}
+
+		// Gets the list of relations
+		public ArrayList<String> getLstRedundantRelations(){
+			return this.lstRedundantRelations;
+		}
+			
+		// Sets the list of relations
+		public void setLstRedundantRelations(ArrayList<String> data){
+			this.lstRedundantRelations = data;
+		}
+		
+		// Gets the list of relations
+		public ArrayList<ForeignKey> getLstForeignKeysModified(){
+			return this.lstForeignKeysModified;
+		}
+			
+		// Sets the list of relations
+		public void setLstForeignKeysModified(ArrayList<ForeignKey> data){
+			this.lstForeignKeysModified = data;
 		}
 		
 		@Override
@@ -1756,6 +1794,625 @@ class QueryAliasMap {
 
 			return true;
 		}
+		
+		/*@ author mathew on May 7 2016
+		 *  The following method, to be called after redundant (eliminatable)
+		 *   relations are derived, to update the relations, 
+		 *   projection/selection/having/grouping conditions, so that
+		 *   any column from a redundant relation occuring in the above 
+		 *   conditions is replaced an equivalent column 
+		 *    
+		 */
+		public void reviseAfterFindingRedundantRelations(){
+			reviseRelations();
+			reviseJoinTables();
+			reviseProjectedColumns();
+			reviseGroupByColumns();
+			reviseSelectionConditions();
+			reviseHavingConditions();
+			reviseOrderByColumns();
+			updateEquivalenceClasses();
+
+		}
+		
+		public void updateEquivalenceClasses() {
+			// TODO Auto-generated method stub
+			ArrayList<String> eliminatedRelations=this.lstRedundantRelations;
+			boolean updateFlag=false;
+			do{
+				updateFlag=false;
+				for(ArrayList<Node> eqClass:this.getLstEqClasses()){
+					for(String elimRelation:eliminatedRelations){
+						for(int i=0;i<eqClass.size();i++){
+							Node n=eqClass.get(i);
+							if(n.getTableNameNo().equalsIgnoreCase(elimRelation)){
+								logger.info(" eq member deleted"+n+" from "+eqClass);
+								eqClass.remove(i);
+								updateFlag=true;
+							}
+						}
+					}
+				}
+			}while(updateFlag);
+		}
+		
+		public Map<String, HashMap<String, ArrayList<Pair>>> getRelationToRelationEquivalentNodes(){
+			Map<String, ArrayList<Node>> relationToEqNodes = new HashMap<String, ArrayList<Node>>();
+			Map<Node, ArrayList<Node> > nodeToEqNodes = new HashMap<Node, ArrayList<Node>>();
+			Map<String, HashMap<String, ArrayList<Pair>>> relationToRelationEqNodes = new HashMap<String, HashMap<String, ArrayList<Pair>>>(); 
+			if(lstEqClasses != null){
+				for(ArrayList<Node> t : lstEqClasses){
+					for(Node n1 : t){
+						ArrayList<Node> temp = null;
+						if(nodeToEqNodes.containsKey(n1)){
+							temp = nodeToEqNodes.get(n1);
+						}
+						else{
+							temp = new ArrayList<Node>();
+						}
+
+						for(Node n2 : t){
+							if(!n1.equals(n2)){
+								temp.add(n2);
+							}
+						}
+						nodeToEqNodes.put(n1, temp);
+						
+						ArrayList<Node> temp2 = null;
+						if(relationToEqNodes.containsKey(n1.getTableNameNo())){
+							temp2 = relationToEqNodes.get(n1.getTableNameNo());
+						}
+						else{
+							temp2 = new ArrayList<Node>();
+						}
+
+						temp2.add(n1);
+
+						relationToEqNodes.put(n1.getTableNameNo(), temp2);
+
+
+					}
+				}
+			}
+			
+			for (Entry<String, ArrayList<Node>> entry : relationToEqNodes.entrySet()) {
+
+				String key = entry.getKey();
+				ArrayList<Node> value = entry.getValue();
+
+				Map<String, ArrayList<Pair>> data = relationToRelationEqNodes.get(key);
+
+				if(data == null){
+					relationToRelationEqNodes.put(key, new HashMap<String, ArrayList<Pair>>());
+					data = relationToRelationEqNodes.get(key);
+				}
+
+				for(Node n : value){		    	
+					ArrayList<Node> nodes = nodeToEqNodes.get(n);
+
+					for(Node n1 : nodes){
+						String temp = n1.getTableNameNo();
+
+						ArrayList<Pair> tempData = null;
+
+						if(data.containsKey(temp)){
+							tempData = data.get(temp);
+						}
+						else {
+							tempData = new ArrayList<Pair>();
+						}			    	
+
+						tempData.add(new Pair(n, n1));
+						data.put(temp, tempData);	
+					}	    	
+				}
+			}		
+
+			return relationToRelationEqNodes;
+		}
+
+		
+		/*@ only the method name changed by mathew on May 5 2016
+		 *  old name setRelations changed to reviseRelations
+		 */
+		public void reviseRelations(){
+			Boolean found = false;
+			
+			Vector<String> tables = new Vector<String>(this.getLstRelations());
+			
+			//added by mathew on May 9, 2016
+			this.lstRelations.clear();
+			
+			for(String n : tables){
+				found = false;
+				for(String t : lstRedundantRelations){
+					/*assumes that tableNameNos are of the of the form
+					 *  <tableNamei>, where 0 \leq i \leq 9 and 
+					 *  tableName is the name of a table in schema
+					 */
+					if(t.substring(0, t.length()-1).equals(n)){
+						found = true;
+					}
+				}
+				
+				if(!found)
+					this.lstRelations.add(n);
+			}
+			
+		   lstRelationInstances.removeAll(lstRedundantRelations);
+		}
+		
+		
+		/*@ author mathew on May 7 2016
+		 *  The following method, to be called after redundant (eliminatable)
+		 *    relations are derived, to update join tables
+		 */
+		public void reviseJoinTables(){
+			ArrayList<String> temp=new ArrayList<String>();
+			for(String table:this.lstJoinTables){
+				if(!lstRedundantRelations.contains(table)){
+					temp.add(table);
+				}
+				else{
+					this.numberOfInnerJoins--;
+				}
+			}
+			this.lstJoinTables=temp;
+		}
+		
+		
+		/*@ author mathew on May 7 2016
+		 *  The following method, to be called after redundant (eliminatable)
+		 *   relations are derived, to update projection conditions, so that
+		 *   any column from a redundant relation occuring in the above 
+		 *   conditions is replaced an equivalent column
+		 */
+		public void reviseProjectedColumns(){
+			if(this.lstRedundantRelations==null || this.lstRedundantRelations.isEmpty())
+				return;
+			
+			ArrayList<Node> tempProjectionList=new ArrayList<Node>();
+			tempProjectionList.addAll(this.lstProjectedCols);
+			for(Node n:this.lstProjectedCols){
+				if(lstRedundantRelations.contains(n.getTableNameNo())){
+					Node eqNode=getAlternateEquivalentColumnNode(n);
+					if(eqNode!=null){
+						tempProjectionList.remove(n);
+						tempProjectionList.add(eqNode);
+					}
+				}
+			}
+			
+			this.lstProjectedCols.clear();
+			this.lstProjectedCols.addAll(tempProjectionList);
+			
+		}
+		
+		/*@ author mathew on May 7 2016
+		 *  The following method, to be called after redundant (eliminatable)
+		 *   relations are derived, to update grouping conditions, so that
+		 *   any column from a redundant relation occuring in the above 
+		 *   conditions is replaced an equivalent column
+		 */
+		public void reviseGroupByColumns(){
+			if(this.lstRedundantRelations==null || this.lstRedundantRelations.isEmpty())
+				return;
+			
+			ArrayList<Node> tempGroupByNodes=new ArrayList<Node>();
+			tempGroupByNodes.addAll(lstGroupByNodes);
+			for(Node n:this.lstGroupByNodes){
+				if(lstRedundantRelations.contains(n.getTableNameNo())){
+					Node eqNode=getAlternateEquivalentColumnNode(n);
+					if(eqNode!=null){
+						tempGroupByNodes.remove(n);
+						tempGroupByNodes.add(eqNode);
+					}
+				}
+			}
+			
+			lstGroupByNodes.clear();
+			lstGroupByNodes.addAll(tempGroupByNodes);
+
+			Boolean found = false;
+		
+			/*
+			 * Remove duplicate nodes since revising group by nodes 
+			 * can introduce two different nodes that represent the same 
+			 * columns 
+			 */
+			do{
+				found=false;
+				for(Node n:lstGroupByNodes){
+					for(Node m:lstGroupByNodes){
+						if(n!=m){
+							if(n.getTableNameNo().equals(m.getTableNameNo())&&n.getColumn().getColumnName()
+									.equals(m.getColumn().getColumnName())){
+								lstGroupByNodes.remove(m);
+								found=true;
+								break;
+							}
+						}
+					}
+					if(found){
+						break;
+					}
+				}
+			}while(found);
+
+		}
+		
+		/*@ author mathew on July 18 2016
+		 *  The following method, to be called after redundant (eliminatable)
+		 *   relations are derived, to update order by columns, so that
+		 *   any column from a redundant relation occurring in the above 
+		 *   conditions is replaced an equivalent column
+		 */
+		public void reviseOrderByColumns(){
+			if(this.lstRedundantRelations==null || this.lstRedundantRelations.isEmpty())
+				return;
+			
+			ArrayList<Node> tempOrderByNodes=new ArrayList<Node>();
+			tempOrderByNodes.addAll(this.lstOrderByNodes);
+			for(Node n:this.lstOrderByNodes){
+				if(lstRedundantRelations.contains(n.getTableNameNo())){
+					Node eqNode=getAlternateEquivalentColumnNode(n);
+					if(eqNode!=null){
+						tempOrderByNodes.remove(n);
+						tempOrderByNodes.add(eqNode);
+					}
+				}
+			}
+			
+			lstOrderByNodes.clear();
+			lstOrderByNodes.addAll(tempOrderByNodes);
+			
+		}
+		
+		/*@ author mathew on May 7 2016
+		 *  The following method, to be called after redundant (eliminatable)
+		 *   relations are derived, to update selection conditions, so that
+		 *   any column from a redundant relation occuring in the above 
+		 *   conditions is replaced an equivalent column
+		 */
+		public void reviseSelectionConditions(){
+			if(this.lstRedundantRelations==null || this.lstRedundantRelations.isEmpty())
+				return;
+			reviseBinaryConditions(this.lstSelectionConds);	
+			reviseBinaryConditions(this.lstJoinConditions);
+		}
+		
+		/*@ author mathew on May 7 2016
+		 *  The following method, to be called after redundant (eliminatable)
+		 *   relations are derived, to update having conditions, so that
+		 *   any column from a redundant relation occuring in the above 
+		 *   conditions is replaced an equivalent column
+		 */
+		public void reviseHavingConditions(){
+			if(this.lstRedundantRelations==null || this.lstRedundantRelations.isEmpty())
+				return;
+			ArrayList<Node> havingConds=new ArrayList<Node>();
+			for(Node n:this.lstHavingConditions)
+				havingConds.add(n);
+			
+			reviseBinaryConditions(havingConds);		
+			
+			this.lstHavingConditions=new ArrayList<Node>();
+			for(Node n:havingConds)
+				lstHavingConditions.add(n);
+		}
+		
+		/*@ author mathew on May 5 2016
+		 *  The following method accepts a list of nodes that are supposedly
+		 *   binary atomic conditions in where/join clauses.. 
+		 *   It proceses the left operand and right operand of each node
+		 *   in the list, and whenever the operands are columns from a redundant
+		 *   relation, it replaces with an equivalent column
+		 */
+		public void reviseBinaryConditions(ArrayList<Node> binaryConds){
+			Boolean found = false;
+			do{
+				found=false;
+				for(Node n:binaryConds){				
+					Node lNode=n.getLeft();
+					Node rNode=n.getRight();
+					
+					if(rNode.getColumn()!=null && lNode.getColumn()!=null &&
+							rNode.getTableNameNo()!=null && lNode.getTableNameNo()!=null && n.getOperator().equals("=") &&
+							lNode.getTableNameNo().equals(rNode.getTableNameNo()) &&
+							lNode.getColumn().getColumnName().equals(rNode.getColumn().getColumnName())){
+						binaryConds.remove(n);
+						found=true;
+						break;
+					}
+
+					
+					
+					if(n.getJoinType()!=null &&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)))
+						continue;
+					if(QueryData.isMemberOf(n.getLeft().getTableNameNo(), lstRedundantRelations)
+						||QueryData.isMemberOf(n.getRight().getTableNameNo(),lstRedundantRelations)){
+						Node eqNode=getAlternateEquivalentBinaryNode(n);
+						if(eqNode==null){
+							binaryConds.remove(n);
+							found=true;
+							break;
+						}
+						
+						Node leftNode=eqNode.getLeft();
+						Node rightNode=eqNode.getRight();
+						/*
+						 * If both left hand and right has side are the same columns from the same table
+						 * then this skip the creation and insertion of new node
+						 */
+						if(rightNode.getColumn()!=null && leftNode.getColumn()!=null &&
+								rightNode.getTableNameNo()!=null && leftNode.getTableNameNo()!=null && eqNode.getOperator().equals("=") &&
+								leftNode.getTableNameNo().equals(rightNode.getTableNameNo()) &&
+								leftNode.getColumn().getColumnName().equals(rightNode.getColumn().getColumnName())){
+							binaryConds.remove(n);
+							found=true;
+							break;
+						}
+						else if(!leftNode.equals(n.getLeft())||!rightNode.equals(n.getRight())){
+							binaryConds.remove(n);
+							binaryConds.add(eqNode);
+							found=true;
+							break;
+						}
+					}
+				}
+			} while(found);
+		}
+		
+		/** @author mathew on 14 sep 2016 
+		 * Is intended to be called just before computing partial marks,
+		 *  Iterates through all selection conditions, if any of its member is a join condition,
+		 *  then removes it from selection condition and adds it to join condition
+		 */
+		public void reAdjustJoins() {
+			// TODO Auto-generated method stub
+			ArrayList<Node> tempSelectionConds=new ArrayList<Node>();
+			tempSelectionConds.addAll(lstSelectionConds);
+			for(Node n:lstSelectionConds){
+				if(n.getLeft().getNodeType().equals(Node.getColRefType())&&n.getRight().getNodeType().equals(Node.getColRefType())){
+					if(!lstJoinConditions.contains(n))
+						lstJoinConditions.add(n);
+					tempSelectionConds.remove(n);
+				}			
+			}
+			lstSelectionConds.clear();
+			lstSelectionConds.addAll(tempSelectionConds);
+
+		}
+		
+		/*@ author mathew on May 7 2016
+		 *  The following method creates/returns a map of key-value pairs, 
+		 *  where keys are nodes that represent columns in the given query 
+		 *  and the corresponding values are lists of nodes that represents
+		 *  the columns that are equivalent with the key  
+		 */
+
+		public Map<Node, ArrayList<Node>> getNodeToEquivalentNodes(){
+			Map<Node, ArrayList<Node> > nodeToEqNodes = new HashMap<Node, ArrayList<Node>>();
+			if(lstEqClasses != null){
+				/*
+				 * iterate through each class in the set of classes in eqClasses
+				 */			
+				for(ArrayList<Node> t : lstEqClasses){
+					/*
+					 * for every member m in the class t, add m 
+					 * as a key and every member m' != m to its 
+					 * corresponding list of values in the nodeToEquivalentNode
+					 * map
+					 */				
+					for(Node n1 : t){
+
+						ArrayList<Node> temp = null;
+						if(nodeToEqNodes.containsKey(n1)){
+							temp = nodeToEqNodes.get(n1);
+						}
+						else{
+							temp = new ArrayList<Node>();
+						}
+
+						for(Node n2 : t){
+							if(!n1.equals(n2)){
+								temp.add(n2);
+							}
+						}
+
+						nodeToEqNodes.put(n1, temp);
+					}
+				}
+			}
+			return nodeToEqNodes;
+		}
+		
+		/*@ author mathew on May 7 2016
+		 *  The following method given a node that is supposedly column type 
+		 *   and whenever the node is a column from a redundant
+		 *   relation, it returns node that represents
+		 *    an equivalent column
+		 */
+
+		public Node getAlternateEquivalentColumnNode(Node n){
+			Map<Node,ArrayList<Node>> nodeToEqNodes=getNodeToEquivalentNodes();
+			
+			// if the given node is an aggregate node
+			if(n.getType().equals(Node.getAggrNodeType())){				
+				if(n.getAgg().getAggExp() != null && n.getAgg().getAggExp().getTable() != null){				
+
+					String tableNameNo=n.getAgg().getAggExp().getTableNameNo();
+					String colName=n.getAgg().getAggExp().getColumn().getColumnName();
+
+					if(tableNameNo==null || colName==null)
+						return null;
+					
+					/*
+					 * iterates through the map of nodeToEquivalent nodes and 
+					 * finds a column node n that is equivalent to the input node
+					 * s.t. n is not from a redundant relation
+					 */
+					for(Entry<Node, ArrayList<Node>> e: nodeToEqNodes.entrySet()){
+						if(e.getKey().getTableNameNo().equals(tableNameNo)&&e.getKey().getColumn().getColumnName().equals(colName)){
+							
+							/*
+							 * find an equivalent column c from a table other than the deletedTable
+							 *  and replaced the nodes  table and column with c's table and column
+							 */
+							for(Node m:e.getValue()){
+								String relationNameNew=m.getTable().getTableName();
+								String relationNameNoNew=m.getTableNameNo();
+								if(!lstRedundantRelations.contains(relationNameNoNew)){
+									String colNameNew=m.getColumn().getColumnName();
+									Node nodeNew=new Node(n);
+									
+									Column tempCol=new Column(colNameNew,relationNameNew);
+									parsing.Table tempTable=new parsing.Table(relationNameNew);
+									tempTable.addColumn(tempCol);
+									
+									nodeNew.getAgg().getAggExp().setTable(tempTable);
+									nodeNew.getAgg().getAggExp().setColumn(tempCol);
+									nodeNew.getAgg().getAggExp().setTableNameNo(m.getTableNameNo());																								
+									nodeNew.getAgg().getAggExp().setTableAlias(m.getTableAlias());
+									
+									nodeNew.setTable(tempTable);
+									nodeNew.setColumn(tempCol);
+									nodeNew.setTableNameNo(m.getTableNameNo());
+									nodeNew.setTableAlias(m.getTableAlias());
+									return nodeNew;
+
+								}
+							}
+
+						}
+
+					}
+
+				}
+			}
+			/* Otherwise it is a standard (non-aggregate) column node
+			 * 
+			 */
+			else{
+				String tableNameNo=n.getTableNameNo();
+				String colName=n.getColumn().getColumnName();
+
+				if(tableNameNo==null || colName==null)
+					return null;
+
+				/*
+				 * iterates through the map of nodeToEquivalent nodes and 
+				 * finds a column node n that is equivalent to the input node
+				 * s.t. n is not from a redundant relation
+				 */
+				for(Entry<Node, ArrayList<Node>> e: nodeToEqNodes.entrySet()){
+					if(e.getKey().getTableNameNo().equals(tableNameNo) && e.getKey().getColumn().getColumnName().equals(colName)){
+						/*
+						 * find an equivalent column c from a table other than the deletedTable
+						 *  and replaced the nodes  table and column with c's table and column
+						 */
+						for(Node m:e.getValue()){
+							String relationNameNew=m.getTable().getTableName();
+							String relationNameNoNew=m.getTableNameNo();
+							if(!lstRedundantRelations.contains(relationNameNoNew)){
+								String colNameNew=m.getColumn().getColumnName();
+								Node nodeNew=new Node(n);
+								
+								Column tempCol=new Column(colNameNew,relationNameNew);
+								parsing.Table tempTable=new parsing.Table(relationNameNew);
+								tempTable.addColumn(tempCol);
+								
+								nodeNew.setTable(tempTable);
+								nodeNew.setColumn(tempCol);
+								nodeNew.setTableNameNo(m.getTableNameNo());
+								nodeNew.setTableAlias(m.getTableAlias());
+								return nodeNew;
+
+							}
+						}
+
+						
+					}
+
+				}
+
+			}
+
+			return null;
+		}
+	
+		/*@ author mathew on May 5 2016
+		 *  The following method given a node that represents an 
+		 *  atomic binary condition from having/where/join clauses,  
+		 *  processes the left operand and right operand of the 
+		 *    node and whenever the operands are columns from a redundant
+		 *   relation, it replaces with a node that represents an equivalent column
+		 */
+
+		public Node getAlternateEquivalentBinaryNode(Node n){
+
+			Node leftNode = n.getLeft();
+			Node leftNodeNew=n.getLeft();
+			
+			if(leftNode!=null&&!leftNode.getNodeType().equals(Node.getValType())){
+				if(QueryData.isMemberOf(leftNode.getTableNameNo(),lstRedundantRelations)){
+					leftNodeNew=getAlternateEquivalentColumnNode(leftNode);
+					if(leftNodeNew==null)
+						return null;
+
+				}
+			}
+			n.setLeft(leftNodeNew);
+			
+			Node rightNode=n.getRight();
+			Node rightNodeNew=n.getRight();
+			if(rightNode!=null&& !rightNode.getNodeType().equals(Node.getValType())){
+				if(QueryData.isMemberOf(rightNode.getTableNameNo(),lstRedundantRelations)){
+					rightNodeNew=getAlternateEquivalentColumnNode(rightNode);
+				}
+				if(rightNodeNew==null)
+					return null;
+			}
+			n.setRight(rightNodeNew);
+			
+			if(rightNodeNew.getColumn()!=null && leftNodeNew.getColumn()!=null &&
+					rightNodeNew.getTableNameNo()!=null && leftNodeNew.getTableNameNo()!=null && n.getOperator().equals("=") &&
+					leftNodeNew.getTableNameNo().equals(rightNodeNew.getTableNameNo()) &&
+					leftNodeNew.getColumn().getColumnName().equals(rightNodeNew.getColumn().getColumnName())){
+				return null;
+			}
+
+			return n;
+
+		}
+		
+		/* @author mathew on 14 Sep 2016
+		 * Adds left and right node as members of the same equivalence class
+		 * 
+		 */
+		public void addToLstEquivalenceClasses(Node left, Node right) {
+			// TODO Auto-generated method stub	
+			boolean modified=false;
+			for(ArrayList<Node> eqClass:this.lstEqClasses){
+				if(eqClass.contains(left)&&!eqClass.contains(right)){
+					eqClass.add(right);
+					modified=true;
+				}
+				if(eqClass.contains(right)&&!eqClass.contains(left)){
+					eqClass.add(left);
+					modified=true;
+				}
+			}
+			/* if left and right are not present in any of the existing equivalence
+			 * class then create a new equivalence class with elements left and right
+			 */
+			if(!modified){
+				ArrayList<Node> eqClass=new ArrayList<Node>();
+				eqClass.add(left);
+				eqClass.add(right);
+				lstEqClasses.add(eqClass);
+			}
+		}
 
 		/**
 		 * Revamp allConds. It should now contain the distinct predicates not
@@ -1783,6 +2440,7 @@ class QueryAliasMap {
 				if(allCondsDuplicate.get(i) != null)
 					qParser.allConds.addAll(GetNode.flattenNode(qParser, allCondsDuplicate.get(i)));
 			}
+
 
 			for (int i = 0; i < allCondsDuplicate.size(); i++) {
 				if(allCondsDuplicate.get(i) != null)

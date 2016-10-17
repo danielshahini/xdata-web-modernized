@@ -72,10 +72,9 @@ public class TestPartialMarking {
 		queryDetails=new QueryDetails();
 		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
-//		queryDetails.OuterQuery.addRelations();
-//				for(Node n:queryDetails.qStructure.getLstHavingConditions()){
-//				for(Node n :queryDetails.getParser().getAllSubQueryConds()){
-//					System.out.println("Having Conditions :"+" "+n);
+//				for(Vector<Node> S:queryDetails.qStructure.getAllDnfSubQuery()){
+					for(Node n :queryDetails.qStructure.getAllCondsExceptSubQuery())
+						System.out.println("Having Conditions :"+" "+n);
 //				}
 
 		return queryDetails;
@@ -85,9 +84,9 @@ public class TestPartialMarking {
 	public QueryDetails processCanonicalize(QueryDetails queryDetails, String strQuery) throws Exception{
 		queryDetails=new QueryDetails();
 		
-		queryDetails.initialize(assignNo, 1, strQuery);		
+		queryDetails.startProcessing(assignNo, 1, strQuery);		
 
-		CanonicalizeQuery.Canonicalize(queryDetails.OuterQuery);
+		CanonicalizeQuery.Canonicalize(queryDetails.qStructure);
 
 //		for(Node n:queryDetails.getParser().getGroupByNodes())
 //			System.out.println(" Grouping conditions "+n);
@@ -787,7 +786,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		 *   
 		 */
 
-		private MarkInfo calculateScore( QueryStructure instructorData, QueryStructure studentData,
+		public MarkInfo calculateScore( QueryStructure instructorData, QueryStructure studentData,
 				int level) {
 			if((instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty())||(studentData.setOperator!=null&&!studentData.setOperator.isEmpty()))
 				return this.calculateScoreForSetOperatorQueries(instructorData, studentData, level);
@@ -1258,11 +1257,11 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		+ " OR  TEACHES.course_id IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) AND "
 		+ " TEACHES.course_id >= ANY (SELECT INSTRUCTOR.ID FROM INSTRUCTOR)";
 		
-		String instructorQuery="SELECT TEACHES.course_id FROM TEACHES  WHERE "
-				+ " TEACHES.ID > ANY  (SELECT CLASSROOM.building FROM CLASSROOM WHERE CLASSROOM.room_number=3) AND "
-		+ " TEACHES.ID NOT IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) "
-		+ " OR  TEACHES.course_id IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) AND "
-		+ " TEACHES.course_id >= ANY (SELECT INSTRUCTOR.ID FROM INSTRUCTOR)";
+//		String instructorQuery="SELECT TEACHES.course_id FROM TEACHES  WHERE "
+//				+ " TEACHES.ID > ANY  (SELECT CLASSROOM.building FROM CLASSROOM WHERE CLASSROOM.room_number=3) AND "
+//		+ " TEACHES.ID NOT IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) "
+//		+ " OR  TEACHES.course_id IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) AND "
+//		+ " TEACHES.course_id >= ANY (SELECT INSTRUCTOR.ID FROM INSTRUCTOR)";
 
 		
 //		String studentQuery="SELECT INSTRUCTOR.ID FROM  "
@@ -1290,12 +1289,12 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 			
 //			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
+//			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
 
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
-			Float normalMarks=testObj.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
-			Float studentMarks=testObj.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
-			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
+//			Float normalMarks=testObj.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
+//			Float studentMarks=testObj.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
+//			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
 			//testObj.copyData();
 		}
 		catch(Exception e){

@@ -608,7 +608,7 @@ public class QueryData {
 	 * returns true iff the first arugment string is a member of the second argument, which is a list
 	 * 
 	 */
-	public boolean isMemberOf(String element, List<String> list){
+	public static boolean isMemberOf(String element, List<String> list){
 		if(element==null)
 			return false;
 		for(String s:list){
