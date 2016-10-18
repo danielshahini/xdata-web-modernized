@@ -27,11 +27,12 @@ public class EliminateRedundantRelation {
 		}
 	}
 	
-	public static void EliminateRedundantRelations(QueryStructure queryData) throws CloneNotSupportedException{
-		EliminateRedundantRelation.EliminateRelations(queryData);
-		if(queryData!=null){
-			queryData.reviseAfterFindingRedundantRelations();
-		}
+	public static void EliminateRedundantRelations(QueryStructure queryStruct) throws CloneNotSupportedException{
+
+			EliminateRedundantRelation.EliminateRelations(queryStruct);
+//			if(queryStruct!=null){
+//				queryStruct.reviseAfterFindingRedundantRelations();
+//			}
 	}
 
 	private static void EliminateRelations(QueryData query) throws CloneNotSupportedException{
@@ -275,19 +276,7 @@ public class EliminateRedundantRelation {
 	
 	private static void EliminateRelations(QueryStructure query) throws CloneNotSupportedException{
 		if(query==null)
-			return;
-
-		if(query != null && query.getWhereClauseSubqueries() != null){
-			for(QueryStructure qd : query.getWhereClauseSubqueries()){
-				EliminateRedundantRelation.EliminateRelations(qd);
-				qd.reviseAfterFindingRedundantRelations();
-			}}
-
-		if(query != null && query.getFromClauseSubqueries() != null){
-			for(QueryStructure qd : query.getFromClauseSubqueries()){
-				EliminateRedundantRelation.EliminateRelations(qd);
-				qd.reviseAfterFindingRedundantRelations();
-			}}
+			return;		
 
 		ArrayList<String> eliminateRelations = new ArrayList<String>();
 
@@ -300,14 +289,15 @@ public class EliminateRedundantRelation {
 
 		
 		ArrayList<Node> selectionConds = query.getLstSelectionConditions();
+		if(query.getLstJoinConditions()!=null)
 		selectionConds.addAll(query.getLstJoinConditions());
 		
 		//selectionConds=removeDuplicates(selectionConds);
 
 		Map<String, ArrayList<Node>> relationToSelConds=createRelationToSelectionConditions(selectionConds);
-		
+				
 		Map<String, ArrayList<Node>> relationToProjCols=createRelationToProjectedColumns(query.getLstProjectedCols());
-
+		
 		Map<String, ArrayList<Node>> relationToOrderByCols=createRelationToProjectedColumns(query.getLstOrderByNodes());
 
 		ArrayList<ArrayList<Node>> eqClasses = query.getLstEqClasses();		
@@ -408,6 +398,7 @@ public class EliminateRedundantRelation {
 		ArrayList<ForeignKey> foreignKeys = query.getLstForeignKeysModified();
 	
 		Set<String> baseTables=new HashSet<String>();
+		
 		//for(String table: query.WholeData)
 		for(String table: query.getLstRelationInstances()){
 			baseTables.add(table);
@@ -507,7 +498,8 @@ public class EliminateRedundantRelation {
 			query.setLstRedundantRelations(eliminateRelations);
 		else
 			query.getLstRedundantRelations().addAll(eliminateRelations);
-	
+		
+		query.reviseAfterFindingRedundantRelations();	
 	}
 	
 	/*
@@ -573,6 +565,9 @@ public class EliminateRedundantRelation {
 
 	public static Map<String, ArrayList<Node>> createRelationToProjectedColumns(Vector<Node> projectedCols){
 		Map<String, ArrayList<Node>> relationToProjCols = new HashMap<String, ArrayList<Node>>();
+		
+		if(projectedCols==null) //returning an empty map
+			return relationToProjCols;
 
 		for(Node n: projectedCols){
 
@@ -608,7 +603,11 @@ public class EliminateRedundantRelation {
 	}
 	
 	public static Map<String, ArrayList<Node>> createRelationToProjectedColumns(ArrayList<Node> projectedCols){
+		
 		Map<String, ArrayList<Node>> relationToProjCols = new HashMap<String, ArrayList<Node>>();
+		if(projectedCols==null)
+			return relationToProjCols;
+
 
 		for(Node n: projectedCols){
 

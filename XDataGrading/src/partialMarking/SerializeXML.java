@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
 import parsing.JoinClauseInfo;
 import parsing.Node;
@@ -50,6 +51,7 @@ public class SerializeXML {
 			  printString+=getProjectedColumnsString(qData,openFlag);
 			  printString+=getJoinConditionsString(qData,openFlag);
 			  printString+=getSelectionConditionsString(qData,openFlag);
+			  printString+=getSubqueryConditionsString(qData, openFlag);
 			  printString+=getGroupByColumnsString(qData,openFlag);
 			  printString+=getHavingConditionsString(qData,openFlag);
 			  printString+=getJoinTablesString(qData,openFlag);
@@ -294,6 +296,71 @@ public class SerializeXML {
 		 }
 		 out.println("</item>");
 		 out.println("</item>");
+	}
+
+	public static int getSubQueryIndex(Vector<QueryStructure> qStructVector, QueryStructure subQueryStruct){
+		int i=1;
+		for(QueryStructure qStructure:qStructVector){
+			if(qStructure.equals(subQueryStruct)){
+				return i;
+			}
+			i++;
+		}
+		return -1;
+	}
+	
+	public static String getSubqueryConditionsString(QueryStructure qData, boolean openFlag) throws  CloneNotSupportedException{
+		if(openFlag){
+		 String retString="<item text=\"Subquery Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+		 for(parsing.Node n:toSetOfNodes(qData.getAllSubQueryConds())){
+			 if(n!=null && n.getType()!=null){
+				 if(n.getType().equals(Node.getInNodeType())||n.getType().equals(Node.getNotInNodeType())){
+					 if(n.getLeft()!=null&&n.getRight()!=null){
+					 if(n.getRight().getSubQueryParser()!=null){
+						 String projCol="."+n.getRight().getSubQueryParser().projectedCols.get(0).getColumn().getColumnName();
+						 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getRight().getSubQueryParser());
+						 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getType()+" "+ "subquery"+index+projCol +"\" id=\""+ idCounter++ +"\"/>\n";
+					 }
+					 else if(n.getLeft().getSubQueryParser()!=null){
+						 String projCol="."+n.getLeft().getSubQueryParser().projectedCols.get(0).getColumn().getColumnName();
+						 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getLeft().getSubQueryParser());
+						 retString+=spaceTab+"<item text=\""+"subquery"+index+projCol+ " "+n.getType()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+					 }
+					 }
+				 }
+				 else if(n.getType().equals(Node.getBroNodeSubQType())){
+					 if(n.getLeft()!=null&&n.getRight()!=null){
+						 if(n.getRight().getSubQueryParser()!=null){
+							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getRight().getSubQueryParser());
+							 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getOperator()+" "+n.getRight().getType()+ " subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
+						 }
+						 else if(n.getLeft().getSubQueryParser()!=null){
+							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getLeft().getSubQueryParser());
+							 retString+=spaceTab+"<item text=\""+"subquery"+index+ " "+n.getLeft().getType()+" "+n.getOperator()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+						 }						 
+					 }					 
+				 }
+				 else if(n.getType().equalsIgnoreCase(Node.getExistsNodeType())||n.getType().equalsIgnoreCase(Node.getNotExistsNodeType())){
+					 if(n.getSubQueryParser()!=null){
+						 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getSubQueryParser());
+						 retString+=spaceTab+"<item text=\""+ n.getType()+ " "+ "subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
+
+					 }
+				 }
+				 
+			 }
+		 }
+		 retString+="</item>\n";
+		 return retString;
+		}
+		else{
+			String retString="<item text=\"Subquery Conditions\"  id=\""+ idCounter++ +"\">\n";
+			 for(parsing.Node n:toSetOfNodes(qData.getAllSubQueryConds())){
+				 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+			 }
+			 retString+="</item>\n";
+			 return retString;
+		}
 	}
 	
 	public static String getSelectionConditionsString(QueryStructure qData, boolean openFlag) throws  CloneNotSupportedException{

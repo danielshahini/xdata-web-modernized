@@ -49,18 +49,35 @@ public class CanonicalizeQuery {
 	 * This method also rearranges the left and right nodes alphabetically so that the conditions can be compared. 
 	 * @param query
 	 */
-	public static void Canonicalize(QueryStructure queryData) throws Exception{		
-		minimizeOuterJoins(queryData);	
-		EliminateRedundantRelation.EliminateRedundantRelations(queryData);
-		canonicalizeSelectionConditions(queryData);
-		canonicalizeJoinConditions(queryData);
-		canonicalizeProjectionSelectionToEquivalent(queryData);
-		canonicalizeGroupBy(queryData);	
-		canonicalizeHavingClause(queryData);
-		canonicalizeOrderBy(queryData);
-		canonicalizeDistinct(queryData);
-		//EliminateRedundantRelation.EliminateRedundantRelations(queryData);		
-		queryData.reAdjustJoins();
+	public static void Canonicalize(QueryStructure queryStruct) throws Exception{		
+		if(queryStruct.setOperator!=null&&!queryStruct.setOperator.isEmpty()){
+				Canonicalize(queryStruct.getLeftQuery());
+				Canonicalize(queryStruct.getRightQuery());			
+		}
+		else{	
+			minimizeOuterJoins(queryStruct);	
+			EliminateRedundantRelation.EliminateRedundantRelations(queryStruct);
+			canonicalizeSelectionConditions(queryStruct);
+			canonicalizeJoinConditions(queryStruct);
+			canonicalizeProjectionSelectionToEquivalent(queryStruct);
+			canonicalizeGroupBy(queryStruct);	
+			canonicalizeHavingClause(queryStruct);
+			canonicalizeOrderBy(queryStruct);
+			canonicalizeDistinct(queryStruct);
+			//EliminateRedundantRelation.EliminateRedundantRelations(queryData);		
+			queryStruct.reAdjustJoins();
+			
+			if(queryStruct != null && queryStruct.getWhereClauseSubqueries() != null){
+				for(QueryStructure qd : queryStruct.getWhereClauseSubqueries()){
+					Canonicalize(qd);
+				}}
+
+			if(queryStruct != null && queryStruct.getFromClauseSubqueries() != null){
+				for(QueryStructure qd : queryStruct.getFromClauseSubqueries()){
+					Canonicalize(qd);
+				}}
+
+		}
 	}
 	
 
@@ -117,16 +134,6 @@ public class CanonicalizeQuery {
 	 * such that  Col1 lexicographically appears before Col2 
 	 */
 	private static void canonicalizeJoinConditions(QueryStructure qd){
-		if(qd != null && qd.getWhereClauseSubqueries() != null){
-			for(QueryStructure q : qd.getWhereClauseSubqueries()){
-				canonicalizeJoinConditions(q);
-			}
-		}
-		if(qd != null && qd.getFromClauseSubqueries() != null){
-			for(QueryStructure q : qd.getFromClauseSubqueries()){
-				canonicalizeJoinConditions(q);
-			}
-		}
 		if(qd != null && qd.getLstJoinConditions() != null){
 			ArrayList<Node> joinConditions = qd.getLstJoinConditions();
 			if(joinConditions != null){
@@ -227,29 +234,19 @@ public class CanonicalizeQuery {
 		 *  in atomic having conditions of selection types (one operand is a value)  to 
 		 *  their non strict versions. 
 		 */	private static void canonicalizeSelectionConditions(QueryStructure qd){
-			if(qd != null && qd.getWhereClauseSubqueries() != null){
-				for(QueryStructure q : qd.getWhereClauseSubqueries()){
-					canonicalizeSelectionConditions(q);
-				}
-			}
-			if(qd != null && qd.getFromClauseSubqueries() != null){
-				for(QueryStructure q : qd.getFromClauseSubqueries()){
-					canonicalizeSelectionConditions(q);
-				}
-			}
-			
-			if(qd != null && qd.getLstSelectionConditions() != null){
-			ArrayList<Node> selectionConds = qd.getLstSelectionConditions();
-			if(selectionConds != null){
-			for(Node n: selectionConds){
-			    checkBinaryHavingClauseNodes(n);
-				checkSelectionHavingClauseNodes(n);
-				
-				logger.info("after node"+n);
-			}
-			}
-			}
-		}
+			 
+			 if(qd != null && qd.getLstSelectionConditions() != null){
+				 ArrayList<Node> selectionConds = qd.getLstSelectionConditions();
+				 if(selectionConds != null){
+					 for(Node n: selectionConds){
+						 checkBinaryHavingClauseNodes(n);
+						 checkSelectionHavingClauseNodes(n);
+
+						 logger.info("after node"+n);
+					 }
+				 }
+			 }
+		 }
 	
 	
 	private static void canonicalizeProjectionSelectionToEquivalent(QueryData qd){
@@ -314,15 +311,6 @@ public class CanonicalizeQuery {
 	}
 	
 	private static void canonicalizeProjectionSelectionToEquivalent(QueryStructure qd){
-		if(qd != null && qd.getWhereClauseSubqueries() != null){
-		for(QueryStructure q : qd.getWhereClauseSubqueries()){
-			canonicalizeProjectionSelectionToEquivalent(q);
-		}
-		}
-		if(qd != null && qd.getFromClauseSubqueries() != null){
-		for(QueryStructure q : qd.getFromClauseSubqueries()){
-			canonicalizeProjectionSelectionToEquivalent(q);
-		}}
 		
 		if(qd!= null && qd.getLstProjectedCols()!= null){
 			ArrayList<Node> projectionList = qd.getLstProjectedCols();
@@ -333,8 +321,7 @@ public class CanonicalizeQuery {
 		
 		Map<Node, Node > nodeToEqNode = new HashMap<Node, Node>();
 				
-		for(int i = 0; i < eqClasses.size(); i++){
-			ArrayList<Node> eq = eqClasses.get(i);
+		for(ArrayList<Node> eq:eqClasses){
 			Collections.sort(eq, new NodeComparator());
 		}		
 
@@ -421,18 +408,7 @@ public class CanonicalizeQuery {
 	
 	
 	private static void canonicalizeHavingClause(QueryStructure qd){
-		
-		if(qd != null && qd.getWhereClauseSubqueries() != null){
-		for(QueryStructure q : qd.getWhereClauseSubqueries()){
-			canonicalizeHavingClause(q);
-		}
-		}
-		if(qd != null && qd.getFromClauseSubqueries() != null){
-		for(QueryStructure q : qd.getFromClauseSubqueries()){
-			canonicalizeHavingClause(q);
-		}
-		}
-		
+				
 		//Node n = qd.getHavingClause();
 		if(qd != null && qd.getHavingClause() != null){
 			ArrayList <Node> havingClauses = qd.getLstHavingConditions();

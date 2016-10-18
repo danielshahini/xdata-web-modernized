@@ -1071,12 +1071,19 @@ public class QueryData {
 	// Gets all the selection conditions and eq classes corresponding to the query block
 	private void getSelectionConditionsAndEqClass(Conjunct con, ArrayList<Node> selectionConds, Vector<Vector<Node>> eqClasses){
 
-		if(con.selectionConds != null || con.stringSelectionConds != null || con.joinConds != null || con.likeConds != null) {
+		if(con.selectionConds != null ) 
 			selectionConds.addAll(con.selectionConds);
+		if(con.stringSelectionConds != null)					
 			selectionConds.addAll(con.stringSelectionConds);
-			selectionConds.addAll(con.joinConds);
-			selectionConds.addAll(con.likeConds);
+		if(con.joinCondsForEquivalenceClasses != null){
+			selectionConds.addAll(con.joinCondsForEquivalenceClasses);
 		}
+		if(con.joinCondsAllOther!=null){
+			selectionConds.addAll(con.joinCondsAllOther);
+		}
+		if(con.likeConds != null)
+			selectionConds.addAll(con.likeConds);
+
 		
 		if(con.getEquivalenceClasses() != null && con.getEquivalenceClasses().size() > 0) {
 			eqClasses.addAll(con.getEquivalenceClasses());

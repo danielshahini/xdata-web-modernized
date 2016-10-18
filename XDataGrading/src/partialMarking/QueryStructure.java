@@ -115,10 +115,8 @@ class QueryAliasMap {
 		// If table is a subquery, it holds alias and "SUBQUERY"
 		private HashMap<String, String> currentAliasTables;
 
-		
-		
-		public Vector<Node> subQJC;
 
+		
 		// Data Structure to avoid aliasing in queries.
 		private Vector<QueryAliasMap> qam;
 
@@ -196,8 +194,6 @@ class QueryAliasMap {
 		Vector<Vector<Node>> dnfJoinCond;
 		
 		private boolean isDistinct;
-
-		private Vector<Node> joinConditionList;
 
 		//To store from clause subqueries
 		private Vector<QueryStructure> FromClauseSubqueries;//To store from clause subqueries
@@ -321,11 +317,18 @@ class QueryAliasMap {
 				getFromTablesAndInstances(this.fromListElements);
 			}
 			else{
+				this.initializeQueryListStructuresForSetOperator();
 				this.leftQuery.initializeQueryListStructures();
 				this.rightQuery.initializeQueryListStructures();
 			}
 		}
 		
+		private void initializeQueryListStructuresForSetOperator() {
+			// TODO Auto-generated method stub
+			this.lstProjectedCols=new ArrayList<Node>();
+			this.lstProjectedCols.addAll(this.getProjectedCols());
+		}
+
 		private void getFromTablesAndInstances(Vector<FromListElement> fromListElements) {
 			for(FromListElement fle:fromListElements){
 				if(fle!=null&&fle.getTableName()!=null&&!fle.getTableName().isEmpty())
@@ -339,12 +342,23 @@ class QueryAliasMap {
 		}
 
 		private void getSelectionConditionsAndEqClasses(Conjunct con){
-				if(con.selectionConds != null || con.stringSelectionConds != null || con.joinConds != null || con.likeConds != null) {
+				if(con.selectionConds != null ) 
 					lstSelectionConds.addAll(con.selectionConds);
+				if(con.stringSelectionConds != null)					
 					lstSelectionConds.addAll(con.stringSelectionConds);
-					lstSelectionConds.addAll(con.joinConds);
-					lstSelectionConds.addAll(con.likeConds);
+				if(con.joinCondsForEquivalenceClasses != null){
+					lstSelectionConds.addAll(con.joinCondsForEquivalenceClasses);
+					this.lstJoinConditions.addAll(con.joinCondsForEquivalenceClasses);
 				}
+				if(con.joinCondsAllOther!=null){
+					lstSelectionConds.addAll(con.joinCondsAllOther);
+					this.lstJoinConditions.addAll(con.joinCondsAllOther);
+				}
+				if(con.likeConds != null)
+					lstSelectionConds.addAll(con.likeConds);
+				
+				
+				
 
 				if(con.getEquivalenceClasses() != null && con.getEquivalenceClasses().size() > 0) {
 					for(Vector<Node> eqClass:con.getEquivalenceClasses()){
@@ -568,7 +582,14 @@ class QueryAliasMap {
 		
 		@Override
 		public String toString(){
-			String retString=" Projection list \n";
+			String retString="";
+			
+			if(this.setOperator!=null){
+				retString+=" set operator query\n";
+				retString+=" operation: "+this.setOperator+" \n";
+			}
+				
+			retString+=" Projection list \n";
 			for(Node n:this.getProjectedCols())
 				retString+=" "+n;
 			retString+="\n From list \n";
@@ -918,10 +939,8 @@ class QueryAliasMap {
 			havingClause = new Node();
 			allSubQueryConds = new Vector<Node>();
 			allCondsExceptSubQuery = new Vector<Node>();
-			subQJC = new Vector<Node>();
 			tableNo = 0;
 
-			joinConditionList = new Vector<Node>();
 			root = null;
 			constraintsWithParameters = new HashMap<String, Node>();
 			lhsRhsConds = new Vector<Node>();
@@ -951,6 +970,7 @@ class QueryAliasMap {
 				queryString = queryString.replace("FULL JOIN","FULL OUTER JOIN");
 
 				parseQueryJSQL(queryId, queryString, true);
+
 			}catch(ParseException ex){
 				
 				logger.log(Level.SEVERE," Function parseQuery : "+ex.getMessage(),ex);
@@ -1475,8 +1495,8 @@ class QueryAliasMap {
 					tempSetOpList.setBracketsOpsAndSelects(tempBrackets, tempListSelectBodies, tempListOperations);
 					rightQuery.parseQueryJSQL("q3",tempSetOpList.toString(),debug);
 				}
-				
 			}
+			this.initializeQueryListStructures();
 		}
 			
 
@@ -1599,14 +1619,6 @@ class QueryAliasMap {
 			this.equivalenceClassVector = equivalenceClassVector;
 		}
 
-		public Vector<Node> getSubQJC() {
-			return subQJC;
-		}
-
-		public void setSubQJC(Vector<Node> subQJC) {
-			this.subQJC = subQJC;
-		}
-
 		public HashMap<String, String> getCurrentAliasTables() {
 			return currentAliasTables;
 		}
@@ -1704,14 +1716,6 @@ class QueryAliasMap {
 
 		public void setParamCount(int paramCount) {
 			this.paramCount = paramCount;
-		}
-
-		public Vector<Node> getJoinConditionList() {
-			return joinConditionList;
-		}
-
-		public void setJoinConditionList(Vector<Node> joinConditionList) {
-			this.joinConditionList = joinConditionList;
 		}
 
 		public static String[] getCvcRelationalOperators() {
@@ -2427,11 +2431,11 @@ class QueryAliasMap {
 			if(qParser.allConds == null)
 				return ;
 
-			Vector<Node> allCondsDuplicate = new Vector<Node>();
+			Vector<Node> allCondsDuplicate;
 			allCondsDuplicate = (Vector<Node>) qParser.allConds.clone();
 
 			qParser.allConds.removeAllElements();
-			Vector<Vector<Node>> allDnfDuplicate= new Vector<Vector<Node>>();
+			Vector<Vector<Node>> allDnfDuplicate;
 			allDnfDuplicate =(Vector<Vector<Node>>) qParser.dnfCond.clone();
 
 			qParser.dnfCond.removeAllElements();
@@ -2440,12 +2444,12 @@ class QueryAliasMap {
 				if(allCondsDuplicate.get(i) != null)
 					qParser.allConds.addAll(GetNode.flattenNode(qParser, allCondsDuplicate.get(i)));
 			}
-
-
+		
 			for (int i = 0; i < allCondsDuplicate.size(); i++) {
 				if(allCondsDuplicate.get(i) != null)
 					qParser.dnfCond.addAll(GetNode.flattenCNF(qParser, allCondsDuplicate.get(i)));
-			}
+			}			
+
 
 			for (int i=0;i< allCondsDuplicate.size() ; i++) {
 				if(allCondsDuplicate.get(i)!=null){
@@ -2487,6 +2491,7 @@ class QueryAliasMap {
 					if(type.equalsIgnoreCase(Node.getAllNodeType()) || type.equalsIgnoreCase(Node.getAnyNodeType())
 							|| type.equalsIgnoreCase(Node.getInNodeType()) ||
 							type.equalsIgnoreCase(Node.getExistsNodeType()) || type.equalsIgnoreCase(Node.getBroNodeSubQType())
+							||type.equalsIgnoreCase(Node.getNotInNodeType())//added by mathew on 17 oct 2016
 							||type.equalsIgnoreCase(Node.getNotExistsNodeType())){
 						subCond.add(n);
 						temp1.remove(n);
@@ -2513,6 +2518,7 @@ class QueryAliasMap {
 						||type.equalsIgnoreCase(Node.getAnyNodeType())
 						|| type.equalsIgnoreCase(Node.getInNodeType()) ||
 						type.equalsIgnoreCase(Node.getExistsNodeType()) || type.equalsIgnoreCase(Node.getBroNodeSubQType())
+						||type.equalsIgnoreCase(Node.getNotInNodeType())
 						||type.equalsIgnoreCase(Node.getNotExistsNodeType())){
 					qParser.allSubQueryConds.add(n);
 					qParser.allConds.remove(n);
@@ -2560,6 +2566,7 @@ class QueryAliasMap {
 				// of some or the other equivalence class and be handeled
 				if (isJoinNodeForEC) {
 					isJoinNodeForEC = false;
+					qParser.joinConds.add(temp);//added by mathew on 17 oct 2016
 					qParser.allConds.remove(temp);
 				}			
 			}

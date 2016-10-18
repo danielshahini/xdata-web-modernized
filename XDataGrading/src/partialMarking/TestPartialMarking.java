@@ -73,8 +73,8 @@ public class TestPartialMarking {
 		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
 //				for(Vector<Node> S:queryDetails.qStructure.getAllDnfSubQuery()){
-					for(Node n :queryDetails.qStructure.getAllCondsExceptSubQuery())
-						System.out.println("Having Conditions :"+" "+n);
+//					for(Node n :queryDetails.qStructure.getAllSubQueryConds())
+//						System.out.println("Having Conditions :"+" "+n);
 //				}
 
 		return queryDetails;
@@ -1094,7 +1094,9 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 	 */
 	public static void readQueriesFromDBParseAndTest() throws Exception{
 		String tarFileName="/home/mathew/Desktop/BadStudentQueries.txt";
+		String goodTarFileName="/home/mathew/Desktop/goodStudentQueries.txt";
 		PrintWriter writer = new PrintWriter(tarFileName);
+		PrintWriter goodWriter=new PrintWriter(goodTarFileName);
 		TestPartialMarking testObj=new TestPartialMarking();
 		Class.forName("org.postgresql.Driver");			
 		Properties prop=new Properties();
@@ -1115,9 +1117,13 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 			String assignment_id=tableValues.getString(4);
 			String question_id=tableValues.getString(5);
 			try{
-				testObj.StudentQuery=testObj.process(testObj.StudentQuery, studQuery);
+				testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studQuery);
 				System.out.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
-						" rollnum:"+ rollnum + "SQL query: "+studQuery);			
+						" rollnum:"+ rollnum + "SQL query: "+studQuery);
+				goodWriter.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
+						" rollnum:"+ rollnum + "SQL query: "+studQuery);
+				goodWriter.println();
+				goodWriter.flush();
 				}
 			catch(Exception e){
 				errCount++;
@@ -1216,7 +1222,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //		
 
 
-//	
+	
 //		String studentQuery="SELECT TEACHES.course_id FROM TEACHES RIGHT OUTER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.NAME, DEPARTMENT"
 //				+ " WHERE INSTRUCTOR.dept_name>DEPARTMENT.dept_name AND 3>TEACHES.ID GROUP BY TEACHES.ID, INSTRUCTOR.ID HAVING 3>TEACHES.course_id";
 //		String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON (c.dept_name = d.dept_name) GROUP BY c.dept_name HAVING SUM(c.credits)>10 AND COUNT(c.credits)>1";
@@ -1251,18 +1257,26 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //				+ " WHERE  INSTRUCTOR.ID=TEACHES.ID "+
 //				" OR  D.budget = D.dept_name OR D.budget=3";
 		
-		String studentQuery="SELECT TEACHES.course_id FROM TEACHES  WHERE "
-				+ " TEACHES.ID > ALL  (SELECT CLASSROOM.building FROM CLASSROOM WHERE CLASSROOM.room_number=3) AND "
-		+ " TEACHES.ID NOT IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) "
-		+ " OR  TEACHES.course_id IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) AND "
-		+ " TEACHES.course_id >= ANY (SELECT INSTRUCTOR.ID FROM INSTRUCTOR)";
-		
-//		String instructorQuery="SELECT TEACHES.course_id FROM TEACHES  WHERE "
-//				+ " TEACHES.ID > ANY  (SELECT CLASSROOM.building FROM CLASSROOM WHERE CLASSROOM.room_number=3) AND "
+//		String studentQuery="SELECT TEACHES.course_id FROM TEACHES  WHERE "
+//				+ " TEACHES.ID > ALL  (SELECT CLASSROOM.building FROM CLASSROOM WHERE CLASSROOM.room_number=3) AND "
 //		+ " TEACHES.ID NOT IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) "
 //		+ " OR  TEACHES.course_id IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) AND "
 //		+ " TEACHES.course_id >= ANY (SELECT INSTRUCTOR.ID FROM INSTRUCTOR)";
+		
+//		String studentQuery="WITH takes_time_slot(ID, course_id, sec_id, semester, year, time_slot_id) AS	"
+//				+ "(SELECT takes.ID, takes.course_id, takes.sec_id, takes.semester, takes.year, time_slot_id  FROM takes NATURAL JOIN section),  "
+//				+ "time_slot_clash(id_1, id_2) AS (SELECT S1.time_slot_id, S2.time_slot_id FROM time_slot as S1, time_slot as S2  "
+//				+ "WHERE S1.time_slot_id!=S2.time_slot_id and S1.day=S2.day and  "
+//				+ "numrange((60*S1.start_hr+S1.start_min), 60*S1.end_hr+S1.end_min) && numrange(60*S2.start_hr+S2.start_min, 60*S2.end_hr+S2.end_min)) "
+//				+ " SELECT DISTINCT T.ID  FROM takes_time_slot as T, takes_time_slot as S,  "
+//				+ "time_slot_clash as C WHERE T.ID=S.ID AND T.semester=S.semester AND T.year=S.year AND (T.time_slot_id=S.time_slot_id OR (T.time_slot_id=C.id_1 AND S.time_slot_id=C.id_2))  AND (T.course_id!=S.course_id OR T.sec_id!=S.sec_id)";
 
+		String studentQuery="with A(id,year) as  (select id,year from takes,course where "
+				+ "takes.course_id=course.course_id and dept_name='Comp. Sci.'), "
+				+ "B(less_id) as (select id from A where year<2010), "
+				+ "C(greater_id) as (select id from A where year>2010), "
+				+ "D(stud_id) as ((select * from B) INTERSECT (select * from C)) "
+				+  "select id,name from student,D where id=stud_id";
 		
 //		String studentQuery="SELECT INSTRUCTOR.ID FROM  "
 //		+ TEACHES  WHERE TEACHES.ID > ALL "
@@ -1280,8 +1294,8 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
-			//readQueriesFromDBParseAndTest();
-			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
+			readQueriesFromDBParseAndTest();
+//			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())

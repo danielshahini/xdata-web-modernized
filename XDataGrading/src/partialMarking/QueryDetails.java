@@ -119,7 +119,7 @@ public class QueryDetails {
 
 		qStructure.parseQuery("q1", query);
 		
-		qStructure.initializeQueryListStructures();
+		//qStructure.initializeQueryListStructures();
 		
 	}
 
