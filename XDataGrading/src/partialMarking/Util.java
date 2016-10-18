@@ -9,10 +9,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +34,50 @@ import parsing.Node;
 public class Util {
 	private static Logger logger = Logger.getLogger(Util.class.getName()); 
 
+	public static Set<Node> toSetOfNodes(List<Node> nodes){
+		Set<Node> tempSet=new HashSet<Node>();
+		if(nodes!=null){
+			for(Node n:nodes)
+				tempSet.add(n);
+		}
+		return tempSet;
+	}
+	
+	/*
+	 * remove duplicates from a list of input selection/join conditions
+	 */
+	public static ArrayList<Node> removeDuplicates(ArrayList<Node> selectionConds) {
+		// TODO Auto-generated method stub
+		boolean removedFlag;
+		do{
+			removedFlag=false;
+			for(int i=0;i<selectionConds.size()-1;i++){
+				Node src=selectionConds.get(i);
+				boolean found=false;
+				for(int j=i+1;j<selectionConds.size();j++){
+					Node tar=selectionConds.get(j);
+					if(src==tar){
+						found=true;
+						break;
+					}
+					String srcLeftStr=src.getLeft().toString();
+					String srcRightStr=src.getRight().toString();
+					String tarLeftStr=tar.getLeft().toString();
+					String tarRightStr=tar.getRight().toString();
+					if(srcLeftStr.equalsIgnoreCase(tarLeftStr)&&srcRightStr.equalsIgnoreCase(tarRightStr)){
+						found=true;
+						break;
+					}
+				}
+				if(found){
+					selectionConds.remove(i);
+					removedFlag=true;
+					break;
+				}
+			}
+		} while(removedFlag);
+		return selectionConds;
+	}
 
 	public static Node getNodeForCount(Vector<FromListElement> fle, QueryStructure qParser) {
 		
@@ -151,8 +197,9 @@ public class Util {
 	public static void foreignKeyClosure(QueryStructure qParser) {
 		Vector<Table> fkClosure = new Vector<Table>();
 		LinkedList<Table> fkClosureQueue = new LinkedList<Table>();
-		logger.log(Level.INFO,"FOREIGN KEY GRAPH : \n"+qParser.getTableMap().foreignKeyGraph);
-		for (String tableName : qParser.getQuery().getFromTables().keySet()) {
+		logger.log(Level.INFO,"FOREIGN KEY GRAPH : \n"+qParser.getTableMap().foreignKeyGraph);		
+		//for (String tableName : qParser.getQuery().getFromTables().keySet()) {
+		for (String tableName : qParser.getLstRelations()) {
 			fkClosure.add( qParser.getTableMap().getTables().get(tableName.toUpperCase()));
 			fkClosureQueue.addLast(qParser.getTableMap().getTables().get(tableName.toUpperCase()));
 			logger.log(Level.INFO,"fkClosureQueue.add tables: \n "+qParser.getTableMap().getTables().get(tableName.toUpperCase()));

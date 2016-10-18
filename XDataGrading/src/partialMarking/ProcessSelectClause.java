@@ -126,18 +126,15 @@ public class ProcessSelectClause {
 		for(Conjunct conjunct:qParser.conjuncts)			
 			conjunct.createEqClass();
 
-
 		partialMarking.Util.foreignKeyClosure(qParser);
-		if(qParser.isDeleteNode){
-			return;
-		}
-
 		ProcessSelectClause.processProjectionList(plainSelect,qParser);
 		ProcessSelectClause.processGroupByList(plainSelect,qParser);
 		ProcessSelectClause.processHavingClause(plainSelect,qParser);
 		ProcessSelectClause.processOrderByList(plainSelect,qParser);
 		qParser.initializeQueryListStructures();
 		//System.out.println(qParser.toString());
+
+
 	}
 
 	public static void modifyTreeForCompareSubQ(QueryStructure qParser) {
@@ -648,6 +645,7 @@ public class ProcessSelectClause {
 		frmListElement.setTableName(tableName);
 		frmListElement.setTableNameNo(tableNameNo);
 		frmListElement.setTabs(null);	
+		qParser.addFromTable(frmListElement);
 		logger.info("Table added"+frmListElement);
 	}
 
@@ -875,7 +873,7 @@ public class ProcessSelectClause {
 				return n; 
 			} else if (clause instanceof Column) {
 				Column columnReference = (Column) clause;
-				String colName= columnReference.getColumnName();
+				String colName= columnReference.getColumnName().toUpperCase();
 				String tableName  = columnReference.getTable().getFullyQualifiedName();
 
 				Node n = new Node();

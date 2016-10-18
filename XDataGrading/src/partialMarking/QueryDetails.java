@@ -107,6 +107,7 @@ public class QueryDetails {
 		return qStructure;
 	}
 	
+	
 	public void startProcessing(int assignmentId, int questionId, String query) throws Exception {
 
 		GenerateCVC1 cvc = new GenerateCVC1();
@@ -114,12 +115,11 @@ public class QueryDetails {
 		cvc.initializeConnectionDetails(assignmentId, questionId, 1,"");		
 
 		qStructure=new QueryStructure(cvc.getTableMap());
-		
+				
 		cvc.closeConn();
 
 		qStructure.parseQuery("q1", query);
 		
-		//qStructure.initializeQueryListStructures();
 		
 	}
 

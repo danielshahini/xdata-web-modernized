@@ -956,18 +956,17 @@ public class QueryData {
 				 */
 				ForeignKey fk= EliminateRedundantRelation.getForeignKey(candTableName, keyTableName, foreignKeys);
 
-
 				if(fk != null){
 					isReferenced = false;
 					break;
 				}
 
 				fk = EliminateRedundantRelation.getForeignKey(keyTableName, candTableName, foreignKeys);
+
 				if(fk == null){
 					isReferenced = false;
 					continue;
 				}
-
 
 				Vector<Column> candKeys = fk.getReferenceKeyColumns();
 				Vector<Column> otherKeys = fk.getFKeyColumns();
@@ -978,8 +977,7 @@ public class QueryData {
 					Column othCol = otherKeys.get(i);
 					Boolean found = false;
 					for(Pair v : values){
-						if(v.first.getColumn().getColumnName().equals(canCol.getColumnName()) && v.second.getColumn().getColumnName().equals(othCol.getColumnName())){
-							//System.out.println(v.second.getColumn().getColumnName());
+						if(v.first.getColumn().getColumnName().equalsIgnoreCase(canCol.getColumnName()) && v.second.getColumn().getColumnName().equalsIgnoreCase(othCol.getColumnName())){
 							found = true;
 							break;
 						} 

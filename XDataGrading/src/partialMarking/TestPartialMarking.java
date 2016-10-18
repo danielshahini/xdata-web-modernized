@@ -72,10 +72,10 @@ public class TestPartialMarking {
 		queryDetails=new QueryDetails();
 		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
-//				for(Vector<Node> S:queryDetails.qStructure.getAllDnfSubQuery()){
-//					for(Node n :queryDetails.qStructure.getAllSubQueryConds())
-//						System.out.println("Having Conditions :"+" "+n);
-//				}
+//		for(parsing.Conjunct c:queryDetails.qStructure.conjuncts){
+			for(String n :queryDetails.qStructure.getLstRelationInstances())
+				System.out.println("Having Conditions :"+" "+n);
+//		}
 
 		return queryDetails;
 				
@@ -1238,6 +1238,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //				+ " time_slot_clash as C WHERE T.ID=S.ID AND T.semester=S.semester AND T.year=S.year  "
 //				+ " AND (T.time_slot_id=S.time_slot_id OR (T.time_slot_id=C.id_1 AND S.time_slot_id=C.id_2)) "
 //				+ " AND (T.course_id!=S.course_id OR T.sec_id!=S.sec_id)";
+		
 //		String studentQuery="select t.day from time_slot as t natural join section as s1 where t.time_slot_id  in (select time_slot_id from section as s, teaches as t where s.course_id=t.course_id and teaches.ID='22222' and section.semester='Fall' and section.year='2009')";
 //		String studentQuery= " Select * from (Select d.id from department d) as sub, (Course as R INNER JOIN DEPARTMENT "+
 //				" ON Course.dept_name<=DEPARTMENT.dept_name OR R.dept_Id=Department.dept_Id) as S INNER JOIN (INSTRUCTOR I NATURAL JOIN DEPARTMENT D) as K ON R.dept_name=I.dept_name";
@@ -1252,10 +1253,10 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //				+ " GROUP BY INSTRUCTOR.SALARY, TEACHES.ID, D.budget, INSTRUCTOR.ID, INSTRUCTOR.dept_name" +
 //   " HAVING INSTRUCTOR.ID=TEACHES.ID AND TEACHES.ID=INSTRUCTOR.ID";
 
-//		String studentQuery="SELECT  INSTRUCTOR.ID,  D.budget FROM  INSTRUCTOR INNER JOIN "
-//				+ " DEPARTMENT D ON INSTRUCTOR.dept_name=D.dept_name, TEACHES"
-//				+ " WHERE  INSTRUCTOR.ID=TEACHES.ID "+
-//				" OR  D.budget = D.dept_name OR D.budget=3";
+		String studentQuery="SELECT  INSTRUCTOR.ID,  D.budget FROM  INSTRUCTOR INNER JOIN "
+				+ " DEPARTMENT D ON INSTRUCTOR.dept_name=D.dept_name, TEACHES"
+				+ " WHERE  INSTRUCTOR.ID=TEACHES.ID "+
+				" OR  D.budget = D.dept_name OR D.budget=3";
 		
 //		String studentQuery="SELECT TEACHES.course_id FROM TEACHES  WHERE "
 //				+ " TEACHES.ID > ALL  (SELECT CLASSROOM.building FROM CLASSROOM WHERE CLASSROOM.room_number=3) AND "
@@ -1271,19 +1272,19 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //				+ " SELECT DISTINCT T.ID  FROM takes_time_slot as T, takes_time_slot as S,  "
 //				+ "time_slot_clash as C WHERE T.ID=S.ID AND T.semester=S.semester AND T.year=S.year AND (T.time_slot_id=S.time_slot_id OR (T.time_slot_id=C.id_1 AND S.time_slot_id=C.id_2))  AND (T.course_id!=S.course_id OR T.sec_id!=S.sec_id)";
 
-		String studentQuery="with A(id,year) as  (select id,year from takes,course where "
-				+ "takes.course_id=course.course_id and dept_name='Comp. Sci.'), "
-				+ "B(less_id) as (select id from A where year<2010), "
-				+ "C(greater_id) as (select id from A where year>2010), "
-				+ "D(stud_id) as ((select * from B) INTERSECT (select * from C)) "
-				+  "select id,name from student,D where id=stud_id";
+//		String studentQuery="with A(id,year) as  (select id,year from takes,course where "
+//				+ "takes.course_id=course.course_id and dept_name='Comp. Sci.'), "
+//				+ "B(less_id) as (select id from A where year<2010), "
+//				+ "C(greater_id) as (select id from A where year>2010), "
+//				+ "D(stud_id) as ((select * from B) INTERSECT (select * from C)) "
+//				+  "select id,name from student,D where id=stud_id";
 		
 //		String studentQuery="SELECT INSTRUCTOR.ID FROM  "
 //		+ TEACHES  WHERE TEACHES.ID > ALL "
 //		+ " (SELECT INSTRUCTOR.ID FROM INSTRUCTOR  WHERE INSTRUCTOR.ID NOT IN ( 1,2,3 ))";
 
 
-//		String instructorQuery="SELECT INSTRUCTOR.ID FROM  INSTRUCTOR INNER JOIN DEPARTMENT D ON  INSTRUCTOR.dept_name=D.dept_name WHERE D.dept_name>30000";
+		String instructorQuery="SELECT INSTRUCTOR.ID FROM  INSTRUCTOR INNER JOIN DEPARTMENT D ON  INSTRUCTOR.dept_name=D.dept_name WHERE D.dept_name>30000";
 		
 //		String strQuery= " WITH R AS (SELECT * FROM TEACHES INNER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.ID)"
 //				+ "SELECT R.course_id FROM  R "
@@ -1294,8 +1295,8 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
-			readQueriesFromDBParseAndTest();
-//			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQuery);
+//			readQueriesFromDBParseAndTest();
+//			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
@@ -1303,7 +1304,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 			
 //			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-//			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
+			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instructorQuery);
 
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
 //			Float normalMarks=testObj.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;

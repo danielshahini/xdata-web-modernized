@@ -70,6 +70,7 @@ import parsing.ORNode;
 import parsing.Query;
 import parsing.RelationHierarchyNode;
 import parsing.TreeNode;
+import testDataGen.GenerateCVC1;
 import util.TableMap;
 
 class QueryAliasMap {
@@ -216,8 +217,7 @@ class QueryAliasMap {
 		public RelationHierarchyNode topLevelRelation;
 		
 		/** The following data members added by mathew on 11 Oct 2016
-		 */
-		
+		 */				
 		// Selection conditions includes string selection conditions, join conditions
 		private ArrayList<Node> lstSelectionConds;
 		
@@ -283,8 +283,6 @@ class QueryAliasMap {
 				this.lstSubQConnectives=new ArrayList<String>();
 				this.lstSetOperators=new ArrayList<String>();
 				this.lstAggregateList=new ArrayList<AggregateFunction>();
-				this.lstRelations=new ArrayList<String>();
-				this.lstRelationInstances=new ArrayList<String>();
 				this.lstJoinTables=new ArrayList<String>();
 				this.lstRedundantRelations=new ArrayList<String>();
 				this.lstEqClasses=new ArrayList<ArrayList<Node>>();
@@ -298,7 +296,13 @@ class QueryAliasMap {
 					getSelectionConditionsAndEqClasses(con);
 				}
 
-				this.lstJoinConditions.addAll(this.getAllConds());
+				this.lstJoinConditions.addAll(this.getJoinConds());
+//				this.lstSelectionConds.addAll(this.getJoinConds());
+				
+				//remove duplicates
+//				ArrayList<Node> tempLst=(ArrayList<Node>)lstSelectionConds.clone();
+//				lstSelectionConds.clear();
+//				lstSelectionConds.addAll(Util.toSetOfNodes(tempLst));
 
 				if(this.getHavingClause()!=null)
 					this.lstHavingConditions.add(this.getHavingClause());
@@ -314,7 +318,9 @@ class QueryAliasMap {
 
 				this.lstAggregateList.addAll(this.getAggFunc());
 
-				getFromTablesAndInstances(this.fromListElements);
+//				getFromTablesAndInstances(this.fromListElements);
+				
+				lstForeignKeysModified.addAll(this.foreignKeyVectorModified);
 			}
 			else{
 				this.initializeQueryListStructuresForSetOperator();
@@ -334,7 +340,7 @@ class QueryAliasMap {
 				if(fle!=null&&fle.getTableName()!=null&&!fle.getTableName().isEmpty())
 					lstRelations.add(fle.getTableName());
 				if(fle!=null&&fle.getTableNameNo()!=null&&!fle.getTableNameNo().isEmpty())
-					lstRelationInstances.add(fle.getTableName());
+					lstRelationInstances.add(fle.getTableNameNo());
 				if(fle.getTabs()!=null&&!fle.getTabs().isEmpty())
 					getFromTablesAndInstances(fle.getTabs());
 			}
@@ -413,7 +419,7 @@ class QueryAliasMap {
 				}
 
 		}
-		
+				
 		// Gets the list of selection conditions
 		public ArrayList<Node> getLstSelectionConditions(){
 			return this.lstSelectionConds;
@@ -517,6 +523,11 @@ class QueryAliasMap {
 		// Gets the list of relations
 		public ArrayList<String> getLstRelations(){
 			return this.lstRelations;
+		}
+		
+		public void addFromTable(FromListElement fle){
+			this.lstRelationInstances.add(fle.getTableNameNo());
+			this.lstRelations.add(fle.getTableName());
 		}
 			
 		// Sets the list of relations
@@ -950,6 +961,9 @@ class QueryAliasMap {
 			this.WhereClauseSubqueries = new Vector<QueryStructure>();
 			//added by mathew on oct 1st 2016
 			this.fromListElements=new Vector<FromListElement>();
+			this.lstRelations=new ArrayList<String>();
+			this.lstRelationInstances=new ArrayList<String>();
+
 		}
 
 
@@ -2553,6 +2567,7 @@ class QueryAliasMap {
 					qParser.dnfJoinCond.add(subCond);
 				}
 			}
+			
 
 			// Now separate Join Conds for EC And Selection Conds and Non Equi join
 			// conds
@@ -2566,6 +2581,23 @@ class QueryAliasMap {
 				// of some or the other equivalence class and be handeled
 				if (isJoinNodeForEC) {
 					isJoinNodeForEC = false;
+					qParser.joinConds.add(temp);//added by mathew on 17 oct 2016
+					qParser.allConds.remove(temp);
+				}			
+			}
+			
+			// added by mathew on 18 oct 2016
+			// Now separate Non-Equi/Outer join conds
+			for (int i = 0; i < allCondsDuplicate.size(); i++) {
+				temp = allCondsDuplicate.get(i);
+
+				Conjunct con = new Conjunct( new Vector<Node>());
+
+				boolean isJoinNodeAllOther = GetNode.getJoinNodesAllOther(con, temp);
+				// Remove that object from allConds. Because that will now be a part
+				// of some or the other equivalence class and be handeled
+				if (isJoinNodeAllOther) {
+					isJoinNodeAllOther = false;
 					qParser.joinConds.add(temp);//added by mathew on 17 oct 2016
 					qParser.allConds.remove(temp);
 				}			

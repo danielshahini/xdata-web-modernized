@@ -89,7 +89,7 @@ public class SerializeXML {
 	public static String getProjectedColumnsString(QueryStructure qData,boolean openFlag){
 		if(openFlag){
 		 String retString="<item text=\"Projected Columns\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:toSetOfNodes(qData.getLstProjectedCols())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstProjectedCols())){
 			 retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 		 }
 		 retString+="</item>\n";
@@ -97,7 +97,7 @@ public class SerializeXML {
 		}
 		else{
 			 String retString="<item text=\"Projected Columns\" id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:toSetOfNodes(qData.getLstProjectedCols())){
+			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstProjectedCols())){
 				 retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 			 }
 			 retString+="</item>\n";
@@ -108,7 +108,7 @@ public class SerializeXML {
 	
 	public static void printProjectedColumns(QueryData qData){
 		 out.println("<item text=\"Projected Columns\" open=\"1\" id=\""+ idCounter++ +"\">");
-		 for(parsing.Node n:toSetOfNodes(qData.getProjectionList())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getProjectionList())){
 			 out.println(spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>");
 		 }
 		 out.println("</item>");
@@ -206,23 +206,20 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
-	public static Set<Node> toSetOfNodes(List<Node> nodes){
-		Set<Node> tempSet=new HashSet<Node>();
-		if(nodes!=null){
-			for(Node n:nodes)
-				tempSet.add(n);
-		}
-		return tempSet;
-	}
+
 	
 	public static parsing.Node cloneNodeForXMLserialization(parsing.Node m) throws CloneNotSupportedException{
 		parsing.Node n=m.clone();
+		
 		if(n!=null&&n.getOperator()!=null){
 			if(n.getOperator().equals("<")){
 				n.setOperator("&lt;");
 			}
 			else if(n.getOperator().equals("<=")){
 				n.setOperator("&lt;=");
+			}
+			else if(n.getOperator().equals("&&")){
+				n.setOperator("&amp;&amp;");
 			}
 		}
 		return n;
@@ -233,7 +230,7 @@ public class SerializeXML {
 		if(openFlag){
 		 String retString="<item text=\"Join Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
 		 retString+="<item text=\"Outer\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:toSetOfNodes(qData.getLstJoinConditions())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstJoinConditions())){
 			 if(n.getJoinType()!=null&&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
 					 ||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
 					 ||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin)))
@@ -241,7 +238,7 @@ public class SerializeXML {
 		 }
 		 retString+="</item>\n";
 		 retString+="<item text=\"Inner\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:toSetOfNodes(qData.getLstJoinConditions())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstJoinConditions())){
 			 if(n.getJoinType()!=null&& !n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
 					 && !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
 					 && !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
@@ -255,7 +252,7 @@ public class SerializeXML {
 		else{
 			String retString="<item text=\"Join Conditions\"  id=\""+ idCounter++ +"\">\n";
 			 retString+="<item text=\"Outer\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:toSetOfNodes(qData.getLstJoinConditions())){
+			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstJoinConditions())){
 				 if(n.getJoinType()!=null&&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
 						 ||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
 						 ||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin)))
@@ -263,7 +260,7 @@ public class SerializeXML {
 			 }
 			 retString+="</item>\n";
 			 retString+="<item text=\"Inner\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:toSetOfNodes(qData.getLstJoinConditions())){
+			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstJoinConditions())){
 				 if(n.getJoinType()!=null&& !n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
 						 && !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
 						 && !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
@@ -279,7 +276,7 @@ public class SerializeXML {
 	public static void printJoinConditions(QueryData qData) throws CloneNotSupportedException{
 		 out.println("<item text=\"Join Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
 		 out.println("<item text=\"Outer\" open=\"1\" id=\""+ idCounter++ +"\">");
-		 for(parsing.Node n:toSetOfNodes(qData.getJoinConditions())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getJoinConditions())){
 			 if(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
 					 ||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
 					 ||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
@@ -287,7 +284,7 @@ public class SerializeXML {
 		 }
 		 out.println("</item>");
 		 out.println("<item text=\"Inner\" open=\"1\" id=\""+ idCounter++ +"\">");
-		 for(parsing.Node n:toSetOfNodes(qData.getJoinConditions())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getJoinConditions())){
 			 if(!n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
 					 && !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
 					 && !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
@@ -312,7 +309,7 @@ public class SerializeXML {
 	public static String getSubqueryConditionsString(QueryStructure qData, boolean openFlag) throws  CloneNotSupportedException{
 		if(openFlag){
 		 String retString="<item text=\"Subquery Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:toSetOfNodes(qData.getAllSubQueryConds())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getAllSubQueryConds())){
 			 if(n!=null && n.getType()!=null){
 				 if(n.getType().equals(Node.getInNodeType())||n.getType().equals(Node.getNotInNodeType())){
 					 if(n.getLeft()!=null&&n.getRight()!=null){
@@ -355,8 +352,43 @@ public class SerializeXML {
 		}
 		else{
 			String retString="<item text=\"Subquery Conditions\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:toSetOfNodes(qData.getAllSubQueryConds())){
-				 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+			 for(parsing.Node n:Util.toSetOfNodes(qData.getAllSubQueryConds())){
+				 if(n!=null && n.getType()!=null){
+					 if(n.getType().equals(Node.getInNodeType())||n.getType().equals(Node.getNotInNodeType())){
+						 if(n.getLeft()!=null&&n.getRight()!=null){
+						 if(n.getRight().getSubQueryParser()!=null){
+							 String projCol="."+n.getRight().getSubQueryParser().projectedCols.get(0).getColumn().getColumnName();
+							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getRight().getSubQueryParser());
+							 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getType()+" "+ "subquery"+index+projCol +"\" id=\""+ idCounter++ +"\"/>\n";
+						 }
+						 else if(n.getLeft().getSubQueryParser()!=null){
+							 String projCol="."+n.getLeft().getSubQueryParser().projectedCols.get(0).getColumn().getColumnName();
+							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getLeft().getSubQueryParser());
+							 retString+=spaceTab+"<item text=\""+"subquery"+index+projCol+ " "+n.getType()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+						 }
+						 }
+					 }
+					 else if(n.getType().equals(Node.getBroNodeSubQType())){
+						 if(n.getLeft()!=null&&n.getRight()!=null){
+							 if(n.getRight().getSubQueryParser()!=null){
+								 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getRight().getSubQueryParser());
+								 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getOperator()+" "+n.getRight().getType()+ " subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
+							 }
+							 else if(n.getLeft().getSubQueryParser()!=null){
+								 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getLeft().getSubQueryParser());
+								 retString+=spaceTab+"<item text=\""+"subquery"+index+ " "+n.getLeft().getType()+" "+n.getOperator()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+							 }						 
+						 }					 
+					 }
+					 else if(n.getType().equalsIgnoreCase(Node.getExistsNodeType())||n.getType().equalsIgnoreCase(Node.getNotExistsNodeType())){
+						 if(n.getSubQueryParser()!=null){
+							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getSubQueryParser());
+							 retString+=spaceTab+"<item text=\""+ n.getType()+ " "+ "subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
+
+						 }
+					 }
+					 
+				 }
 			 }
 			 retString+="</item>\n";
 			 return retString;
@@ -366,7 +398,7 @@ public class SerializeXML {
 	public static String getSelectionConditionsString(QueryStructure qData, boolean openFlag) throws  CloneNotSupportedException{
 		if(openFlag){
 		 String retString="<item text=\"Selection Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:toSetOfNodes(qData.getLstSelectionConditions())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstSelectionConditions())){
 			 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 		 }
 		 retString+="</item>\n";
@@ -374,7 +406,7 @@ public class SerializeXML {
 		}
 		else{
 			String retString="<item text=\"Selection Conditions\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:toSetOfNodes(qData.getLstSelectionConditions())){
+			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstSelectionConditions())){
 				 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 			 }
 			 retString+="</item>\n";
@@ -384,7 +416,7 @@ public class SerializeXML {
 	
 	public static void printSelectionConditions(QueryData qData) throws  CloneNotSupportedException{
 		 out.println("<item text=\"Selection Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
-		 for(parsing.Node n:toSetOfNodes(qData.getSelectionConditions())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getSelectionConditions())){
 			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
 		 }
 		 out.println("</item>");
@@ -421,7 +453,7 @@ public class SerializeXML {
 	public static String getHavingConditionsString(QueryStructure qData, boolean openFlag) throws CloneNotSupportedException{
 		if(openFlag){
 		String retString="<item text=\"Having Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:toSetOfNodes(qData.getLstHavingConditions())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstHavingConditions())){
 			 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 		 }
 		 retString+="</item>\n";
@@ -429,7 +461,7 @@ public class SerializeXML {
 		}
 		else{
 			String retString="<item text=\"Having Conditions\" id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:toSetOfNodes(qData.getLstHavingConditions())){
+			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstHavingConditions())){
 				 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 			 }
 			 retString+="</item>\n";
@@ -439,7 +471,7 @@ public class SerializeXML {
 	
 	public static void printHavingConditions(QueryData qData) throws CloneNotSupportedException{
 		 out.println("<item text=\"Having Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
-		 for(parsing.Node n:toSetOfNodes(qData.getHavingClause())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getHavingClause())){
 			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
 		 }
 		 out.println("</item>");
@@ -448,7 +480,7 @@ public class SerializeXML {
 	public static String getGroupByColumnsString(QueryStructure qData, boolean openFlag) {
 		if(openFlag){
 		String retString="<item text=\"GroupBy Columns\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:toSetOfNodes(qData.getLstGroupByNodes())){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstGroupByNodes())){
 			 retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 		 }
 		 retString+="</item>\n";
@@ -456,7 +488,7 @@ public class SerializeXML {
 		}
 		else{
 			String retString="<item text=\"GroupBy Columns\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:toSetOfNodes(qData.getLstGroupByNodes())){
+			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstGroupByNodes())){
 				 retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 			 }
 			 retString+="</item>\n";
@@ -467,7 +499,7 @@ public class SerializeXML {
 	
 	public static void printGroupByColumns(QueryData qData) {
 		 out.println("<item text=\"GroupBy Columns\" open=\"1\" id=\""+ idCounter++ +"\">");
-		 for(parsing.Node n:toSetOfNodes(qData.GroupByNodes)){
+		 for(parsing.Node n:Util.toSetOfNodes(qData.GroupByNodes)){
 			 out.println(spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>");
 		 }
 		 out.println("</item>");
@@ -475,16 +507,16 @@ public class SerializeXML {
 	
 	public static String getJoinTablesString(QueryStructure qData, boolean openFlag){
 		if(openFlag){
-		 String retString="<item text=\"Tables\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(String str:qData.getLstRelations()){
+		 String retString="<item text=\"Table Instances\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+		 for(String str:qData.getLstRelationInstances()){
 			 retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
 		 }
 		 retString+="</item>\n";
 		 return retString;
 		}
 		else{
-			String retString="<item text=\"Tables\" id=\""+ idCounter++ +"\">\n";
-			 for(String str:qData.getLstRelations()){
+			String retString="<item text=\"Table Instances\" id=\""+ idCounter++ +"\">\n";
+			 for(String str:qData.getLstRelationInstances()){
 				 retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
 			 }
 			 retString+="</item>\n";

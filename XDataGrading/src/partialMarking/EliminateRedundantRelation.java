@@ -292,7 +292,7 @@ public class EliminateRedundantRelation {
 		if(query.getLstJoinConditions()!=null)
 		selectionConds.addAll(query.getLstJoinConditions());
 		
-		//selectionConds=removeDuplicates(selectionConds);
+		selectionConds=Util.removeDuplicates(selectionConds);
 
 		Map<String, ArrayList<Node>> relationToSelConds=createRelationToSelectionConditions(selectionConds);
 				
@@ -300,8 +300,7 @@ public class EliminateRedundantRelation {
 		
 		Map<String, ArrayList<Node>> relationToOrderByCols=createRelationToProjectedColumns(query.getLstOrderByNodes());
 
-		ArrayList<ArrayList<Node>> eqClasses = query.getLstEqClasses();		
-		
+		ArrayList<ArrayList<Node>> eqClasses = query.getLstEqClasses();				
 
 		Map<Node, ArrayList<Node> > nodeToEqNodes = new HashMap<Node, ArrayList<Node>>();
 		Map<String, ArrayList<Node>> relationToEqNodes = new HashMap<String, ArrayList<Node>>();
@@ -396,6 +395,7 @@ public class EliminateRedundantRelation {
 		/** Get the list of foreign keys*/
 
 		ArrayList<ForeignKey> foreignKeys = query.getLstForeignKeysModified();
+		
 	
 		Set<String> baseTables=new HashSet<String>();
 		
@@ -518,7 +518,7 @@ public class EliminateRedundantRelation {
 				joinConds.add(selCond);
 		}
 		if(joinConds!=null&&joinConds.size()>0){
-			joinConds=removeDuplicates(joinConds);
+			joinConds=Util.removeDuplicates(joinConds);
 			if(joinConds.size()>=2){
 				logger.info("Table "+tableNameNo +" is involved in multiple join conditions, and hence cannot be removed");
 				return true;
@@ -527,41 +527,7 @@ public class EliminateRedundantRelation {
 		return false;
 	}
 
-	/*
-	 * remove duplicates from a list of input selection/join conditions
-	 */
-	private static ArrayList<Node> removeDuplicates(ArrayList<Node> selectionConds) {
-		// TODO Auto-generated method stub
-		boolean removedFlag;
-		do{
-			removedFlag=false;
-			for(int i=0;i<selectionConds.size()-1;i++){
-				Node src=selectionConds.get(i);
-				boolean found=false;
-				for(int j=i+1;j<selectionConds.size();j++){
-					Node tar=selectionConds.get(j);
-					if(src==tar){
-						found=true;
-						break;
-					}
-					String srcLeftStr=src.getLeft().toString();
-					String srcRightStr=src.getRight().toString();
-					String tarLeftStr=tar.getLeft().toString();
-					String tarRightStr=tar.getRight().toString();
-					if(srcLeftStr.equalsIgnoreCase(tarLeftStr)&&srcRightStr.equalsIgnoreCase(tarRightStr)){
-						found=true;
-						break;
-					}
-				}
-				if(found){
-					selectionConds.remove(i);
-					removedFlag=true;
-					break;
-				}
-			}
-		} while(removedFlag);
-		return selectionConds;
-	}
+
 
 	public static Map<String, ArrayList<Node>> createRelationToProjectedColumns(Vector<Node> projectedCols){
 		Map<String, ArrayList<Node>> relationToProjCols = new HashMap<String, ArrayList<Node>>();
@@ -1668,7 +1634,7 @@ public class EliminateRedundantRelation {
 	 */	
 	public static ForeignKey getForeignKey(String relation1, String relation2, ArrayList<ForeignKey> foreignKeys){
 		for(ForeignKey fk : foreignKeys){
-			if((fk.getFKTablename().equals(relation1) && fk.getReferenceTable().getTableName().equals(relation2))){
+			if((fk.getFKTablename().equalsIgnoreCase(relation1) && fk.getReferenceTable().getTableName().equalsIgnoreCase(relation2))){
 				return fk;
 			}
 		}				
