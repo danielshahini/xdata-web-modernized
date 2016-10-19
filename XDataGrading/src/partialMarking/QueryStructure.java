@@ -1,5 +1,7 @@
 /**
- * 
+ * @author mathew - code is an adaptation of the previous code from
+ * parsing.QueryParser.java, acknowledgements to its authors
+ *
  */
 package partialMarking;
 
@@ -73,24 +75,6 @@ import parsing.TreeNode;
 import testDataGen.GenerateCVC1;
 import util.TableMap;
 
-class QueryAliasMap {
-	/** Data Structure to avoid aliasing in queries.*/
-
-	String queryId;
-	String queryIdOrTableName;
-	String aliasOfSubqueryOrTable;
-
-	QueryAliasMap() {
-		queryId = null;
-		queryIdOrTableName = null;
-		aliasOfSubqueryOrTable = null;
-	}
-}
-
-/**
- * @author mathew
- *
- */
 
 	public class QueryStructure implements Serializable{
 
@@ -101,32 +85,13 @@ class QueryAliasMap {
 		private TableMap tableMap;
 
 		private Vector<TreeNode> inOrderList;
-		private Vector<JoinClauseInfo> joinClauseInfoVector;
 
-		private Vector<JoinClauseInfo> selectionClauseVector;
 		private Vector<JoinClauseInfo> foreignKeyVector;
-
 
 		private Vector<ForeignKey> foreignKeyVectorModified;
 
 		private Vector<JoinClauseInfo> foreignKeyVectorOriginal;
-		private Vector<Vector> equivalenceClassVector;
-		// currentAliasTables holds the Aliasname and the tablename for the current
-		// level of the query.
-		// If table is a subquery, it holds alias and "SUBQUERY"
-		private HashMap<String, String> currentAliasTables;
-
-
 		
-		// Data Structure to avoid aliasing in queries.
-		private Vector<QueryAliasMap> qam;
-
-
-		private String currentQueryId;
-		private int tableNo; // required for maintaining the repeated occurences of
-		// tables.
-		// Data Structure to kill IN Clause Mutants and perhaps other subquery
-		// mutants also
 		private HashMap<Integer, Vector<JoinClauseInfo>> inConds;
 		public Vector<Node> allConds;
 		private Vector<Node> selectionConds;
@@ -160,11 +125,6 @@ class QueryAliasMap {
 		private HashMap<Integer,Vector<CaseCondition>> caseMap = new HashMap<Integer,Vector<CaseCondition>>();
 		
 		public String setOperator;
-		public boolean isDeleteNode;
-		public boolean isUpdateNode;
-		public boolean isInSubQ;
-		public Vector<Node> updateColumn;
-
 		public QueryStructure leftQuery;
 		public QueryStructure rightQuery; 
 
@@ -172,21 +132,22 @@ class QueryAliasMap {
 		Vector<AggregateFunction> aggFunc;
 		Vector<Node> groupByNodes;
 		Node havingClause;
-		JoinTreeNode root;
-		HashMap<String, Node> constraintsWithParameters;
+
+		JoinTreeNode root;//currently not used
+		public RelationHierarchyNode topLevelRelation;//currently not used
 		
 		//added by mathew on 18 June 2016 for processing order by clause
 		//order by 
 		Vector<Node> orderByNodes;
 		
+		//Representation in DNF
+		Vector<Vector<Node>> dnfCond;
 		// Subquery
 		private Vector<Node> allCondsExceptSubQuery;
 		Vector<Node> allSubQueryConds;
 		private Vector<Node> allAnyConds;
 		Vector<Node> lhsRhsConds;
 		public int paramCount;
-		// private Node whereClausePred;
-
 		public Vector<Conjunct> conjuncts;
 		Vector<Vector<Node>> allDnfSelCond;
 		Vector<Vector<Node>> dnfLikeConds;
@@ -199,22 +160,12 @@ class QueryAliasMap {
 		//To store from clause subqueries
 		private Vector<QueryStructure> FromClauseSubqueries;//To store from clause subqueries
 		private Vector<QueryStructure> WhereClauseSubqueries;//To store where clause sub queries
-		private HashMap<String, Vector<Node>> aliasedToOriginal;//To store the mapping from aliased columns names to original names
 
-		private HashMap<String, Integer> subQueryNames;//TO store names for the sub queries
-
-		private HashMap<String, Integer[]> tableNames;//It stores which occurrence of relation occurred in which block of the query, the value contains [queryType, queryIndex]
-
-		//Representation in DNF
-		Vector<Vector<Node>> dnfCond;
 
 		static String[] cvcRelationalOperators = { "DUMMY", "=", "/=", ">",
 			">=", "<", "<=", "&&"}; // IsNull and IsNotNull not supported currently
 									/*&& added by mathew on 1st Aug 2016.*/
-
-		public FromListElement queryAliases;
 		
-		public RelationHierarchyNode topLevelRelation;
 		
 		/** The following data members added by mathew on 11 Oct 2016
 		 */				
@@ -640,9 +591,9 @@ class QueryAliasMap {
 			for(FromListElement fle:visitedFromListElements){
 				if(fle!=null && (fle.getTableName()!=null||fle.getTableNameNo()!=null))
 					retString+="\n "+fle.toString();
-				else if(fle!=null && fle.getSubQueryParser()!=null){
+				else if(fle!=null && fle.getSubQueryStructure()!=null){
 					retString+="\n "+fle.toString();
-					retString+=fromListElementsToString(fle.getSubQueryParser().getFromListElements());
+					retString+=fromListElementsToString(fle.getSubQueryStructure().getFromListElements());
 				}
 				else if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
 					retString+="\n "+fle.toString();
@@ -670,58 +621,8 @@ class QueryAliasMap {
 		}
 
 
-		public Vector<JoinClauseInfo> getJoinClauseInfoVector() {
-			return joinClauseInfoVector;
-		}
-
-		public void setJoinClauseInfoVector(Vector<JoinClauseInfo> joinClauseInfoVector) {
-			this.joinClauseInfoVector = joinClauseInfoVector;
-		}
-
-
-		public Vector<QueryAliasMap> getQam() {
-			return qam;
-		}
-
-		public void setQam(Vector<QueryAliasMap> qam) {
-			this.qam = qam;
-		}
-
-		public void setQueryAliases(FromListElement queryAliases) {
-			this.queryAliases = queryAliases;
-		}
-
-
-
 		public void setFromClauseSubqueries(Vector<QueryStructure> fromClauseSubqueries) {
 			FromClauseSubqueries = fromClauseSubqueries;
-		}
-
-
-		public HashMap<String, Vector<Node>> getAliasedToOriginal() {
-			return aliasedToOriginal;
-		}
-
-		public void setAliasedToOriginal(HashMap<String, Vector<Node>> aliasedToOriginal) {
-			this.aliasedToOriginal = aliasedToOriginal;
-		}
-
-
-		public HashMap<String, Integer> getSubQueryNames() {
-			return subQueryNames;
-		}
-
-		public void setSubQueryNames(HashMap<String, Integer> subQueryNames) {
-			this.subQueryNames = subQueryNames;
-		}
-
-
-		public HashMap<String, Integer[]> getTableNames() {
-			return tableNames;
-		}
-
-		public void setTableNames(HashMap<String, Integer[]> tableNames) {
-			this.tableNames = tableNames;
 		}
 
 
@@ -782,13 +683,6 @@ class QueryAliasMap {
 			this.dnfJoinCond = dnfJoinCond;
 		}
 
-
-
-
-		// @junaid modified
-		public FromListElement getQueryAliases() {
-			return queryAliases;
-		}
 
 		public Vector<Node> getLhsRhsConds() {
 			return lhsRhsConds;
@@ -909,8 +803,6 @@ class QueryAliasMap {
 		public QueryStructure(TableMap tableMap) {
 			this.tableMap = tableMap;
 			this.inOrderList = new Vector<TreeNode>();
-			this.joinClauseInfoVector = new Vector<JoinClauseInfo>();
-			this.selectionClauseVector = new Vector<JoinClauseInfo>();
 			this.foreignKeyVector = new Vector<JoinClauseInfo>();
 			orNode = new ORNode();
 			this.conjuncts = new Vector<Conjunct>();
@@ -925,17 +817,9 @@ class QueryAliasMap {
 			//orNode = new ORNode();
 			this.foreignKeyVectorModified = new Vector<ForeignKey>();
 
-			this.equivalenceClassVector = new Vector<Vector>();
-			this.currentAliasTables = new HashMap<String, String>();
-			qam = new Vector<QueryAliasMap>();
-			this.currentQueryId = "Q";
 			inConds = new HashMap<Integer, Vector<JoinClauseInfo>>();
 			allConds = new Vector<Node>();
 			equivalenceClasses = new Vector<Vector<Node>>();
-
-			aliasedToOriginal = new HashMap<String, Vector<Node>>();
-			subQueryNames = new HashMap<String, Integer>();
-			tableNames = new HashMap<String, Integer[]>();
 
 			joinConds = new Vector<Node>();
 			foreignKeys = new Vector<Node>();
@@ -951,13 +835,10 @@ class QueryAliasMap {
 			havingClause = new Node();
 			allSubQueryConds = new Vector<Node>();
 			allCondsExceptSubQuery = new Vector<Node>();
-			tableNo = 0;
 
 			root = null;
-			constraintsWithParameters = new HashMap<String, Node>();
 			lhsRhsConds = new Vector<Node>();
 
-			updateColumn=new Vector<Node>();
 			this.FromClauseSubqueries = new Vector<QueryStructure>();
 			this.WhereClauseSubqueries = new Vector<QueryStructure>();
 			//added by mathew on oct 1st 2016
@@ -1591,14 +1472,6 @@ class QueryAliasMap {
 			this.inOrderList = inOrderList;
 		}
 
-		public Vector<JoinClauseInfo> getSelectionClauseVector() {
-			return selectionClauseVector;
-		}
-
-		public void setSelectionClauseVector(
-				Vector<JoinClauseInfo> selectionClauseVector) {
-			this.selectionClauseVector = selectionClauseVector;
-		}
 
 		public Vector<JoinClauseInfo> getForeignKeyVector() {
 			return foreignKeyVector;
@@ -1626,37 +1499,6 @@ class QueryAliasMap {
 			this.foreignKeyVectorOriginal = foreignKeyVectorOriginal;
 		}
 
-		public Vector<Vector> getEquivalenceClassVector() {
-			return equivalenceClassVector;
-		}
-
-		public void setEquivalenceClassVector(Vector<Vector> equivalenceClassVector) {
-			this.equivalenceClassVector = equivalenceClassVector;
-		}
-
-		public HashMap<String, String> getCurrentAliasTables() {
-			return currentAliasTables;
-		}
-
-		public void setCurrentAliasTables(HashMap<String, String> currentAliasTables) {
-			this.currentAliasTables = currentAliasTables;
-		}
-
-		public String getCurrentQueryId() {
-			return currentQueryId;
-		}
-
-		public void setCurrentQueryId(String currentQueryId) {
-			this.currentQueryId = currentQueryId;
-		}
-
-		public int getTableNo() {
-			return tableNo;
-		}
-
-		public void setTableNo(int tableNo) {
-			this.tableNo = tableNo;
-		}
 
 		public Vector<Node> getInClauseConds() {
 			return inClauseConds;
@@ -1664,33 +1506,7 @@ class QueryAliasMap {
 
 		public void setInClauseConds(Vector<Node> inClauseConds) {
 			this.inClauseConds = inClauseConds;
-		}
-
-		
-
-		public boolean isDeleteNode() {
-			return isDeleteNode;
-		}
-
-		public void setDeleteNode(boolean isDeleteNode) {
-			this.isDeleteNode = isDeleteNode;
-		}
-
-		public boolean isUpdateNode() {
-			return isUpdateNode;
-		}
-
-		public void setUpdateNode(boolean isUpdateNode) {
-			this.isUpdateNode = isUpdateNode;
-		}
-
-		public Vector<Node> getUpdateColumn() {
-			return updateColumn;
-		}
-
-		public void setUpdateColumn(Vector<Node> updateColumn) {
-			this.updateColumn = updateColumn;
-		}
+		}		
 
 		public QueryStructure getLeftQuery() {
 			return leftQuery;
@@ -1706,15 +1522,6 @@ class QueryAliasMap {
 
 		public void setRightQuery(QueryStructure rightQuery) {
 			this.rightQuery = rightQuery;
-		}
-
-		public HashMap<String, Node> getConstraintsWithParameters() {
-			return constraintsWithParameters;
-		}
-
-		public void setConstraintsWithParameters(
-				HashMap<String, Node> constraintsWithParameters) {
-			this.constraintsWithParameters = constraintsWithParameters;
 		}
 
 		public Vector<Node> getAllAnyConds() {

@@ -1,3 +1,4 @@
+
 /**
  * 
  */
@@ -1139,6 +1140,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		System.out.println("count"+count);
 		conn.close();
 		writer.close();
+		goodWriter.close();
 	}
 	
 	/* method for testing parsing in batch. Assumption: queries are stored in file <srcFileName>, the non-parsing queries are
@@ -1296,13 +1298,13 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
 //			readQueriesFromDBParseAndTest();
-//			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
+			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
 //				System.out.println("key:"+e.getKey()+" value"+e.getValue().getPrimaryKey());
 			
-			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
+//			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
 //			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
 

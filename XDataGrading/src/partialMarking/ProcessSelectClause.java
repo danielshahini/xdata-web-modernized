@@ -469,7 +469,7 @@ public class ProcessSelectClause {
 			SelectBody selBody=subSelect.getSelectBody();
 			QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
 			leftFLE=new FromListElement();
-			leftFLE.setSubQueryParser(subQueryParser);
+			leftFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				leftFLE.setAliasName(subSelect.getAlias().getName());
 			}
@@ -504,7 +504,7 @@ public class ProcessSelectClause {
 					SubSelect subSelect=(SubSelect) fromItem;					
 					QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
 					rightFLE=new FromListElement();
-					rightFLE.setSubQueryParser(subQueryParser);
+					rightFLE.setSubQueryStructure(subQueryParser);
 					if(subSelect.getAlias()!=null){
 						rightFLE.setAliasName(subSelect.getAlias().getName());
 					}
@@ -622,9 +622,9 @@ public class ProcessSelectClause {
 		for(FromListElement fle:visitedFromListElements){
 			if(fle!=null && (fle.getTableName()!=null||fle.getTableNameNo()!=null))
 				System.out.println(fle.toString());
-			else if(fle!=null && fle.getSubQueryParser()!=null){
+			else if(fle!=null && fle.getSubQueryStructure()!=null){
 				System.out.println(fle.toString());
-				display(fle.getSubQueryParser().getFromListElements());
+				display(fle.getSubQueryStructure().getFromListElements());
 			}
 			else if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
 				System.out.println(fle.toString());
@@ -688,7 +688,7 @@ public class ProcessSelectClause {
 			SubSelect subSelect=(SubSelect) leftFromItem;					
 			QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
 			leftFLE=new FromListElement();
-			leftFLE.setSubQueryParser(subQueryParser);
+			leftFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				leftFLE.setAliasName(subSelect.getAlias().getName());
 			}
@@ -720,7 +720,7 @@ public class ProcessSelectClause {
 			SubSelect subSelect=(SubSelect) rightFromItem;					
 			QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
 			rightFLE=new FromListElement();
-			rightFLE.setSubQueryParser(subQueryParser);
+			rightFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				rightFLE.setAliasName(subSelect.getAlias().getName());
 			}
@@ -952,15 +952,6 @@ public class ProcessSelectClause {
 				n.setRight(null); 
 
 
-				//Storing sub query details
-				if(qParser.getSubQueryNames().containsKey(tableName)){//If this node is inside a sub query
-					n.setQueryType(1);
-					n.setQueryIndex(qParser.getSubQueryNames().get(tableName));
-				}
-				else if(qParser.getTableNames().containsKey(tableName)){
-					n.setQueryType(qParser.getTableNames().get(tableName)[0]);
-					n.setQueryIndex(qParser.getTableNames().get(tableName)[1]);
-				}
 
 				if(n.getTableNameNo()==null||n.getTableNameNo().isEmpty()){
 					for(Node m:Util.getAllProjectedColumns(qParser.fromListElements, qParser)){
@@ -1205,7 +1196,7 @@ public class ProcessSelectClause {
 					subS=(SubSelect)sqn.getRightItemsList();
 				}
 				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
-				rhs.setSubQueryParser(subQueryParser);	
+				rhs.setSubQueryStructure(subQueryParser);	
 				processWhereSubSelect(subS,subQueryParser,qParser);
 
 
@@ -1232,7 +1223,7 @@ public class ProcessSelectClause {
 
 				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
 				Node existsNode=new Node();
-				existsNode.setSubQueryParser(subQueryParser);
+				existsNode.setSubQueryStructure(subQueryParser);
 				existsNode.setType(Node.getExistsNodeType());
 				existsNode.setSubQueryConds(null);
 				processWhereSubSelect(subS,subQueryParser,qParser);
@@ -1256,7 +1247,7 @@ public class ProcessSelectClause {
 
 				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
 				Node node=new Node();
-				node.setSubQueryParser(subQueryParser);
+				node.setSubQueryStructure(subQueryParser);
 				node.setType(Node.getBroNodeSubQType());
 				processWhereSubSelect(sqn,subQueryParser,qParser);
 
@@ -1570,7 +1561,7 @@ public class ProcessSelectClause {
 
 				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
 				Node allNode=new Node();
-				allNode.setSubQueryParser(subQueryParser);
+				allNode.setSubQueryStructure(subQueryParser);
 				allNode.setType(Node.getAllNodeType());
 				processWhereSubSelect(ss,subQueryParser,qParser);
 
@@ -1583,7 +1574,7 @@ public class ProcessSelectClause {
 
 				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
 				Node anyNode=new Node();
-				anyNode.setSubQueryParser(subQueryParser);
+				anyNode.setSubQueryStructure(subQueryParser);
 				anyNode.setType(Node.getAnyNodeType());
 				processWhereSubSelect(ss,subQueryParser,qParser);
 
@@ -1831,8 +1822,8 @@ public class ProcessSelectClause {
 					if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 						return k;
 				}
-				if(fle.getSubQueryParser()!=null){
-					Node k= transformToAbsoluteTableNames(n,fle.getSubQueryParser().getFromListElements(),true,fle.getSubQueryParser());
+				if(fle.getSubQueryStructure()!=null){
+					Node k= transformToAbsoluteTableNames(n,fle.getSubQueryStructure().getFromListElements(),true,fle.getSubQueryStructure());
 					if(k!=null&&!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 						return k;					
 
@@ -1842,8 +1833,8 @@ public class ProcessSelectClause {
 			if(fle!=null&&fle.getTableName()==null && fle.getAliasName()!=null){
 				logger.info(" alias name is not null, but table name is null");
 				if(fle.getAliasName().equalsIgnoreCase(n.getTableNameNo())){
-					if(fle.getSubQueryParser()!=null){
-						Node k= transformToAbsoluteTableNames(n,fle.getSubQueryParser().getFromListElements(),true,fle.getSubQueryParser());
+					if(fle.getSubQueryStructure()!=null){
+						Node k= transformToAbsoluteTableNames(n,fle.getSubQueryStructure().getFromListElements(),true,fle.getSubQueryStructure());
 
 						if(k!=null&&!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 							return k;		
@@ -1861,10 +1852,10 @@ public class ProcessSelectClause {
 				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 					return k;
 			}
-			if(fle!=null && fle.getSubQueryParser()!=null){
+			if(fle!=null && fle.getSubQueryStructure()!=null){
 				logger.info(" subQueryParser: checking projected cols");
 
-				for(Node m:fle.getSubQueryParser().getProjectedCols()){
+				for(Node m:fle.getSubQueryStructure().getProjectedCols()){
 					if(m.getAgg()!=null && m.getAgg().getAggAliasName()!=null){
 						if(n.getColumn().getColumnName().equalsIgnoreCase(m.getAgg().getAggAliasName())){
 							logger.info(" agg alias Name "+m.getAgg().getAggAliasName()+" node "+m);
@@ -1881,7 +1872,7 @@ public class ProcessSelectClause {
 					}
 				}	
 
-				Node k=transformToAbsoluteTableNames(n,fle.getSubQueryParser().getFromListElements(),false, fle.getSubQueryParser());
+				Node k=transformToAbsoluteTableNames(n,fle.getSubQueryStructure().getFromListElements(),false, fle.getSubQueryStructure());
 				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 					return k;
 

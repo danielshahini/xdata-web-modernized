@@ -154,8 +154,8 @@ public class Util {
 					}
 				}
 			}
-			else if(f.getSubQueryParser()!=null){
-				Node n=getNodeForCount(f.getSubQueryParser().fromListElements,f.getSubQueryParser());
+			else if(f.getSubQueryStructure()!=null){
+				Node n=getNodeForCount(f.getSubQueryStructure().fromListElements,f.getSubQueryStructure());
 				if(n!=null){
 					n.setType(Node.getColRefType());
 					return n;
@@ -355,8 +355,8 @@ public class Util {
 			else if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
 				projectedColumns.addAll(getAllProjectedColumns(fle.getTabs(),qParser));				
 			}
-			else if(fle!=null && fle.getSubQueryParser()!=null){
-				projectedColumns.addAll(fle.getSubQueryParser().getProjectedCols());
+			else if(fle!=null && fle.getSubQueryStructure()!=null){
+				projectedColumns.addAll(fle.getSubQueryStructure().getProjectedCols());
 			}
 		}
 		return projectedColumns;
