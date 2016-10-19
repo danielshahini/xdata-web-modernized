@@ -74,8 +74,8 @@ public class TestPartialMarking {
 		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
 //		for(parsing.Conjunct c:queryDetails.qStructure.conjuncts){
-//			for(Node n :queryDetails.qStructure.getJoinConds())
-//				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
+			for(Node n :queryDetails.qStructure.getJoinConds())
+				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
 //		}
 
 		return queryDetails;

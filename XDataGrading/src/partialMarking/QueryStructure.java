@@ -2241,12 +2241,17 @@ import util.TableMap;
 		}
 
 		/**
-		 * Revamp allConds. It should now contain the distinct predicates not
+		 * modified by mathew 
+		 * takes the possibly complex expression of nodes stored in qStruct.allConds, splits it into atomic conditions, 
+		 * disjunct of atomic conditions, separates selection conditions, join conditions, is null conditions, subQuery conditions,
+		 *  like conditions etc., stores each conjunct in a disjunct in list qStruct.conjuncts		 */ 
+		 
+		 /* Revamp allConds. It should now contain the distinct predicates not
 		 * containing a AND (or OR but ORs not considered for the moment) TODO: Do
 		 * something about the presence of ORs: Need to convert the predicate into
 		 * CNF and then create datasets by nulling each pair Eg.: if R.a = S.b OR
 		 * T.c = U.d is the predicate, then create datasets by killing each of the
-		 * following: 1. R.a and Tc 2. R.a and U.d 3. S.b and T.c 4. S.b and U.d
+		 * following: 1. R.a and Tc 2. R.a and U.d 3. S.b and T.c 4. S.b and U.d 
 		 */
 
 		public static void flattenAndSeparateAllConds(QueryStructure qParser) {

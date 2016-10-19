@@ -131,18 +131,27 @@ public class ProcessSelectClause {
 		}
 
 		ProcessSelectClause.modifyTreeForCompareSubQ(qStruct);		
-
+		
+		/* takes the possibly complex expression of nodes stored in qStruct.allConds, splits it into atomic conditions, 
+		 * disjunct of atomic conditions, separates selection conditions, join conditions, is null conditions, subQuery conditions,
+		 *  like conditions etc., stores each conjunct in a disjunct in list qStruct.conjuncts		 */
 		QueryStructure.flattenAndSeparateAllConds(qStruct);
 
 		for(Conjunct conjunct:qStruct.conjuncts)			
 			conjunct.createEqClass();
+		
+		//compute foreign keys from tableMap 
 		partialMarking.Util.foreignKeyClosure(qStruct);
 		
+		// now processes projection list, group by list, having conditions, and order by list
 		ProcessSelectClause.processProjectionList(plainSelect,qStruct);
 		ProcessSelectClause.processGroupByList(plainSelect,qStruct);
 		ProcessSelectClause.processHavingClause(plainSelect,qStruct);
 		ProcessSelectClause.processOrderByList(plainSelect,qStruct);
+		
+		//initializes the populates the list structures (eg: lstSelectionConditions) used by Canonicalization step subsequently
 		qStruct.initializeQueryListStructures();
+		
 		//System.out.println(qStruct.toString());
 	}
 
