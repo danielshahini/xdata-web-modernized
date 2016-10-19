@@ -79,76 +79,88 @@ public class ProcessSelectClause {
 	 * 
 	 * @param plainSelect
 	 * @param debug
-	 * @param qParser
+	 * @param qStruct
 	 * @throws Exception
 	 * 
 	 * processes the  plainSelect clause, calls the respective methods for processing its components/sub-clauses, which 
 	 * in turn stores the objects that represent the sub-clauses  in the appropriate data structures in the 
-	 * qParser object (3rd argument) . 
+	 * qStruct object (3rd argument) . 
 	 * 
 	 */
 
-	public static void ProcessSelect(PlainSelect plainSelect, boolean debug, QueryStructure qParser) throws Exception {
+	public static void ProcessSelect(PlainSelect plainSelect, boolean debug, QueryStructure qStruct) throws Exception {
 		logger.info("processing select query"+plainSelect.toString());
 		Vector<Node> joinConditions=new Vector<Node>();
-		ProcessSelectClause.processFromClause(plainSelect,qParser,joinConditions);
+		/* processes the from clause and extracts the join conditions, also the components such as tables, subqueries, 
+		 * and subjoins are stored in qStruct.fromListElements
+		 */
+		ProcessSelectClause.processFromClause(plainSelect,qStruct,joinConditions);
 		for(Node n:joinConditions){
 			logger.info("joinCondition "+n);
 		}
-		//		display(qParser.fromListElements);
+		//		display(qStruct.fromListElements);
 
 		if(plainSelect.getDistinct()!=null){
-			qParser.setIsDistinct(true);
+			qStruct.setIsDistinct(true);
 		}
-		ProcessSelectClause.processWhereClause(plainSelect,qParser);
+		/* processes the where clause and extracts the expression of nodes (stores an atomic condition), 
+		 * and stores it in qStruct.allConds
+		 */
+		ProcessSelectClause.processWhereClause(plainSelect,qStruct);
 
 		if(!joinConditions.isEmpty()){
-			if(!qParser.allConds.isEmpty()) {
-				Vector<Node> allCondsDups=(Vector<Node>) qParser.allConds.clone();
+			if(!qStruct.allConds.isEmpty()) {
+				Vector<Node> allCondsDups=(Vector<Node>) qStruct.allConds.clone();
 				Node NewCond = new Node();
 				NewCond.setType(Node.getAndNodeType());
-
 				NewCond.setLeft(ProcessResultSetNode.getHierarchyOfJoinNode(joinConditions));
-				NewCond.setRight(qParser.allConds.get(0));
-				allCondsDups.remove(qParser.allConds.get(0));
-				allCondsDups.add(NewCond);
-				qParser.allConds.removeAllElements();
-				qParser.allConds.addAll(allCondsDups);
+
+				// the following lines commented by mathew 
+//				NewCond.setRight(qStruct.allConds.get(0));
+//				allCondsDups.remove(qStruct.allConds.get(0));
+//				allCondsDups.add(NewCond);
+//				qStruct.allConds.removeAllElements();
+//				qStruct.allConds.addAll(allCondsDups);
+				// following two lines added by mathew				
+				NewCond.setRight(qStruct.allConds.remove(0));
+				qStruct.allConds.add(NewCond);
 			}
 			else {
-				qParser.allConds.addAll(joinConditions);
+				qStruct.allConds.addAll(joinConditions);
 			}
 		}
 
-		ProcessSelectClause.modifyTreeForCompareSubQ(qParser);		
+		ProcessSelectClause.modifyTreeForCompareSubQ(qStruct);		
 
-		QueryStructure.flattenAndSeparateAllConds(qParser);
+		QueryStructure.flattenAndSeparateAllConds(qStruct);
 
-		for(Conjunct conjunct:qParser.conjuncts)			
+		for(Conjunct conjunct:qStruct.conjuncts)			
 			conjunct.createEqClass();
-
-		partialMarking.Util.foreignKeyClosure(qParser);
-		ProcessSelectClause.processProjectionList(plainSelect,qParser);
-		ProcessSelectClause.processGroupByList(plainSelect,qParser);
-		ProcessSelectClause.processHavingClause(plainSelect,qParser);
-		ProcessSelectClause.processOrderByList(plainSelect,qParser);
-		qParser.initializeQueryListStructures();
-		//System.out.println(qParser.toString());
-
-
+		partialMarking.Util.foreignKeyClosure(qStruct);
+		
+		ProcessSelectClause.processProjectionList(plainSelect,qStruct);
+		ProcessSelectClause.processGroupByList(plainSelect,qStruct);
+		ProcessSelectClause.processHavingClause(plainSelect,qStruct);
+		ProcessSelectClause.processOrderByList(plainSelect,qStruct);
+		qStruct.initializeQueryListStructures();
+		//System.out.println(qStruct.toString());
 	}
 
-	public static void modifyTreeForCompareSubQ(QueryStructure qParser) {
+	/**	 method copied and adapted by mathew for query structure from parsing.Util.java
+	 * 
+	 * @param qStruct
+	 */
+	public static void modifyTreeForCompareSubQ(QueryStructure qStruct) {
 		try{
-			for (Node n: qParser.allConds)  // This is not only for outer block 
+			for (Node n: qStruct.allConds)  // This is not only for outer block 
 				Util.modifyTreeForComapreSubQ(n);
 
-			for(QueryStructure qp: qParser.getFromClauseSubqueries()){//For From clause subqueries
+			for(QueryStructure qp: qStruct.getFromClauseSubqueries()){//For From clause subqueries
 				for(Node n: qp.allConds)
 					Util.modifyTreeForComapreSubQ(n);
 			}
 
-			for(QueryStructure qp: qParser.getWhereClauseSubqueries()){//For where clause subqueries
+			for(QueryStructure qp: qStruct.getWhereClauseSubqueries()){//For where clause subqueries
 				for(Node n: qp.allConds)
 					Util.modifyTreeForComapreSubQ(n);
 			}
@@ -158,18 +170,19 @@ public class ProcessSelectClause {
 	}
 
 
-	/**
+	/** method copied and adapted by mathew for query structure from parsing.QueryParser.java
+	 * 
 	 * This method gets the case statements in where part of the query and adds it to query parser.
 	 * Removes the where condition from the whereclause so that the where clause predicates are not generated
 	 * for the same. 
 	 * 
 	 * @param whereClause
 	 * @param colExpression
-	 * @param qParser
+	 * @param qStruct
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean caseInWhereClause(Expression whereClause, Expression colExpression, QueryStructure qParser, PlainSelect plainSelect) throws Exception{
+	public static boolean caseInWhereClause(Expression whereClause, Expression colExpression, QueryStructure qStruct, PlainSelect plainSelect) throws Exception{
 
 		Vector<CaseCondition> caseConditionsVector = new Vector<CaseCondition>();
 		boolean isCaseExpr = false;
@@ -181,12 +194,12 @@ public class ProcessSelectClause {
 				for(int i=0;i < whenClauses.size();i++ ){
 
 					CaseCondition cC = new CaseCondition();
-					Node n = processExpression(((WhenClause)((CaseExpression) whereClause).getWhenClauses().get(i)).getWhenExpression(), qParser.fromListElements,qParser,plainSelect,null);
+					Node n = processExpression(((WhenClause)((CaseExpression) whereClause).getWhenClauses().get(i)).getWhenExpression(), qStruct.fromListElements,qStruct,plainSelect,null);
 					cC.setCaseConditionNode(n);
 					cC.setCaseCondition(n.toString());
 					cC.setConstantValue(((WhenClause)((CaseExpression) whereClause).getWhenClauses().get(i)).getThenExpression().toString());
 					if(colExpression!= null && colExpression instanceof Column){
-						Node n1 = ((processExpression((colExpression), qParser.fromListElements,qParser,plainSelect,null)));
+						Node n1 = ((processExpression((colExpression), qStruct.fromListElements,qStruct,plainSelect,null)));
 						cC.setColValueForConjunct(UtilsRelatedToNode.getColumn(n1));
 						nodeColumnValue = UtilsRelatedToNode.getColumn(n1);
 						cC.setCaseOperator("=");
@@ -201,7 +214,7 @@ public class ProcessSelectClause {
 			    	cC.setCaseOperator("=");
 			    }*/
 					caseConditionsVector.add(cC);
-					// qParser.getCaseConditions().add(cC);
+					// qStruct.getCaseConditions().add(cC);
 				}
 				isCaseExpr = true;
 				//Add the else clause if present as the last item
@@ -211,7 +224,7 @@ public class ProcessSelectClause {
 					cC.setCaseCondition("else");
 					cC.setConstantValue(((CaseExpression) whereClause).getElseExpression().toString());
 					if(colExpression != null && colExpression instanceof Column){
-						Node n1 = ((processExpression((colExpression), qParser.fromListElements,qParser,plainSelect,null)));
+						Node n1 = ((processExpression((colExpression), qStruct.fromListElements,qStruct,plainSelect,null)));
 						cC.setColValueForConjunct(UtilsRelatedToNode.getColumn(n1));
 					}
 					/* if(cC.getColValueForConjunct() == null){
@@ -221,14 +234,14 @@ public class ProcessSelectClause {
 					caseConditionsVector.add(cC);
 				}
 				//Add Case conditions to queryparser
-				qParser.getCaseConditionMap().put(2,caseConditionsVector);
+				qStruct.getCaseConditionMap().put(2,caseConditionsVector);
 				return isCaseExpr;
 			}
 			else if(whereClause instanceof BinaryExpression){
 				Expression binaryLeftExp = ((BinaryExpression)whereClause).getLeftExpression();
 				Expression binaryRightExp = ((BinaryExpression)whereClause).getRightExpression();
 				if(binaryLeftExp != null){
-					isCaseExists= caseInWhereClause(binaryLeftExp,binaryRightExp,qParser,plainSelect);
+					isCaseExists= caseInWhereClause(binaryLeftExp,binaryRightExp,qStruct,plainSelect);
 					//If Case stmnt exists, rearrange Where clause to omit CASE condition
 					if(isCaseExists){
 						((BinaryExpression) whereClause).setLeftExpression(null);
@@ -237,7 +250,7 @@ public class ProcessSelectClause {
 				}
 
 				if(binaryRightExp != null){
-					isCaseExists = caseInWhereClause(binaryRightExp,binaryLeftExp,qParser,plainSelect);
+					isCaseExists = caseInWhereClause(binaryRightExp,binaryLeftExp,qStruct,plainSelect);
 					//If Case stmnt exists, rearrange Where clause to omit CASE condition
 					if(isCaseExists){
 						((BinaryExpression) whereClause).setLeftExpression(null);
@@ -249,7 +262,7 @@ public class ProcessSelectClause {
 				Expression caseExpr = ((Parenthesis)whereClause).getExpression();
 
 				if(caseExpr instanceof CaseExpression){
-					isCaseExists = caseInWhereClause(caseExpr,colExpression,qParser,plainSelect);
+					isCaseExists = caseInWhereClause(caseExpr,colExpression,qStruct,plainSelect);
 					//If Case stmnt exists, rearrange Where clause to omit CASE condition
 					if(isCaseExists){
 						((Parenthesis) whereClause).setExpression(null);
@@ -264,30 +277,40 @@ public class ProcessSelectClause {
 		}
 	}
 	//Modified for JSQL Exists - Start
+	
+	/** @author mathew 
+	 * processes the where clause and extracts the expression of nodes (stores an atomic condition), 
+	 * and stores it in qStruct.allConds
+	 */
 
-	private static void processWhereClause(PlainSelect plainSelect, QueryStructure qParser) throws Exception{
+	private static void processWhereClause(PlainSelect plainSelect, QueryStructure qStruct) throws Exception{
 		// TODO Auto-generated method stub
 		Expression whereClauseExpression = plainSelect.getWhere();
 		if(whereClauseExpression==null)
 			return;
-		caseInWhereClause(whereClauseExpression,null,qParser,plainSelect);
-		Node whereClause=ProcessSelectClause.processExpression(whereClauseExpression,qParser.fromListElements, qParser,plainSelect,null);
+		caseInWhereClause(whereClauseExpression,null,qStruct,plainSelect);
+		Node whereClause=ProcessSelectClause.processExpression(whereClauseExpression,qStruct.fromListElements, qStruct,plainSelect,null);
 		//System.out.println(" where clause "+whereClause);
 
 		if( whereClause != null) 
-			qParser.allConds.add(whereClause);
+			qStruct.allConds.add(whereClause);
 	}
 
-	private static void processHavingClause(PlainSelect plainSelect, QueryStructure qParser) throws Exception{
+	/** @author mathew 
+	 * processes the having clause and extracts the expression of nodes (stores an atomic condition), 
+	 * and stores it in qStruct.havingClause
+	 */
+
+	private static void processHavingClause(PlainSelect plainSelect, QueryStructure qStruct) throws Exception{
 		// TODO Auto-generated method stub
 		// get having clause
 		Expression hc = plainSelect.getHaving();
 		if(hc==null||hc.toString().isEmpty()){
-			qParser.setHavingClause(null);
+			qStruct.setHavingClause(null);
 			return;
 		}
-		Node havingClause=ProcessSelectClause.processExpression(hc,qParser.fromListElements, qParser,plainSelect,null);
-		qParser.setHavingClause(havingClause);
+		Node havingClause=ProcessSelectClause.processExpression(hc,qStruct.fromListElements, qStruct,plainSelect,null);
+		qStruct.setHavingClause(havingClause);
 		logger.info(hc+" having clause "+havingClause);
 	}
 
@@ -296,16 +319,16 @@ public class ProcessSelectClause {
 	 * 
 	 * 
 	 * @param plainSelect
-	 * @param qParser
+	 * @param qStruct
 	 * @throws Exception
 	 * 
 	 * processes the group by list of plainSelect, and stores the elements as column nodes in groupByNodes list in 
-	 * qParser object (2nd argument) . If the order by element is an alias or an unqualified column, it resolves the 
+	 * qStruct object (2nd argument) . If the order by element is an alias or an unqualified column, it resolves the 
 	 * table name and column name of the element.
 	 * 
 	 */
 
-	private static void processGroupByList(PlainSelect plainSelect, QueryStructure qParser) throws Exception{
+	private static void processGroupByList(PlainSelect plainSelect, QueryStructure qStruct) throws Exception{
 		// TODO Auto-generated method stub
 		if (plainSelect.getGroupByColumnReferences() == null||plainSelect.getGroupByColumnReferences().isEmpty()) 
 			return;
@@ -321,9 +344,9 @@ public class ProcessSelectClause {
 				continue;
 			}
 
-			Node groupByColumn=processExpression(groupExpression,qParser.fromListElements, qParser,plainSelect,null);
+			Node groupByColumn=processExpression(groupExpression,qStruct.fromListElements, qStruct,plainSelect,null);
 			if(groupByColumn.getTableNameNo()==null||groupByColumn.getTableNameNo().isEmpty()){
-				for(Node n:Util.getAllProjectedColumns(qParser.fromListElements, qParser)){
+				for(Node n:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 					if(n.getColumn().getColumnName().equalsIgnoreCase(groupByColumn.getColumn().getColumnName())){
 						groupByColumn.setTable(n.getTable());
 						groupByColumn.setTableNameNo(n.getTableNameNo());
@@ -344,7 +367,7 @@ public class ProcessSelectClause {
 						}
 						if(selExpItem.getAlias()!=null){
 							if(groupByColumn.getColumn().getColumnName().equalsIgnoreCase(selExpItem.getAlias().getName())){
-								groupByColumn =processExpression(e,qParser.fromListElements, qParser,plainSelect,null);
+								groupByColumn =processExpression(e,qStruct.fromListElements, qStruct,plainSelect,null);
 								logger.info(groupByColumn+" alias name resolved " +selExpItem.getAlias().getName());
 								break;
 							}
@@ -353,7 +376,7 @@ public class ProcessSelectClause {
 				}
 
 			}
-			qParser.groupByNodes.addElement(groupByColumn);
+			qStruct.groupByNodes.addElement(groupByColumn);
 			logger.info(groupExpression.toString()+ " group by column "+groupByColumn);
 
 		}
@@ -364,16 +387,16 @@ public class ProcessSelectClause {
 	 * 
 	 * 
 	 * @param plainSelect
-	 * @param qParser
+	 * @param qStruct
 	 * @throws Exception
 	 * 
 	 * processes the order by list of plainSelect, and stores the elements as column nodes in orderByElements list in 
-	 * qParser object (2nd argument) . If the order by element is an alias or an unqualified column, it resolves the 
+	 * qStruct object (2nd argument) . If the order by element is an alias or an unqualified column, it resolves the 
 	 * table name and column name of the element.
 	 * 
 	 */
 
-	private static void processOrderByList(PlainSelect plainSelect, QueryStructure qParser) throws Exception {
+	private static void processOrderByList(PlainSelect plainSelect, QueryStructure qStruct) throws Exception {
 		if (plainSelect.getOrderByElements() == null||plainSelect.getOrderByElements().isEmpty()) 
 			return;
 
@@ -388,9 +411,9 @@ public class ProcessSelectClause {
 				continue;
 			}
 
-			Node orderByColumn=processExpression(orderExpression,qParser.fromListElements, qParser,plainSelect,null);
+			Node orderByColumn=processExpression(orderExpression,qStruct.fromListElements, qStruct,plainSelect,null);
 			if(orderByColumn.getTableNameNo()==null||orderByColumn.getTableNameNo().isEmpty()){
-				for(Node n:Util.getAllProjectedColumns(qParser.fromListElements, qParser)){
+				for(Node n:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 					if(n.getColumn().getColumnName().equalsIgnoreCase(orderByColumn.getColumn().getColumnName())){
 						orderByColumn.setTable(n.getTable());
 						orderByColumn.setTableNameNo(n.getTableNameNo());
@@ -411,7 +434,7 @@ public class ProcessSelectClause {
 						}
 						if(selExpItem.getAlias()!=null){
 							if(orderByColumn.getColumn().getColumnName().equalsIgnoreCase(selExpItem.getAlias().getName())){
-								orderByColumn =processExpression(e,qParser.fromListElements, qParser,plainSelect,null);
+								orderByColumn =processExpression(e,qStruct.fromListElements, qStruct,plainSelect,null);
 								logger.info(orderByColumn+" alias name resolved " +selExpItem.getAlias().getName());
 								break;
 							}
@@ -420,7 +443,7 @@ public class ProcessSelectClause {
 				}
 
 			}
-			qParser.orderByNodes.addElement(orderByColumn);
+			qStruct.orderByNodes.addElement(orderByColumn);
 			logger.info(orderExpression.toString()+ " order by column "+orderByColumn);
 		}
 
@@ -429,16 +452,16 @@ public class ProcessSelectClause {
 	/** @author mathew on 3rd October 2016
 	 * 
 	 * @param plainSelect
-	 * @param qParser
+	 * @param qStruct
 	 * @param joinConditions
 	 * @throws Exception
 	 * 
 	 * Processes the From Clause of the first argument, plainSelect. From list elements in the from clause are extracted and stored 
-	 * respecting their  hierarchy/nestedness in the fromListElements list in the qParser object (2nd argument), also the join conditions involved are 
+	 * respecting their  hierarchy/nestedness in the fromListElements list in the qStruct object (2nd argument), also the join conditions involved are 
 	 * extracted and stored in the 3rd argument, joinConditions
 	 * 
 	 */
-	private static void processFromClause(PlainSelect plainSelect, QueryStructure qParser, Vector<Node> joinConditions) throws Exception{
+	private static void processFromClause(PlainSelect plainSelect, QueryStructure qStruct, Vector<Node> joinConditions) throws Exception{
 		// TODO Auto-generated method stub
 		FromItem firstFromItem=plainSelect.getFromItem();
 
@@ -448,33 +471,33 @@ public class ProcessSelectClause {
 		if(firstFromItem instanceof net.sf.jsqlparser.schema.Table){
 			net.sf.jsqlparser.schema.Table jsqlTable=(net.sf.jsqlparser.schema.Table)firstFromItem;
 			leftFLE = new FromListElement();
-			ProcessSelectClause.processFromListTable(jsqlTable, leftFLE, qParser);
-			qParser.fromListElements.addElement(leftFLE);
+			ProcessSelectClause.processFromListTable(jsqlTable, leftFLE, qStruct);
+			qStruct.fromListElements.addElement(leftFLE);
 		}
 		else if(firstFromItem instanceof SubJoin){
 			SubJoin subJoin=(SubJoin) firstFromItem;
 			Join join=subJoin.getJoin();
 			//System.out.println(" subJoinAlias "+subJoin.getAlias().getName()+" on Expression"+	join.getOnExpression());			
 			Vector<FromListElement> tempElements=new Vector<FromListElement>();
-			ProcessSelectClause.processFromListSubJoin(subJoin, tempElements, joinConditions, qParser,plainSelect);
+			ProcessSelectClause.processFromListSubJoin(subJoin, tempElements, joinConditions, qStruct,plainSelect);
 			leftFLE=new FromListElement();
 			if(subJoin.getAlias()!=null){
 				leftFLE.setAliasName(subJoin.getAlias().getName());
 			}
 			leftFLE.setTabs(tempElements);
-			qParser.fromListElements.addElement(leftFLE);
+			qStruct.fromListElements.addElement(leftFLE);
 		}
 		else if(firstFromItem instanceof SubSelect){
 			SubSelect subSelect=(SubSelect) firstFromItem;
 			SelectBody selBody=subSelect.getSelectBody();
-			QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+			QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 			leftFLE=new FromListElement();
 			leftFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				leftFLE.setAliasName(subSelect.getAlias().getName());
 			}
-			qParser.fromListElements.addElement(leftFLE);					
-			ProcessSelectClause.processFromListSubSelect(subSelect,subQueryParser,qParser);
+			qStruct.fromListElements.addElement(leftFLE);					
+			ProcessSelectClause.processFromListSubSelect(subSelect,subQueryParser,qStruct);
 
 		}
 
@@ -485,45 +508,45 @@ public class ProcessSelectClause {
 				if(fromItem instanceof net.sf.jsqlparser.schema.Table){
 					net.sf.jsqlparser.schema.Table jsqlTable=(net.sf.jsqlparser.schema.Table)fromItem;
 					rightFLE=new FromListElement();
-					processFromListTable(jsqlTable, rightFLE, qParser);
-					qParser.fromListElements.addElement(rightFLE);
+					processFromListTable(jsqlTable, rightFLE, qStruct);
+					qStruct.fromListElements.addElement(rightFLE);
 				}
 				else if(fromItem instanceof SubJoin){
 					SubJoin subJoin=(SubJoin) fromItem;
 					Vector<FromListElement> tempElements=new Vector<FromListElement>();
-					ProcessSelectClause.processFromListSubJoin(subJoin, tempElements, joinConditions, qParser,plainSelect);
+					ProcessSelectClause.processFromListSubJoin(subJoin, tempElements, joinConditions, qStruct,plainSelect);
 					rightFLE=new FromListElement();
 					if(subJoin.getAlias()!=null){
 						rightFLE.setAliasName(subJoin.getAlias().getName());
 					}				
 					rightFLE.setTabs(tempElements);
-					qParser.fromListElements.addElement(rightFLE);
+					qStruct.fromListElements.addElement(rightFLE);
 
 				}
 				else if(fromItem instanceof SubSelect){
 					SubSelect subSelect=(SubSelect) fromItem;					
-					QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+					QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 					rightFLE=new FromListElement();
 					rightFLE.setSubQueryStructure(subQueryParser);
 					if(subSelect.getAlias()!=null){
 						rightFLE.setAliasName(subSelect.getAlias().getName());
 					}
-					qParser.fromListElements.addElement(rightFLE);
+					qStruct.fromListElements.addElement(rightFLE);
 
-					processFromListSubSelect(subSelect,subQueryParser,qParser);					
+					processFromListSubSelect(subSelect,subQueryParser,qStruct);					
 
 				}
 				Expression e=join.getOnExpression();
 				if(e!=null){
 					Node joinCondition=null;
 					if(join.isLeft())
-						joinCondition=ProcessSelectClause.processExpression(e,qParser.fromListElements, qParser,plainSelect,JoinClauseInfo.leftOuterJoin);
+						joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.leftOuterJoin);
 					else if(join.isRight())
-						joinCondition=ProcessSelectClause.processExpression(e,qParser.fromListElements, qParser,plainSelect,JoinClauseInfo.rightOuterJoin);
+						joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.rightOuterJoin);
 					else if(join.isFull())
-						joinCondition=ProcessSelectClause.processExpression(e,qParser.fromListElements, qParser,plainSelect,JoinClauseInfo.fullOuterJoin);
+						joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.fullOuterJoin);
 					else
-						joinCondition=ProcessSelectClause.processExpression(e,qParser.fromListElements, qParser,plainSelect,JoinClauseInfo.innerJoin);
+						joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.innerJoin);
 
 					joinConditions.add(joinCondition);
 				}
@@ -536,7 +559,7 @@ public class ProcessSelectClause {
 	 * 
 	 * 
 	 * @param plainSelect
-	 * @param qParser
+	 * @param qStruct
 	 * @throws Exception
 	 * 
 	 * processes the projection list of plainSelect, for each element of the project list checks for the various possibilities - 
@@ -544,7 +567,7 @@ public class ProcessSelectClause {
 	 * in which case the parser's case condition map is updated with the respective objects from the case condition
 	 * 
 	 */
-	private static void processProjectionList(PlainSelect plainSelect, QueryStructure qParser) throws Exception{
+	private static void processProjectionList(PlainSelect plainSelect, QueryStructure qStruct) throws Exception{
 		// TODO Auto-generated method stub
 		Vector<CaseCondition> caseConditionsVector = new Vector<CaseCondition>();
 
@@ -552,9 +575,9 @@ public class ProcessSelectClause {
 		for(int i=0;i<projectedItems.size();i++){
 			SelectItem projectedItem=projectedItems.get(i);
 			if(projectedItem instanceof net.sf.jsqlparser.statement.select.AllColumns){
-				for(Node n:Util.getAllProjectedColumns(qParser.fromListElements, qParser)){
+				for(Node n:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 					logger.info(" all column, select all columns... "+n);
-					qParser.projectedCols.add(n);
+					qStruct.projectedCols.add(n);
 				}
 			}
 			else if(projectedItem instanceof net.sf.jsqlparser.statement.select.SelectExpressionItem){
@@ -576,12 +599,12 @@ public class ProcessSelectClause {
 					for(int j=0;j < whenClauses.size();j++ ){
 
 						CaseCondition cC = new CaseCondition();
-						Node n = processExpression(((WhenClause)((CaseExpression) e).getWhenClauses().get(j)).getWhenExpression(), qParser.fromListElements, qParser,plainSelect,null);
+						Node n = processExpression(((WhenClause)((CaseExpression) e).getWhenClauses().get(j)).getWhenExpression(), qStruct.fromListElements, qStruct,plainSelect,null);
 						cC.setCaseConditionNode(n);
 						cC.setCaseCondition(n.toString());
 						cC.setConstantValue(((WhenClause)((CaseExpression) e).getWhenClauses().get(j)).getThenExpression().toString());
 						caseConditionsVector.add(cC);
-						// qParser.getCaseConditions().add(cC);
+						// qStruct.getCaseConditions().add(cC);
 					}
 					//Add the else clause if present as the last item
 					if(((CaseExpression) e).getElseExpression() != null){
@@ -592,20 +615,20 @@ public class ProcessSelectClause {
 						caseConditionsVector.add(cC);
 					}
 					//Add Case conditions to queryparser
-					qParser.getCaseConditionMap().put(1,caseConditionsVector);
+					qStruct.getCaseConditionMap().put(1,caseConditionsVector);
 				}
 				else{
-					Node projectedColumn=processExpression(e,qParser.fromListElements, qParser,plainSelect,null);
+					Node projectedColumn=processExpression(e,qStruct.fromListElements, qStruct,plainSelect,null);
 					if(projectedColumn.getAgg()!=null&&selExpItem.getAlias()!=null){
 						projectedColumn.getAgg().setAggAliasName(selExpItem.getAlias().getName());
 					}
 					else if(selExpItem.getAlias()!=null){
 						projectedColumn.setAliasName(selExpItem.getAlias().getName());
 					}
-					qParser.projectedCols.add(projectedColumn);
+					qStruct.projectedCols.add(projectedColumn);
 					logger.info("Select Expression"+projectedItem.toString()+ " "+projectedColumn);
 
-					if(qParser.setOperator==null||qParser.setOperator.isEmpty()){
+					if(qStruct.setOperator==null||qStruct.setOperator.isEmpty()){
 						if(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty()){
 							logger.info(" Column name could not be resolved, query parsing failed, exception thrown, query: "+plainSelect.toString());
 							throw new Exception(" Column name could not be resolved, query parsing failed, exception thrown");
@@ -634,7 +657,7 @@ public class ProcessSelectClause {
 		}
 	}
 
-	public static void processFromListTable(net.sf.jsqlparser.schema.Table jsqlTable, FromListElement frmListElement, QueryStructure qParser){
+	public static void processFromListTable(net.sf.jsqlparser.schema.Table jsqlTable, FromListElement frmListElement, QueryStructure qStruct){
 		String tableName = jsqlTable.getFullyQualifiedName().toUpperCase();// getWholeTableName();
 		String aliasName = "";
 		if (jsqlTable.getAlias() == null) {
@@ -642,25 +665,25 @@ public class ProcessSelectClause {
 		} else {
 			aliasName = jsqlTable.getAlias().getName().toUpperCase();// getAlias();
 		}
-		if (qParser.getQuery().getRepeatedRelationCount().get(tableName) != null) {
-			qParser.getQuery().putRepeatedRelationCount(tableName, qParser.getQuery()
+		if (qStruct.getQuery().getRepeatedRelationCount().get(tableName) != null) {
+			qStruct.getQuery().putRepeatedRelationCount(tableName, qStruct.getQuery()
 					.getRepeatedRelationCount().get(tableName) + 1);
 		} else {
-			qParser.getQuery().putRepeatedRelationCount(tableName, 1);
+			qStruct.getQuery().putRepeatedRelationCount(tableName, 1);
 		}
 		String tableNameNo = tableName
-				+ qParser.getQuery().getRepeatedRelationCount().get(tableName);
+				+ qStruct.getQuery().getRepeatedRelationCount().get(tableName);
 
 		frmListElement.setAliasName(aliasName);
 		frmListElement.setTableName(tableName);
 		frmListElement.setTableNameNo(tableNameNo);
 		frmListElement.setTabs(null);	
-		qParser.addFromTable(frmListElement);
+		qStruct.addFromTable(frmListElement);
 		logger.info("Table added"+frmListElement);
 	}
 
 	public static void processFromListSubJoin(SubJoin subJoin, Vector<FromListElement> visitedFromListElements, Vector<Node> joinConditions,
-			QueryStructure qParser, PlainSelect plainSelect) throws Exception{
+			QueryStructure qStruct, PlainSelect plainSelect) throws Exception{
 		logger.info("processing subjoin"+ subJoin.toString());
 
 		FromItem leftFromItem=subJoin.getLeft();
@@ -669,14 +692,14 @@ public class ProcessSelectClause {
 		if(leftFromItem instanceof net.sf.jsqlparser.schema.Table){
 			net.sf.jsqlparser.schema.Table jsqlTable=(net.sf.jsqlparser.schema.Table)leftFromItem;
 			leftFLE=new FromListElement();
-			ProcessSelectClause.processFromListTable(jsqlTable, leftFLE, qParser);
+			ProcessSelectClause.processFromListTable(jsqlTable, leftFLE, qStruct);
 			//logger.info(leftFLE.toString());
 			visitedFromListElements.add(leftFLE);
 		}
 		else if(leftFromItem instanceof SubJoin){
 			SubJoin leftSubJoin=(SubJoin) leftFromItem;
 			Vector<FromListElement> tempElements=new Vector<FromListElement>();
-			ProcessSelectClause.processFromListSubJoin(leftSubJoin, tempElements, joinConditions, qParser,plainSelect);
+			ProcessSelectClause.processFromListSubJoin(leftSubJoin, tempElements, joinConditions, qStruct,plainSelect);
 			leftFLE=new FromListElement();
 			if(leftSubJoin.getAlias()!=null){
 				leftFLE.setAliasName(leftSubJoin.getAlias().getName());
@@ -686,29 +709,29 @@ public class ProcessSelectClause {
 		}
 		else if(leftFromItem instanceof SubSelect){
 			SubSelect subSelect=(SubSelect) leftFromItem;					
-			QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+			QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 			leftFLE=new FromListElement();
 			leftFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				leftFLE.setAliasName(subSelect.getAlias().getName());
 			}
-			qParser.fromListElements.addElement(leftFLE);
+			qStruct.fromListElements.addElement(leftFLE);
 
-			ProcessSelectClause.processFromListSubSelect(subSelect,subQueryParser,qParser);					
+			ProcessSelectClause.processFromListSubSelect(subSelect,subQueryParser,qStruct);					
 
 		}
 		FromItem rightFromItem=subJoin.getJoin().getRightItem();
 		if(rightFromItem instanceof net.sf.jsqlparser.schema.Table){
 			net.sf.jsqlparser.schema.Table jsqlTable=(net.sf.jsqlparser.schema.Table)rightFromItem;
 			rightFLE=new FromListElement();
-			ProcessSelectClause.processFromListTable(jsqlTable, rightFLE, qParser);
+			ProcessSelectClause.processFromListTable(jsqlTable, rightFLE, qStruct);
 			//logger.info(rightFLE.toString());
 			visitedFromListElements.add(rightFLE);
 		}
 		else if(rightFromItem instanceof SubJoin){
 			SubJoin rightSubJoin=(SubJoin) rightFromItem;
 			Vector<FromListElement> tempElements=new Vector<FromListElement>();
-			ProcessSelectClause.processFromListSubJoin(rightSubJoin, tempElements, joinConditions, qParser,plainSelect);
+			ProcessSelectClause.processFromListSubJoin(rightSubJoin, tempElements, joinConditions, qStruct,plainSelect);
 			rightFLE=new FromListElement();
 			if(rightSubJoin.getAlias()!=null){
 				rightFLE.setAliasName(rightSubJoin.getAlias().getName());
@@ -718,15 +741,15 @@ public class ProcessSelectClause {
 		}
 		else if(rightFromItem instanceof SubSelect){
 			SubSelect subSelect=(SubSelect) rightFromItem;					
-			QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+			QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 			rightFLE=new FromListElement();
 			rightFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				rightFLE.setAliasName(subSelect.getAlias().getName());
 			}
-			qParser.fromListElements.addElement(rightFLE);
+			qStruct.fromListElements.addElement(rightFLE);
 
-			ProcessSelectClause.processFromListSubSelect(subSelect,subQueryParser,qParser);					
+			ProcessSelectClause.processFromListSubSelect(subSelect,subQueryParser,qStruct);					
 
 		}
 		Join join=subJoin.getJoin();
@@ -734,13 +757,13 @@ public class ProcessSelectClause {
 		if(e!=null){
 			Node joinCondition=null;
 			if(join.isLeft())
-				joinCondition=ProcessSelectClause.processExpression(e,qParser.fromListElements, qParser,plainSelect,JoinClauseInfo.leftOuterJoin);
+				joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.leftOuterJoin);
 			else if(join.isRight())
-				joinCondition=ProcessSelectClause.processExpression(e,qParser.fromListElements, qParser,plainSelect,JoinClauseInfo.rightOuterJoin);
+				joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.rightOuterJoin);
 			else if(join.isFull())
-				joinCondition=ProcessSelectClause.processExpression(e,qParser.fromListElements, qParser,plainSelect,JoinClauseInfo.fullOuterJoin);
+				joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.fullOuterJoin);
 			else
-				joinCondition=ProcessSelectClause.processExpression(e,qParser.fromListElements, qParser,plainSelect,JoinClauseInfo.innerJoin);
+				joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.innerJoin);
 
 			joinConditions.add(joinCondition);
 		}
@@ -750,7 +773,7 @@ public class ProcessSelectClause {
 	 * 
 	 * @param clause - expression to be processed 
 	 * @param fle - set of fromListElements visited in the from clause of the plainSelect (4th argument)
-	 * @param qParser- this query structure in its  data structures encodes the plainSelect (4th argument)  
+	 * @param qStruct- this query structure in its  data structures encodes the plainSelect (4th argument)  
 	 * @param plainSelect - select query of which the clause (1st parameter) was part of 
 	 * @param joinType  - string for setting the join type (eg: right outer join), in case if the clause was part of a join expression
 	 * @return Node (expression) that represents the expression 
@@ -758,13 +781,13 @@ public class ProcessSelectClause {
 	 */
 
 	public static Node processExpression(Object clause, Vector<FromListElement> fle,
-			QueryStructure qParser, PlainSelect plainSelect, String joinType) throws Exception {
+			QueryStructure qStruct, PlainSelect plainSelect, String joinType) throws Exception {
 		try{
 			if (clause == null) {
 				return null;
 			} else if (clause instanceof Parenthesis){
 				boolean isNot = ((Parenthesis) clause).isNot();
-				Node n= processExpression(((Parenthesis)clause).getExpression(), fle,  qParser,plainSelect, joinType);
+				Node n= processExpression(((Parenthesis)clause).getExpression(), fle,  qStruct,plainSelect, joinType);
 				if(clause instanceof Parenthesis && isNot){
 					Node left = n.getLeft();
 					Node right = n.getRight();
@@ -806,7 +829,7 @@ public class ProcessSelectClause {
 					if (an.getParameters()!=null){
 						ExpressionList anList = an.getParameters();
 						List<Expression> expList = anList.getExpressions();//FIXME not only 1 expression but all expressions
-						Node n = processExpression(expList.get(0), fle,  qParser,plainSelect,joinType);
+						Node n = processExpression(expList.get(0), fle,  qStruct,plainSelect,joinType);
 						af.setAggExp(n);
 
 					} else {
@@ -831,8 +854,8 @@ public class ProcessSelectClause {
 					}//Added by Shree for count(*) 
 					else if(af.getFunc().toUpperCase().contains("COUNT") && an.isAllColumns()){				
 						if(af.getAggExp() == null){
-							//Node n1 = Util.getNodeForCount(fle, qParser);
-							Node n1 = partialMarking.Util.getNodeForCount(fle, qParser);
+							//Node n1 = Util.getNodeForCount(fle, qStruct);
+							Node n1 = partialMarking.Util.getNodeForCount(fle, qStruct);
 							af.setAggExp(n1);
 							af.setFunc(funcName.toUpperCase());
 							af.setDistinct(an.isDistinct());
@@ -848,15 +871,15 @@ public class ProcessSelectClause {
 					}
 					//Storing sub query details
 					//					agg.setQueryType(queryType);
-					//					if(queryType == 1) agg.setQueryIndex(qParser.getFromClauseSubqueries().size()-1);
-					//					if(queryType == 2) agg.setQueryIndex(qParser.getWhereClauseSubqueries().size()-1);
+					//					if(queryType == 1) agg.setQueryIndex(qStruct.getFromClauseSubqueries().size()-1);
+					//					if(queryType == 2) agg.setQueryIndex(qStruct.getWhereClauseSubqueries().size()-1);
 					//					//Adding this to the list of aliased names
 					//					if(exposedName !=null){
 					//						Vector<Node> present = new Vector<Node>();
-					//						if( qParser.getAliasedToOriginal().get(exposedName) != null)
-					//							present = qParser.getAliasedToOriginal().get(exposedName);
+					//						if( qStruct.getAliasedToOriginal().get(exposedName) != null)
+					//							present = qStruct.getAliasedToOriginal().get(exposedName);
 					//						present.add(agg);
-					//						qParser.getAliasedToOriginal().put(exposedName, present);
+					//						qStruct.getAliasedToOriginal().put(exposedName, present);
 					//					}
 
 					return agg;
@@ -867,7 +890,7 @@ public class ProcessSelectClause {
 					if (an.getParameters()!=null){
 						ExpressionList anList = an.getParameters();
 						List<Expression> expList = anList.getExpressions();//FIXME not only 1 expression but all expressions
-						n = processExpression(expList.get(0),fle, qParser,plainSelect,joinType);		
+						n = processExpression(expList.get(0),fle, qStruct,plainSelect,joinType);		
 					}
 					return n;
 				}
@@ -908,12 +931,12 @@ public class ProcessSelectClause {
 				n.setTableNameNo(tableName);
 				n.setColumn(new parsing.Column(colName, tableName));
 				//List <FromListElement> frmElementList = fle.getTabs();
-				//				 if(qParser.getQuery().getQueryString().toLowerCase().contains(("as "+tableName.toLowerCase()))){
+				//				 if(qStruct.getQuery().getQueryString().toLowerCase().contains(("as "+tableName.toLowerCase()))){
 				//					}
 				//				 
-				//				if(qParser.getQuery().getQueryString().toLowerCase().contains(("as "+colName.toLowerCase()))){
+				//				if(qStruct.getQuery().getQueryString().toLowerCase().contains(("as "+colName.toLowerCase()))){
 				//					
-				//					Vector <Node> value = qParser.getAliasedToOriginal().get(colName);
+				//					Vector <Node> value = qStruct.getAliasedToOriginal().get(colName);
 				//					  
 				//					if(value != null && value.size() > 0){
 				//						n = value.get(0);//FIXME: vector of nodes not a single node
@@ -923,9 +946,9 @@ public class ProcessSelectClause {
 				//				}
 				//				
 				//				else{
-				//					n = Util.getColumnFromOccurenceInJC(colName,tableName, fle, qParser);
+				//					n = Util.getColumnFromOccurenceInJC(colName,tableName, fle, qStruct);
 				//					if (n == null) {//then probably the query is correlated				
-				//						n = Util.getColumnFromOccurenceInJC(colName,tableName, qParser.getQueryAliases(),qParser);
+				//						n = Util.getColumnFromOccurenceInJC(colName,tableName, qStruct.getQueryAliases(),qStruct);
 				//					}	
 				//				} 
 				//				if(n == null) {
@@ -954,7 +977,7 @@ public class ProcessSelectClause {
 
 
 				if(n.getTableNameNo()==null||n.getTableNameNo().isEmpty()){
-					for(Node m:Util.getAllProjectedColumns(qParser.fromListElements, qParser)){
+					for(Node m:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 						if(m.getColumn().getColumnName().equalsIgnoreCase(n.getColumn().getColumnName())){
 							n.setTable(m.getTable());
 							n.setTableNameNo(m.getTableNameNo());
@@ -964,7 +987,7 @@ public class ProcessSelectClause {
 				}
 
 
-				n=transformToAbsoluteTableNames(n,fle,false, qParser);				
+				n=transformToAbsoluteTableNames(n,fle,false, qStruct);				
 
 				if(n.getTableNameNo()==null||n.getTableNameNo().isEmpty()){
 					List<SelectItem> projectedItems=plainSelect.getSelectItems();
@@ -979,7 +1002,7 @@ public class ProcessSelectClause {
 							}
 							if(selExpItem.getAlias()!=null){
 								if(n.getColumn().getColumnName().equalsIgnoreCase(selExpItem.getAlias().getName())){
-									n =processExpression(e,qParser.fromListElements, qParser,plainSelect,joinType);
+									n =processExpression(e,qStruct.fromListElements, qStruct,plainSelect,joinType);
 									break;
 								}
 							}
@@ -1009,8 +1032,8 @@ public class ProcessSelectClause {
 					Node right = new Node();
 					n.setType(Node.getAndNodeType());
 					n.setOperator("AND");
-					left = processExpression(andNode.getLeftExpression(), fle, qParser,plainSelect,joinType);
-					right = processExpression(andNode.getRightExpression(), fle, qParser,plainSelect,joinType);
+					left = processExpression(andNode.getLeftExpression(), fle, qStruct,plainSelect,joinType);
+					right = processExpression(andNode.getRightExpression(), fle, qStruct,plainSelect,joinType);
 
 
 					n.setLeft(left);
@@ -1026,8 +1049,8 @@ public class ProcessSelectClause {
 					Node n = new Node();
 					n.setType(Node.getOrNodeType());
 					n.setOperator("OR");
-					n.setLeft(processExpression(orNode.getLeftExpression(),  fle, qParser,plainSelect,joinType));
-					n.setRight(processExpression(orNode.getRightExpression(), fle, qParser,plainSelect,joinType));
+					n.setLeft(processExpression(orNode.getLeftExpression(),  fle, qStruct,plainSelect,joinType));
+					n.setRight(processExpression(orNode.getRightExpression(), fle, qStruct,plainSelect,joinType));
 
 					return n;
 				}
@@ -1047,8 +1070,8 @@ public class ProcessSelectClause {
 						n.setType(Node.getLikeNodeType());
 						n.setOperator("!~");
 					}
-					n.setLeft(processExpression(likeNode.getLeftExpression(),fle,qParser,plainSelect,joinType));
-					n.setRight(processExpression(likeNode.getRightExpression(),  fle,qParser,plainSelect,joinType));
+					n.setLeft(processExpression(likeNode.getLeftExpression(),fle,qStruct,plainSelect,joinType));
+					n.setRight(processExpression(likeNode.getRightExpression(),  fle,qStruct,plainSelect,joinType));
 
 					return n;
 				}
@@ -1057,8 +1080,8 @@ public class ProcessSelectClause {
 			else if(clause instanceof JdbcParameter){
 				Node n = new Node();
 				n.setType(Node.getValType());		
-				n.setStrConst("$"+qParser.paramCount);
-				qParser.paramCount++;
+				n.setStrConst("$"+qStruct.paramCount);
+				qStruct.paramCount++;
 				n.setLeft(null);
 				n.setRight(null);
 
@@ -1071,8 +1094,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBaoNodeType());
 				n.setOperator("+");
-				n.setLeft(processExpression(baoNode.getLeftExpression(), fle, qParser,plainSelect,joinType));
-				n.setRight(processExpression(baoNode.getRightExpression(),fle, qParser,plainSelect,joinType));
+				n.setLeft(processExpression(baoNode.getLeftExpression(), fle, qStruct,plainSelect,joinType));
+				n.setRight(processExpression(baoNode.getRightExpression(),fle, qStruct,plainSelect,joinType));
 
 				n=WhereClauseVectorJSQL.getTableDetailsForArithmeticExpressions(n);
 				//Storing sub query details
@@ -1084,8 +1107,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBaoNodeType());
 				n.setOperator("-");
-				n.setLeft(processExpression(baoNode.getLeftExpression(), fle,qParser,plainSelect,joinType));
-				n.setRight(processExpression(baoNode.getRightExpression(), fle, qParser,plainSelect,joinType));
+				n.setLeft(processExpression(baoNode.getLeftExpression(), fle,qStruct,plainSelect,joinType));
+				n.setRight(processExpression(baoNode.getRightExpression(), fle, qStruct,plainSelect,joinType));
 				n=WhereClauseVectorJSQL.getTableDetailsForArithmeticExpressions(n);
 				//Storing sub query details
 				//				n.setQueryType(queryType);
@@ -1096,8 +1119,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBaoNodeType());
 				n.setOperator("*");
-				n.setLeft(processExpression(baoNode.getLeftExpression(), fle, qParser,plainSelect,joinType));
-				n.setRight(processExpression(baoNode.getRightExpression(),fle, qParser,plainSelect,joinType));
+				n.setLeft(processExpression(baoNode.getLeftExpression(), fle, qStruct,plainSelect,joinType));
+				n.setRight(processExpression(baoNode.getRightExpression(),fle, qStruct,plainSelect,joinType));
 				n=WhereClauseVectorJSQL.getTableDetailsForArithmeticExpressions(n);
 				//Storing sub query details
 				//				n.setQueryType(queryType);
@@ -1108,8 +1131,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBaoNodeType());
 				n.setOperator("/");
-				n.setLeft(processExpression(baoNode.getLeftExpression(),fle, qParser,plainSelect,joinType));
-				n.setRight(processExpression(baoNode.getRightExpression(),fle, qParser,plainSelect,joinType));
+				n.setLeft(processExpression(baoNode.getLeftExpression(),fle, qStruct,plainSelect,joinType));
+				n.setRight(processExpression(baoNode.getRightExpression(),fle, qStruct,plainSelect,joinType));
 				n=WhereClauseVectorJSQL.getTableDetailsForArithmeticExpressions(n);
 				//Storing sub query details
 				//				n.setQueryType(queryType);
@@ -1131,8 +1154,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBroNodeType());
 				n.setOperator(QueryStructure.cvcRelationalOperators[2]);
-				n.setLeft(processExpression(broNode.getLeftExpression(), fle, qParser,plainSelect,joinType));
-				n.setRight(processExpression(broNode.getRightExpression(), fle, qParser,plainSelect,joinType));
+				n.setLeft(processExpression(broNode.getLeftExpression(), fle, qStruct,plainSelect,joinType));
+				n.setRight(processExpression(broNode.getRightExpression(), fle, qStruct,plainSelect,joinType));
 
 				//the following added by mathew on 17 oct 2016
 				if(n.getLeft().getType().equals(Node.getAllNodeType())||n.getRight().getType().equals(Node.getAllNodeType())||
@@ -1153,8 +1176,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBroNodeType());
 				n.setOperator(QueryStructure.cvcRelationalOperators[7]);
-				n.setLeft(processExpression(broNode.getLeftExpression(), fle, qParser,plainSelect,joinType));
-				n.setRight(processExpression(broNode.getRightExpression(), fle,qParser,plainSelect,joinType));
+				n.setLeft(processExpression(broNode.getLeftExpression(), fle, qStruct,plainSelect,joinType));
+				n.setRight(processExpression(broNode.getRightExpression(), fle,qStruct,plainSelect,joinType));
 
 				//Storing sub query details
 				//				n.setQueryType(queryType);
@@ -1165,7 +1188,7 @@ public class ProcessSelectClause {
 				IsNullExpression isNullNode = (IsNullExpression) clause;
 				Node n = new Node();
 				n.setType(Node.getIsNullNodeType());
-				n.setLeft(processExpression(isNullNode.getLeftExpression(),fle,qParser,plainSelect,joinType));
+				n.setLeft(processExpression(isNullNode.getLeftExpression(),fle,qStruct,plainSelect,joinType));
 				if(((IsNullExpression) clause).isNot()){
 					n.setOperator("!=");
 				}else{
@@ -1195,12 +1218,12 @@ public class ProcessSelectClause {
 				else if(sqn. getRightItemsList() instanceof SubSelect){ 
 					subS=(SubSelect)sqn.getRightItemsList();
 				}
-				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+				QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 				rhs.setSubQueryStructure(subQueryParser);	
-				processWhereSubSelect(subS,subQueryParser,qParser);
+				processWhereSubSelect(subS,subQueryParser,qStruct);
 
 
-				Node lhs = processExpression(sqn. getLeftExpression(), fle, qParser,plainSelect,joinType);
+				Node lhs = processExpression(sqn. getLeftExpression(), fle, qStruct,plainSelect,joinType);
 
 				inNode.setLeft(lhs);
 				inNode.setRight(rhs);
@@ -1221,12 +1244,12 @@ public class ProcessSelectClause {
 				SubSelect subS = (SubSelect)sqn.getRightExpression();
 
 
-				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+				QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 				Node existsNode=new Node();
 				existsNode.setSubQueryStructure(subQueryParser);
 				existsNode.setType(Node.getExistsNodeType());
 				existsNode.setSubQueryConds(null);
-				processWhereSubSelect(subS,subQueryParser,qParser);
+				processWhereSubSelect(subS,subQueryParser,qStruct);
 
 
 				Node notNode = new Node();				   
@@ -1245,11 +1268,11 @@ public class ProcessSelectClause {
 			else if (clause instanceof SubSelect) {
 				SubSelect sqn = (SubSelect) clause;
 
-				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+				QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 				Node node=new Node();
 				node.setSubQueryStructure(subQueryParser);
 				node.setType(Node.getBroNodeSubQType());
-				processWhereSubSelect(sqn,subQueryParser,qParser);
+				processWhereSubSelect(sqn,subQueryParser,qStruct);
 
 
 
@@ -1276,16 +1299,16 @@ public class ProcessSelectClause {
 				n.setType(Node.getAndNodeType());
 
 				Node l=new Node();
-				l.setLeft(processExpression(bn.getLeftExpression(),fle,qParser,plainSelect,joinType));
+				l.setLeft(processExpression(bn.getLeftExpression(),fle,qStruct,plainSelect,joinType));
 				l.setOperator(">=");
-				l.setRight(processExpression(bn.getBetweenExpressionStart(),fle,qParser,plainSelect,joinType));
+				l.setRight(processExpression(bn.getBetweenExpressionStart(),fle,qStruct,plainSelect,joinType));
 				l.setType(Node.getBroNodeType());
 				n.setLeft(l);
 
 				Node r=new Node();
-				r.setLeft(processExpression(bn.getLeftExpression(), fle,qParser,plainSelect,joinType));
+				r.setLeft(processExpression(bn.getLeftExpression(), fle,qStruct,plainSelect,joinType));
 				r.setOperator("<=");
-				r.setRight(processExpression(bn.getBetweenExpressionEnd(),fle,qParser,plainSelect,joinType));
+				r.setRight(processExpression(bn.getBetweenExpressionEnd(),fle,qStruct,plainSelect,joinType));
 				r.setType(Node.getBroNodeType());
 				n.setRight(r);
 
@@ -1305,11 +1328,11 @@ public class ProcessSelectClause {
 				}*/
 				n.setType(Node.getBroNodeType());
 				n.setOperator("=");
-				Node ndl = processExpression(bne.getLeftExpression(), fle, qParser,plainSelect,joinType);
+				Node ndl = processExpression(bne.getLeftExpression(), fle, qStruct,plainSelect,joinType);
 				if(ndl != null){
 					n.setLeft(ndl);
 				}
-				Node ndr = processExpression(bne.getRightExpression(), fle, qParser,plainSelect,joinType);
+				Node ndr = processExpression(bne.getRightExpression(), fle, qStruct,plainSelect,joinType);
 				if(ndr!= null){
 					n.setRight(ndr);
 				}
@@ -1344,8 +1367,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBroNodeType());
 				n.setOperator(QueryStructure.cvcRelationalOperators[3]);
-				n.setLeft(processExpression(broNode.getLeftExpression(), fle, qParser,plainSelect,joinType));
-				n.setRight(processExpression(broNode.getRightExpression(),fle, qParser,plainSelect,joinType));
+				n.setLeft(processExpression(broNode.getLeftExpression(), fle, qStruct,plainSelect,joinType));
+				n.setRight(processExpression(broNode.getRightExpression(),fle, qStruct,plainSelect,joinType));
 
 				if(n.getLeft() != null && n.getLeft().getSubQueryConds() != null && n.getLeft().getSubQueryConds().size() > 0 && n.getSubQueryConds()!=null){
 					n.setSubQueryConds(n.getLeft().getSubQueryConds());
@@ -1424,8 +1447,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBroNodeType());
 				n.setOperator(QueryStructure.cvcRelationalOperators[4]);
-				n.setLeft(processExpression(broNode.getLeftExpression(), fle, qParser,plainSelect,joinType));
-				n.setRight(processExpression(broNode.getRightExpression(), fle, qParser,plainSelect,joinType));
+				n.setLeft(processExpression(broNode.getLeftExpression(), fle, qStruct,plainSelect,joinType));
+				n.setRight(processExpression(broNode.getRightExpression(), fle, qStruct,plainSelect,joinType));
 
 				//Storing sub query details
 				//Code added for ALL / ANY subqueries - Start
@@ -1468,8 +1491,8 @@ public class ProcessSelectClause {
 				Node n = new Node();
 				n.setType(Node.getBroNodeType());
 				n.setOperator(QueryStructure.cvcRelationalOperators[5]);
-				n.setLeft(processExpression(bne.getLeftExpression(), fle,qParser,plainSelect,joinType));
-				n.setRight(processExpression(bne.getRightExpression(),fle,qParser,plainSelect,joinType));
+				n.setLeft(processExpression(bne.getLeftExpression(), fle,qStruct,plainSelect,joinType));
+				n.setRight(processExpression(bne.getRightExpression(),fle,qStruct,plainSelect,joinType));
 
 				if(n.getLeft() != null && n.getLeft().getSubQueryConds() != null && n.getLeft().getSubQueryConds().size() > 0){
 					n.setSubQueryConds(n.getLeft().getSubQueryConds());
@@ -1505,8 +1528,8 @@ public class ProcessSelectClause {
 				}*/
 				n.setType(Node.getBroNodeType());
 				n.setOperator(QueryStructure.cvcRelationalOperators[6]);
-				n.setLeft(processExpression(bne.getLeftExpression(), fle,qParser,plainSelect,joinType));
-				n.setRight(processExpression(bne.getRightExpression(),fle, qParser,plainSelect,joinType));
+				n.setLeft(processExpression(bne.getLeftExpression(), fle,qStruct,plainSelect,joinType));
+				n.setRight(processExpression(bne.getRightExpression(),fle, qStruct,plainSelect,joinType));
 
 				if(n.getLeft() != null && n.getLeft().getSubQueryConds() != null && n.getLeft().getSubQueryConds().size() > 0){
 					n.setSubQueryConds(n.getLeft().getSubQueryConds());
@@ -1541,12 +1564,12 @@ public class ProcessSelectClause {
 				//Add that to cvc or qparser and return a node that is of type casecondition.
 
 				if(expr.getElseExpression() != null){
-					n = processExpression(expr.getElseExpression(), fle, qParser,plainSelect,joinType);
+					n = processExpression(expr.getElseExpression(), fle, qStruct,plainSelect,joinType);
 				}
 				else if(expr.getWhenClauses() != null){
 					for(int i = 0; i < expr.getWhenClauses().size();i++){
 						Expression ex = expr.getWhenClauses().get(i);
-						n = processExpression(ex, fle,qParser,plainSelect,joinType);
+						n = processExpression(ex, fle,qStruct,plainSelect,joinType);
 					}
 
 					return n;
@@ -1559,11 +1582,11 @@ public class ProcessSelectClause {
 				AllComparisonExpression ace = (AllComparisonExpression)clause;
 				SubSelect ss = ace.getSubSelect();
 
-				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+				QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 				Node allNode=new Node();
 				allNode.setSubQueryStructure(subQueryParser);
 				allNode.setType(Node.getAllNodeType());
-				processWhereSubSelect(ss,subQueryParser,qParser);
+				processWhereSubSelect(ss,subQueryParser,qStruct);
 
 				return allNode;				
 
@@ -1572,11 +1595,11 @@ public class ProcessSelectClause {
 				AnyComparisonExpression ace = (AnyComparisonExpression)clause;
 				SubSelect ss = ace.getSubSelect();
 
-				QueryStructure subQueryParser=new QueryStructure(qParser.getTableMap());
+				QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
 				Node anyNode=new Node();
 				anyNode.setSubQueryStructure(subQueryParser);
 				anyNode.setType(Node.getAnyNodeType());
-				processWhereSubSelect(ss,subQueryParser,qParser);
+				processWhereSubSelect(ss,subQueryParser,qStruct);
 
 				return anyNode;
 			}
@@ -1586,7 +1609,7 @@ public class ProcessSelectClause {
 				ExtractExpression exp = (ExtractExpression)clause;
 				Node n=new Node(); // Main node
 				String name = exp.getName();
-				Node table = processExpression(exp.getExpression(),fle, qParser,plainSelect,joinType);
+				Node table = processExpression(exp.getExpression(),fle, qStruct,plainSelect,joinType);
 				if(name.equalsIgnoreCase("year")){
 					//Formula : 1970+ (col Name/(30*12)) - create 5 nodes
 					n.setOperator("+"); // Main node
@@ -1608,7 +1631,7 @@ public class ProcessSelectClause {
 
 					//Call method to get Node :
 
-					//n.setRight(getYearCalc(exp,exposedName,fle,isWhereClause,queryType,qParser));
+					//n.setRight(getYearCalc(exp,exposedName,fle,isWhereClause,queryType,qStruct));
 
 
 				}else if(name.equalsIgnoreCase("month")){
@@ -1622,7 +1645,7 @@ public class ProcessSelectClause {
 					nl1.setOperator("/");
 					nl1.setType(Node.getBaoNodeType());
 					//Left of node at level 1
-					nl1.setLeft(processExpression(exp.getExpression(),fle,qParser,plainSelect,joinType));
+					nl1.setLeft(processExpression(exp.getExpression(),fle,qStruct,plainSelect,joinType));
 
 					Node nl1r1 = new Node();
 					nl1r1.setType(Node.getValType());
@@ -1653,7 +1676,7 @@ public class ProcessSelectClause {
 					nr1l2.setOperator("/");
 					nr1l2.setType(Node.getBaoNodeType());
 					//Left Node at level 3
-					nr1l2.setLeft(processExpression(exp.getExpression(),fle,qParser,plainSelect,joinType));
+					nr1l2.setLeft(processExpression(exp.getExpression(),fle,qStruct,plainSelect,joinType));
 
 					//Right Node at level 3
 					Node nr1r3 = new Node();
@@ -1707,7 +1730,7 @@ public class ProcessSelectClause {
 					n.setTableNameNo(table.getTableNameNo());
 					n.setColumn(table.getColumn());
 					//Left of main node
-					//						n.setLeft(getDayCalc(exp, exposedName, fle, isWhereClause, queryType, qParser));
+					//						n.setLeft(getDayCalc(exp, exposedName, fle, isWhereClause, queryType, qStruct));
 					//Right of main node
 					Node nr1 = new Node();
 					nr1.setOperator("*");
@@ -1716,7 +1739,7 @@ public class ProcessSelectClause {
 					Node nr1l1 = new Node();
 					nr1l1.setOperator("/");
 					nr1l1.setType(Node.getBaoNodeType());
-					//								nr1l1.setLeft(getDayCalc(exp, exposedName, fle, isWhereClause, queryType, qParser));
+					//								nr1l1.setLeft(getDayCalc(exp, exposedName, fle, isWhereClause, queryType, ));
 					Node nr1r2 = new Node();
 					nr1r2.setType(Node.getValType());
 					String st="30";
@@ -1785,20 +1808,20 @@ public class ProcessSelectClause {
 
 	}
 
-	private static Node transformToAbsoluteTableNames(Node n, Vector<FromListElement> fleList, boolean aliasNameFound, QueryStructure qParser) throws Exception {
+	private static Node transformToAbsoluteTableNames(Node n, Vector<FromListElement> fleList, boolean aliasNameFound, QueryStructure qStruct) throws Exception {
 		// TODO Auto-generated method stub
 		for(FromListElement fle:fleList){
 			if(fle!=null&&fle.getTableName()!=null){
 				if(fle.getTableName().equalsIgnoreCase(n.getTableNameNo())){
 					n.setTableNameNo(fle.getTableNameNo());
-					Table table=qParser.getTableMap().getTable(fle.getTableName());
+					Table table=qStruct.getTableMap().getTable(fle.getTableName());
 					n.setTable(table);
 					logger.info("table Name Found "+n);
 					return n;
 				}
 				else if(fle.getAliasName().equalsIgnoreCase(n.getTableNameNo())){
 					n.setTableNameNo(fle.getTableNameNo());
-					Table table=qParser.getTableMap().getTable(fle.getTableName());
+					Table table=qStruct.getTableMap().getTable(fle.getTableName());
 					if(table!=null)
 						n.setTable(table);		
 					logger.info("alias Name Found "+n);
@@ -1806,7 +1829,7 @@ public class ProcessSelectClause {
 				}
 				else if(aliasNameFound){
 					logger.info("alias Name Found but not n");
-					Table table=qParser.getTableMap().getTable(fle.getTableName());
+					Table table=qStruct.getTableMap().getTable(fle.getTableName());
 					parsing.Column c;
 					if((c=table.getColumn(n.getColumn().getColumnName().toUpperCase()))!=null){
 						n.setTableNameNo(fle.getTableNameNo());
@@ -1818,7 +1841,7 @@ public class ProcessSelectClause {
 			if(aliasNameFound){
 				logger.info("alias name found"+n);
 				if(fle.getTabs()!=null&&!fle.getTabs().isEmpty()){
-					Node k= transformToAbsoluteTableNames(n,fle.getTabs(),false,qParser);
+					Node k= transformToAbsoluteTableNames(n,fle.getTabs(),false,qStruct);
 					if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 						return k;
 				}
@@ -1840,7 +1863,7 @@ public class ProcessSelectClause {
 							return k;		
 					}
 					else {
-						Node k= transformToAbsoluteTableNames(n,fle.getTabs(),true, qParser);
+						Node k= transformToAbsoluteTableNames(n,fle.getTabs(),true, qStruct);
 						if(k!=null&& !n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 							return k;		
 					}
@@ -1848,7 +1871,7 @@ public class ProcessSelectClause {
 			}
 			if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
 				logger.info(" tabs is not null");
-				Node k= transformToAbsoluteTableNames(n,fle.getTabs(),false,qParser);
+				Node k= transformToAbsoluteTableNames(n,fle.getTabs(),false,qStruct);
 				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 					return k;
 			}
