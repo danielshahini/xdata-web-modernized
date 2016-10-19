@@ -1538,16 +1538,7 @@ public class EliminateRedundantRelation {
 
 	}
 	
-	/* returns true iff both nodeA and nodeB represent the same columns
-	 * 
-	 */
-	private static boolean isEquivalentColumns(Node nodeA, Node nodeB) {
-		// TODO Auto-generated method stub
-		if(nodeA.toString().equalsIgnoreCase(nodeB.toString()))
-			return true;
-		else
-			return false;
-	}
+
 
 	/* the following function determines the existence of column c1 equivalent to column  c2, for every
 	projection condition over c2 from refTable s.t. c1 belongs to a table different from refTable*/

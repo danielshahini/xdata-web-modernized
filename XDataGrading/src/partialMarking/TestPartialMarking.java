@@ -73,8 +73,8 @@ public class TestPartialMarking {
 		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
 //		for(parsing.Conjunct c:queryDetails.qStructure.conjuncts){
-			for(String n :queryDetails.qStructure.getLstRelationInstances())
-				System.out.println("Having Conditions :"+" "+n);
+//			for(Node n :queryDetails.qStructure.getJoinConds())
+//				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
 //		}
 
 		return queryDetails;
@@ -1213,7 +1213,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 
 //				String studentQuery="SELECT TEACHES.course_id FROM TEACHES INNER JOIN INSTRUCTOR "
 //				+ " ON TEACHES.ID<=INSTRUCTOR.ID, DEPARTMENT WHERE INSTRUCTOR.dept_name<=DEPARTMENT.dept_name "
-//				+ "AND 3<TEACHES.ID  "
+//				+ "AND 3<TEACHES.ID  ";
 //				+ "GROUP BY TEACHES.ID, INSTRUCTOR.ID HAVING TEACHES.ID <= INSTRUCTOR.ID ";
 		
 //		String studentQuery="select course_id, title from course "
@@ -1223,8 +1223,8 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 
 
 	
-//		String studentQuery="SELECT TEACHES.course_id FROM TEACHES RIGHT OUTER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.NAME, DEPARTMENT"
-//				+ " WHERE INSTRUCTOR.dept_name>DEPARTMENT.dept_name AND 3>TEACHES.ID GROUP BY TEACHES.ID, INSTRUCTOR.ID HAVING 3>TEACHES.course_id";
+		String studentQuery="SELECT TEACHES.course_id FROM TEACHES RIGHT OUTER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.NAME, DEPARTMENT"
+				+ " WHERE INSTRUCTOR.dept_name>DEPARTMENT.dept_name AND 3>TEACHES.ID GROUP BY TEACHES.ID, INSTRUCTOR.ID HAVING 3>TEACHES.course_id";
 //		String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON (c.dept_name = d.dept_name) GROUP BY c.dept_name HAVING SUM(c.credits)>10 AND COUNT(c.credits)>1";
 //		String studentQuery="with task0 as  (select * from takes), "
 //				+ "task1 as ((select * from task0 UNION select * from task0) MINUS SELECT * from task0)"
@@ -1243,7 +1243,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //		String studentQuery= " Select * from (Select d.id from department d) as sub, (Course as R INNER JOIN DEPARTMENT "+
 //				" ON Course.dept_name<=DEPARTMENT.dept_name OR R.dept_Id=Department.dept_Id) as S INNER JOIN (INSTRUCTOR I NATURAL JOIN DEPARTMENT D) as K ON R.dept_name=I.dept_name";
 
-//		String instructorQuery="select count(s1.id) from student s1, student s2 where "
+//		String studentQuery="select count(s1.id) from student s1, student s2 where "
 //				+ " s1.name=s2.name group by s2.dept_name" ;
 		
 //		String studentQuery="SELECT  DISTINCT DEPARTMENT.DEPT_NAME, TEACHES.course_id, TEACHES.SEC_ID, TEACHES.SEMESTER, TEACHES.YEAR,  INSTRUCTOR.ID "
@@ -1253,10 +1253,10 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //				+ " GROUP BY INSTRUCTOR.SALARY, TEACHES.ID, D.budget, INSTRUCTOR.ID, INSTRUCTOR.dept_name" +
 //   " HAVING INSTRUCTOR.ID=TEACHES.ID AND TEACHES.ID=INSTRUCTOR.ID";
 
-		String studentQuery="SELECT  INSTRUCTOR.ID,  D.budget FROM  INSTRUCTOR INNER JOIN "
-				+ " DEPARTMENT D ON INSTRUCTOR.dept_name=D.dept_name, TEACHES"
-				+ " WHERE  INSTRUCTOR.ID=TEACHES.ID "+
-				" OR  D.budget = D.dept_name OR D.budget=3";
+//		String studentQuery="SELECT  INSTRUCTOR.ID,  D.budget FROM  INSTRUCTOR INNER JOIN "
+//				+ " DEPARTMENT D ON INSTRUCTOR.dept_name=D.dept_name, TEACHES"
+//				+ " WHERE  INSTRUCTOR.ID=TEACHES.ID "+
+//				" OR  D.budget = D.dept_name OR D.budget=3";
 		
 //		String studentQuery="SELECT TEACHES.course_id FROM TEACHES  WHERE "
 //				+ " TEACHES.ID > ALL  (SELECT CLASSROOM.building FROM CLASSROOM WHERE CLASSROOM.room_number=3) AND "
@@ -1302,9 +1302,9 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
 //				System.out.println("key:"+e.getKey()+" value"+e.getValue().getPrimaryKey());
 			
-//			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
+			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instructorQuery);
+//			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
 
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
 //			Float normalMarks=testObj.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;

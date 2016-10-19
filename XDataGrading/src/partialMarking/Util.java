@@ -33,6 +33,39 @@ import parsing.Node;
  */
 public class Util {
 	private static Logger logger = Logger.getLogger(Util.class.getName()); 
+	
+	/** @author mathew on 22 June 2016
+	 * Returns true if for every node n1 in key, there exists a node n2 in sourceLists
+	 * such that n1 and n2 represent the same column 
+	 * 
+	 */
+	public static boolean containsElements(List<Node> sourceList, Vector<Node> keys){
+		for(Node key:keys){
+			boolean foundKey=false;
+			for(Node sourceNode:sourceList){
+				if(key.getTableNameNo().equalsIgnoreCase(sourceNode.getTableNameNo())&&
+						key.getColumn().getColumnName().equalsIgnoreCase(sourceNode.getColumn().getColumnName())){
+					foundKey=true;
+					break;
+				}
+			}
+			if(!foundKey)
+				return false;
+		}
+		return true;
+	}
+	
+	public static boolean containsElement(List<Node> sourceList, Node key){
+			for(Node sourceNode:sourceList){
+				if(key.getTableNameNo().equalsIgnoreCase(sourceNode.getTableNameNo())&&
+						key.getColumn().getColumnName().equalsIgnoreCase(sourceNode.getColumn().getColumnName())){
+					return true;				
+				}
+			}
+				return false;
+
+	}
+
 
 	public static Set<Node> toSetOfNodes(List<Node> nodes){
 		Set<Node> tempSet=new HashSet<Node>();
@@ -41,6 +74,17 @@ public class Util {
 				tempSet.add(n);
 		}
 		return tempSet;
+	}
+	
+	/* returns true iff both nodeA and nodeB represent the same columns
+	 * 
+	 */
+	private static boolean isEquivalentColumns(Node nodeA, Node nodeB) {
+		// TODO Auto-generated method stub
+		if(nodeA.toString().equalsIgnoreCase(nodeB.toString()))
+			return true;
+		else
+			return false;
 	}
 	
 	/*

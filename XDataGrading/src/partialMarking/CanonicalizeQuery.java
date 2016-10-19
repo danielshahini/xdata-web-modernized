@@ -1103,7 +1103,7 @@ public class CanonicalizeQuery {
 		
 		for(Vector<Node> expKey:expandedKeys){
 			// if prefix functionally determines any of the equivalent keys then return True
-			if(containsElements(prefix,expKey)){
+			if(Util.containsElements(prefix,expKey)){
 				return true;
 			}
 			/* if all the attributes in expKey belong to the same table T and if it T has no been visited before 
@@ -1123,7 +1123,7 @@ public class CanonicalizeQuery {
 			Vector<Column> primaryKeyCols=validKey.get(0).getTable().getPrimaryKey();
 			Vector<Node> primaryKeyNodes=convertColumnVectorToNodeVector(primaryKeyCols,validKey.get(0));
 			logger.info(" primaryKey"+primaryKeyNodes);
-			if(containsElements(prefix,primaryKeyNodes))
+			if(Util.containsElements(prefix,primaryKeyNodes))
 				return true;
 			else{
 				/* prepare for recursion
@@ -1164,7 +1164,7 @@ public class CanonicalizeQuery {
 		
 		for(Vector<Node> expKey:expandedKeys){
 			// if prefix functionally determines any of the equivalent keys then return True
-			if(containsElements(prefix,expKey)){
+			if(Util.containsElements(prefix,expKey)){
 				return true;
 			}
 			/* if all the attributes in expKey belong to the same table T and if it T has no been visited before 
@@ -1184,7 +1184,7 @@ public class CanonicalizeQuery {
 			Vector<Column> primaryKeyCols=validKey.get(0).getTable().getPrimaryKey();
 			Vector<Node> primaryKeyNodes=convertColumnVectorToNodeVector(primaryKeyCols,validKey.get(0));
 			logger.info(" primaryKey"+primaryKeyNodes);
-			if(containsElements(prefix,primaryKeyNodes))
+			if(Util.containsElements(prefix,primaryKeyNodes))
 				return true;
 			else{
 				/* prepare for recursion
@@ -1204,26 +1204,7 @@ public class CanonicalizeQuery {
 		return false;
 	}
 	
-	/** @author mathew on 22 June 2016
-	 * Returns true if for every node n1 in key, there exists a node n2 in sourceLists
-	 * such that n1 and n2 represent the same column 
-	 * 
-	 */
-	public static boolean containsElements(LinkedList<Node> sourceList, Vector<Node> keys){
-		for(Node key:keys){
-			boolean foundKey=false;
-			for(Node sourceNode:sourceList){
-				if(key.getTableNameNo().equalsIgnoreCase(sourceNode.getTableNameNo())&&
-						key.getColumn().getColumnName().equalsIgnoreCase(sourceNode.getColumn().getColumnName())){
-					foundKey=true;
-					break;
-				}
-			}
-			if(!foundKey)
-				return false;
-		}
-		return true;
-	}
+
 	
 	/** @ author mathew on 22 June 2016
 	 * 

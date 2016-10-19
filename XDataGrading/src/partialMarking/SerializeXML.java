@@ -36,6 +36,7 @@ public class SerializeXML {
 	
 	
 	public static void serializeXML(String fileName, QueryStructure qData) throws IOException, CloneNotSupportedException{
+		  qData.reAdjustJoins(); //needed for removing any join conditions from selection conditions
 		  out = new PrintWriter(new FileWriter(fileName));
 		  printHead();
 		  out.println(getQueryStructureString(qData, true));

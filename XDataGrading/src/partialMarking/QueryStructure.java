@@ -297,12 +297,12 @@ class QueryAliasMap {
 				}
 
 				this.lstJoinConditions.addAll(this.getJoinConds());
-//				this.lstSelectionConds.addAll(this.getJoinConds());
-				
 				//remove duplicates
-//				ArrayList<Node> tempLst=(ArrayList<Node>)lstSelectionConds.clone();
-//				lstSelectionConds.clear();
-//				lstSelectionConds.addAll(Util.toSetOfNodes(tempLst));
+				ArrayList<Node> tempLst=(ArrayList<Node>)lstJoinConditions.clone();
+				lstJoinConditions.clear();
+				lstJoinConditions.addAll(Util.toSetOfNodes(tempLst));
+
+				
 
 				if(this.getHavingClause()!=null)
 					this.lstHavingConditions.add(this.getHavingClause());
@@ -406,15 +406,16 @@ class QueryAliasMap {
 							||n.getNodeType().equals(Node.getExistsNodeType())
 							||n.getNodeType().equals(Node.getNotExistsNodeType())
 							||n.getNodeType().equals(Node.getInNodeType())
-							||n.getNodeType().equals(Node.getNotInNodeType())
-							){
-						if(this.isInSubQ && n.getNodeType().equals(Node.getExistsNodeType())){
-							this.lstSubQConnectives.add(Node.getInNodeType());
-						}else if(this.isInSubQ && n.getNodeType().equals(Node.getNotExistsNodeType())){
-								this.lstSubQConnectives.add(Node.getNotInNodeType());	
-						}else{
+							||n.getNodeType().equals(Node.getNotInNodeType())){
+
+						// commented by mathew on 18 oct 2016
+//						if(this.isInSubQ && n.getNodeType().equals(Node.getExistsNodeType())){
+//							this.lstSubQConnectives.add(Node.getInNodeType());
+//						}else if(this.isInSubQ && n.getNodeType().equals(Node.getNotExistsNodeType())){
+//								this.lstSubQConnectives.add(Node.getNotInNodeType());	
+//						}else{
 							this.lstSubQConnectives.add(n.getNodeType());	
-						}
+//						}
 					}
 				}
 
@@ -2191,7 +2192,7 @@ class QueryAliasMap {
 			ArrayList<Node> tempSelectionConds=new ArrayList<Node>();
 			tempSelectionConds.addAll(lstSelectionConds);
 			for(Node n:lstSelectionConds){
-				if(n.getLeft().getNodeType().equals(Node.getColRefType())&&n.getRight().getNodeType().equals(Node.getColRefType())){
+				if(n.getLeft().getType().equals(Node.getColRefType())&&n.getRight().getType().equals(Node.getColRefType())){
 					if(!lstJoinConditions.contains(n))
 						lstJoinConditions.add(n);
 					tempSelectionConds.remove(n);
