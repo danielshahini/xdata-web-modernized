@@ -583,25 +583,28 @@ public class ProcessSelectClause {
 		List<SelectItem> projectedItems=plainSelect.getSelectItems();
 		for(int i=0;i<projectedItems.size();i++){
 			SelectItem projectedItem=projectedItems.get(i);
-			if(projectedItem instanceof net.sf.jsqlparser.statement.select.AllColumns){
+			//the case where projected column is described by * in plainSelect
+			if(projectedItem instanceof net.sf.jsqlparser.statement.select.AllColumns){			
 				for(Node n:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 					logger.info(" all column, select all columns... "+n);
 					qStruct.projectedCols.add(n);
 				}
 			}
+			// the case where set of columns are explicitly specified in plainSelect
 			else if(projectedItem instanceof net.sf.jsqlparser.statement.select.SelectExpressionItem){
 				SelectExpressionItem selExpItem=(net.sf.jsqlparser.statement.select.SelectExpressionItem)projectedItem;
 				Expression e=selExpItem.getExpression();
 				if(selExpItem.getAlias()!=null){
 					logger.info(" alias present " +selExpItem.getAlias().getName());
 				}
-
+				// deals with the case when projected column is bounded by a pair of braces
 				if(e instanceof net.sf.jsqlparser.expression.Parenthesis){
 					net.sf.jsqlparser.expression.Parenthesis p=(net.sf.jsqlparser.expression.Parenthesis) e;
 					Expression exp=p.getExpression();
 					if(exp instanceof net.sf.jsqlparser.expression.CaseExpression)
 						e=exp;
 				}
+				// deals with the case expression
 				if(e instanceof net.sf.jsqlparser.expression.CaseExpression){
 
 					List<Expression> whenClauses = ((CaseExpression) e).getWhenClauses();
@@ -626,11 +629,13 @@ public class ProcessSelectClause {
 					//Add Case conditions to queryparser
 					qStruct.getCaseConditionMap().put(1,caseConditionsVector);
 				}
-				else{
+				else{//case when projected column is not a case expression 
 					Node projectedColumn=processExpression(e,qStruct.fromListElements, qStruct,plainSelect,null);
+					//set aggregate alias if any (eg: count(id) as count_id) 
 					if(projectedColumn.getAgg()!=null&&selExpItem.getAlias()!=null){
 						projectedColumn.getAgg().setAggAliasName(selExpItem.getAlias().getName());
 					}
+					//set alias if any for simple columns
 					else if(selExpItem.getAlias()!=null){
 						projectedColumn.setAliasName(selExpItem.getAlias().getName());
 					}
@@ -638,6 +643,7 @@ public class ProcessSelectClause {
 					logger.info("Select Expression"+projectedItem.toString()+ " "+projectedColumn);
 
 					if(qStruct.setOperator==null||qStruct.setOperator.isEmpty()){
+						//deals with the case when the table name of the projected column  cannot be resolved  
 						if(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty()){
 							logger.info(" Column name could not be resolved, query parsing failed, exception thrown, query: "+plainSelect.toString());
 							throw new Exception(" Column name could not be resolved, query parsing failed, exception thrown");
@@ -650,6 +656,16 @@ public class ProcessSelectClause {
 		}
 	}
 
+	
+	/**
+	 * @author mathew
+	 * 
+	 * displays the contents of a list of FromListElements, by hierachically traversing the iterating the list, 
+	 * if any member fle represents is subquery, then it traverses into the fromListElements of the subquery,
+	 * if any member fle represents a subjoin, then it traverses into it (by recursion on getTabs)
+	 * 
+	 * @param visitedFromListElements
+	 */
 	public static void display(Vector<FromListElement> visitedFromListElements) {
 		for(FromListElement fle:visitedFromListElements){
 			if(fle!=null && (fle.getTableName()!=null||fle.getTableNameNo()!=null))
@@ -666,6 +682,16 @@ public class ProcessSelectClause {
 		}
 	}
 
+	/** @author mathew
+	 * 
+	 * @param jsqlTable
+	 * @param frmListElement
+	 * @param qStruct
+	 * 
+	 * deals with the case when the fromListElement is a table, in which case 
+	 * the frmListElement argument is used to encode its details  
+	 * 
+	 */
 	public static void processFromListTable(net.sf.jsqlparser.schema.Table jsqlTable, FromListElement frmListElement, QueryStructure qStruct){
 		String tableName = jsqlTable.getFullyQualifiedName().toUpperCase();// getWholeTableName();
 		String aliasName = "";
@@ -691,6 +717,18 @@ public class ProcessSelectClause {
 		logger.info("Table added"+frmListElement);
 	}
 
+	/** @author mathew
+	 * 
+	 * @param subJoin
+	 * @param visitedFromListElements
+	 * @param joinConditions
+	 * @param qStruct
+	 * @param plainSelect
+	 * @throws Exception
+ 	 * deals with the case when the fromListElement is a sub join, in which case 
+	 * the visitedFromListElements argument is used to encode details of it and its components, 
+	 * join conditions if any are extracted in joinConditions argument
+	 */
 	public static void processFromListSubJoin(SubJoin subJoin, Vector<FromListElement> visitedFromListElements, Vector<Node> joinConditions,
 			QueryStructure qStruct, PlainSelect plainSelect) throws Exception{
 		logger.info("processing subjoin"+ subJoin.toString());
@@ -1789,6 +1827,15 @@ public class ProcessSelectClause {
 		return null;
 	}
 
+	/** @author mathew
+	 * 
+	 * @param subSelect
+	 * @param subQueryParser
+	 * @param parentQueryParser
+	 * @throws Exception
+	 * 
+	 * deals with the case when a subquery is encountered while processing the from clause 
+	 */
 	public static void processFromListSubSelect(SubSelect subSelect, QueryStructure subQueryParser,QueryStructure parentQueryParser) throws Exception {
 		// TODO Auto-generated method stub
 		logger.info(" Processing subselect, selbody:"+subSelect.getSelectBody().toString());
@@ -1803,7 +1850,15 @@ public class ProcessSelectClause {
 
 	}
 
-
+/** @author mathew
+ * 
+ * @param subSelect
+ * @param subQueryParser
+ * @param parentQueryParser
+ * @throws Exception
+ * 
+ * deals with the case when a subquery is encountered while processing the where clause
+ */
 	public static void processWhereSubSelect(SubSelect subSelect, QueryStructure subQueryParser,QueryStructure parentQueryParser) throws Exception {
 		// TODO Auto-generated method stub
 
@@ -1816,10 +1871,27 @@ public class ProcessSelectClause {
 		subQueryParser.parseQueryJSQL("q2", subSelect.getSelectBody().toString(), true);
 
 	}
-
+	
+	
+	/** @author mathew 
+	 * 
+	 * @param n
+	 * @param fleList - list of from list elements returned after processing the from clause 
+	 * @param aliasNameFound
+	 * @param qStruct
+	 * @return
+	 * @throws Exception
+	 * 
+	 * takes a node n (1st argument) for whose either table name is an alias or absent, resolves the alias/determines the table t
+	 * to which the column belongs to  returns a node whose table, table name etc. are set with the respective values of t
+	 */
 	private static Node transformToAbsoluteTableNames(Node n, Vector<FromListElement> fleList, boolean aliasNameFound, QueryStructure qStruct) throws Exception {
 		// TODO Auto-generated method stub
 		for(FromListElement fle:fleList){
+			//iterates through the fleList, for each fle, tries to match its table name/alias name
+			//with the the name of the input node n
+			//case when fle under consideration is a table, in which case if there is a match, then fle's
+			//table name is copied to n's and also the respective table 
 			if(fle!=null&&fle.getTableName()!=null){
 				if(fle.getTableName().equalsIgnoreCase(n.getTableNameNo())){
 					n.setTableNameNo(fle.getTableNameNo());
@@ -1836,6 +1908,9 @@ public class ProcessSelectClause {
 					logger.info("alias Name Found "+n);
 					return n;
 				}
+				// case when there is table name of n does not match with table/alias name of fle
+				// in which case fle's columns are searched for a column whose name is n's, if yes
+				// then fle's table and table name is copied to n's
 				else if(aliasNameFound){
 					logger.info("alias Name Found but not n");
 					Table table=qStruct.getTableMap().getTable(fle.getTableName());
@@ -1862,15 +1937,19 @@ public class ProcessSelectClause {
 				}
 				logger.info(" Alias name found, but column name cannot be resolved");
 			}
+			// considers the case fle alias is provided and fle is not a table (hence, is a subquery or a subjoin)
 			if(fle!=null&&fle.getTableName()==null && fle.getAliasName()!=null){
 				logger.info(" alias name is not null, but table name is null");
+				// if alias name matches with n's table name
 				if(fle.getAliasName().equalsIgnoreCase(n.getTableNameNo())){
+					// case when fle is a subquery, then its from list elements are recursively traversed and searched for a match
 					if(fle.getSubQueryStructure()!=null){
 						Node k= transformToAbsoluteTableNames(n,fle.getSubQueryStructure().getFromListElements(),true,fle.getSubQueryStructure());
 
 						if(k!=null&&!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 							return k;		
 					}
+					// case when fle is a sub join, then its tabs are recursively traversed and search for a match
 					else {
 						Node k= transformToAbsoluteTableNames(n,fle.getTabs(),true, qStruct);
 						if(k!=null&& !n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
@@ -1878,12 +1957,15 @@ public class ProcessSelectClause {
 					}
 				}						
 			}
+			// if fle represents a sub join then its tabs contains it's components, in which 
+			// case its tabs are recursively traversed for finding a match
 			if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
 				logger.info(" tabs is not null");
 				Node k= transformToAbsoluteTableNames(n,fle.getTabs(),false,qStruct);
 				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 					return k;
 			}
+			// if fle represents a subquery then its columns' names/alias names are also examined for a match with n's column name
 			if(fle!=null && fle.getSubQueryStructure()!=null){
 				logger.info(" subQueryParser: checking projected cols");
 
