@@ -848,9 +848,10 @@ import util.TableMap;
 
 		}
 
-
-	          
-		public void parseQuery(String queryId, String queryString) throws Exception {
+	    /* rename of old method parseQuery
+	     *       
+	     */
+		public void buildQueryStructure(String queryId, String queryString) throws Exception {
 			try{
 				queryString=queryString.trim().replaceAll("\n+", " ");
 				queryString=queryString.trim().replaceAll(" +", " ");
@@ -865,7 +866,7 @@ import util.TableMap;
 				queryString = queryString.replace("RIGHT JOIN","RIGHT OUTER JOIN");
 				queryString = queryString.replace("FULL JOIN","FULL OUTER JOIN");
 
-				parseQueryJSQL(queryId, queryString, true);
+				buildQueryStructureJSQL(queryId, queryString, true);
 
 			}catch(ParseException ex){
 				
@@ -876,8 +877,11 @@ import util.TableMap;
 				throw new Exception("QueryStructure.java: parseQuery() : JSQLParser Error : Query Parsing failed for the following query : \n"+queryString+" \n. \n Please check the logs for details.");  
 			}
 		}
-	    
-		public void parseQueryJSQL(String queryId, String queryString, boolean debug)
+	   
+	    /* rename of old method parseQueryJSQL
+	     *       
+	     */
+		public void buildQueryStructureJSQL(String queryId, String queryString, boolean debug)
 				throws Exception {
 			logger.info("beginning to parse query");
 			try{
@@ -1348,7 +1352,7 @@ import util.TableMap;
 						this.projectedCols.addAll(leftQuery.projectedCols);
 					}
 					else if(nxtElement instanceof SetOperationList){
-						leftQuery.parseQueryJSQL("q2",((SetOperationList)nxtElement).toString(),debug);
+						leftQuery.buildQueryStructureJSQL("q2",((SetOperationList)nxtElement).toString(),debug);
 					}
 				}if(selectList.size()==2&&selectListIt.hasNext()){
 					Object nxtElement = selectListIt.next();
@@ -1367,7 +1371,7 @@ import util.TableMap;
 							this.projectedCols.addAll(rightQuery.projectedCols);
 						}
 					else if(nxtElement instanceof SetOperationList){
-						rightQuery.parseQueryJSQL("q3",((SetOperationList)nxtElement).toString(),debug);
+						rightQuery.buildQueryStructureJSQL("q3",((SetOperationList)nxtElement).toString(),debug);
 					}
 				}
 				/*The following else added by mathew on  22 August 2016
@@ -1389,7 +1393,7 @@ import util.TableMap;
 					for(int i=1;i<setOpList.getSelects().size();i++)
 						tempListSelectBodies.add(setOpList.getSelects().get(i));
 					tempSetOpList.setBracketsOpsAndSelects(tempBrackets, tempListSelectBodies, tempListOperations);
-					rightQuery.parseQueryJSQL("q3",tempSetOpList.toString(),debug);
+					rightQuery.buildQueryStructureJSQL("q3",tempSetOpList.toString(),debug);
 				}
 			}
 			this.initializeQueryListStructures();

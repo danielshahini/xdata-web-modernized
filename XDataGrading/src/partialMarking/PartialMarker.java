@@ -741,46 +741,46 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 	
 
 	
-private QueryInfo populateQueryInfo(QueryData instructorData, QueryData studentData, int level, boolean isEvaluateDistinct){
+private static QueryInfo populateQueryInfo(QueryData instructorData, QueryData studentData, int level, boolean isEvaluateDistinct){
 		
 		QueryInfo qInfo = new QueryInfo();
 		qInfo.Level = level;
 		
 		for(Node n: instructorData.getSelectionConditions()){
-			Node newN=this.checkTableOccurence(n,instructorData.getSelectionConditions());
+			Node newN=checkTableOccurence(n,instructorData.getSelectionConditions());
 			qInfo.InstructorPredicates.add(newN.toString());
 			//qInfo.Predicates.add(qInfo.InstructorPredicates);
 		}
 		
 		for(Node n: studentData.getSelectionConditions()){
 			
-			Node newN=this.checkTableOccurence(n,studentData.getSelectionConditions());
+			Node newN=checkTableOccurence(n,studentData.getSelectionConditions());
 			qInfo.StudentPredicates.add(newN.toString());
 			//qInfo.Predicates.add(qInfo.StudentPredicates);
 		}
 		
 		for(Node n: instructorData.getProjectionList()){
 			
-			Node newN=this.checkTableOccurence(n,instructorData.getProjectionList());
+			Node newN=checkTableOccurence(n,instructorData.getProjectionList());
 			qInfo.InstructorProjections.add(newN.toString()); 
 			//qInfo.Projections.add(qInfo.InstructorProjections);
 			
 		}
 		
 		for(Node n: studentData.getProjectionList()){
-			Node newN=this.checkTableOccurence(n,studentData.getProjectionList());
+			Node newN=checkTableOccurence(n,studentData.getProjectionList());
 			qInfo.StudentProjections.add(newN.toString());
 			//qInfo.Projections.add(qInfo.StudentProjections);
 		}
 		
 		for(Node n: instructorData.GroupByNodes){
-			Node newN=this.checkTableOccurence(n,instructorData.GroupByNodes);
+			Node newN=checkTableOccurence(n,instructorData.GroupByNodes);
 			qInfo.InstructorGroupBy.add(newN.toString());
 			//qInfo.GroupBy.add(qInfo.InstructorGroupBy);
 		}
 		
 		for(Node n: studentData.GroupByNodes){
-			Node newN=this.checkTableOccurence(n,studentData.GroupByNodes);
+			Node newN=checkTableOccurence(n,studentData.GroupByNodes);
 			qInfo.StudentGroupBy.add(newN.toString());
 			//qInfo.GroupBy.add(qInfo.StudentGroupBy);
 		} 
@@ -796,13 +796,13 @@ private QueryInfo populateQueryInfo(QueryData instructorData, QueryData studentD
 		}
 		
 		for(Node n : instructorData.getHavingClause()){
-			Node newN=this.checkTableOccurence(n,instructorData.getHavingClause());
+			Node newN=checkTableOccurence(n,instructorData.getHavingClause());
 			qInfo.InstructorHavingClause.add(newN.toString());
 			//qInfo.HavingClause.add(qInfo.InstructorHavingClause);
 		}
 		
 		for(Node n : studentData.getHavingClause()){
-			Node newN=this.checkTableOccurence(n,studentData.getHavingClause());
+			Node newN=checkTableOccurence(n,studentData.getHavingClause());
 			qInfo.StudentHavingClause.add(newN.toString());
 			//qInfo.HavingClause.add(qInfo.StudentHavingClause);
 		}
@@ -851,7 +851,7 @@ private QueryInfo populateQueryInfo(QueryData instructorData, QueryData studentD
 		return qInfo;
 	}
 
-		private Node checkTableOccurence(Node n,ArrayList<Node> nodeList) {
+		private static Node checkTableOccurence(Node n,ArrayList<Node> nodeList) {
 			Node newNode = null;
 			String tableNameNumber = null; 
 			String num = null;
@@ -862,11 +862,11 @@ private QueryInfo populateQueryInfo(QueryData instructorData, QueryData studentD
 			if(n.getType().equalsIgnoreCase(Node.getBroNodeType()) || n.getType().equalsIgnoreCase(Node.getAndNodeType())){
 				//newNode = this.checkTableOccurence(n, nodeList);
 				if(n.getLeft() != null){
-					newNode = this.checkTableOccurence(n.getLeft(),nodeList);
+					newNode = checkTableOccurence(n.getLeft(),nodeList);
 					n.setLeft(newNode);
 				}
 				if(n.getRight() != null){
-					newNode = this.checkTableOccurence(n.getRight(), nodeList);
+					newNode = checkTableOccurence(n.getRight(), nodeList);
 					n.setRight(newNode);
 				}
 				 return n;
@@ -894,7 +894,7 @@ private QueryInfo populateQueryInfo(QueryData instructorData, QueryData studentD
 					}
 				}
 				
-				newNode = this.checkTableOccurence(n.getAgg().getAggExp(), nodeList);
+				newNode = checkTableOccurence(n.getAgg().getAggExp(), nodeList);
 				n.getAgg().setAggExp(newNode);
 				return n;
 				
@@ -1261,14 +1261,14 @@ private QueryInfo populateQueryInfo(QueryData instructorData, QueryData studentD
 
 	}
 		
-	private MarkInfo calculateScore(boolean isEvaluateDistinct, QueryData instructorData, QueryData studentData, int level){
+	private static MarkInfo calculateScore(boolean isEvaluateDistinct, QueryData instructorData, QueryData studentData, int level){
 		
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
 		
-		MarkInfo whereSubQuery = this.compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
+		MarkInfo whereSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
 		
-		MarkInfo fromSubQuery = this.compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
+		MarkInfo fromSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
 		
 		ArrayList<QueryInfo> temp = new ArrayList<QueryInfo>();
 		temp.addAll(whereSubQuery.SubqueryData);
@@ -1486,7 +1486,7 @@ float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
 	}
 	
 	// Compares all permutations of the queries and allocates the maximum mark.
-	private MarkInfo compareListOfQueries(boolean isEvaluateDistinct, Vector<QueryData> master, Vector<QueryData> slave, int level){
+	public static MarkInfo compareListOfQueries(boolean isEvaluateDistinct, Vector<QueryData> master, Vector<QueryData> slave, int level){
 		int result = 0;
 		
 		MarkInfo marks = new MarkInfo();
@@ -1505,7 +1505,7 @@ float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
 				int score = 0;
 				currentInfo = new ArrayList<QueryInfo>();
 				for(int i = 0; i < combination.size(); i++){					
-					MarkInfo e = this.calculateScore(isEvaluateDistinct,master.get(i), slave.get(combination.get(i)), level);
+					MarkInfo e = calculateScore(isEvaluateDistinct,master.get(i), slave.get(combination.get(i)), level);
 					currentInfo.addAll(e.SubqueryData);
 					score += e.Marks;
 				}
@@ -1523,7 +1523,7 @@ float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
 				int score = 0;
 				currentInfo = new ArrayList<QueryInfo>();
 				for(int i = 0; i < combination.size(); i++){
-					MarkInfo e = this.calculateScore(isEvaluateDistinct,master.get(combination.get(i)), slave.get(i), level);
+					MarkInfo e = calculateScore(isEvaluateDistinct,master.get(combination.get(i)), slave.get(i), level);
 					currentInfo.addAll(e.SubqueryData);
 					score += e.Marks;
 				}
@@ -1543,7 +1543,7 @@ float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
 		return marks;
 	}
 	
-	public boolean isInteger( String input )
+	public static boolean isInteger( String input )
 	{
 	   try 
 	   {

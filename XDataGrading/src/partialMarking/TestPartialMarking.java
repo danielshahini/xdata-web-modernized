@@ -74,8 +74,8 @@ public class TestPartialMarking {
 		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
 //		for(parsing.Conjunct c:queryDetails.qStructure.conjuncts){
-//			for(Node n :queryDetails.qStructure.getJoinConds())
-//				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
+			for(Node n :queryDetails.qStructure.getJoinConds())
+				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
 //		}
 
 		return queryDetails;
@@ -111,76 +111,16 @@ public class TestPartialMarking {
 		srcConn.close();
 		tarConn.close();
 	}
-		
-							
-	// Compares all permutations of the queries and allocates the maximum mark.
-	private MarkInfo compareListOfQueries(boolean isEvaluateDistinct, Vector<QueryData> master, Vector<QueryData> slave, int level){
-		int result = 0;
-		
-		MarkInfo marks = new MarkInfo();
-		ArrayList<QueryInfo> currentInfo = null;
-		ArrayList<QueryInfo> maxInfo = new ArrayList<QueryInfo>();
-				
-		int masterCount = master.size();		
-		int slaveCount = slave.size();
-		
-		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
-		if(masterCount < slaveCount){						
-			PartialMarker.generateCombinations(combinations, masterCount, slaveCount, new ArrayList<Integer>(), 0);
-			
-			result = 0;
-			for(ArrayList<Integer> combination : combinations){
-				int score = 0;
-				currentInfo = new ArrayList<QueryInfo>();
-				for(int i = 0; i < combination.size(); i++){					
-					MarkInfo e = this.calculateScore(isEvaluateDistinct,master.get(i), slave.get(combination.get(i)), level);
-					currentInfo.addAll(e.SubqueryData);
-					score += e.Marks;
-				}
-				
-				if(score > result){
-					result = score;
-					maxInfo = currentInfo;
-				}
-			}
-		} else {						
-			PartialMarker.generateCombinations(combinations, slaveCount, masterCount, new ArrayList<Integer>(), 0);
-			
-			result = 0;
-			for(ArrayList<Integer> combination : combinations){
-				int score = 0;
-				currentInfo = new ArrayList<QueryInfo>();
-				for(int i = 0; i < combination.size(); i++){
-					MarkInfo e = this.calculateScore(isEvaluateDistinct,master.get(combination.get(i)), slave.get(i), level);
-					currentInfo.addAll(e.SubqueryData);
-					score += e.Marks;
-				}
-				
-				if(score > result){
-					result = score;
-					maxInfo = currentInfo;
-				}
-			}
-		}
-		
-		logger.log(Level.INFO,combinations.toString());
-		logger.log(Level.INFO,"size ="+combinations.size());
-		
-		marks.SubqueryData = maxInfo;
-		marks.Marks = result/(Math.abs(masterCount - slaveCount) + 1); 
-		return marks;
-	}
-	
-
+									
 	// Compares query data corresponding to the instructor and student
 	public MarkInfo calculateScore(boolean isEvaluateDistinct, QueryData instructorData, QueryData studentData, int level){
 		
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
 
-		MarkInfo whereSubQuery = this.compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
+		MarkInfo whereSubQuery = PartialMarker.compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
 		
-		MarkInfo fromSubQuery = this.compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
+		MarkInfo fromSubQuery = PartialMarker.compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
 
 		
 		if(isEvaluateDistinct){
@@ -321,9 +261,6 @@ public class TestPartialMarking {
 		return marks;
 	}
 	
-		
-
-
 
 	
 	/* method for testing parsing in batch. Assumption: queries are stored in column <querystring> from database <xdatat>, 
@@ -462,8 +399,8 @@ public class TestPartialMarking {
 
 
 	
-		String studentQuery="SELECT TEACHES.course_id FROM TEACHES RIGHT OUTER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.NAME, DEPARTMENT"
-				+ " WHERE INSTRUCTOR.dept_name>DEPARTMENT.dept_name AND 3>TEACHES.ID GROUP BY TEACHES.ID, INSTRUCTOR.ID HAVING 3>TEACHES.course_id";
+//		String studentQuery="SELECT TEACHES.course_id FROM TEACHES NATURAL JOIN INSTRUCTOR, DEPARTMENT"
+//				+ " WHERE INSTRUCTOR.dept_name>DEPARTMENT.dept_name AND 3>TEACHES.ID GROUP BY TEACHES.ID, INSTRUCTOR.ID HAVING 3>TEACHES.course_id";
 //		String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON (c.dept_name = d.dept_name) GROUP BY c.dept_name HAVING SUM(c.credits)>10 AND COUNT(c.credits)>1";
 //		String studentQuery="with task0 as  (select * from takes), "
 //				+ "task1 as ((select * from task0 UNION select * from task0) MINUS SELECT * from task0)"
@@ -482,8 +419,8 @@ public class TestPartialMarking {
 //		String studentQuery= " Select * from (Select d.id from department d) as sub, (Course as R INNER JOIN DEPARTMENT "+
 //				" ON Course.dept_name<=DEPARTMENT.dept_name OR R.dept_Id=Department.dept_Id) as S INNER JOIN (INSTRUCTOR I NATURAL JOIN DEPARTMENT D) as K ON R.dept_name=I.dept_name";
 
-//		String studentQuery="select count(s1.id) from student s1, student s2 where "
-//				+ " s1.name=s2.name group by s2.dept_name" ;
+		String studentQuery="select count(s1.id) from student s1 NATURAL JOIN student s2 where "
+				+ " s1.name=s2.name group by s2.dept_name" ;
 		
 //		String studentQuery="SELECT  DISTINCT DEPARTMENT.DEPT_NAME, TEACHES.course_id, TEACHES.SEC_ID, TEACHES.SEMESTER, TEACHES.YEAR,  INSTRUCTOR.ID "
 //				+ "FROM  DEPARTMENT D, TEACHES INNER JOIN INSTRUCTOR ON  TEACHES.ID=INSTRUCTOR.ID "
@@ -543,12 +480,12 @@ public class TestPartialMarking {
 			
 //			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
+//			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
 
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
-			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
-			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
-			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
+//			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
+//			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
+//			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
 			//testObj.copyData();
 		}
 		catch(Exception e){

@@ -558,7 +558,38 @@ public class ProcessSelectClause {
 						joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.innerJoin);
 
 					joinConditions.add(joinCondition);
+				}		
+				else if(join.isNatural()){
+					Vector<FromListElement> leftFLEVector=new Vector<FromListElement>();
+					leftFLEVector.add(leftFLE);
+					Vector<FromListElement> rightFLEVector=new Vector<FromListElement>();
+					rightFLEVector.add(rightFLE);
+					Vector<Node> leftColumns=Util.getAllProjectedColumns(leftFLEVector, qStruct);
+					Vector<Node> rightColumns=Util.getAllProjectedColumns(rightFLEVector, qStruct);
+					for(Node leftColumn:leftColumns){
+						for(Node rightColumn:rightColumns){
+							if(leftColumn.getColumn().getColumnName().equals(rightColumn.getColumn().getColumnName())){
+								Node equiJoinNode=new Node();
+								equiJoinNode.setType(Node.getBroNodeType());	
+								equiJoinNode.setOperator(qStruct.cvcRelationalOperators[1]);
+								equiJoinNode.setLeft(leftColumn);
+								equiJoinNode.setRight(rightColumn);
+								if(join.isLeft())
+									equiJoinNode.setJoinType(JoinClauseInfo.leftOuterJoin);
+								else if(join.isRight())
+									equiJoinNode.setJoinType(JoinClauseInfo.rightOuterJoin);
+								else if(join.isFull())
+									equiJoinNode.setJoinType(JoinClauseInfo.leftOuterJoin);
+								else
+									equiJoinNode.setJoinType(JoinClauseInfo.innerJoin);
+								
+								joinConditions.add(equiJoinNode);
+								logger.info(" join condition added for natural join: "+equiJoinNode);
+							}
+						}
+					}
 				}
+
 				leftFLE=rightFLE;//reset leftFLE to the previously visited FLE
 			}
 		}
@@ -814,6 +845,38 @@ public class ProcessSelectClause {
 
 			joinConditions.add(joinCondition);
 		}
+		else if(join.isNatural()){
+			Vector<FromListElement> leftFLEVector=new Vector<FromListElement>();
+			leftFLEVector.add(leftFLE);
+			Vector<FromListElement> rightFLEVector=new Vector<FromListElement>();
+			rightFLEVector.add(rightFLE);
+			Vector<Node> leftColumns=Util.getAllProjectedColumns(leftFLEVector, qStruct);
+			Vector<Node> rightColumns=Util.getAllProjectedColumns(rightFLEVector, qStruct);
+			for(Node leftColumn:leftColumns){
+				for(Node rightColumn:rightColumns){
+					if(leftColumn.getColumn().getColumnName().equals(rightColumn.getColumn().getColumnName())){
+						Node equiJoinNode=new Node();
+						equiJoinNode.setType(Node.getBroNodeType());	
+						equiJoinNode.setOperator(qStruct.cvcRelationalOperators[1]);
+						equiJoinNode.setLeft(leftColumn);
+						equiJoinNode.setRight(rightColumn);
+
+						if(join.isLeft())
+							equiJoinNode.setJoinType(JoinClauseInfo.leftOuterJoin);
+						else if(join.isRight())
+							equiJoinNode.setJoinType(JoinClauseInfo.rightOuterJoin);
+						else if(join.isFull())
+							equiJoinNode.setJoinType(JoinClauseInfo.leftOuterJoin);
+						else
+							equiJoinNode.setJoinType(JoinClauseInfo.innerJoin);
+
+						joinConditions.add(equiJoinNode);
+						logger.info(" join condition added for natural join: "+equiJoinNode);
+					}
+				}
+			}
+		}
+
 	}
 
 	/** @author mathew - code modified and adapted from parsing.WhereClauseVectorJSQL.getWhereClauseVector
@@ -1846,7 +1909,7 @@ public class ProcessSelectClause {
 		subQueryParser.parentQueryParser=parentQueryParser;
 		subQueryParser.setQuery(new Query("q2",subSelect.getSelectBody().toString()));
 		subQueryParser.getQuery().setRepeatedRelationCount(parentQueryParser.getQuery().getRepeatedRelationCount());
-		subQueryParser.parseQueryJSQL("q2", subSelect.getSelectBody().toString(), true);
+		subQueryParser.buildQueryStructureJSQL("q2", subSelect.getSelectBody().toString(), true);
 
 	}
 
@@ -1868,7 +1931,7 @@ public class ProcessSelectClause {
 		subQueryParser.parentQueryParser=parentQueryParser;
 		subQueryParser.setQuery(new Query("q2",subSelect.getSelectBody().toString()));
 		subQueryParser.getQuery().setRepeatedRelationCount(parentQueryParser.getQuery().getRepeatedRelationCount());
-		subQueryParser.parseQueryJSQL("q2", subSelect.getSelectBody().toString(), true);
+		subQueryParser.buildQueryStructureJSQL("q2", subSelect.getSelectBody().toString(), true);
 
 	}
 	

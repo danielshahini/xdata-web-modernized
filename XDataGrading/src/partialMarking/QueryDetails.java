@@ -121,7 +121,7 @@ public class QueryDetails {
 				
 		cvc.closeConn();
 
-		qStructure.parseQuery("q1", query);
+		qStructure.buildQueryStructure("q1", query);
 		
 		
 	}
