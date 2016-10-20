@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="lib" path="/XData/jars/apache-ant-1.8.2.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
@@ -38,5 +39,6 @@
 	<classpathentry kind="lib" path="Jars/javax.servlet.jsp-2.2.0.v201112011158.jar"/>
 	<classpathentry kind="lib" path="/XData/jars/tomcat-jdbc-7.0.54.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jsqlparser.jar"/>
+	<classpathentry kind="lib" path="/XData/jars/ant-launcher-1.9.7.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

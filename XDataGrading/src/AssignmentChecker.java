@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSession;
 import database.CommonFunctions;
 import database.DatabaseConnection;
 import testDataGen.GenerateDataset_new;
+import testDataGen.preProcessForDataGeneration;
 
 //import testDataGen.TestAssignment;
 
@@ -124,7 +125,9 @@ public class AssignmentChecker extends HttpServlet {
 			ResultSet rsDataSet = null;
 			if (!Thread.currentThread().interrupted()) {
 				try {
-					GenerateDataset_new.entry(args);	
+					//GenerateDataset_new.entry(args);
+					preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+					preProcess.generateDatasetForQuery(assignment_id,question_id,query_id,course_id);
 					String dataGeneratedID = loginUsr + "&" + assignment_id
 							+ "&" + question_id + "&" + query_id;
 					

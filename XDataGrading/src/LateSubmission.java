@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import util.DatabaseConnectionDetails;
+
 import evaluation.TestAssignment;
 
 import database.DatabaseConnection;
@@ -112,7 +114,8 @@ public class LateSubmission extends HttpServlet {
 		//Evaluate all the answers given by this student
 
 		TestAssignment ta = new TestAssignment();
-		testConn = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+		DatabaseConnectionDetails dbConnDetails = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+		testConn = dbConnDetails.getTesterConn();
 		
 		String args[] = {String.valueOf(assignment_id), rollnum,course_id, String.valueOf(noOfQuestions), String.valueOf(marksToBeReduced)};
 		 

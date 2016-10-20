@@ -50,7 +50,7 @@
 			dbcon = (new DatabaseConnection()).dbConnection();
 			
 			
-			Connection testConn = (new util.DatabaseConnection()).getTesterConnection(asID);
+			Connection testConn = ((new util.DatabaseConnection()).getTesterConnection(asID)).getTesterConn();
 			
 			PreparedStatement stmt;
 			ResultSet rs = null;

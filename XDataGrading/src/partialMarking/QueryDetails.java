@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 
 import parsing.QueryParser;
 import testDataGen.GenerateCVC1;
+import testDataGen.preProcessForDataGeneration;
 import util.MyConnection;
 
 public class QueryDetails {
@@ -105,7 +106,14 @@ public class QueryDetails {
 	public void initialize(int assignmentId, int questionId, String query) throws Exception {
 		GenerateCVC1 cvc = new GenerateCVC1();
 				
-		cvc.initializeConnectionDetails(assignmentId, questionId, 1,"");
+		//cvc.initializeConnectionDetails(assignmentId, questionId, 1,"");
+		
+		preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+		cvc.setAssignmentId(assignmentId);
+		cvc.setQuestionId(questionId);
+		cvc.setQueryId(1);
+		cvc.setCourseId("");
+		preProcess.initializeConnectionDetails(cvc);
 		
 		cvc.setqParser( new QueryParser(cvc.getTableMap()));
 		

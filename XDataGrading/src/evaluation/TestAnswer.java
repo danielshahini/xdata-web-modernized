@@ -37,7 +37,8 @@ import java.util.*;
 import java.sql.*;
 
 import testDataGen.GenerateCVC1;
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
+import testDataGen.preProcessForDataGeneration;
 import parsing.AddSelectClauseForWithAs;
 import partialMarking.MarkInfo;
 import partialMarking.PartialMarker;
@@ -891,12 +892,13 @@ public class TestAnswer {
 					f.mkdirs();
 				}
 				else{
-					Runtime r = Runtime.getRuntime();
+					/*Runtime r = Runtime.getRuntime();
 					Process proc = r.exec("rm "+Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
 									
 					proc.waitFor();
 					Utilities.closeProcessStreams(proc);
-					proc.destroy();
+					proc.destroy();*/
+					Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
 				}
 				//JSON implementation reqd and test here.
 				//It holds JSON obj tat has list of Datasetvalue class
@@ -956,12 +958,12 @@ public class TestAnswer {
 		QueryStatus status = QueryStatus.Error;
 		
 		boolean isQueryPass = false;
-		PopulateTestData p = new PopulateTestData();
+		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		boolean orderIndependent = false;
 		boolean isMatchAll = false;
 		
 		try(Connection conn = MyConnection.getDatabaseConnection()){
-			try(Connection testConn = new DatabaseConnection().getTesterConnection(assignmentId)){
+			try(Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){
 		
 				String getMatchAllOption = "select matchallqueries,orderIndependent from xdata_qinfo where assignment_id = ? and question_id = ? and course_id= ?";
 				try(PreparedStatement pst = conn.prepareStatement(getMatchAllOption)){
@@ -1064,7 +1066,15 @@ public class TestAnswer {
 													    assignId = Integer.parseInt(matcher.group(1));
 													} 
 													
-													cvc.initializeConnectionDetails(assignId,questionId,queryId,course_id);
+													//cvc.initializeConnectionDetails(assignId,questionId,queryId,course_id);
+													preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+													
+													cvc.setAssignmentId(assignmentId);
+													cvc.setQuestionId(questionId);
+													cvc.setQueryId(queryId);
+													cvc.setCourseId(course_id);
+													preProcess.initializeConnectionDetails(cvc);
+													
 													TableMap tm = cvc.getTableMap();
 													p.populateTestDataForTesting(vs, filePath+"/"+datasets.get(i), tm, testConn, assignId, questionId);
 													
@@ -1169,9 +1179,15 @@ public class TestAnswer {
 	//Connection conn = MyConnection.getExistingDatabaseConnection();
 	//Connection testConn = MyConnection.getTestDatabaseConnection();
 	try(Connection conn = MyConnection.getDatabaseConnection()){
-		try(Connection testConn = new DatabaseConnection().getTesterConnection(assignmentId)){
+		try(Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){
 			GenerateCVC1 cvc = new GenerateCVC1();											
-			cvc.initializeConnectionDetails(assignmentId,questionId,queryId,course_id);
+			preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+			
+			cvc.setAssignmentId(assignmentId);
+			cvc.setQuestionId(questionId);
+			cvc.setQueryId(queryId);
+			cvc.setCourseId(course_id);
+			preProcess.initializeConnectionDetails(cvc);
 		 	
 			TableMap tm = cvc.getTableMap();
 			String getMatchAllOption = "select matchallqueries,orderIndependent from xdata_qinfo where assignment_id = ? and question_id = ? and course_id = ?";
@@ -1215,7 +1231,7 @@ public class TestAnswer {
 					
 				}
 			}
-			PopulateTestData p = new PopulateTestData();
+			PopulateTestDataGrading p = new PopulateTestDataGrading();
 			
 			String qry = "select * from xdata_instructor_query where assignment_id = ? and question_id = ? and course_id = ?";
 			try(PreparedStatement pstmt = conn.prepareStatement(qry)){
@@ -1606,7 +1622,7 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 	String instrQuery = "";
 	Map <Integer,Boolean> resultOfDatasetMatchForEachQuery  = new HashMap<Integer, Boolean>();
 	try(Connection conn = MyConnection.getDatabaseConnection()){
-		try(Connection testConn = new DatabaseConnection().getTesterConnection(assignmentId)){
+		try(Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){
 			
 			String getMatchAllOption = "select matchallqueries,orderIndependent,latesubmissionmarks from xdata_qinfo where assignment_id = ? and question_id = ? and course_id=?";
 			try(PreparedStatement pst = conn.prepareStatement(getMatchAllOption)){
@@ -1632,10 +1648,17 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 			pstmt.setInt(2,questionId); 
 			pstmt.setString(3,course_id);
 			try(ResultSet rs = pstmt.executeQuery()){
-				PopulateTestData p = new PopulateTestData();
+				PopulateTestDataGrading p = new PopulateTestDataGrading();
 				
-				GenerateCVC1 cvc = new GenerateCVC1();
-				cvc.initializeConnectionDetails(assignmentId,questionId,queryId,course_id);
+				GenerateCVC1 cvc = new GenerateCVC1();											
+				preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+				
+				cvc.setAssignmentId(assignmentId);
+				cvc.setQuestionId(questionId);
+				cvc.setQueryId(queryId);
+				cvc.setCourseId(course_id);
+				preProcess.initializeConnectionDetails(cvc);
+			 	
 				TableMap tm = cvc.getTableMap();
 				cvc.closeConn();	
 			//For each instructor answer loop to compare datasets
@@ -1997,7 +2020,7 @@ public Map<Integer,FailedDataSetValues> checkQueryEquivalence(int assignmentId,i
 	
 	try(Connection conn = MyConnection.getDatabaseConnection()){
 		
-		try(Connection testConn = new DatabaseConnection().getTesterConnection(assignmentId)){
+		try(Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){
 			
 		//Get default dataset Ids from assignment table
 		String getDefaultDataSets = "select defaultDSetId from xdata_assignment where assignment_id = ? and course_id=?";
@@ -2036,7 +2059,7 @@ public Map<Integer,FailedDataSetValues> checkQueryEquivalence(int assignmentId,i
 			pstmt.setInt(2,questionId); 
 			pstmt.setString(3,course_id);
 			try(ResultSet rs = pstmt.executeQuery()){
-				PopulateTestData p = new PopulateTestData();
+				PopulateTestDataGrading p = new PopulateTestDataGrading();
 				
 			//For each SQL answer loop to compare datasets
 			while(rs.next()){
@@ -2056,8 +2079,15 @@ public Map<Integer,FailedDataSetValues> checkQueryEquivalence(int assignmentId,i
 				dataSetForQueries = downloadDataSetForAllQueries(assignmentId, questionId, queryId, course_id, testConn, dataSetForQueries);
 			}
 			
-			GenerateCVC1 cvc = new GenerateCVC1();
-			cvc.initializeConnectionDetails(assignmentId,questionId,queryId,course_id);
+			GenerateCVC1 cvc = new GenerateCVC1();											
+			preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+			
+			cvc.setAssignmentId(assignmentId);
+			cvc.setQuestionId(questionId);
+			cvc.setQueryId(queryId);
+			cvc.setCourseId(course_id);
+			preProcess.initializeConnectionDetails(cvc);
+		 	
 			TableMap tm = cvc.getTableMap();
 			cvc.closeConn();
 			/********run the queries against defaut data set for the application ********/
@@ -2420,7 +2450,7 @@ public String checkForViews(String query, String user) throws Exception{
 		String qry = "select * from xdata_instructor_query where assignment_id = ? and question_id = ? and query_id = ? and course_id = ?";    	
 		
 		try(Connection conn = MyConnection.getDatabaseConnection()){
-			try(Connection testConn = new DatabaseConnection().getTesterConnection(assignmentId)){
+			try(Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){
 		
 				try(PreparedStatement pstmt = conn.prepareStatement(qry)){
 					pstmt.setInt(1, assignmentId);
@@ -2429,21 +2459,29 @@ public String checkForViews(String query, String user) throws Exception{
 					pstmt.setString(4,course_id);
 					try(ResultSet rs = pstmt.executeQuery()){	
 						// query output handling
-						GenerateCVC1 cvc = new GenerateCVC1();
-						cvc.initializeConnectionDetails(assignmentId, questionId, queryId,course_id);
+						GenerateCVC1 cvc = new GenerateCVC1();											
+						preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+						
+						cvc.setAssignmentId(assignmentId);
+						cvc.setQuestionId(questionId);
+						cvc.setQueryId(queryId);
+						cvc.setCourseId(course_id);
+						preProcess.initializeConnectionDetails(cvc);
+					 	
 						TableMap tm = cvc.getTableMap();
 						cvc.closeConn();
-						PopulateTestData p = new PopulateTestData();
+						PopulateTestDataGrading p = new PopulateTestDataGrading();
 						if(rs.next()){
 							//delete the previous datasets		
-							Runtime r = Runtime.getRuntime();
+							//Runtime r = Runtime.getRuntime();
 							File f=new File(Configuration.homeDir+"/temp_cvc"+filePath+"/");
 							File f2[]=f.listFiles();
 							if(f2 != null){
 								for(int i=0;i<f2.length;i++){
 									if(f2[i].isDirectory() && f2[i].getName().startsWith("DS")){
-										Process proc = r.exec("rm -rf "+Configuration.homeDir+"/temp_cvc"+filePath+"/"+f2[i].getName());
-										Utilities.closeProcessStreams(proc);
+										//Process proc = r.exec("rm -rf "+Configuration.homeDir+"/temp_cvc"+filePath+"/"+f2[i].getName());
+										//Utilities.closeProcessStreams(proc);
+										Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+filePath+"/"+f2[i].getName());
 									}					
 								}
 							}
@@ -2722,7 +2760,7 @@ public String checkForViews(String query, String user) throws Exception{
 		QueryStatus status = QueryStatus.Error;
 		
 		boolean isQueryPass = false;
-		PopulateTestData p = new PopulateTestData();
+		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		boolean orderIndependent = false;
 		boolean isMatchAll = false;
 		TestAssignment tt = new TestAssignment();
@@ -2833,7 +2871,14 @@ public String checkForViews(String query, String user) throws Exception{
 													    assignId = Integer.parseInt(matcher.group(1));
 													} 
 													
-													cvc.initializeConnectionDetails(assignId,questionId,queryId,course_id);
+													preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+													
+													cvc.setAssignmentId(assignmentId);
+													cvc.setQuestionId(questionId);
+													cvc.setQueryId(queryId);
+													cvc.setCourseId(course_id);
+													preProcess.initializeConnectionDetails(cvc);
+												 	
 													TableMap tm = cvc.getTableMap();
 													p.populateTestDataForTesting(vs, filePath+"/"+datasets.get(i), tm, testConn, assignId, questionId);
 													

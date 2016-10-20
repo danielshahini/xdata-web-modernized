@@ -36,8 +36,9 @@ import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonArray;
 
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
 import util.DataSetValue;
+import util.DatabaseConnectionDetails;
 import util.TesterDatasource;
 
 import com.google.gson.Gson;
@@ -95,7 +96,9 @@ public class StudentTestCase extends HttpServlet {
 		 
   		if(testcon==null){
 		  	try {
-	    	    testcon = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+		  		DatabaseConnectionDetails dbConnDetails = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+				testcon = dbConnDetails.getTesterConn();
+				
 	    	      if(testcon!=null){
 	    	    	  logger.log(Level.FINE,"Connected successfullly");
 	    	      }
@@ -292,7 +295,7 @@ public class StudentTestCase extends HttpServlet {
 	                    FailedDataSetValues failedDSValues = new Gson().fromJson(ans, listType1);					
 	                    logger.log(Level.FINE,"Ans : "+ ans);
 						out_assignment.println("<h3>"+"Your query did not match the following datasets."+"</h3><hr></div>");
-						PopulateTestData populateTestData = new PopulateTestData();
+						PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 						populateTestData.deleteAllTempTablesFromTestUser(testcon);
 						populateTestData.createTempTables(testcon, assignment_id, question_id);
 						

@@ -28,8 +28,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import database.*;
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
 import util.DataSetValue;
+import util.DatabaseConnectionDetails;
 import util.TesterDatasource;
 
 /**
@@ -65,7 +66,9 @@ public class TestCaseDataset extends HttpServlet {
 
 		Connection testcon = null;
 		try {
-			testcon = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+			DatabaseConnectionDetails dbConnDetails = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+			testcon = dbConnDetails.getTesterConn();
+			
 			if (testcon != null) {
 				logger.log(Level.FINE,"Connected successfully");
 			}
@@ -119,7 +122,7 @@ public class TestCaseDataset extends HttpServlet {
 					String args[] = { rs.getString("datasetid"),
 							"A" + assignment_id + "Q" + question_id + "S" + 1+"CS631" };
 					try {
-						PopulateTestData.entry(args);
+						PopulateTestDataGrading.entry(args);
 					} catch (Exception e) {
 						logger.log(Level.SEVERE,e.getMessage(),e);
 						throw new ServletException(e);

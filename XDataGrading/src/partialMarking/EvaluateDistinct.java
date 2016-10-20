@@ -31,7 +31,8 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 import testDataGen.GenerateCVC1;
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
+import testDataGen.preProcessForDataGeneration;
 import evaluation.TestAnswer;
 import util.Configuration;
 import util.DatabaseConnection;
@@ -60,7 +61,7 @@ public class EvaluateDistinct {
 		String instrQuery = InstructorQuery.query;
 		String studentQuery = StudentQuery.query;
 		TestAnswer ta = new TestAnswer();
-		PopulateTestData p = new PopulateTestData();
+		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		
 		//Mutate studentquery - send student query to a method, -that does single distinct mutation by using parsetree and regenerating the query
 		// then- get projectionlist, remove distinct and return the query
@@ -72,8 +73,15 @@ public class EvaluateDistinct {
 		HashMap<String,String> mutants = new HashMap<String,String>();
 		mutants.put(qId, studentQuery);
 		GenerateCVC1 cvc = new GenerateCVC1();
-		cvc.initializeConnectionDetails(assignmentId, questionId, 1,course_id);
-		Connection testConn = new DatabaseConnection().getTesterConnection(assignmentId);
+		
+		preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+		cvc.setAssignmentId(assignmentId);
+		cvc.setQuestionId(questionId);
+		cvc.setQueryId(1);
+		cvc.setCourseId(course_id);
+		preProcess.initializeConnectionDetails(cvc);
+		
+		Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn();
 		Connection conn = MyConnection.getDatabaseConnection();
 		Map <Integer,Vector<String>>  datasetForQueryMap =  
 				TestAnswer.downloadDatasets(assignmentId,questionId, queryId,course_id, conn, filePath, true);
@@ -136,9 +144,8 @@ public class EvaluateDistinct {
 						
 						if (matcher.find()) {
 						    assignId = Integer.parseInt(matcher.group(1));
-						} 
+						}
 						
-						cvc.initializeConnectionDetails(assignId,questionId,queryId,course_id);
 						TableMap tm = cvc.getTableMap();
 						p.populateTestDataForTesting(vs, filePath+"/"+datasets.get(i), tm, testConn, assignId, questionId);
 						

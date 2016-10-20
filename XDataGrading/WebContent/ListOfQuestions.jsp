@@ -199,7 +199,7 @@ $( document ).ready(function() {
 	      }); 
 	      return false; 
 	});
-	//Method to evaluate single question
+	/* //Method to evaluate single question
 	$('.evaluateQ').click(function(e){
 		e.preventDefault(); 
 		var destination =this.href;
@@ -266,6 +266,79 @@ $( document ).ready(function() {
 	        	($('#evError'+ indexVal)).show();
 	        	 setTimeout( function(){
 	        		 ($('#evError'+ indexVal)).hide();
+	    			  }, 10000*10); 
+	        }
+	      }); 
+	      return false; 
+	      
+	}); */
+	
+	//Method to evaluate single question
+	$('.evaluateQ').click(function(e){
+		e.preventDefault(); 
+		var destination =this.href;
+		var dataString=this.id;
+		var self = this;
+		var idVal = this.name;
+		//alert("Name = " + idVal);
+		$.ajax({ 
+	        type: "GET", 
+	        url: "EvaluateQuestion",
+	        data: dataString,
+	        context:this,  
+	        beforeSend : function() {
+	        	//alert("Comes to B4 send");
+	        	($('#evaluate'+ this.name)).hide();
+	        	($('#eprogress'+ this.name)).show();
+	        	 ($('#status'+ this.name)).hide();
+	       }, complete: function(){  
+        	 try{ 
+        		 ($('#evaluate'+ this.name)).show();
+        		 ($('#eprogress'+ this.name)).hide();
+        		 ($('#status'+ this.name)).show();
+        		
+        	 }catch(err)
+     		{
+        		 //alert("Comes to complete error");
+ 	        	($('#evaluate'+ this.name)).show();
+ 	        	 ($('#eprogress'+ this.name)).hide();
+ 	        	($('#evError'+ this.name)).show();
+	        	 setTimeout( function(){
+	        		 ($('#evError'+ this.name)).hide();
+	    			  }, 10000*10); 
+	        }
+        	  
+          },
+	        success: function(data) { 
+	        	try{
+	        		if(this.success){
+				    	//alert($(self).parent().get( 0 ).tagName);
+				    	// alert("Success : "+($('#evaluate'+ this.name)));
+	        			 ($('#evaluate'+ this.name)).show();
+	            		 ($('#eprogress'+ this.name)).hide();
+	            		 ($('#status'+ this.name)).show();
+	        		}
+	        	}
+	        		catch(err)
+	        		{
+	        			($('#evaluate'+ this.name)).show();
+	    	        	($('#eprogress'+ this.name)).hide();
+	    	        	($('#evError'+ this.name)).show();
+	    	        	 ($('#status'+ this.name)).hide();
+	   	        	 setTimeout( function(){
+	   	        		 ($('#evError'+ this.name)).hide();
+	   	    				  }, 10000*10); 
+	   	       		 }
+	    	        
+	        	
+	        }, 
+	        error : function(xhr, ajaxOptions, thrownError){
+	        	($('#evaluate'+ this.name)).show();
+	        	 ($('#eprogress'+ this.name)).hide();
+	        	 ($('#status'+ this.name)).hide();
+	        	($('#evError'+ this.name)).show();
+	        	 setTimeout( function(){
+	        		 ($('#evError'+ this.name)).hide();
 	    			  }, 10000*10); 
 	        }
 	      }); 

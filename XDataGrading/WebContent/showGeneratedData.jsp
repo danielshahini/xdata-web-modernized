@@ -10,7 +10,7 @@
 <%@page import="com.google.gson.reflect.TypeToken"%>
 <%@page import="com.google.gson.JsonArray"%>
 <%@page import="evaluation.FailedDataSetValues" %>
-<%@page import="testDataGen.PopulateTestData" %>
+<%@page import="testDataGen.PopulateTestDataGrading" %>
 <%@page import="java.util.logging.Logger"%>
 <%@page import="evaluation.TestAnswer"%>
 <%@page import="parsing.QueryParser"%>
@@ -163,32 +163,36 @@ $( document ).ready(function() {
 </head>
 <body > 
 <%
-if (session.getAttribute("LOGIN_USER") == null) {
-	response.sendRedirect("index.jsp?TimeOut=true");
-	return;
-}
+ 	if (session.getAttribute("LOGIN_USER") == null) {
+ 	response.sendRedirect("index.jsp?TimeOut=true");
+ 	return;
+ }
 
-if(!((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase("tester")){
-if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
-		%> 
+ if(!((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase("tester")){
+ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
+ %> 
 <div id="breadcrumbs"> 
   <a style='color:#353275;text-decoration: none;' href="CourseHome.jsp" target="_top">Home</a> &nbsp; >> &nbsp;
    <a href="InstructorHome.jsp?contextLabel=<%=(String) request.getSession().getAttribute("context_label")%>" style='color:#353275;text-decoration: none;' target="_top"><%=(String) request.getSession().getAttribute("context_label")%></a>&nbsp; >> &nbsp;
    <a href="ListAllAssignments.jsp" style='color:#353275;text-decoration: none;' target="_self">Assignment List</a>&nbsp; >> &nbsp;
-   <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID") %>&&showQuestions=true" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;    
-  <!--  <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID") %>" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp; -->    
+   <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID")%>&&showQuestions=true" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;    
+  <!--  <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID")%>" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp; -->    
    <a href="#" style='color:#0E0E0E;text-decoration: none;font-weight: normal;'>Generated Data</a>
  
   </div> 
-<%}else{ %>
+<%
+ 	}else{
+ %>
 <div id="breadcrumbs">  
-   <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID") %>&&showQuestions=true"" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;    
-  <!-- <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID") %>" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp;    -->
+   <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID")%>&&showQuestions=true"" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;    
+  <!-- <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID")%>" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp;    -->
    <a href="#" style='color:#0E0E0E;text-decoration: none;font-weight: normal;'>Generated Data</a>
  
  </div> 
-<%} 
-}%>
+<%
+ 	} 
+ }
+ %>
  
 <br/>
 <div>
@@ -198,154 +202,154 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 
 					<%
 						int assignment_id = Integer.parseInt(request.getParameter("AssignmentID"));
-						int question_id = Integer.parseInt(request.getParameter("question_id"));
-						String course_id = (String) session.getAttribute("context_label");
-						String query = CommonFunctions.decodeURIComponent(request.getParameter("query"));
-						String question_text = CommonFunctions.decodeURIComponent(request.getParameter("question_text"));
-						int query_id = Integer.parseInt(request.getParameter("query_id"));
+									int question_id = Integer.parseInt(request.getParameter("question_id"));
+									String course_id = (String) session.getAttribute("context_label");
+									String query = CommonFunctions.decodeURIComponent(request.getParameter("query"));
+									String question_text = CommonFunctions.decodeURIComponent(request.getParameter("question_text"));
+									int query_id = Integer.parseInt(request.getParameter("query_id"));
 
-						String loginUser = session.getAttribute("LOGIN_USER").toString();
+									String loginUser = session.getAttribute("LOGIN_USER").toString();
 
-						Connection testcon = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+									Connection testcon = ((new util.DatabaseConnection()).getTesterConnection(assignment_id)).getTesterConn();
 
-						Connection dbcon = (new DatabaseConnection()).dbConnection();
-						out.println("<div class=\"info\">" + "<h2>Question: " + question_id + "</h2>"
-								+ "<h3><b>Question Text:</b></h3>");
-						out.println("<h3>" + question_text + "</h3>" + "<h4><b>SQL:</b></h4><pre><code class=\"sql\">" + query
-								+ "</code></pre></div>");
-						try {
-							String datasets = "Select datasetid,value,tag,isresultmatch from xdata_datasetvalue where assignment_id = ? and question_id = ? and query_id=? and course_id = ?";
-							PreparedStatement pstmt = dbcon.prepareStatement(datasets);
-							pstmt.setInt(1, assignment_id);
-							pstmt.setInt(2, question_id);
-							pstmt.setInt(3, query_id);
-							pstmt.setString(4, course_id);
-							ResultSet rs = pstmt.executeQuery();
-							PopulateTestData populateTestData = new PopulateTestData();
-							populateTestData.deleteAllTempTablesFromTestUser(testcon);
+									Connection dbcon = (new DatabaseConnection()).dbConnection();
+									out.println("<div class=\"info\">" + "<h2>Question: " + question_id + "</h2>"
+											+ "<h3><b>Question Text:</b></h3>");
+									out.println("<h3>" + question_text + "</h3>" + "<h4><b>SQL:</b></h4><pre><code class=\"sql\">" + query
+											+ "</code></pre></div>");
+									try {
+										String datasets = "Select datasetid,value,tag,isresultmatch from xdata_datasetvalue where assignment_id = ? and question_id = ? and query_id=? and course_id = ?";
+										PreparedStatement pstmt = dbcon.prepareStatement(datasets);
+										pstmt.setInt(1, assignment_id);
+										pstmt.setInt(2, question_id);
+										pstmt.setInt(3, query_id);
+										pstmt.setString(4, course_id);
+										ResultSet rs = pstmt.executeQuery();
+										PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
+										populateTestData.deleteAllTempTablesFromTestUser(testcon);
 
-							populateTestData.createTempTables(testcon, assignment_id, question_id);
-							int index = 0;
-							while (rs.next()) {
-								index++;
-								String args1[] = { rs.getString("datasetid"), String.valueOf(assignment_id),
-										String.valueOf(question_id), String.valueOf(query_id), course_id };
-								populateTestData.populateDataset(assignment_id, question_id, query_id, course_id,
-										rs.getString("datasetid"), dbcon, testcon);
+										populateTestData.createTempTables(testcon, assignment_id, question_id);
+										int index = 0;
+										while (rs.next()) {
+											index++;
+											String args1[] = { rs.getString("datasetid"), String.valueOf(assignment_id),
+													String.valueOf(question_id), String.valueOf(query_id), course_id };
+											populateTestData.populateDataset(assignment_id, question_id, query_id, course_id,
+													rs.getString("datasetid"), dbcon, testcon);
 
-								out.println(
-										"<h4><label style=\"width:90px;\">" + index + ". " + rs.getString("tag") + "</label></h4>");
-								out.println("<p></p>");
+											out.println(
+													"<h4><label style=\"width:90px;\">" + index + ". " + rs.getString("tag") + "</label></h4>");
+											out.println("<p></p>");
 
-								String value = rs.getString("value");
-								//It holds JSON obj tat has list of Datasetvalue class
-								//Shree changed for storing DSvalue as JSON
-								Gson gson = new Gson();
-								//ArrayList dsList = gson.fromJson(value,ArrayList.class);
-								Type listType = new TypeToken<ArrayList<DataSetValue>>() {
-								}.getType();
+											String value = rs.getString("value");
+											//It holds JSON obj tat has list of Datasetvalue class
+											//Shree changed for storing DSvalue as JSON
+											Gson gson = new Gson();
+											//ArrayList dsList = gson.fromJson(value,ArrayList.class);
+											Type listType = new TypeToken<ArrayList<DataSetValue>>() {
+											}.getType();
 
-								List<DataSetValue> dsList = new Gson().fromJson(value, listType);
-								System.out.println("dsList.size() = " + dsList.size());
-								boolean refTableExists = false;
-								for (int i = 0; i < dsList.size(); i++) {
-									DataSetValue dsValue = (DataSetValue) dsList.get(i);
-									String tname = "", values;
-									//if(dsValue.getFilename().contains(".ref")){
-									//	tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref"));
-									//}
-									if (dsValue.getFilename().contains(".ref")) {
-										refTableExists = true;
-									}
-									if (!(dsValue.getFilename().contains(".ref"))) {
-										tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".copy"));
-
-										PreparedStatement detailStmt = testcon
-												.prepareStatement("select * from " + tname + " where 1 = 0");
-										ResultSetMetaData columnDetail = detailStmt.executeQuery().getMetaData();
-
-										
-											out.println("<table border=\"1\">");
-											out.println("<caption>" + tname + "</caption>");
-											out.println("<tr>");
-											//Column names get from metadata
-											for (int cl = 1; cl <= columnDetail.getColumnCount(); cl++) {
-												out.println("<th>" + columnDetail.getColumnLabel(cl) + "</th>");
-											}
-											out.println("</tr>");
-											//Get Column values
-											for (String dsv : dsValue.getDataForColumn()) {
-												String columns[] = dsv.split("\\|");
-												out.println("<tr>");
-												for (String column : columns) {
-													out.println("<td>" + column + "</td>");
+											List<DataSetValue> dsList = new Gson().fromJson(value, listType);
+											System.out.println("dsList.size() = " + dsList.size());
+											boolean refTableExists = false;
+											for (int i = 0; i < dsList.size(); i++) {
+												DataSetValue dsValue = (DataSetValue) dsList.get(i);
+												String tname = "", values;
+												//if(dsValue.getFilename().contains(".ref")){
+												//	tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref"));
+												//}
+												if (dsValue.getFilename().contains(".ref")) {
+													refTableExists = true;
 												}
-												out.println("</tr>");
+												if (!(dsValue.getFilename().contains(".ref"))) {
+													tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".copy"));
+
+													PreparedStatement detailStmt = testcon
+															.prepareStatement("select * from " + tname + " where 1 = 0");
+													ResultSetMetaData columnDetail = detailStmt.executeQuery().getMetaData();
+
+													
+														out.println("<table border=\"1\">");
+														out.println("<caption>" + tname + "</caption>");
+														out.println("<tr>");
+														//Column names get from metadata
+														for (int cl = 1; cl <= columnDetail.getColumnCount(); cl++) {
+															out.println("<th>" + columnDetail.getColumnLabel(cl) + "</th>");
+														}
+														out.println("</tr>");
+														//Get Column values
+														for (String dsv : dsValue.getDataForColumn()) {
+															String columns[] = dsv.split("\\|");
+															out.println("<tr>");
+															for (String column : columns) {
+																out.println("<td>" + column + "</td>");
+															}
+															out.println("</tr>");
+														}
+														out.println("</table>");
+													}
+												
 											}
-											out.println("</table>");
-										}
-									
-								}
-								/**Code to toggle Reference Tables - START**/
-								if (refTableExists) {
-									out.println("<p></p><div style='margin-right: 0%;'>");
-									out.println("<a class='showhidelink' href = 'javascript:void(0);' onclick=\"toggleRefTables('#"
-											+ rs.getString("datasetid") + "')\">View Referenced Tables</a>");
+											/**Code to toggle Reference Tables - START**/
+											if (refTableExists) {
+												out.println("<p></p><div style='margin-right: 0%;'>");
+												out.println("<a class='showhidelink' href = 'javascript:void(0);' onclick=\"toggleRefTables('#"
+														+ rs.getString("datasetid") + "')\">View Referenced Tables</a>");
 
-									out.println("<p></p><div class='detail' id='" + rs.getString("datasetid") + "'>");
+												out.println("<p></p><div class='detail' id='" + rs.getString("datasetid") + "'>");
 
-									for (int i = 0; i < dsList.size(); i++) {
-										DataSetValue dsValue = (DataSetValue) dsList.get(i);
-										String tname = "", values;
-										
-										if (dsValue.getFilename().contains(".ref")) {
-											tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".ref"));
+												for (int i = 0; i < dsList.size(); i++) {
+													DataSetValue dsValue = (DataSetValue) dsList.get(i);
+													String tname = "", values;
+													
+													if (dsValue.getFilename().contains(".ref")) {
+														tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".ref"));
 
-											PreparedStatement detailStmt = testcon
-													.prepareStatement("select * from " + tname + " where 1 = 0");
-											ResultSetMetaData columnDetail = detailStmt.executeQuery().getMetaData();
-											out.println("<table border=\"1\">");
-											out.println("<caption>" + tname + "</caption>");
-											out.println("<tr>");
-											//Column names get from metadata
-											for (int cl = 1; cl <= columnDetail.getColumnCount(); cl++) {
-												out.println("<th>" + columnDetail.getColumnLabel(cl) + "</th>");
-											}
-											out.println("</tr>");
-											//Get Column values
-											for (String dsv : dsValue.getDataForColumn()) {
-												String columns[] = dsv.split("\\|");
-												out.println("<tr>");
-												for (String column : columns) {
-													out.println("<td>" + column + "</td>");
+														PreparedStatement detailStmt = testcon
+																.prepareStatement("select * from " + tname + " where 1 = 0");
+														ResultSetMetaData columnDetail = detailStmt.executeQuery().getMetaData();
+														out.println("<table border=\"1\">");
+														out.println("<caption>" + tname + "</caption>");
+														out.println("<tr>");
+														//Column names get from metadata
+														for (int cl = 1; cl <= columnDetail.getColumnCount(); cl++) {
+															out.println("<th>" + columnDetail.getColumnLabel(cl) + "</th>");
+														}
+														out.println("</tr>");
+														//Get Column values
+														for (String dsv : dsValue.getDataForColumn()) {
+															String columns[] = dsv.split("\\|");
+															out.println("<tr>");
+															for (String column : columns) {
+																out.println("<td>" + column + "</td>");
+															}
+															out.println("</tr>");
+														}
+														out.println("</table>");
+													}
 												}
-												out.println("</tr>");
+												out.println("</div>");
 											}
-											out.println("</table>");
-										}
-									}
-									out.println("</div>");
-								}
-								out.println("<p></p>");
-								/**Code to toggle Reference Tables - End**/
-								String getResults = "Select resultondataset from xdata_instructor_query where assignment_id = ? and question_id = ? and query_id=? and course_id = ?";
-								PreparedStatement stmnt = dbcon.prepareStatement(getResults);
-								stmnt.setInt(1, assignment_id);
-								stmnt.setInt(2, question_id);
-								stmnt.setInt(3, query_id);
-								stmnt.setString(4, course_id);
-								ResultSet rs1 = stmnt.executeQuery();
-								rs1.next();
-								Type listType1 = new TypeToken<FailedDataSetValues>() {
-								}.getType();
+											out.println("<p></p>");
+											/**Code to toggle Reference Tables - End**/
+											String getResults = "Select resultondataset from xdata_instructor_query where assignment_id = ? and question_id = ? and query_id=? and course_id = ?";
+											PreparedStatement stmnt = dbcon.prepareStatement(getResults);
+											stmnt.setInt(1, assignment_id);
+											stmnt.setInt(2, question_id);
+											stmnt.setInt(3, query_id);
+											stmnt.setString(4, course_id);
+											ResultSet rs1 = stmnt.executeQuery();
+											rs1.next();
+											Type listType1 = new TypeToken<FailedDataSetValues>() {
+											}.getType();
 
-								FailedDataSetValues failedDSValues = new Gson().fromJson(rs1.getString("resultondataset"),
-										listType1);
-								String params = "assignment_id="
-										+ assignment_id + "&&question_id=" + question_id +"&&query_id="+query_id + "&&query="
-										+ CommonFunctions.encodeURIComponent(query)+"&&datasetid="+rs.getString("datasetid");
-								if(loginUser.equalsIgnoreCase("Tester")){
-									%>
+											FailedDataSetValues failedDSValues = new Gson().fromJson(rs1.getString("resultondataset"),
+													listType1);
+											String params = "assignment_id="
+													+ assignment_id + "&&question_id=" + question_id +"&&query_id="+query_id + "&&query="
+													+ CommonFunctions.encodeURIComponent(query)+"&&datasetid="+rs.getString("datasetid");
+											if(loginUser.equalsIgnoreCase("Tester")){
+					%>
 									Enter Expected Result:<br/>
 									<textarea id='expectedResult<%=rs.getString("datasetid") %>' name="tester_result" rows="4" cols="40"> </textarea> <br/>
 									<input type='button' id='<%=rs.getString("datasetid") %>' class='checkMatch' 

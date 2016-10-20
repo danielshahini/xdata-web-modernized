@@ -12,7 +12,7 @@ import partialMarking.PartialMarkParameters;
 
 import com.google.gson.Gson;
 
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
 import util.GraderDatasource;
 
 import database.DatabaseConnection;
@@ -61,7 +61,7 @@ public class UpdateSingleQuery extends HttpServlet {
 		//Get queries as request parameters
 		String queryToSave = "";
 		//queryToSave=get first query
-		PopulateTestData p = new PopulateTestData();
+		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		Connection graderConn = new util.DatabaseConnection().getGraderConnection(asID);
 		p.deleteAllTempTablesFromTestUser(graderConn);
 		p.createTempTables(graderConn, asID, qId);
@@ -143,7 +143,7 @@ public class UpdateSingleQuery extends HttpServlet {
 					newQueryId = (rs1.getInt(1)) + 1;
 				}
 			}
-			PopulateTestData p = new PopulateTestData();
+			PopulateTestDataGrading p = new PopulateTestDataGrading();
 			graderConn = new util.DatabaseConnection().getGraderConnection(asID);
 			p.deleteAllTempTablesFromTestUser(graderConn);
 			p.createTempTables(graderConn, asID, qId);

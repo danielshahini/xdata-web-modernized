@@ -28,7 +28,8 @@ import evaluation.QueryStatusData.QueryStatus;
 
 import testDataGen.GenerateCVC1;
 import testDataGen.GenerateDataset_new;
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
+import testDataGen.preProcessForDataGeneration;
 import util.DatabaseConnection;
 import util.DatabaseHelper;
 import util.MyConnection;
@@ -166,16 +167,24 @@ public class TestAssignment {
 		String courseId = args[2];
 		int noOfQuestions = Integer.parseInt(args[3]);
 		int marksToBeReduced = Integer.parseInt(args[4]);
-		PopulateTestData populateTestData = new PopulateTestData();
+		PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 		TestAnswer test = new TestAnswer();
 		// int question_id = 1;
 		try {
 			for (int ij = 1; ij < noOfQuestions; ij++) {
 				QueryStatus queryStatus = QueryStatus.Correct;
 				boolean queryExists = false;
-				GenerateCVC1 cvc = new GenerateCVC1();
+				
 				populateTestData.deleteAllTempTablesFromTestUser(testCon);
-				cvc.initializeConnectionDetails(assignment_id, ij, 1, courseId);
+				GenerateCVC1 cvc = new GenerateCVC1();											
+				preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+				
+				cvc.setAssignmentId(assignment_id);
+				cvc.setQuestionId(ij);
+				cvc.setQueryId(1);
+				cvc.setCourseId(courseId);
+				preProcess.initializeConnectionDetails(cvc);
+			 	
 				TableMap tm = cvc.getTableMap();
 
 				String json1 = "";
@@ -385,7 +394,7 @@ public class TestAssignment {
 		QueryStatus queryStatus = QueryStatus.Correct;
 		boolean queryExists = false;
 		QueryStatusData statusData = new QueryStatusData();
-		PopulateTestData populateTestData = new PopulateTestData();
+		PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 
 		int assignment_id = Integer.parseInt(args[0]);
 		int question_id = Integer.parseInt(args[1]);
@@ -429,8 +438,15 @@ public class TestAssignment {
 				String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 				failedDs = test.testAnswer(assignment_id, question_id, courseId,
 						StudQueryString, rollNum, "4/" + courseId + "/" + queryId, false,studRole);
-				GenerateCVC1 cvc = new GenerateCVC1();
-				cvc.initializeConnectionDetails(assignment_id, question_id, 1, courseId);
+				GenerateCVC1 cvc = new GenerateCVC1();											
+				preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+				
+				cvc.setAssignmentId(assignment_id);
+				cvc.setQuestionId(question_id);
+				cvc.setQueryId(1);
+				cvc.setCourseId(courseId);
+				preProcess.initializeConnectionDetails(cvc);
+			 	
 				TableMap tm = cvc.getTableMap();
 
 				if (failedDs.getStatus().equalsIgnoreCase("Failed")) {
@@ -512,7 +528,7 @@ public class TestAssignment {
 		QueryStatus queryStatus = QueryStatus.Correct;
 		boolean queryExists = false;
 		QueryStatusData statusData = new QueryStatusData();
-		PopulateTestData populateTestData = new PopulateTestData();
+		PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 
 		int assignment_id = Integer.parseInt(args[0]);
 		int question_id = Integer.parseInt(args[1]);
@@ -584,8 +600,16 @@ public class TestAssignment {
 									String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 									FailedDataSetValues failedDs = test.testAnswer(assignment_id, question_id, courseId,
 											OriginalQry, rollNum, "4/" + courseId + "/" + queryId, false,null);
-									GenerateCVC1 cvc = new GenerateCVC1();
-									cvc.initializeConnectionDetails(assignment_id, question_id, 1, courseId);
+									GenerateCVC1 cvc = new GenerateCVC1();											
+									preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+									
+									cvc.setAssignmentId(assignment_id);
+									cvc.setQuestionId(question_id);
+									cvc.setQueryId(1);
+									cvc.setCourseId(courseId);
+									preProcess.initializeConnectionDetails(cvc);
+								 	
+									
 									TableMap tm = cvc.getTableMap();
 
 									if (failedDs.getStatus().equalsIgnoreCase("Failed")) {
@@ -744,7 +768,14 @@ public class TestAssignment {
 					int no_of_columns = metadata.getColumnCount();
 					String result = "";
 					String columnName = "";
-
+					List<String> existingColNames = new ArrayList<String>();  
+					int index = 1;
+					for(int cl=1;cl<=no_of_columns;cl++)
+					{
+						existingColNames.add(metadata.getColumnName(cl));
+					}
+					
+					
 					for (int cl = 1; cl <= no_of_columns; cl++) {
 						ArrayList<String> values = new ArrayList<String>();
 						FailedColumnValues failedColumns = new FailedColumnValues();
@@ -752,6 +783,24 @@ public class TestAssignment {
 						// result+=metadata.getColumnName(cl)+"@@";
 						// failedDs.getColValueMap().add(metadata.getColumnName(cl));
 						columnName = metadata.getColumnName(cl);
+						
+						existingColNames.remove(metadata.getColumnName(cl));
+						
+						//After removing , if still coName exists it is duplicate column- so suffix with index.
+						if(existingColNames.contains(metadata.getColumnName(cl))){
+							
+							columnName = metadata.getColumnName(cl)+index;
+							index ++;
+							existingColNames.add(metadata.getColumnName(cl));
+							
+						}else{
+							columnName = metadata.getColumnName(cl);
+							
+						}
+						
+						
+						
+						
 						try (ResultSet rr1 = pp.executeQuery()) {
 							metadata = rr1.getMetaData();
 							while (rr1.next()) {
@@ -761,6 +810,9 @@ public class TestAssignment {
 								values.add(rr1.getString(cl));
 
 							}
+							
+
+							
 							failedColumns.setColumnName(metadata.getColumnName(cl));
 							failedColumns.setValues(values);
 							failedColMap.put(columnName, values);
@@ -812,6 +864,13 @@ public class TestAssignment {
 					String result = "";
 					String columnName = "";
 					// ArrayList <String> values = new ArrayList<String>();
+					List<String> existingColNames = new ArrayList<String>();  
+					int index = 1;
+					for(int cl=1;cl<=no_of_columns;cl++)
+					{
+						existingColNames.add(metadata.getColumnName(cl));
+					}
+					
 					for (int cl = 1; cl <= no_of_columns; cl++) {
 						ArrayList<String> values = new ArrayList<String>();
 						FailedColumnValues failedColumns = new FailedColumnValues();
@@ -819,6 +878,22 @@ public class TestAssignment {
 						// result+=metadata.getColumnName(cl)+"@@";
 						// failedDs.getColValueMap().add(metadata.getColumnName(cl));
 						columnName = metadata.getColumnName(cl);
+						
+						existingColNames.remove(metadata.getColumnName(cl));
+						
+						//After removing , if still coName exists it is duplicate column- so suffix with index.
+						if(existingColNames.contains(metadata.getColumnName(cl))){
+							
+							columnName = metadata.getColumnName(cl)+index;
+							index ++;
+							existingColNames.add(metadata.getColumnName(cl));
+							
+						}else{
+							columnName = metadata.getColumnName(cl);
+							
+						}
+						
+						
 						try (ResultSet rr1 = pp.executeQuery()) {
 							metadata = rr1.getMetaData();
 							while (rr1.next()) {
@@ -876,7 +951,7 @@ public class TestAssignment {
 																				// be
 																				// 1
 		TestAnswer test = new TestAnswer();
-		try (Connection testCon = new DatabaseConnection().getTesterConnection(assignment_id)) {
+		try (Connection testCon = (new DatabaseConnection().getTesterConnection(assignment_id)).getTesterConn()) {
 			// dbcon = MyConnection.getExistingDatabaseConnection();
 			try (Connection dbcon = MyConnection.getDatabaseConnection()) {
 				if (dbcon != null) {
@@ -894,12 +969,19 @@ public class TestAssignment {
 						try (ResultSet StudQueries = studQueriesStmt.executeQuery()) {
 
 							HashSet<String> hs = new HashSet<String>();
-							GenerateCVC1 cvc = new GenerateCVC1();
-							cvc.initializeConnectionDetails(assignment_id, question_id, 1, course_Id);
+							GenerateCVC1 cvc = new GenerateCVC1();											
+							preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+							
+							cvc.setAssignmentId(assignment_id);
+							cvc.setQuestionId(question_id);
+							cvc.setQueryId(1);
+							cvc.setCourseId(course_Id);
+							preProcess.initializeConnectionDetails(cvc);
+							
 							TableMap tm = cvc.getTableMap();
 							cvc.closeConn();
 
-							PopulateTestData p = new PopulateTestData();
+							PopulateTestDataGrading p = new PopulateTestDataGrading();
 							p.deleteAllTempTablesFromTestUser(testCon);
 							p.createTempTables(testCon, assignment_id, question_id);
 							// HashMap< String, String> hm=new HashMap<String,
@@ -1133,14 +1215,14 @@ public class TestAssignment {
 		QueryStatusData queryStatus = new QueryStatusData();
 		queryStatus.Status = QueryStatus.Correct;
 		boolean isQueryExists = false;
-		PopulateTestData populateTestData = new PopulateTestData();
+		PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 		int assignment_id = Integer.parseInt(args[0]);
 		int question_id = Integer.parseInt(args[1]);
 		String rollnum = args[2];
 		String courseId = args[3];
 
 		try (Connection dbcon = MyConnection.getDatabaseConnection()) {
-			try (Connection testCon = new DatabaseConnection().getTesterConnection(assignment_id)) {
+			try (Connection testCon = (new DatabaseConnection().getTesterConnection(assignment_id)).getTesterConn()) {
 
 				if (dbcon != null) {
 					logger.log(Level.INFO, "Connected successfullly");
@@ -1305,19 +1387,26 @@ public class TestAssignment {
 		String status = "pass";
 		TestAnswer test = new TestAnswer();
 		boolean equivalenceStatus = true;
-		try (Connection testCon = new DatabaseConnection().getTesterConnection(assignment_id)) {
+		try (Connection testCon = (new DatabaseConnection().getTesterConnection(assignment_id)).getTesterConn()) {
 
 			try (Connection dbcon = MyConnection.getDatabaseConnection()) {
 				if (dbcon != null) {
 					logger.log(Level.INFO, "Connected successfullly");
 				}
 				logger.log(Level.INFO, "A" + assignment_id + "Q" + question_id + "S" + 1);
-				GenerateCVC1 cvc = new GenerateCVC1();
-				cvc.initializeConnectionDetails(assignment_id, question_id, 1, course_Id);
+				GenerateCVC1 cvc = new GenerateCVC1();											
+				preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+				
+				cvc.setAssignmentId(assignment_id);
+				cvc.setQuestionId(question_id);
+				cvc.setQueryId(1);
+				cvc.setCourseId(course_Id);
+				preProcess.initializeConnectionDetails(cvc);
+				
 				TableMap tm = cvc.getTableMap();
 				cvc.closeConn();
 
-				PopulateTestData p = new PopulateTestData();
+				PopulateTestDataGrading p = new PopulateTestDataGrading();
 				p.deleteAllTempTablesFromTestUser(testCon);
 				p.createTempTables(testCon, assignment_id, question_id);
 				Gson gson = new Gson();
@@ -1548,7 +1637,7 @@ public class TestAssignment {
 		QueryStatusData queryStatus = new QueryStatusData();
 		queryStatus.Status = QueryStatus.Correct;
 		boolean isQueryExists = false;
-		PopulateTestData populateTestData = new PopulateTestData();
+		PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 		int assignment_id = Integer.parseInt(args[0]);
 		int question_id = Integer.parseInt(args[1]);
 		String rollnum = args[2];

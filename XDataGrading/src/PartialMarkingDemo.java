@@ -18,7 +18,7 @@ import javax.servlet.http.HttpSession;
 import parsing.Node;
 import partialMarking.QueryData;
 import partialMarking.TestPartialMarking;
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
 
 /**
  * Servlet implementation class PartialMarkingDemo
@@ -72,7 +72,7 @@ public class PartialMarkingDemo extends HttpServlet {
 		TestPartialMarking testObj=new TestPartialMarking();
 		TestPartialMarking testObj1=new TestPartialMarking();
 		Connection graderConn=null;
-		PopulateTestData p = new PopulateTestData();
+		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		Exception caughtException=null;
 
 		int assignId=9;  //Hard code some existing assignment ID here and in TestPartialMarking.java - process and processcanonicalize methods

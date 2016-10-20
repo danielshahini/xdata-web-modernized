@@ -37,8 +37,9 @@ import java.math.BigDecimal;
 
 import com.google.gson.reflect.TypeToken;
 
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
 import util.DataSetValue;
+import util.DatabaseConnectionDetails;
 /**
  * Servlet implementation class GuestStudentTestCase
  */
@@ -91,7 +92,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		//Get connections if they are closed
 		if(testcon==null){
 		  	try {
-	    	    testcon = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+		  		DatabaseConnectionDetails dbConnDetails = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+	    	    testcon = dbConnDetails.getTesterConn();
 	    	      if(testcon!=null){
 	    	    	  logger.log(Level.FINE,"Connected successfullly");
 	    	      }
@@ -801,7 +803,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
     	String sel_dataset = "select tag,value from xdata_datasetvalue where datasetid =? and assignment_id= ? and question_id=? and query_id=?";
     	//logger.log(Level.FINE,"Ans : "+ ans);
 		out_assignment += "<h3>"+"Your query did not match the following datasets."+"</h3><hr>";
-		PopulateTestData populateTestData = new PopulateTestData();
+		PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 		populateTestData.deleteAllTempTablesFromTestUser(testcon);
 		populateTestData.createTempTables(testcon, assignment_id, question_id);
 		
@@ -1106,7 +1108,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
     	//logger.log(Level.FINE,"Ans : "+ ans);
     	out_assignment += "<a name='passedDataSets'></a><div id=\"ShowPassedDataSets\" style='display:none;'><h3>"+"Your query matches the following datasets."+"</h3>";
 		out_assignment +="<hr>";
-		PopulateTestData populateTestData = new PopulateTestData();
+		PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 		populateTestData.deleteAllTempTablesFromTestUser(testcon);
 		populateTestData.createTempTables(testcon, assignment_id, question_id);
 		 

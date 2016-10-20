@@ -25,8 +25,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import testDataGen.PopulateTestData;
+import testDataGen.PopulateTestDataGrading;
 import util.DataSetValue;
+import util.DatabaseConnectionDetails;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -64,7 +65,8 @@ public class FailedTestCases extends HttpServlet {
 		String course_id = (String) request.getSession().getAttribute("context_label");
 		String user_id=request.getParameter("user_id");
 		try {
-    	    testcon = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+			DatabaseConnectionDetails dbConnDetails =(DatabaseConnectionDetails) (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+    	    testcon = dbConnDetails.getTesterConn();
     	    dbCon = (new DatabaseConnection()).dbConnection();
     	      
     	}catch (Exception ex) {
@@ -192,7 +194,7 @@ public class FailedTestCases extends HttpServlet {
                 FailedDataSetValues failedDSValues = new Gson().fromJson(ans, listType1);
                // Iterator<String> setIterator = hs.iterator();
 				out_assignment.println("<h3>"+"Student query failed for the following datasets."+"</h3><hr></div>");
-				PopulateTestData populateTestData = new PopulateTestData();
+				PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 				populateTestData.deleteAllTempTablesFromTestUser(testcon);
 				populateTestData.createTempTables(testcon, assignment_id, question_id);
 				if(failedDSValues != null && failedDSValues.getDataSetIdList() != null){
