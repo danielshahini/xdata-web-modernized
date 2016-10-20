@@ -62,7 +62,8 @@ public class QueryDetails {
 						marks = rs.getInt("marks");
 					}
 					this.query = sqlQuery;
-					this.initialize(assignmentId, questionId, sqlQuery);
+					//this.initialize(assignmentId, questionId, sqlQuery);
+					this.startProcessing(assignmentId, questionId, sqlQuery);
 					return marks;
 				}
 			}
@@ -89,14 +90,16 @@ public class QueryDetails {
 						sqlQuery = guestStudentQuery;
 					}
 					this.query = sqlQuery;
-					this.initialize(aId, qId, sqlQuery);
+					//this.initialize(aId, qId, sqlQuery);
+					this.startProcessing(aId, qId, sqlQuery);
 		}
 		}
 		}
 	}else{
 		String sqlQuery = guestStudentQuery;
 		this.query = sqlQuery;
-		this.initialize(aId, qId, sqlQuery);
+		//this.initialize(aId, qId, sqlQuery);
+		this.startProcessing(aId, qId, sqlQuery);
 	}
 		
 	}
