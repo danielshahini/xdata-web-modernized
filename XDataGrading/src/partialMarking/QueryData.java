@@ -608,7 +608,7 @@ public class QueryData {
 	 * returns true iff the first arugment string is a member of the second argument, which is a list
 	 * 
 	 */
-	public boolean isMemberOf(String element, List<String> list){
+	public static boolean isMemberOf(String element, List<String> list){
 		if(element==null)
 			return false;
 		for(String s:list){
@@ -956,18 +956,17 @@ public class QueryData {
 				 */
 				ForeignKey fk= EliminateRedundantRelation.getForeignKey(candTableName, keyTableName, foreignKeys);
 
-
 				if(fk != null){
 					isReferenced = false;
 					break;
 				}
 
 				fk = EliminateRedundantRelation.getForeignKey(keyTableName, candTableName, foreignKeys);
+
 				if(fk == null){
 					isReferenced = false;
 					continue;
 				}
-
 
 				Vector<Column> candKeys = fk.getReferenceKeyColumns();
 				Vector<Column> otherKeys = fk.getFKeyColumns();
@@ -978,8 +977,7 @@ public class QueryData {
 					Column othCol = otherKeys.get(i);
 					Boolean found = false;
 					for(Pair v : values){
-						if(v.first.getColumn().getColumnName().equals(canCol.getColumnName()) && v.second.getColumn().getColumnName().equals(othCol.getColumnName())){
-							//System.out.println(v.second.getColumn().getColumnName());
+						if(v.first.getColumn().getColumnName().equalsIgnoreCase(canCol.getColumnName()) && v.second.getColumn().getColumnName().equalsIgnoreCase(othCol.getColumnName())){
 							found = true;
 							break;
 						} 
@@ -1071,12 +1069,19 @@ public class QueryData {
 	// Gets all the selection conditions and eq classes corresponding to the query block
 	private void getSelectionConditionsAndEqClass(Conjunct con, ArrayList<Node> selectionConds, Vector<Vector<Node>> eqClasses){
 
-		if(con.selectionConds != null || con.stringSelectionConds != null || con.joinConds != null || con.likeConds != null) {
+		if(con.selectionConds != null ) 
 			selectionConds.addAll(con.selectionConds);
+		if(con.stringSelectionConds != null)					
 			selectionConds.addAll(con.stringSelectionConds);
-			selectionConds.addAll(con.joinConds);
-			selectionConds.addAll(con.likeConds);
+		if(con.joinCondsForEquivalenceClasses != null){
+			selectionConds.addAll(con.joinCondsForEquivalenceClasses);
 		}
+		if(con.joinCondsAllOther!=null){
+			selectionConds.addAll(con.joinCondsAllOther);
+		}
+		if(con.likeConds != null)
+			selectionConds.addAll(con.likeConds);
+
 		
 		if(con.getEquivalenceClasses() != null && con.getEquivalenceClasses().size() > 0) {
 			eqClasses.addAll(con.getEquivalenceClasses());
@@ -1099,23 +1104,6 @@ public class QueryData {
 		}
 	}
 	
-	private void flatten(JoinTreeNode root){		
-		invertRightJoins(root);
-		
-		Boolean change = true;
-		
-		while(change){
-			change = false;
-			change = flattenInnerJoin(root, change);			
-		}
-		
-		nullifyFlattenNodes(root);
-	}
-	
-	private void nullifyFlattenNodes(JoinTreeNode root){
-		if(root == null)
-			return;		
-	}
 	
 	// Traverses through the join tree to the get the information about the relations involved in the joins
 	private void traverseJoinTree(JoinTreeNode root){
@@ -1138,6 +1126,25 @@ public class QueryData {
 			this.joinTables.add(root.getTableNameNo());
 		}
 	}
+	
+	private void flatten(JoinTreeNode root){		
+		invertRightJoins(root);
+		
+		Boolean change = true;
+		
+		while(change){
+			change = false;
+			change = flattenInnerJoin(root, change);			
+		}
+		
+		nullifyFlattenNodes(root);
+	}
+	
+	private void nullifyFlattenNodes(JoinTreeNode root){
+		if(root == null)
+			return;		
+	}
+
 	
 	// Converts all the right joins to corresponding left joins
 	private void invertRightJoins(JoinTreeNode root){

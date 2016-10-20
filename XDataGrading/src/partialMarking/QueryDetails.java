@@ -63,7 +63,8 @@ public class QueryDetails {
 						marks = rs.getInt("marks");
 					}
 					this.query = sqlQuery;
-					this.initialize(assignmentId, questionId, sqlQuery);
+					//this.initialize(assignmentId, questionId, sqlQuery);
+					this.startProcessing(assignmentId, questionId, sqlQuery);
 					return marks;
 				}
 			}
@@ -90,15 +91,39 @@ public class QueryDetails {
 						sqlQuery = guestStudentQuery;
 					}
 					this.query = sqlQuery;
-					this.initialize(aId, qId, sqlQuery);
+					//this.initialize(aId, qId, sqlQuery);
+					this.startProcessing(aId, qId, sqlQuery);
 		}
 		}
 		}
 	}else{
 		String sqlQuery = guestStudentQuery;
 		this.query = sqlQuery;
-		this.initialize(aId, qId, sqlQuery);
+		//this.initialize(aId, qId, sqlQuery);
+		this.startProcessing(aId, qId, sqlQuery);
 	}
+		
+	}
+	
+	QueryStructure qStructure;
+	
+	public QueryStructure getQueryStructure(){
+		return qStructure;
+	}
+	
+	
+	public void startProcessing(int assignmentId, int questionId, String query) throws Exception {
+
+		GenerateCVC1 cvc = new GenerateCVC1();
+				
+		cvc.initializeConnectionDetails(assignmentId, questionId, 1,"");		
+
+		qStructure=new QueryStructure(cvc.getTableMap());
+				
+		cvc.closeConn();
+
+		qStructure.buildQueryStructure("q1", query);
+		
 		
 	}
 

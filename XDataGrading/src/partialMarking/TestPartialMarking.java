@@ -1,3 +1,4 @@
+
 /**
  * 
  */
@@ -70,13 +71,12 @@ public class TestPartialMarking {
 	
 	public QueryDetails process(QueryDetails queryDetails, String strQuery) throws Exception{
 		queryDetails=new QueryDetails();
-		queryDetails.initialize(assignNo, 1, strQuery);	
+		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
-//		queryDetails.OuterQuery.addRelations();
-//				for(Node n:queryDetails.OuterQuery.getSelectionConditions()){
-/*				for(Node n :queryDetails.getParser().getAllSubQueryConds()){
-					System.out.println("Selection Conditions :"+" "+n.getLhsRhs());
-				}*/
+//		for(parsing.Conjunct c:queryDetails.qStructure.conjuncts){
+			for(Node n :queryDetails.qStructure.getJoinConds())
+				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
+//		}
 
 		return queryDetails;
 				
@@ -85,9 +85,9 @@ public class TestPartialMarking {
 	public QueryDetails processCanonicalize(QueryDetails queryDetails, String strQuery) throws Exception{
 		queryDetails=new QueryDetails();
 		
-		queryDetails.initialize(assignNo, 1, strQuery);		
+		queryDetails.startProcessing(assignNo, 1, strQuery);		
 
-		CanonicalizeQuery.Canonicalize(queryDetails.OuterQuery);
+		CanonicalizeQuery.Canonicalize(queryDetails.qStructure);
 
 //		for(Node n:queryDetails.getParser().getGroupByNodes())
 //			System.out.println(" Grouping conditions "+n);
@@ -111,488 +111,16 @@ public class TestPartialMarking {
 		srcConn.close();
 		tarConn.close();
 	}
-	
-
-	private float compare(ArrayList<String> master, ArrayList<String> slave) {
-		float score = 0;
-		for(String n1 : slave){
-			Boolean found = false;
-			for(String n2 : master){				
-				if(n1.equals(n2)){
-					found = true;
-					break;
-				}
-			}
-			
-			if(found){
-				score++;
-			}
-			else{
-				score=score-0.5f;
-			}
-		}
-		
-		return score;
-	}
-	
-	private Boolean checkSelectionEquality(Node n1, Node n2){
-		
-		if(!n1.getOperator().equals(n2.getOperator()))
-			return false;
-		
-		if(!n1.getLeft().getTable().getTableName().equals(n2.getLeft().getTable().getTableName()))
-			return false;
-		
-		if(!n1.getLeft().getTableNameNo().equals(n2.getLeft().getTableNameNo()))
-			return false;
-				
-		if(!n1.getLeft().getColumn().getColumnName().equals(n2.getLeft().getColumn().getColumnName()))
-			return false;
-		
-		if(n1.getRight().getNodeType().equals(Node.getColRefType())){
-			
-			if(!n2.getRight().getNodeType().equals(Node.getColRefType()))
-				return  false;
-			
-			if(!n1.getRight().getTable().getTableName().equals(n2.getRight().getTable().getTableName()))
-				return false;
-			
-			if(!n1.getRight().getTableNameNo().equals(n2.getRight().getTableNameNo()))
-				return false;
-			
-			if(!n1.getRight().getColumn().getColumnName().equals(n2.getRight().getColumn().getColumnName()))
-				return false;
-		}
-		
-		if(n1.getRight().getNodeType().equals(Node.getValType())){
-			if(!n2.getRight().getNodeType().equals(Node.getValType()))
-				return  false;
-			
-			if(!n1.getRight().getStrConst().equals(n2.getRight().getStrConst()))
-				return false;
-		}
-		
-		return true;
-	}
-	
-	private Boolean checkProjectionEquality(Node n1, Node n2){
-
-		if(n1.getNodeType().equals(Node.getAggrNodeType())){
-			
-			if(!n2.getNodeType().equals(Node.getAggrNodeType()))
-				return false;
-			
-			AggregateFunction agg1 = n1.getAgg();
-			AggregateFunction agg2 = n2.getAgg();
-			
-			if(!agg1.getFunc().equals(agg2.getFunc()))
-				return false;
-			
-			if(!agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
-				return false;
-			
-			if(!agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
-				return false;
-
-			
-			if(!agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
-				return false;
-		}
-		
-		if(n1.getNodeType().equals(Node.getColRefType())){
-			
-			if(!n1.getTable().equals(n2.getTable()))
-				return false;
-			
-			if(!n1.getTableNameNo().equals(n2.getTableNameNo()))
-				return false;
-			
-			if(!n1.getColumn().getColumnName().equals(n2.getColumn().getColumnName()))
-				return false;
-		}
-		
-		return true;
-	}
-	
-	/* recoded by mathew on 12 May 2016, 
-	 * 
-	 * checks the syntactic equivalence of two nodes that represents atomic having clause expressions
-	 */
-private Boolean checkHavingClauseEquality(Node n1, Node n2){
-
-	//check for the equivalence of operator
-	if(!n1.getOperator().equals(n2.getOperator()))
-		return false;
-	
-	//check for equivalence of right nodes
-	
-	//if right node of n1 is a column reference
-	if(n1.getRight().getNodeType().equals(Node.getColRefType())){
-
-		if(!n2.getRight().getNodeType().equals(Node.getColRefType()))
-			return  false;
-		
-		if(!n1.getRight().getTableNameNo().equals(n2.getRight().getTableNameNo()))
-			return false;
-
-		if(!n1.getRight().getTable().getTableName().equals(n2.getRight().getTable().getTableName()))
-			return false;
-
-		if(!n1.getRight().getColumn().getColumnName().equals(n2.getRight().getColumn().getColumnName()))
-			return false;
-	}
-
-	//if right node of n1 is a constant value
-	if(n1.getRight().getNodeType().equals(Node.getValType())){
-		if(!n2.getRight().getNodeType().equals(Node.getValType()))
-			return  false;
-
-		if(!n1.getRight().getStrConst().equals(n2.getRight().getStrConst()))
-			return false;
-	}
-
-	//if right node of n1 is an aggregate expression
-	if(n1.getRight().getNodeType().equals(Node.getAggrNodeType())){
-
-		if(!n2.getRight().getNodeType().equals(Node.getAggrNodeType()))
-			return false;
-
-		AggregateFunction agg1 = n1.getRight().getAgg();
-		AggregateFunction agg2 = n2.getRight().getAgg();
-
-		if(!agg1.getFunc().equals(agg2.getFunc()))
-			return false;
-
-		if(!agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
-			return false;
-		
-		if(!agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
-			return false;
-
-		if(!agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
-			return false;
-	}
-
-	//check for equivalence of left nodes
-	
-	//if left node of n1 is a column reference
-	if(n1.getLeft().getNodeType().equals(Node.getColRefType())){
-
-		if(!n2.getLeft().getNodeType().equals(Node.getColRefType()))
-			return  false;
-
-		if(!n1.getLeft().getTable().getTableName().equals(n2.getLeft().getTable().getTableName()))
-			return false;
-		
-		if(!n1.getLeft().getTableNameNo().equals(n2.getLeft().getTableNameNo()))
-			return false;
-
-		if(!n1.getLeft().getColumn().getColumnName().equals(n2.getLeft().getColumn().getColumnName()))
-			return false;
-	}
-
-	//if left node of n1 is a constant value
-	if(n1.getLeft().getNodeType().equals(Node.getValType())){
-		if(!n2.getLeft().getNodeType().equals(Node.getValType()))
-			return  false;
-
-		if(!n1.getLeft().getStrConst().equals(n2.getLeft().getStrConst()))
-			return false;
-	}
-
-	//if left node of n1 is a aggregate expression
-	if(n1.getLeft().getNodeType().equals(Node.getAggrNodeType())){
-
-		if(!n2.getLeft().getNodeType().equals(Node.getAggrNodeType()))
-			return false;
-
-		AggregateFunction agg1 = n1.getLeft().getAgg();
-		AggregateFunction agg2 = n2.getLeft().getAgg();
-
-		if(!agg1.getFunc().equals(agg2.getFunc()))
-			return false;
-
-		if(!agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
-			return false;
-		
-		if(!agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
-			return false;
-
-		if(!agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
-			return false;
-	}
-		
-		return true;
-	}
-
-/**
- * This method checks whether the aggregateFunction SUM,COUNT,etc., matches with student query
- * 
- * @param master
- * @param slave
- * @return
- */
-private Boolean checkAggregateName(AggregateFunction master, AggregateFunction slave){
-	if(master.getFunc() != null && slave.getFunc() == null){
-		return false;
-	}
-	if(master.getFunc() != null && slave.getFunc() == null){
-		return false;
-	}
-	if(!(master.getFunc().equalsIgnoreCase(slave.getFunc()))){
-		return false;
-	}
-	return true;
-}
-
-private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave){
-	float score = 0;
-	for(Node n1 : slave){
-		Boolean found = false;
-		for(Node n2 : master){				
-			if(checkHavingClauseEquality(n1, n2)){
-				found = true;
-				break;
-			}
-		}
-		
-		if(found){
-			score++;
-		}
-		else{
-			score=score-0.5f;
-		}
-	}
-	
-	return score;
-
-	
-	/*if(master.getNodeType().equals(Node.getBroNodeType()) && slave.getNodeType().equals(Node.getBroNodeType())){
-		this.uniqueHavingClause++;
-		if(checkHavingClauseEquality(master,slave)){
-			score ++;
-		}else{ 
-			score--;
-		}
-	}
-	else if(master.getNodeType().equals(Node.getAndNodeType()) && slave.getNodeType().equals(Node.getAndNodeType())){
-		compareHavingClause(master.getLeft(),slave.getLeft());
-		compareHavingClause(master.getRight(),slave.getRight());
-		
-	}
-	return score;*/
-}
-	
-	private float compareSelection(List<Node> master, List<Node> slave){
-		float score = 0;
-		for(Node n1 : slave){
-			Boolean found = false;
-			for(Node n2 : master){				
-				if(checkSelectionEquality(n1, n2)){
-					found = true;
-					break;
-				}
-			}
-			
-			if(found){
-				score++;
-			}
-			else{
-				score=score-0.5f;
-			}
-		}
-		
-		return score;
-	}
-	
-	private float compareProjection(ArrayList<Node> master, ArrayList<Node> slave){
-		float score = 0;
-		for(Node n1 : slave){
-			Boolean found = false;
-			for(Node n2 : master){				
-				if(checkProjectionEquality(n1, n2)){
-					found = true;
-					break;
-				}
-			}
-			if(found){
-				score++;
-			}
-			else{
-				score=score-0.5f;
-			}
-		}		
-		return score;
-	}
-	
-	private float compareAggregates(ArrayList<AggregateFunction> master, ArrayList<AggregateFunction> slave){
-		float score = 0;
-		for(AggregateFunction n1 : slave){
-			Boolean found = false;
-			for(AggregateFunction n2 : master){				
-				//Aggregate Name should match and the column also should match
-				if(checkAggregateName(n1,n2) && checkProjectionEquality(n1.getAggExp(), n2.getAggExp())){
-					found = true;
-					break;
-				}
-			}
-			if(found){
-				score++;
-			}
-			else{
-				score=score-0.5f;
-			}
-		}		
-		return score;
-	}
-	
-	
-	
-	//Added by bikash for vldb2016 demo. Need to test this further
-	private float compareOrderBy(List<Node> instructorOrderBy, List<Node> studentOrderBy){
-				
-		int[][] distanceMetric=new int[instructorOrderBy.size()+1][studentOrderBy.size()+1];
-		//distanceMetric[0][0]=0;
-		
-		//initialization of the first row and first column of the matrix required,
-		// the following two for loops accomplishes this
-		//added by mathew on 16 Sep 16
-		for(int i=0;i<=instructorOrderBy.size();i++)
-			distanceMetric[i][0]=i;
-		
-		for(int j=0;j<=studentOrderBy.size();j++)
-			distanceMetric[0][j]=j;
-		
-		for(int i=0;i<instructorOrderBy.size();i++)
-			for(int j=0;j<studentOrderBy.size();j++){
-				Node ins=instructorOrderBy.get(i);
-				Node s=studentOrderBy.get(j);
-				if(ins.getColumn().getColumnName().equalsIgnoreCase(s.getColumn().getColumnName())&&
-						ins.getColumn().getTableName().equalsIgnoreCase(s.getColumn().getTableName())){
-					distanceMetric[i+1][j+1]=distanceMetric[i][j];
-				} else{
-					int replace = distanceMetric[i][j] + 1;
-					int insert = distanceMetric[i][j + 1] + 1;
-					int delete = distanceMetric[i + 1][j] + 1;
-	 
-					int min = replace > insert ? insert : replace;
-					min = delete > min ? min : delete;
-					distanceMetric[i + 1][j + 1] = min;
-				}
-			}
-		
-		int distance=distanceMetric[instructorOrderBy.size()][studentOrderBy.size()];
-		
-		return (instructorOrderBy.size()+studentOrderBy.size()-1.5f*distance)/2;
-	}
-	
-	
-	// Calculates a score based on the relations involved in the join
-	// Number of inner and outer joins are also compared
-	private float getJoinScore(QueryData masterData, QueryData slaveData){
-		float score = compare(masterData.getJoinTables(), slaveData.getJoinTables());
-		
-		score = masterData.getNumberOfOuterJoins() == slaveData.getNumberOfOuterJoins() ? score + 1 : score - 0.5f;
-		score = masterData.getNumberOfInnerJoins() == slaveData.getNumberOfInnerJoins() ? score + 1 : score - 0.5f;
-		
-		return score;
-	}
-	
-	/* The following method converts returns the parameter as 
-	 * it is if its value is greater than or equal to zero, and
-	 * otherwise returns zero if the 
-	 * input parameter has a negative  value
-	 * 
-	 */
-	public static float normalizeNegativeValuesToZero(float d){
-		if(d>=0)
-			return d;
-		else
-			return 0;
-	}
-	
-	// Generates all the combinations
-	private static void generateCombinations(ArrayList<ArrayList<Integer>> combinations, int limit,  int total, ArrayList<Integer> temp, int index){
-		if(temp.size() == limit){
-			combinations.add(new ArrayList<Integer>(temp));
-			temp = new ArrayList<Integer>();
-			return;
-		}
-		
-		for(int j = index; j < total; j++){
-			temp.add(j);
-			generateCombinations(combinations, limit, total, temp, index + 1);
-			temp.remove(index);
-		}
-	}
-	
-	// Compares all permutations of the queries and allocates the maximum mark.
-	private MarkInfo compareListOfQueries(boolean isEvaluateDistinct, Vector<QueryData> master, Vector<QueryData> slave, int level){
-		int result = 0;
-		
-		MarkInfo marks = new MarkInfo();
-		ArrayList<QueryInfo> currentInfo = null;
-		ArrayList<QueryInfo> maxInfo = new ArrayList<QueryInfo>();
-				
-		int masterCount = master.size();		
-		int slaveCount = slave.size();
-		
-		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
-		if(masterCount < slaveCount){						
-			generateCombinations(combinations, masterCount, slaveCount, new ArrayList<Integer>(), 0);
-			
-			result = 0;
-			for(ArrayList<Integer> combination : combinations){
-				int score = 0;
-				currentInfo = new ArrayList<QueryInfo>();
-				for(int i = 0; i < combination.size(); i++){					
-					MarkInfo e = this.calculateScore(isEvaluateDistinct,master.get(i), slave.get(combination.get(i)), level);
-					currentInfo.addAll(e.SubqueryData);
-					score += e.Marks;
-				}
-				
-				if(score > result){
-					result = score;
-					maxInfo = currentInfo;
-				}
-			}
-		} else {						
-			generateCombinations(combinations, slaveCount, masterCount, new ArrayList<Integer>(), 0);
-			
-			result = 0;
-			for(ArrayList<Integer> combination : combinations){
-				int score = 0;
-				currentInfo = new ArrayList<QueryInfo>();
-				for(int i = 0; i < combination.size(); i++){
-					MarkInfo e = this.calculateScore(isEvaluateDistinct,master.get(combination.get(i)), slave.get(i), level);
-					currentInfo.addAll(e.SubqueryData);
-					score += e.Marks;
-				}
-				
-				if(score > result){
-					result = score;
-					maxInfo = currentInfo;
-				}
-			}
-		}
-		
-		logger.log(Level.INFO,combinations.toString());
-		logger.log(Level.INFO,"size ="+combinations.size());
-		
-		marks.SubqueryData = maxInfo;
-		marks.Marks = result/(Math.abs(masterCount - slaveCount) + 1); 
-		return marks;
-	}
-	
+									
 	// Compares query data corresponding to the instructor and student
 	public MarkInfo calculateScore(boolean isEvaluateDistinct, QueryData instructorData, QueryData studentData, int level){
 		
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
 
-		MarkInfo whereSubQuery = this.compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
+		MarkInfo whereSubQuery = PartialMarker.compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
 		
-		MarkInfo fromSubQuery = this.compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
+		MarkInfo fromSubQuery = PartialMarker.compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
 
 		
 		if(isEvaluateDistinct){
@@ -623,7 +151,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		float uniquePredicates = instructorData.getSelectionConditions().size();
 		float uniqueRelations = instructorData.getRelationCount();
 		float uniqueProj = instructorData.getProjectionList().size();
-		float instructorJoin = getJoinScore(instructorData, instructorData);
+		float instructorJoin = PartialMarker.getJoinScore(instructorData, instructorData);
 		float uniqueGroupBy = instructorData.GroupByNodes.size();
 		float uniqueHavingClause = instructorData.getHavingClause().size();
 		float uniqueSubQConnective = instructorData.getSubQConnectives().size();
@@ -654,45 +182,45 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		
 		float perOrderBy = orderByColumns == 0 ? 0 : orderWeightage/orderByColumns;
 		
-		float predicateScore = compareSelection(instructorData.getSelectionConditions(), studentData.getSelectionConditions());
+		float predicateScore = PartialMarker.compareSelection(instructorData.getSelectionConditions(), studentData.getSelectionConditions());
 		
 		float predicateScoreTotal=(perPredicate==0&&predicateScore!=0)?-predWeightage/2:
-			perPredicate*normalizeNegativeValuesToZero(predicateScore);
+			perPredicate*PartialMarker.normalizeNegativeValuesToZero(predicateScore);
 
 		
-		float projectionScore = compareProjection(instructorData.getProjectionList(), studentData.getProjectionList());		
+		float projectionScore = PartialMarker.compareProjection(instructorData.getProjectionList(), studentData.getProjectionList());		
 		projectionScore = instructorData.hasDistinct == studentData.hasDistinct ? projectionScore : projectionScore/2;
 		float projectionScoreTotal=(perProjection==0 && projectionScore!=0)?-projWeightage/2:
-			perProjection*normalizeNegativeValuesToZero(projectionScore);
+			perProjection*PartialMarker.normalizeNegativeValuesToZero(projectionScore);
 		
-		float relationScore = compare(instructorData.getRelations(), studentData.getRelations());
+		float relationScore = PartialMarker.compare(instructorData.getRelations(), studentData.getRelations());
 		float relationScoreTotal=(perRelation==0 && relationScore!=0)?-relationWeightage/2:
-			perRelation*normalizeNegativeValuesToZero(relationScore);
+			perRelation*PartialMarker.normalizeNegativeValuesToZero(relationScore);
 		
-		float joinScore = getJoinScore(instructorData, studentData);
+		float joinScore = PartialMarker.getJoinScore(instructorData, studentData);
 		float joinScoreTotal=(perJoin==0 && joinScore!=0)?-joinWeightage/2:
-			perJoin*normalizeNegativeValuesToZero(joinScore);
+			perJoin*PartialMarker.normalizeNegativeValuesToZero(joinScore);
 	
 		
-		float groupByScore = compareProjection(instructorData.GroupByNodes, studentData.GroupByNodes);
+		float groupByScore = PartialMarker.compareProjection(instructorData.GroupByNodes, studentData.GroupByNodes);
 		float groupByScoreTotal=(perGroupBy==0 && groupByScore!=0)?-groupByWeightage/2:
-			perGroupBy*normalizeNegativeValuesToZero(groupByScore);
+			perGroupBy*PartialMarker.normalizeNegativeValuesToZero(groupByScore);
 		
-		float havingClauseScore = compareHavingClause(instructorData.getHavingClause(), studentData.getHavingClause());
+		float havingClauseScore = PartialMarker.compareHavingClause(instructorData.getHavingClause(), studentData.getHavingClause());
 		float havingClauseScoreTotal=(perHavingClause==0 && havingClauseScore!=0)?-havingClauseWeightage/2:
-			perHavingClause*normalizeNegativeValuesToZero(havingClauseScore);
+			perHavingClause*PartialMarker.normalizeNegativeValuesToZero(havingClauseScore);
 		
-		float subQConnectiveScore = compare(instructorData.getSubQConnectives(),studentData.getSubQConnectives());
+		float subQConnectiveScore = PartialMarker.compare(instructorData.getSubQConnectives(),studentData.getSubQConnectives());
 		float subQConnectiveScoreTotal=(perSubQConnective==0 && subQConnectiveScore!=0)?-subQConnectiveWeightage/2:
-			perSubQConnective*normalizeNegativeValuesToZero(subQConnectiveScore);
+			perSubQConnective*PartialMarker.normalizeNegativeValuesToZero(subQConnectiveScore);
 		
-		float aggregateScore = compareAggregates(instructorData.getAggregateList(), studentData.getAggregateList());
+		float aggregateScore = PartialMarker.compareAggregates(instructorData.getAggregateList(), studentData.getAggregateList());
 		float aggregateScoreTotal=(perAggregate==0 && aggregateScore!=0)?-aggregateWeightage/2:
-			perAggregate*normalizeNegativeValuesToZero(aggregateScore);
+			perAggregate*PartialMarker.normalizeNegativeValuesToZero(aggregateScore);
 
-		float setOperatorScore = compare(instructorData.getSetOpetators(),studentData.getSetOpetators());
+		float setOperatorScore = PartialMarker.compare(instructorData.getSetOpetators(),studentData.getSetOpetators());
 		float setOperatorScoreTotal=(perSetOperator==0 && setOperatorScore!=0)?-setOperatorWeightage/2:
-			perSetOperator*normalizeNegativeValuesToZero(setOperatorScore);
+			perSetOperator*PartialMarker.normalizeNegativeValuesToZero(setOperatorScore);
 		
 		float distinctOperatorScore = 0;
 		
@@ -711,13 +239,13 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		float distinctOperatorScoreTotal=(perDistinctOperator==0 && distinctOperatorScore!=0)?-distinctWeightage/2:
 			perDistinctOperator*distinctOperatorScore;
 		
-		float orderByScore = compareOrderBy(instructorData.orderByNodes,studentData.orderByNodes); ///compute order by score
+		float orderByScore = PartialMarker.compareOrderBy(instructorData.orderByNodes,studentData.orderByNodes); ///compute order by score
 		
 		float orderByOperatorScoreTotal=(perOrderBy==0 && orderByScore!=0)? -orderWeightage/2:perOrderBy*orderByScore;
 		if(orderByOperatorScoreTotal<0)
 			orderByOperatorScoreTotal=0;
 		
-		float student =  normalizeNegativeValuesToZero(predicateScoreTotal + relationScoreTotal + projectionScoreTotal 
+		float student =  PartialMarker.normalizeNegativeValuesToZero(predicateScoreTotal + relationScoreTotal + projectionScoreTotal 
 				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
 			aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal + orderByOperatorScoreTotal);
 		
@@ -733,13 +261,17 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		return marks;
 	}
 	
+
+	
 	/* method for testing parsing in batch. Assumption: queries are stored in column <querystring> from database <xdatat>, 
 	 * the non-parsing queries and their associated roll numbers are
 	 * stored at the end of execution in file <tarFileName>
 	 */
 	public static void readQueriesFromDBParseAndTest() throws Exception{
 		String tarFileName="/home/mathew/Desktop/BadStudentQueries.txt";
+		String goodTarFileName="/home/mathew/Desktop/goodStudentQueries.txt";
 		PrintWriter writer = new PrintWriter(tarFileName);
+		PrintWriter goodWriter=new PrintWriter(goodTarFileName);
 		TestPartialMarking testObj=new TestPartialMarking();
 		Class.forName("org.postgresql.Driver");			
 		Properties prop=new Properties();
@@ -759,11 +291,14 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 			String course_id=tableValues.getString(3);
 			String assignment_id=tableValues.getString(4);
 			String question_id=tableValues.getString(5);
-
 			try{
 				testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studQuery);
 				System.out.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
-						" rollnum:"+ rollnum + "SQL query: "+studQuery);			
+						" rollnum:"+ rollnum + "SQL query: "+studQuery);
+				goodWriter.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
+						" rollnum:"+ rollnum + "SQL query: "+studQuery);
+				goodWriter.println();
+				goodWriter.flush();
 				}
 			catch(Exception e){
 				errCount++;
@@ -771,6 +306,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 				writer.println(errCount+ " actualId "+count+" course_id: "+ course_id +" question_id: "+ question_id +
 						" rollnum:"+ rollnum + "SQL query: "+studQuery);
 				writer.println();
+				writer.flush();
 //				Scanner scan = new Scanner(System.in);
 //				String s = scan.next();
 			}
@@ -778,6 +314,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		System.out.println("count"+count);
 		conn.close();
 		writer.close();
+		goodWriter.close();
 	}
 	
 	/* method for testing parsing in batch. Assumption: queries are stored in file <srcFileName>, the non-parsing queries are
@@ -830,12 +367,29 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub		
 
-		String studentQuery= "SELECT COUNT(TI.NAME) AS Instr_name, TI.SALARY, TS.NAME, TS.grade FROM (TEACHES T INNER JOIN INSTRUCTOR I ON T.ID>I.ID) as TI INNER JOIN (SELECT * from TAKES T, STUDENT S WHERE T.ID=S.ID) as TS ON TI.ID<>TS.ID"
-				+ " WHERE Instr_name > 3 OR TI.SALARY NOT IN (SELECT tot_cred from TAKES T1, STUDENT S1 WHERE T1.ID=S1.ID) GROUP BY  Instr_name, TI.SALARY ";
+//		String studentQuery= "SELECT COUNT(TI.NAME) AS Instr_name, TI.SALARY, TS.NAME, TS.grade FROM (TEACHES T INNER JOIN INSTRUCTOR I ON T.ID>I.ID) as "
+//				+ " TI INNER JOIN (SELECT * from TAKES T, STUDENT S WHERE T.ID=S.ID) as TS ON TI.ID<>TS.ID "
+//				+ " WHERE Instr_name > 3 OR TI.SALARY NOT IN (SELECT tot_cred from TAKES T1, STUDENT S1 WHERE T1.ID=S1.ID) "
+//				+ " GROUP BY  Instr_name, TI.SALARY ";
+		
+		
+//		String studentQuery=" with counts as  "
+//				+ " (select course_id, sec_id, year, semester, count(ID) from takes "
+//				+ " group by course_id, sec_id, year, semester), "
+//				+ " max_cnt(cnt) as "
+//				+ "(select max(count) from counts) "
+//				+ " select distinct course_id, sec_id, year, semester, max_cnt.cnt as count "
+//				+ " from counts, max_cnt where counts.count = max_cnt.cnt";
 
-		//		String studentQuery="SELECT TEACHES.course_id FROM TEACHES INNER JOIN INSTRUCTOR "
+//		String studentQuery="With T1(ID,semester,year,time_slot_id) as (select ID,semester,year,time_slot_id from (select ID,semester,year from takes) as T4 natural join section), "
+//				+ "T2(ID,semester,year,time_slot_id) as (select ID,semester,year,time_slot_id from (select ID,semester,year,course_id from takes) as T5  natural join section), "
+//				+ "T3(ID,semester,year,time_slot_id) as (select ID,semester,year,time_slot_id from (select ID,semester,year,sec_id from takes) as T6  natural join section), "
+//				+ "T7(ID,semester,year,time_slot_id) as ((select * from T2) union (select * from T3)) "
+//				+ "select distinct ID from ((select * from T1) except (select * from T7)) as T";
+
+//				String studentQuery="SELECT TEACHES.course_id FROM TEACHES INNER JOIN INSTRUCTOR "
 //				+ " ON TEACHES.ID<=INSTRUCTOR.ID, DEPARTMENT WHERE INSTRUCTOR.dept_name<=DEPARTMENT.dept_name "
-//				+ "AND 3<TEACHES.ID  "
+//				+ "AND 3<TEACHES.ID  ";
 //				+ "GROUP BY TEACHES.ID, INSTRUCTOR.ID HAVING TEACHES.ID <= INSTRUCTOR.ID ";
 		
 //		String studentQuery="select course_id, title from course "
@@ -844,8 +398,8 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //		
 
 
-//	
-//		String studentQuery="SELECT TEACHES.course_id FROM TEACHES RIGHT OUTER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.NAME, DEPARTMENT"
+	
+//		String studentQuery="SELECT TEACHES.course_id FROM TEACHES NATURAL JOIN INSTRUCTOR, DEPARTMENT"
 //				+ " WHERE INSTRUCTOR.dept_name>DEPARTMENT.dept_name AND 3>TEACHES.ID GROUP BY TEACHES.ID, INSTRUCTOR.ID HAVING 3>TEACHES.course_id";
 //		String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON (c.dept_name = d.dept_name) GROUP BY c.dept_name HAVING SUM(c.credits)>10 AND COUNT(c.credits)>1";
 //		String studentQuery="with task0 as  (select * from takes), "
@@ -859,19 +413,20 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //				+ " SELECT DISTINCT T.ID  FROM takes_time_slot as T, takes_time_slot as S, "
 //				+ " time_slot_clash as C WHERE T.ID=S.ID AND T.semester=S.semester AND T.year=S.year  "
 //				+ " AND (T.time_slot_id=S.time_slot_id OR (T.time_slot_id=C.id_1 AND S.time_slot_id=C.id_2)) "
-//				+ " AND (T.course_id!=S.course_id OR T.sec_id!=S.sec_id);"
+//				+ " AND (T.course_id!=S.course_id OR T.sec_id!=S.sec_id)";
+		
 //		String studentQuery="select t.day from time_slot as t natural join section as s1 where t.time_slot_id  in (select time_slot_id from section as s, teaches as t where s.course_id=t.course_id and teaches.ID='22222' and section.semester='Fall' and section.year='2009')";
 //		String studentQuery= " Select * from (Select d.id from department d) as sub, (Course as R INNER JOIN DEPARTMENT "+
 //				" ON Course.dept_name<=DEPARTMENT.dept_name OR R.dept_Id=Department.dept_Id) as S INNER JOIN (INSTRUCTOR I NATURAL JOIN DEPARTMENT D) as K ON R.dept_name=I.dept_name";
 
-//		String instructorQuery="select count(s1.id) from student s1, student s2 where "
-//				+ " s1.name=s2.name group by s2.dept_name" ;
+		String studentQuery="select count(s1.id) from student s1 NATURAL JOIN student s2 where "
+				+ " s1.name=s2.name group by s2.dept_name" ;
 		
 //		String studentQuery="SELECT  DISTINCT DEPARTMENT.DEPT_NAME, TEACHES.course_id, TEACHES.SEC_ID, TEACHES.SEMESTER, TEACHES.YEAR,  INSTRUCTOR.ID "
 //				+ "FROM  DEPARTMENT D, TEACHES INNER JOIN INSTRUCTOR ON  TEACHES.ID=INSTRUCTOR.ID "
 //				+ " WHERE  INSTRUCTOR.dept_name=D.dept_name "
 //				+ " AND INSTRUCTOR.SALARY=D.budget " 
-//				+ " GROUP BY INSTRUCTOR.SALARY, TEACHES.ID, D.budget, INSTRUCTOR.ID, INSTRUCTOR.dept_name" ;
+//				+ " GROUP BY INSTRUCTOR.SALARY, TEACHES.ID, D.budget, INSTRUCTOR.ID, INSTRUCTOR.dept_name" +
 //   " HAVING INSTRUCTOR.ID=TEACHES.ID AND TEACHES.ID=INSTRUCTOR.ID";
 
 //		String studentQuery="SELECT  INSTRUCTOR.ID,  D.budget FROM  INSTRUCTOR INNER JOIN "
@@ -885,12 +440,27 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //		+ " OR  TEACHES.course_id IN (SELECT INSTRUCTOR.ID FROM INSTRUCTOR) AND "
 //		+ " TEACHES.course_id >= ANY (SELECT INSTRUCTOR.ID FROM INSTRUCTOR)";
 		
+//		String studentQuery="WITH takes_time_slot(ID, course_id, sec_id, semester, year, time_slot_id) AS	"
+//				+ "(SELECT takes.ID, takes.course_id, takes.sec_id, takes.semester, takes.year, time_slot_id  FROM takes NATURAL JOIN section),  "
+//				+ "time_slot_clash(id_1, id_2) AS (SELECT S1.time_slot_id, S2.time_slot_id FROM time_slot as S1, time_slot as S2  "
+//				+ "WHERE S1.time_slot_id!=S2.time_slot_id and S1.day=S2.day and  "
+//				+ "numrange((60*S1.start_hr+S1.start_min), 60*S1.end_hr+S1.end_min) && numrange(60*S2.start_hr+S2.start_min, 60*S2.end_hr+S2.end_min)) "
+//				+ " SELECT DISTINCT T.ID  FROM takes_time_slot as T, takes_time_slot as S,  "
+//				+ "time_slot_clash as C WHERE T.ID=S.ID AND T.semester=S.semester AND T.year=S.year AND (T.time_slot_id=S.time_slot_id OR (T.time_slot_id=C.id_1 AND S.time_slot_id=C.id_2))  AND (T.course_id!=S.course_id OR T.sec_id!=S.sec_id)";
+
+//		String studentQuery="with A(id,year) as  (select id,year from takes,course where "
+//				+ "takes.course_id=course.course_id and dept_name='Comp. Sci.'), "
+//				+ "B(less_id) as (select id from A where year<2010), "
+//				+ "C(greater_id) as (select id from A where year>2010), "
+//				+ "D(stud_id) as ((select * from B) INTERSECT (select * from C)) "
+//				+  "select id,name from student,D where id=stud_id";
+		
 //		String studentQuery="SELECT INSTRUCTOR.ID FROM  "
 //		+ TEACHES  WHERE TEACHES.ID > ALL "
 //		+ " (SELECT INSTRUCTOR.ID FROM INSTRUCTOR  WHERE INSTRUCTOR.ID NOT IN ( 1,2,3 ))";
 
 
-//		String instructorQuery="SELECT INSTRUCTOR.ID FROM  INSTRUCTOR INNER JOIN DEPARTMENT D ON  INSTRUCTOR.dept_name=D.dept_name WHERE D.dept_name>30000";
+		String instructorQuery="SELECT INSTRUCTOR.ID FROM  INSTRUCTOR INNER JOIN DEPARTMENT D ON  INSTRUCTOR.dept_name=D.dept_name WHERE D.dept_name>30000";
 		
 //		String strQuery= " WITH R AS (SELECT * FROM TEACHES INNER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.ID)"
 //				+ "SELECT R.course_id FROM  R "
@@ -901,19 +471,20 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
-			//readQueriesFromDBParseAndTest();
-			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQuery);
+//			readQueriesFromDBParseAndTest();
+			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
+//			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
 //				System.out.println("key:"+e.getKey()+" value"+e.getValue().getPrimaryKey());
 			
 //			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
-//			util.SerializeXML.serializeXML("student.xml", testObj.StudentQuery.OuterQuery);
-//			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instructorQuery);
+//			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
+//			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
 
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
-//			Float normalMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.InstructorQuery.OuterQuery, 0).Marks;
-//			Float studentMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.StudentQuery.OuterQuery, 0).Marks;
+//			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
+//			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
 //			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
 			//testObj.copyData();
 		}
@@ -922,6 +493,7 @@ private float compareHavingClause(ArrayList<Node> master, ArrayList<Node> slave)
 		}
 
 	}
+
 
 	public static void mainTest(String[] args){
 		//experiment();
