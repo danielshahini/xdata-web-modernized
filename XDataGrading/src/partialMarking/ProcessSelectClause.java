@@ -66,8 +66,8 @@ import parsing.ProcessResultSetNode;
 import parsing.Query;
 import parsing.QueryParser;
 import parsing.Table;
-import parsing.WhereClauseVectorJSQL;
 import parsing.Util;
+import parsing.WhereClauseVectorJSQL;
 import partialMarking.QueryStructure;
 
 public class ProcessSelectClause {
@@ -161,18 +161,8 @@ public class ProcessSelectClause {
 	 */
 	public static void modifyTreeForCompareSubQ(QueryStructure qStruct) {
 		try{
-			for (Node n: qStruct.allConds)  // This is not only for outer block 
+			for (Node n: qStruct.allConds)   
 				Util.modifyTreeForComapreSubQ(n);
-
-			for(QueryStructure qp: qStruct.getFromClauseSubqueries()){//For From clause subqueries
-				for(Node n: qp.allConds)
-					Util.modifyTreeForComapreSubQ(n);
-			}
-
-			for(QueryStructure qp: qStruct.getWhereClauseSubqueries()){//For where clause subqueries
-				for(Node n: qp.allConds)
-					Util.modifyTreeForComapreSubQ(n);
-			}
 		}catch(Exception e){
 			logger.log(Level.SEVERE,"Error in modifyTreeForCompareSubQ : "+e.getMessage(),e);			
 		}
@@ -571,7 +561,7 @@ public class ProcessSelectClause {
 							if(leftColumn.getColumn().getColumnName().equals(rightColumn.getColumn().getColumnName())){
 								Node equiJoinNode=new Node();
 								equiJoinNode.setType(Node.getBroNodeType());	
-								equiJoinNode.setOperator(qStruct.cvcRelationalOperators[1]);
+								equiJoinNode.setOperator(QueryStructure.cvcRelationalOperators[1]);
 								equiJoinNode.setLeft(leftColumn);
 								equiJoinNode.setRight(rightColumn);
 								if(join.isLeft())
@@ -857,7 +847,7 @@ public class ProcessSelectClause {
 					if(leftColumn.getColumn().getColumnName().equals(rightColumn.getColumn().getColumnName())){
 						Node equiJoinNode=new Node();
 						equiJoinNode.setType(Node.getBroNodeType());	
-						equiJoinNode.setOperator(qStruct.cvcRelationalOperators[1]);
+						equiJoinNode.setOperator(QueryStructure.cvcRelationalOperators[1]);
 						equiJoinNode.setLeft(leftColumn);
 						equiJoinNode.setRight(rightColumn);
 

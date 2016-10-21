@@ -111,6 +111,65 @@ public class TestPartialMarking {
 		srcConn.close();
 		tarConn.close();
 	}
+	
+	
+	// Compares all permutations of the queries and allocates the maximum mark.
+		public MarkInfo compareListOfQueries(boolean isEvaluateDistinct, Vector<QueryData> master, Vector<QueryData> slave, int level){
+			int result = 0;
+			
+			MarkInfo marks = new MarkInfo();
+			ArrayList<QueryInfo> currentInfo = null;
+			ArrayList<QueryInfo> maxInfo = new ArrayList<QueryInfo>();
+					
+			int masterCount = master.size();		
+			int slaveCount = slave.size();
+			
+			ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
+			if(masterCount < slaveCount){						
+				PartialMarker.generateCombinations(combinations, masterCount, slaveCount, new ArrayList<Integer>(), 0);
+				
+				result = 0;
+				for(ArrayList<Integer> combination : combinations){
+					int score = 0;
+					currentInfo = new ArrayList<QueryInfo>();
+					for(int i = 0; i < combination.size(); i++){					
+						MarkInfo e = calculateScore(isEvaluateDistinct,master.get(i), slave.get(combination.get(i)), level);
+						currentInfo.addAll(e.SubqueryData);
+						score += e.Marks;
+					}
+					
+					if(score > result){
+						result = score;
+						maxInfo = currentInfo;
+					}
+				}
+			} else {						
+				PartialMarker.generateCombinations(combinations, slaveCount, masterCount, new ArrayList<Integer>(), 0);
+				
+				result = 0;
+				for(ArrayList<Integer> combination : combinations){
+					int score = 0;
+					currentInfo = new ArrayList<QueryInfo>();
+					for(int i = 0; i < combination.size(); i++){
+						MarkInfo e = calculateScore(isEvaluateDistinct,master.get(combination.get(i)), slave.get(i), level);
+						currentInfo.addAll(e.SubqueryData);
+						score += e.Marks;
+					}
+					
+					if(score > result){
+						result = score;
+						maxInfo = currentInfo;
+					}
+				}
+			}
+			
+			logger.log(Level.INFO,combinations.toString());
+			logger.log(Level.INFO,"size ="+combinations.size());
+			
+			marks.SubqueryData = maxInfo;
+			marks.Marks = result/(Math.abs(masterCount - slaveCount) + 1); 
+			return marks;
+		}
 									
 	// Compares query data corresponding to the instructor and student
 	public MarkInfo calculateScore(boolean isEvaluateDistinct, QueryData instructorData, QueryData studentData, int level){
@@ -118,9 +177,9 @@ public class TestPartialMarking {
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
 
-		MarkInfo whereSubQuery = PartialMarker.compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
+		MarkInfo whereSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
 		
-		MarkInfo fromSubQuery = PartialMarker.compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
+		MarkInfo fromSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
 
 		
 		if(isEvaluateDistinct){

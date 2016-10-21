@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 
 import parsing.QueryParser;
 import testDataGen.GenerateCVC1;
+import testDataGen.preProcessForDataGeneration;
 import util.MyConnection;
 
 public class QueryDetails {
@@ -116,8 +117,16 @@ public class QueryDetails {
 	public void startProcessing(int assignmentId, int questionId, String query) throws Exception {
 
 		GenerateCVC1 cvc = new GenerateCVC1();
+		
+		cvc.setAssignmentId(assignmentId);
+		cvc.setQuestionId(questionId);
+		cvc.setQueryId(1);
+		cvc.setCourseId("");
+
+		preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+
+		preProcess.initializeConnectionDetails(cvc);
 				
-		cvc.initializeConnectionDetails(assignmentId, questionId, 1,"");		
 
 		qStructure=new QueryStructure(cvc.getTableMap());
 				
@@ -131,8 +140,14 @@ public class QueryDetails {
 	
 	public void initialize(int assignmentId, int questionId, String query) throws Exception {
 		GenerateCVC1 cvc = new GenerateCVC1();
-				
-		cvc.initializeConnectionDetails(assignmentId, questionId, 1,"");
+		cvc.setAssignmentId(assignmentId);
+		cvc.setQuestionId(questionId);
+		cvc.setQueryId(1);
+		cvc.setCourseId("");
+
+		preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+
+		preProcess.initializeConnectionDetails(cvc);
 		
 		cvc.setqParser( new QueryParser(cvc.getTableMap()));
 		

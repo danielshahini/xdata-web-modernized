@@ -9,12 +9,13 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
-import java.util.Set;
 
 import parsing.Column;
 import parsing.ForeignKey;
 import parsing.Node;
 import parsing.QueryParser;
+
+import java.util.Set;
 
 public class EliminateRedundantRelation {
 

@@ -5,8 +5,6 @@
  */
 package partialMarking;
 
-import parsing.GetNode;
-
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -65,6 +63,7 @@ import parsing.Conjunct;
 import parsing.Disjunct;
 import parsing.ForeignKey;
 import parsing.FromListElement;
+import parsing.GetNode;
 import parsing.JoinClauseInfo;
 import parsing.JoinTreeNode;
 import parsing.Node;
@@ -1088,7 +1087,7 @@ import util.TableMap;
 		 */
 		private void transformJoinsForWithAs(WithItem srcWithItem, List<Join> joinList){
 			for(int k=0; k < joinList.size(); k++){
-				Join jcl = (Join)joinList.get(k);	
+				Join jcl = joinList.get(k);	
 				FromItem tarJoinFromItem=jcl.getRightItem();				
 				//if the join item is a table, then call the corresponding method that handles it
 				if(tarJoinFromItem instanceof net.sf.jsqlparser.schema.Table){
@@ -1192,12 +1191,12 @@ import util.TableMap;
 			for(int i=0;i<withItemsList.size();i++){
 				// normalize column names in with items eg: With A(a) as (select name from ...)
 				// is normalized to With A(a) as (select name as a from ...)
-				WithItem srcWithItem=normalizeWithItem((WithItem)withItemsList.get(i));
+				WithItem srcWithItem=normalizeWithItem(withItemsList.get(i));
 				logger.info("normalized with item"+srcWithItem);
 				// now translate the subsequent with items by substituting the definition 
 				// of withItem under consideration in their select bodies
 				for(int j=i+1;j<withItemsList.size();j++){
-					WithItem tarWithItem=(WithItem)withItemsList.get(j);
+					WithItem tarWithItem=withItemsList.get(j);
 					//withItems select body can be a PlainSelect or a SetOperation
 					if(tarWithItem.getSelectBody() instanceof PlainSelect){
 						PlainSelect tarSelectClause =(PlainSelect) tarWithItem.getSelectBody();

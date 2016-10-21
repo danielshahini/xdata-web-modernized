@@ -19,13 +19,13 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import parsing.Table;
-import util.Graph;
 import parsing.Column;
 import parsing.ForeignKey;
 import parsing.FromListElement;
 import parsing.JoinClauseInfo;
 import parsing.Node;
+import parsing.Table;
+import util.Graph;
 
 /**
  * @author mathew

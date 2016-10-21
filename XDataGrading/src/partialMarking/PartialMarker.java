@@ -180,9 +180,9 @@ public class PartialMarker {
 		
 		//Check for distinct
 		boolean evaluateDistinct = EvaluateDistinct.evaluate(this.InstructorQuery,this.StudentQuery,this.assignmentId, this.questionId, this.queryId, this.course_id);		
-		float maxMainQueryScore = this.calculateScore(evaluateDistinct, this.InstructorQuery.OuterQuery, this.InstructorQuery.OuterQuery, 0).Marks;
+		float maxMainQueryScore = PartialMarker.calculateScore(evaluateDistinct, this.InstructorQuery.OuterQuery, this.InstructorQuery.OuterQuery, 0).Marks;
 		
-		MarkInfo result = this.calculateScore(evaluateDistinct,this.InstructorQuery.OuterQuery, this.StudentQuery.OuterQuery, 0);
+		MarkInfo result = PartialMarker.calculateScore(evaluateDistinct,this.InstructorQuery.OuterQuery, this.StudentQuery.OuterQuery, 0);
 		float studentQueryScore=result.Marks;
 	
 		result.Configuration = PartialMarker.Configuration;
