@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 
 import parsing.Column;
 import parsing.ForeignKey;
-import parsing.FromListElement;
 import parsing.JoinClauseInfo;
 import parsing.Node;
 import parsing.Table;
@@ -123,9 +122,9 @@ public class Util {
 		return selectionConds;
 	}
 
-	public static Node getNodeForCount(Vector<FromListElement> fle, QueryStructure qParser) {
+	public static Node getNodeForCount(Vector<FromClauseElement> fle, QueryStructure qParser) {
 		
-		for(FromListElement f:fle){
+		for(FromClauseElement f:fle){
 			String fromTableName = f.getTableName();
 			if (fromTableName != null && f.getTableNameNo()!= null &&!f.getTableNameNo().isEmpty()) {
 				Table t=qParser.getTableMap().getTable(fromTableName);
@@ -145,9 +144,9 @@ public class Util {
 				}
 				n.setType(Node.getColRefType());
 				return n;
-			} else if (f.getTabs()!=null && !f.getTabs().isEmpty()){
-				for (int i = 0; i < f.getTabs().size(); i++) {
-					Node n = getNodeForCount(f.getTabs().get(i), qParser);
+			} else if (f.getBag()!=null && !f.getBag().isEmpty()){
+				for (int i = 0; i < f.getBag().size(); i++) {
+					Node n = getNodeForCount(f.getBag().get(i), qParser);
 					n.setType(Node.getColRefType());
 					if (n != null) {
 						return n;
@@ -165,7 +164,7 @@ public class Util {
 		return null;
 }
 	
-	public static Node getNodeForCount(FromListElement f, QueryStructure qParser) {
+	public static Node getNodeForCount(FromClauseElement f, QueryStructure qParser) {
 		
 		String fromTableName = f.getTableName();
 		if (fromTableName != null && qParser.getQuery().getFromTables().get(fromTableName.toUpperCase()) != null 
@@ -189,8 +188,8 @@ public class Util {
 			n.setType(Node.getColRefType());
 			return n;
 		} else{
-		for (int i = 0; i < f.getTabs().size(); i++) {
-				Node n = getNodeForCount(f.getTabs().get(i), qParser);
+		for (int i = 0; i < f.getBag().size(); i++) {
+				Node n = getNodeForCount(f.getBag().get(i), qParser);
 				n.setType(Node.getColRefType());
 				if (n != null) {
 					return n;
@@ -331,9 +330,9 @@ public class Util {
 	}
 	
 	
-	public static Vector<Node> getAllProjectedColumns(Vector<FromListElement> visitedFLEs, QueryStructure qParser){
+	public static Vector<Node> getAllProjectedColumns(Vector<FromClauseElement> visitedFLEs, QueryStructure qParser){
 		Vector<Node> projectedColumns=new Vector<Node>();
-		for(FromListElement fle:visitedFLEs){
+		for(FromClauseElement fle:visitedFLEs){
 			if(fle!=null && fle.getTableName()!=null){
 				Table t=qParser.getTableMap().getTable(fle.getTableName());
 				if(t!=null){
@@ -352,8 +351,8 @@ public class Util {
 					}
 				}
 			}
-			else if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
-				projectedColumns.addAll(getAllProjectedColumns(fle.getTabs(),qParser));				
+			else if(fle!=null && fle.getBag()!=null && !fle.getBag().isEmpty()){
+				projectedColumns.addAll(getAllProjectedColumns(fle.getBag(),qParser));				
 			}
 			else if(fle!=null && fle.getSubQueryStructure()!=null){
 				projectedColumns.addAll(fle.getSubQueryStructure().getProjectedCols());

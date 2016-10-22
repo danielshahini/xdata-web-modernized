@@ -59,10 +59,7 @@ import parsing.ANDNode;
 import parsing.AggregateFunction;
 import parsing.CaseCondition;
 import parsing.Column;
-import parsing.Conjunct;
-import parsing.Disjunct;
 import parsing.ForeignKey;
-import parsing.FromListElement;
 import parsing.GetNode;
 import parsing.JoinClauseInfo;
 import parsing.JoinTreeNode;
@@ -104,7 +101,7 @@ import util.TableMap;
 
 		//added by mathew on 2 september 2016
 		public QueryStructure parentQueryParser;
-		public Vector<FromListElement> fromListElements;
+		public Vector<FromClauseElement> fromListElements;
 		
 		//Map of case conditions: Key value holds the part of query in which the case conditions occur.
 		//Value holds the case condition vector. Last element of vector contains the else condition
@@ -147,7 +144,7 @@ import util.TableMap;
 		private Vector<Node> allAnyConds;
 		Vector<Node> lhsRhsConds;
 		public int paramCount;
-		public Vector<Conjunct> conjuncts;
+		public Vector<ConjunctQueryStructure> conjuncts;
 		Vector<Vector<Node>> allDnfSelCond;
 		Vector<Vector<Node>> dnfLikeConds;
 		Vector<Vector<Node>> dnfIsNullConds;
@@ -242,7 +239,7 @@ import util.TableMap;
 					fromSubQuery.initializeQueryListStructures();
 				for(QueryStructure whereSubQuery:this.WhereClauseSubqueries)
 					whereSubQuery.initializeQueryListStructures();			
-				for(Conjunct con:this.conjuncts){
+				for(ConjunctQueryStructure con:this.conjuncts){
 					getSelectionConditionsAndEqClasses(con);
 				}
 
@@ -285,19 +282,19 @@ import util.TableMap;
 			this.lstProjectedCols.addAll(this.getProjectedCols());
 		}
 
-		private void getFromTablesAndInstances(Vector<FromListElement> fromListElements) {
-			for(FromListElement fle:fromListElements){
+		private void getFromTablesAndInstances(Vector<FromClauseElement> fromListElements) {
+			for(FromClauseElement fle:fromListElements){
 				if(fle!=null&&fle.getTableName()!=null&&!fle.getTableName().isEmpty())
 					lstRelations.add(fle.getTableName());
 				if(fle!=null&&fle.getTableNameNo()!=null&&!fle.getTableNameNo().isEmpty())
 					lstRelationInstances.add(fle.getTableNameNo());
-				if(fle.getTabs()!=null&&!fle.getTabs().isEmpty())
-					getFromTablesAndInstances(fle.getTabs());
+				if(fle.getBag()!=null&&!fle.getBag().isEmpty())
+					getFromTablesAndInstances(fle.getBag());
 			}
 			
 		}
 
-		private void getSelectionConditionsAndEqClasses(Conjunct con){
+		private void getSelectionConditionsAndEqClasses(ConjunctQueryStructure con){
 				if(con.selectionConds != null ) 
 					lstSelectionConds.addAll(con.selectionConds);
 				if(con.stringSelectionConds != null)					
@@ -324,7 +321,7 @@ import util.TableMap;
 					}
 				}
 
-				for(Disjunct dis : con.disjuncts){
+				for(DisjunctQueryStructure dis : con.disjuncts){
 					if(dis.selectionConds != null && dis.selectionConds.size() > 0) {
 						this.lstSelectionConds.addAll(dis.selectionConds);
 					}
@@ -338,7 +335,7 @@ import util.TableMap;
 					}
 
 					if(dis.conjuncts != null && dis.conjuncts.size() > 0){
-						for(Conjunct conjunct: dis.conjuncts){
+						for(ConjunctQueryStructure conjunct: dis.conjuncts){
 							getSelectionConditionsAndEqClasses(conjunct);
 						}
 					}
@@ -476,7 +473,7 @@ import util.TableMap;
 			return this.lstRelations;
 		}
 		
-		public void addFromTable(FromListElement fle){
+		public void addFromTable(FromClauseElement fle){
 			this.lstRelationInstances.add(fle.getTableNameNo());
 			this.lstRelations.add(fle.getTableName());
 		}
@@ -585,18 +582,18 @@ import util.TableMap;
 			return retString;
 		}
 		
-		private static String fromListElementsToString(Vector<FromListElement> visitedFromListElements) {
+		private static String fromListElementsToString(Vector<FromClauseElement> visitedFromListElements) {
 			String retString="";
-			for(FromListElement fle:visitedFromListElements){
+			for(FromClauseElement fle:visitedFromListElements){
 				if(fle!=null && (fle.getTableName()!=null||fle.getTableNameNo()!=null))
 					retString+="\n "+fle.toString();
 				else if(fle!=null && fle.getSubQueryStructure()!=null){
 					retString+="\n "+fle.toString();
 					retString+=fromListElementsToString(fle.getSubQueryStructure().getFromListElements());
 				}
-				else if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
+				else if(fle!=null && fle.getBag()!=null && !fle.getBag().isEmpty()){
 					retString+="\n "+fle.toString();
-					retString+=fromListElementsToString(fle.getTabs());				
+					retString+=fromListElementsToString(fle.getBag());				
 				}	
 			}
 			return retString;
@@ -626,11 +623,11 @@ import util.TableMap;
 
 
 
-		public Vector<Conjunct> getConjuncts() {
+		public Vector<ConjunctQueryStructure> getConjuncts() {
 			return conjuncts;
 		}
 
-		public void setConjuncts(Vector<Conjunct> conjuncts) {
+		public void setConjuncts(Vector<ConjunctQueryStructure> conjuncts) {
 			this.conjuncts = conjuncts;
 		}
 
@@ -746,11 +743,11 @@ import util.TableMap;
 		/* added by mathew on 1st october 2016
 		 * getter-sett function for fromListElements
 		 */
-		public Vector<FromListElement> getFromListElements(){
+		public Vector<FromClauseElement> getFromListElements(){
 			return this.fromListElements;
 		}
 		
-		public void setFromListElements(Vector<FromListElement> FLEs){
+		public void setFromListElements(Vector<FromClauseElement> FLEs){
 			this.fromListElements=FLEs;
 		}
 
@@ -804,7 +801,7 @@ import util.TableMap;
 			this.inOrderList = new Vector<TreeNode>();
 			this.foreignKeyVector = new Vector<JoinClauseInfo>();
 			orNode = new ORNode();
-			this.conjuncts = new Vector<Conjunct>();
+			this.conjuncts = new Vector<ConjunctQueryStructure>();
 			dnfCond = new Vector<Vector<Node>>();
 			dnfJoinCond = new Vector<Vector<Node>>();
 			dnfLikeConds = new Vector<Vector<Node>>();
@@ -841,7 +838,7 @@ import util.TableMap;
 			this.FromClauseSubqueries = new Vector<QueryStructure>();
 			this.WhereClauseSubqueries = new Vector<QueryStructure>();
 			//added by mathew on oct 1st 2016
-			this.fromListElements=new Vector<FromListElement>();
+			this.fromListElements=new Vector<FromClauseElement>();
 			this.lstRelations=new ArrayList<String>();
 			this.lstRelationInstances=new ArrayList<String>();
 
@@ -2272,18 +2269,18 @@ import util.TableMap;
 			Node temp;
 			for (int i = 0; i < allCondsDuplicate.size(); i++) {
 				if(allCondsDuplicate.get(i) != null)
-					qParser.allConds.addAll(GetNode.flattenNode(qParser, allCondsDuplicate.get(i)));
+					qParser.allConds.addAll(partialMarking.GetNodeQueryStructure.flattenNode(qParser, allCondsDuplicate.get(i)));
 			}
 		
 			for (int i = 0; i < allCondsDuplicate.size(); i++) {
 				if(allCondsDuplicate.get(i) != null)
-					qParser.dnfCond.addAll(GetNode.flattenCNF(qParser, allCondsDuplicate.get(i)));
+					qParser.dnfCond.addAll(partialMarking.GetNodeQueryStructure.flattenCNF(qParser, allCondsDuplicate.get(i)));
 			}			
 
 
 			for (int i=0;i< allCondsDuplicate.size() ; i++) {
 				if(allCondsDuplicate.get(i)!=null){
-				ORNode t = GetNode.flattenOr(allCondsDuplicate.get(i));
+				ORNode t = GetNodeQueryStructure.flattenOr(allCondsDuplicate.get(i));
 					for(Node n: t.leafNodes){
 						qParser.orNode.leafNodes.add(n);
 					}
@@ -2292,12 +2289,12 @@ import util.TableMap;
 						qParser.orNode.andNodes.add(n);
 					}
 					
-//					qParser.orNode=GetNode.flattenOr(allCondsDuplicate.get(i));
+//					qParser.orNode=GetNodeQueryStructure.flattenOr(allCondsDuplicate.get(i));
 				}
 
 			}
 
-			Conjunct.createConjuncts(qParser);
+			ConjunctQueryStructure.createConjuncts(qParser);
 
 			allCondsDuplicate.removeAllElements();
 			allCondsDuplicate = (Vector<Node>) qParser.allConds.clone();
@@ -2390,9 +2387,9 @@ import util.TableMap;
 			for (int i = 0; i < allCondsDuplicate.size(); i++) {
 				temp = allCondsDuplicate.get(i);
 
-				Conjunct con = new Conjunct( new Vector<Node>());
+				ConjunctQueryStructure con = new ConjunctQueryStructure( new Vector<Node>());
 
-				boolean isJoinNodeForEC = GetNode.getJoinNodesForEC(con, temp);
+				boolean isJoinNodeForEC = GetNodeQueryStructure.getJoinNodesForEC(con, temp);
 				// Remove that object from allConds. Because that will now be a part
 				// of some or the other equivalence class and be handeled
 				if (isJoinNodeForEC) {
@@ -2407,9 +2404,9 @@ import util.TableMap;
 			for (int i = 0; i < allCondsDuplicate.size(); i++) {
 				temp = allCondsDuplicate.get(i);
 
-				Conjunct con = new Conjunct( new Vector<Node>());
+				ConjunctQueryStructure con = new ConjunctQueryStructure( new Vector<Node>());
 
-				boolean isJoinNodeAllOther = GetNode.getJoinNodesAllOther(con, temp);
+				boolean isJoinNodeAllOther = partialMarking.GetNodeQueryStructure.getJoinNodesAllOther(con, temp);
 				// Remove that object from allConds. Because that will now be a part
 				// of some or the other equivalence class and be handeled
 				if (isJoinNodeAllOther) {
@@ -2447,9 +2444,9 @@ import util.TableMap;
 			for (int i = 0; i < allCondsDuplicate.size(); i++) {
 				temp = allCondsDuplicate.get(i);
 
-				Conjunct con = new Conjunct( new Vector<Node>());
+				ConjunctQueryStructure con = new ConjunctQueryStructure( new Vector<Node>());
 
-				boolean isSelection = GetNode.getSelectionNode(con,temp);
+				boolean isSelection = GetNodeQueryStructure.getSelectionNode(con,temp);
 				if (isSelection) {
 					isSelection = false;
 					// remove it from allConds as it is added to selection
@@ -2488,8 +2485,8 @@ import util.TableMap;
 			for(int i=0;i<allCondsDuplicate.size();i++){
 				temp = allCondsDuplicate.get(i);
 
-				Conjunct con = new Conjunct( new Vector<Node>());
-				boolean isLikeType = GetNode.getLikeNode(con,temp);
+				ConjunctQueryStructure con = new ConjunctQueryStructure( new Vector<Node>());
+				boolean isLikeType = GetNodeQueryStructure.getLikeNode(con,temp);
 				if(isLikeType){
 					isLikeType = false;
 					//remove it from allConds as it is added to like conditions
@@ -2535,7 +2532,7 @@ import util.TableMap;
 				Node n = qParser.allSubQueryConds.get(i);
 				if(n.getLhsRhs()==null || n.getType().equalsIgnoreCase(Node.getExistsNodeType()) || n.getType().equalsIgnoreCase(Node.getNotExistsNodeType()))	
 					continue;
-				Vector<Node> lhsRhs = GetNode.flattenNode(qParser, n.getLhsRhs());
+				Vector<Node> lhsRhs = partialMarking.GetNodeQueryStructure.flattenNode(qParser, n.getLhsRhs());
 				qParser.lhsRhsConds.addAll(lhsRhs);				//Why is this variable required???
 			}
 
@@ -2544,7 +2541,7 @@ import util.TableMap;
 					Vector<Node> subQConds=(Vector<Node>)n.getSubQueryConds().clone();
 					n.getSubQueryConds().removeAllElements();
 					for(Node subQ:subQConds){
-						n.getSubQueryConds().addAll(GetNode.flattenNode(qParser,subQ));
+						n.getSubQueryConds().addAll(partialMarking.GetNodeQueryStructure.flattenNode(qParser,subQ));
 						//n.setSubQueryConds(flattenNode(subQ));
 					}
 				}

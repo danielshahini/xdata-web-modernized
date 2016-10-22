@@ -14,7 +14,6 @@ import parsing.Column;
 import parsing.Conjunct;
 import parsing.Disjunct;
 import parsing.ForeignKey;
-import parsing.FromListElement;
 import parsing.JoinClauseInfo;
 import parsing.JoinTreeNode;
 import parsing.Node;
@@ -337,11 +336,11 @@ public class QueryData {
 		}
 	}
 
-	void getFromTables(FromListElement fle, Vector<String> tables){
-		if(fle == null || fle.getTabs() == null)
+	void getFromTables(FromClauseElement fle, Vector<String> tables){
+		if(fle == null || fle.getBag() == null)
 			return;
 		
-		for(FromListElement f : fle.getTabs()){
+		for(FromClauseElement f : fle.getBag()){
 			if(f.getTableName() != null && !f.getTableName().isEmpty()){
 				tables.add(f.getTableName());
 			}
@@ -1073,11 +1072,8 @@ public class QueryData {
 			selectionConds.addAll(con.selectionConds);
 		if(con.stringSelectionConds != null)					
 			selectionConds.addAll(con.stringSelectionConds);
-		if(con.joinCondsForEquivalenceClasses != null){
-			selectionConds.addAll(con.joinCondsForEquivalenceClasses);
-		}
-		if(con.joinCondsAllOther!=null){
-			selectionConds.addAll(con.joinCondsAllOther);
+		if(con.joinConds != null){
+			selectionConds.addAll(con.joinConds);
 		}
 		if(con.likeConds != null)
 			selectionConds.addAll(con.likeConds);

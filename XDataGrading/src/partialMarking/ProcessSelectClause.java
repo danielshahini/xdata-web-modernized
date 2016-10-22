@@ -58,8 +58,6 @@ import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import parsing.AggregateFunction;
 import parsing.CaseCondition;
-import parsing.Conjunct;
-import parsing.FromListElement;
 import parsing.JoinClauseInfo;
 import parsing.Node;
 import parsing.ProcessResultSetNode;
@@ -137,7 +135,7 @@ public class ProcessSelectClause {
 		 *  like conditions etc., stores each conjunct in a disjunct in list qStruct.conjuncts		 */
 		QueryStructure.flattenAndSeparateAllConds(qStruct);
 
-		for(Conjunct conjunct:qStruct.conjuncts)			
+		for(ConjunctQueryStructure conjunct:qStruct.conjuncts)			
 			conjunct.createEqClass();
 		
 		//compute foreign keys from tableMap 
@@ -345,7 +343,7 @@ public class ProcessSelectClause {
 
 			Node groupByColumn=processExpression(groupExpression,qStruct.fromListElements, qStruct,plainSelect,null);
 			if(groupByColumn.getTableNameNo()==null||groupByColumn.getTableNameNo().isEmpty()){
-				for(Node n:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
+				for(Node n:partialMarking.Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 					if(n.getColumn().getColumnName().equalsIgnoreCase(groupByColumn.getColumn().getColumnName())){
 						groupByColumn.setTable(n.getTable());
 						groupByColumn.setTableNameNo(n.getTableNameNo());
@@ -412,7 +410,7 @@ public class ProcessSelectClause {
 
 			Node orderByColumn=processExpression(orderExpression,qStruct.fromListElements, qStruct,plainSelect,null);
 			if(orderByColumn.getTableNameNo()==null||orderByColumn.getTableNameNo().isEmpty()){
-				for(Node n:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
+				for(Node n:partialMarking.Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 					if(n.getColumn().getColumnName().equalsIgnoreCase(orderByColumn.getColumn().getColumnName())){
 						orderByColumn.setTable(n.getTable());
 						orderByColumn.setTableNameNo(n.getTableNameNo());
@@ -464,12 +462,12 @@ public class ProcessSelectClause {
 		// TODO Auto-generated method stub
 		FromItem firstFromItem=plainSelect.getFromItem();
 
-		FromListElement leftFLE=null, rightFLE=null;
+		FromClauseElement leftFLE=null, rightFLE=null;
 
 
 		if(firstFromItem instanceof net.sf.jsqlparser.schema.Table){
 			net.sf.jsqlparser.schema.Table jsqlTable=(net.sf.jsqlparser.schema.Table)firstFromItem;
-			leftFLE = new FromListElement();
+			leftFLE = new FromClauseElement();
 			ProcessSelectClause.processFromListTable(jsqlTable, leftFLE, qStruct);
 			qStruct.fromListElements.addElement(leftFLE);
 		}
@@ -477,20 +475,20 @@ public class ProcessSelectClause {
 			SubJoin subJoin=(SubJoin) firstFromItem;
 			Join join=subJoin.getJoin();
 			//System.out.println(" subJoinAlias "+subJoin.getAlias().getName()+" on Expression"+	join.getOnExpression());			
-			Vector<FromListElement> tempElements=new Vector<FromListElement>();
+			Vector<FromClauseElement> tempElements=new Vector<FromClauseElement>();
 			ProcessSelectClause.processFromListSubJoin(subJoin, tempElements, joinConditions, qStruct,plainSelect);
-			leftFLE=new FromListElement();
+			leftFLE=new FromClauseElement();
 			if(subJoin.getAlias()!=null){
 				leftFLE.setAliasName(subJoin.getAlias().getName());
 			}
-			leftFLE.setTabs(tempElements);
+			leftFLE.setBag(tempElements);
 			qStruct.fromListElements.addElement(leftFLE);
 		}
 		else if(firstFromItem instanceof SubSelect){
 			SubSelect subSelect=(SubSelect) firstFromItem;
 			SelectBody selBody=subSelect.getSelectBody();
 			QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
-			leftFLE=new FromListElement();
+			leftFLE=new FromClauseElement();
 			leftFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				leftFLE.setAliasName(subSelect.getAlias().getName());
@@ -506,26 +504,26 @@ public class ProcessSelectClause {
 				FromItem fromItem=join.getRightItem();
 				if(fromItem instanceof net.sf.jsqlparser.schema.Table){
 					net.sf.jsqlparser.schema.Table jsqlTable=(net.sf.jsqlparser.schema.Table)fromItem;
-					rightFLE=new FromListElement();
+					rightFLE=new FromClauseElement();
 					processFromListTable(jsqlTable, rightFLE, qStruct);
 					qStruct.fromListElements.addElement(rightFLE);
 				}
 				else if(fromItem instanceof SubJoin){
 					SubJoin subJoin=(SubJoin) fromItem;
-					Vector<FromListElement> tempElements=new Vector<FromListElement>();
+					Vector<FromClauseElement> tempElements=new Vector<FromClauseElement>();
 					ProcessSelectClause.processFromListSubJoin(subJoin, tempElements, joinConditions, qStruct,plainSelect);
-					rightFLE=new FromListElement();
+					rightFLE=new FromClauseElement();
 					if(subJoin.getAlias()!=null){
 						rightFLE.setAliasName(subJoin.getAlias().getName());
 					}				
-					rightFLE.setTabs(tempElements);
+					rightFLE.setBag(tempElements);
 					qStruct.fromListElements.addElement(rightFLE);
 
 				}
 				else if(fromItem instanceof SubSelect){
 					SubSelect subSelect=(SubSelect) fromItem;					
 					QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
-					rightFLE=new FromListElement();
+					rightFLE=new FromClauseElement();
 					rightFLE.setSubQueryStructure(subQueryParser);
 					if(subSelect.getAlias()!=null){
 						rightFLE.setAliasName(subSelect.getAlias().getName());
@@ -550,12 +548,12 @@ public class ProcessSelectClause {
 					joinConditions.add(joinCondition);
 				}		
 				else if(join.isNatural()){
-					Vector<FromListElement> leftFLEVector=new Vector<FromListElement>();
+					Vector<FromClauseElement> leftFLEVector=new Vector<FromClauseElement>();
 					leftFLEVector.add(leftFLE);
-					Vector<FromListElement> rightFLEVector=new Vector<FromListElement>();
+					Vector<FromClauseElement> rightFLEVector=new Vector<FromClauseElement>();
 					rightFLEVector.add(rightFLE);
-					Vector<Node> leftColumns=Util.getAllProjectedColumns(leftFLEVector, qStruct);
-					Vector<Node> rightColumns=Util.getAllProjectedColumns(rightFLEVector, qStruct);
+					Vector<Node> leftColumns=partialMarking.Util.getAllProjectedColumns(leftFLEVector, qStruct);
+					Vector<Node> rightColumns=partialMarking.Util.getAllProjectedColumns(rightFLEVector, qStruct);
 					for(Node leftColumn:leftColumns){
 						for(Node rightColumn:rightColumns){
 							if(leftColumn.getColumn().getColumnName().equals(rightColumn.getColumn().getColumnName())){
@@ -606,7 +604,7 @@ public class ProcessSelectClause {
 			SelectItem projectedItem=projectedItems.get(i);
 			//the case where projected column is described by * in plainSelect
 			if(projectedItem instanceof net.sf.jsqlparser.statement.select.AllColumns){			
-				for(Node n:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
+				for(Node n:partialMarking.Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 					logger.info(" all column, select all columns... "+n);
 					qStruct.projectedCols.add(n);
 				}
@@ -687,17 +685,17 @@ public class ProcessSelectClause {
 	 * 
 	 * @param visitedFromListElements
 	 */
-	public static void display(Vector<FromListElement> visitedFromListElements) {
-		for(FromListElement fle:visitedFromListElements){
+	public static void display(Vector<FromClauseElement> visitedFromListElements) {
+		for(FromClauseElement fle:visitedFromListElements){
 			if(fle!=null && (fle.getTableName()!=null||fle.getTableNameNo()!=null))
 				System.out.println(fle.toString());
 			else if(fle!=null && fle.getSubQueryStructure()!=null){
 				System.out.println(fle.toString());
 				display(fle.getSubQueryStructure().getFromListElements());
 			}
-			else if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
+			else if(fle!=null && fle.getBag()!=null && !fle.getBag().isEmpty()){
 				System.out.println(fle.toString());
-				display(fle.getTabs());				
+				display(fle.getBag());				
 			}
 
 		}
@@ -713,7 +711,7 @@ public class ProcessSelectClause {
 	 * the frmListElement argument is used to encode its details  
 	 * 
 	 */
-	public static void processFromListTable(net.sf.jsqlparser.schema.Table jsqlTable, FromListElement frmListElement, QueryStructure qStruct){
+	public static void processFromListTable(net.sf.jsqlparser.schema.Table jsqlTable, FromClauseElement frmListElement, QueryStructure qStruct){
 		String tableName = jsqlTable.getFullyQualifiedName().toUpperCase();// getWholeTableName();
 		String aliasName = "";
 		if (jsqlTable.getAlias() == null) {
@@ -733,7 +731,7 @@ public class ProcessSelectClause {
 		frmListElement.setAliasName(aliasName);
 		frmListElement.setTableName(tableName);
 		frmListElement.setTableNameNo(tableNameNo);
-		frmListElement.setTabs(null);	
+		frmListElement.setBag(null);	
 		qStruct.addFromTable(frmListElement);
 		logger.info("Table added"+frmListElement);
 	}
@@ -750,35 +748,35 @@ public class ProcessSelectClause {
 	 * the visitedFromListElements argument is used to encode details of it and its components, 
 	 * join conditions if any are extracted in joinConditions argument
 	 */
-	public static void processFromListSubJoin(SubJoin subJoin, Vector<FromListElement> visitedFromListElements, Vector<Node> joinConditions,
+	public static void processFromListSubJoin(SubJoin subJoin, Vector<FromClauseElement> visitedFromListElements, Vector<Node> joinConditions,
 			QueryStructure qStruct, PlainSelect plainSelect) throws Exception{
 		logger.info("processing subjoin"+ subJoin.toString());
 
 		FromItem leftFromItem=subJoin.getLeft();
-		FromListElement leftFLE=null, rightFLE=null;
+		FromClauseElement leftFLE=null, rightFLE=null;
 
 		if(leftFromItem instanceof net.sf.jsqlparser.schema.Table){
 			net.sf.jsqlparser.schema.Table jsqlTable=(net.sf.jsqlparser.schema.Table)leftFromItem;
-			leftFLE=new FromListElement();
+			leftFLE=new FromClauseElement();
 			ProcessSelectClause.processFromListTable(jsqlTable, leftFLE, qStruct);
 			//logger.info(leftFLE.toString());
 			visitedFromListElements.add(leftFLE);
 		}
 		else if(leftFromItem instanceof SubJoin){
 			SubJoin leftSubJoin=(SubJoin) leftFromItem;
-			Vector<FromListElement> tempElements=new Vector<FromListElement>();
+			Vector<FromClauseElement> tempElements=new Vector<FromClauseElement>();
 			ProcessSelectClause.processFromListSubJoin(leftSubJoin, tempElements, joinConditions, qStruct,plainSelect);
-			leftFLE=new FromListElement();
+			leftFLE=new FromClauseElement();
 			if(leftSubJoin.getAlias()!=null){
 				leftFLE.setAliasName(leftSubJoin.getAlias().getName());
 			}
-			leftFLE.setTabs(tempElements);
+			leftFLE.setBag(tempElements);
 			visitedFromListElements.add(leftFLE);
 		}
 		else if(leftFromItem instanceof SubSelect){
 			SubSelect subSelect=(SubSelect) leftFromItem;					
 			QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
-			leftFLE=new FromListElement();
+			leftFLE=new FromClauseElement();
 			leftFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				leftFLE.setAliasName(subSelect.getAlias().getName());
@@ -791,26 +789,26 @@ public class ProcessSelectClause {
 		FromItem rightFromItem=subJoin.getJoin().getRightItem();
 		if(rightFromItem instanceof net.sf.jsqlparser.schema.Table){
 			net.sf.jsqlparser.schema.Table jsqlTable=(net.sf.jsqlparser.schema.Table)rightFromItem;
-			rightFLE=new FromListElement();
+			rightFLE=new FromClauseElement();
 			ProcessSelectClause.processFromListTable(jsqlTable, rightFLE, qStruct);
 			//logger.info(rightFLE.toString());
 			visitedFromListElements.add(rightFLE);
 		}
 		else if(rightFromItem instanceof SubJoin){
 			SubJoin rightSubJoin=(SubJoin) rightFromItem;
-			Vector<FromListElement> tempElements=new Vector<FromListElement>();
+			Vector<FromClauseElement> tempElements=new Vector<FromClauseElement>();
 			ProcessSelectClause.processFromListSubJoin(rightSubJoin, tempElements, joinConditions, qStruct,plainSelect);
-			rightFLE=new FromListElement();
+			rightFLE=new FromClauseElement();
 			if(rightSubJoin.getAlias()!=null){
 				rightFLE.setAliasName(rightSubJoin.getAlias().getName());
 			}
-			rightFLE.setTabs(tempElements);
+			rightFLE.setBag(tempElements);
 			visitedFromListElements.add(rightFLE);
 		}
 		else if(rightFromItem instanceof SubSelect){
 			SubSelect subSelect=(SubSelect) rightFromItem;					
 			QueryStructure subQueryParser=new QueryStructure(qStruct.getTableMap());
-			rightFLE=new FromListElement();
+			rightFLE=new FromClauseElement();
 			rightFLE.setSubQueryStructure(subQueryParser);
 			if(subSelect.getAlias()!=null){
 				rightFLE.setAliasName(subSelect.getAlias().getName());
@@ -836,12 +834,12 @@ public class ProcessSelectClause {
 			joinConditions.add(joinCondition);
 		}
 		else if(join.isNatural()){
-			Vector<FromListElement> leftFLEVector=new Vector<FromListElement>();
+			Vector<FromClauseElement> leftFLEVector=new Vector<FromClauseElement>();
 			leftFLEVector.add(leftFLE);
-			Vector<FromListElement> rightFLEVector=new Vector<FromListElement>();
+			Vector<FromClauseElement> rightFLEVector=new Vector<FromClauseElement>();
 			rightFLEVector.add(rightFLE);
-			Vector<Node> leftColumns=Util.getAllProjectedColumns(leftFLEVector, qStruct);
-			Vector<Node> rightColumns=Util.getAllProjectedColumns(rightFLEVector, qStruct);
+			Vector<Node> leftColumns=partialMarking.Util.getAllProjectedColumns(leftFLEVector, qStruct);
+			Vector<Node> rightColumns=partialMarking.Util.getAllProjectedColumns(rightFLEVector, qStruct);
 			for(Node leftColumn:leftColumns){
 				for(Node rightColumn:rightColumns){
 					if(leftColumn.getColumn().getColumnName().equals(rightColumn.getColumn().getColumnName())){
@@ -880,7 +878,7 @@ public class ProcessSelectClause {
 	 * @throws Exception
 	 */
 
-	public static Node processExpression(Object clause, Vector<FromListElement> fle,
+	public static Node processExpression(Object clause, Vector<FromClauseElement> fle,
 			QueryStructure qStruct, PlainSelect plainSelect, String joinType) throws Exception {
 		try{
 			if (clause == null) {
@@ -1077,7 +1075,7 @@ public class ProcessSelectClause {
 
 
 				if(n.getTableNameNo()==null||n.getTableNameNo().isEmpty()){
-					for(Node m:Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
+					for(Node m:partialMarking.Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 						if(m.getColumn().getColumnName().equalsIgnoreCase(n.getColumn().getColumnName())){
 							n.setTable(m.getTable());
 							n.setTableNameNo(m.getTableNameNo());
@@ -1938,9 +1936,9 @@ public class ProcessSelectClause {
 	 * takes a node n (1st argument) for whose either table name is an alias or absent, resolves the alias/determines the table t
 	 * to which the column belongs to  returns a node whose table, table name etc. are set with the respective values of t
 	 */
-	private static Node transformToAbsoluteTableNames(Node n, Vector<FromListElement> fleList, boolean aliasNameFound, QueryStructure qStruct) throws Exception {
+	private static Node transformToAbsoluteTableNames(Node n, Vector<FromClauseElement> fleList, boolean aliasNameFound, QueryStructure qStruct) throws Exception {
 		// TODO Auto-generated method stub
-		for(FromListElement fle:fleList){
+		for(FromClauseElement fle:fleList){
 			//iterates through the fleList, for each fle, tries to match its table name/alias name
 			//with the the name of the input node n
 			//case when fle under consideration is a table, in which case if there is a match, then fle's
@@ -1977,8 +1975,8 @@ public class ProcessSelectClause {
 			}
 			if(aliasNameFound){
 				logger.info("alias name found"+n);
-				if(fle.getTabs()!=null&&!fle.getTabs().isEmpty()){
-					Node k= transformToAbsoluteTableNames(n,fle.getTabs(),false,qStruct);
+				if(fle.getBag()!=null&&!fle.getBag().isEmpty()){
+					Node k= transformToAbsoluteTableNames(n,fle.getBag(),false,qStruct);
 					if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 						return k;
 				}
@@ -2004,7 +2002,7 @@ public class ProcessSelectClause {
 					}
 					// case when fle is a sub join, then its tabs are recursively traversed and search for a match
 					else {
-						Node k= transformToAbsoluteTableNames(n,fle.getTabs(),true, qStruct);
+						Node k= transformToAbsoluteTableNames(n,fle.getBag(),true, qStruct);
 						if(k!=null&& !n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 							return k;		
 					}
@@ -2012,9 +2010,9 @@ public class ProcessSelectClause {
 			}
 			// if fle represents a sub join then its tabs contains it's components, in which 
 			// case its tabs are recursively traversed for finding a match
-			if(fle!=null && fle.getTabs()!=null && !fle.getTabs().isEmpty()){
+			if(fle!=null && fle.getBag()!=null && !fle.getBag().isEmpty()){
 				logger.info(" tabs is not null");
-				Node k= transformToAbsoluteTableNames(n,fle.getTabs(),false,qStruct);
+				Node k= transformToAbsoluteTableNames(n,fle.getBag(),false,qStruct);
 				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 					return k;
 			}
