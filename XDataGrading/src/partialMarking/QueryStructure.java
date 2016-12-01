@@ -17,17 +17,8 @@ import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.derby.impl.sql.compile.CursorNode;
-import org.apache.derby.impl.sql.compile.DeleteNode;
-import org.apache.derby.impl.sql.compile.InsertNode;
-import org.apache.derby.impl.sql.compile.IntersectOrExceptNode;
-import org.apache.derby.impl.sql.compile.ResultSetNode;
-import org.apache.derby.impl.sql.compile.SQLParser;
-import org.apache.derby.impl.sql.compile.SelectNode;
-import org.apache.derby.impl.sql.compile.StatementNode;
-import org.apache.derby.impl.sql.compile.UnionNode;
-import org.apache.derby.impl.sql.compile.UpdateNode;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
@@ -39,6 +30,7 @@ import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.IntersectOp;
@@ -60,7 +52,6 @@ import parsing.AggregateFunction;
 import parsing.CaseCondition;
 import parsing.Column;
 import parsing.ForeignKey;
-import parsing.GetNode;
 import parsing.JoinClauseInfo;
 import parsing.JoinTreeNode;
 import parsing.Node;
@@ -68,7 +59,6 @@ import parsing.ORNode;
 import parsing.Query;
 import parsing.RelationHierarchyNode;
 import parsing.TreeNode;
-import testDataGen.GenerateCVC1;
 import util.TableMap;
 
 
@@ -843,6 +833,81 @@ import util.TableMap;
 			this.lstRelationInstances=new ArrayList<String>();
 
 		}
+		
+		
+		public static String replaceFormatForRowLists(String input){
+			// 1st pattern (a1,b1,...)=(a2,b2,...)
+			Pattern p=Pattern.compile("(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))\\s*=\\s*(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))");
+			Matcher m=p.matcher(input);
+			int index=0;
+			while(m.find(index)){
+				index=m.start()+1;
+				input=m.replaceAll(" ROW "+m.group(1)+"= ROW "+m.group(2));
+			}
+			//2nd pattern (a1,b1,...)!=(a2,b2,...)
+			p=Pattern.compile("(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))\\s*!=\\s*(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))");
+			m=p.matcher(input);
+			index=0;
+			while(m.find(index)){
+				index=m.start()+1;
+				input=m.replaceAll(" ROW "+m.group(1)+"!= ROW "+m.group(2));
+			}
+			//3rd pattern (a1,b1,...)<>(a2,b2,...)
+			p=Pattern.compile("(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))\\s*<>\\s*(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))");
+			m=p.matcher(input);
+			index=0;
+			while(m.find(index)){
+				index=m.start()+1;
+				input=m.replaceAll(" ROW "+m.group(1)+"<> ROW "+m.group(2));
+			}
+			
+			//4th pattern (a1,b1,...) in or (a1,b1,...) IN
+			p=Pattern.compile("(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))\\s*[Ii][Nn] ");
+			m=p.matcher(input);
+			index=0;
+			while(m.find(index)){
+				index=m.start()+1;
+				input=m.replaceAll(" ROW "+m.group(1)+" IN ");
+			}
+
+			//5th pattern NOT IN version of 4th pattern
+			p=Pattern.compile("(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))\\s*[nN][oO][tT]\\s+[Ii][Nn] ");
+			m=p.matcher(input);
+			index=0;
+			while(m.find(index)){
+				index=m.start()+1;
+				input=m.replaceAll(" ROW "+m.group(1)+" NOT IN ");
+			}
+			logger.info(" replaced string after reformatting row lists: "+input);
+			return input;
+		}
+
+		/**@author mathew
+		 * 
+		 * @param input
+		 * 
+		 * replace a patterns of the form <group by (a, b, )> by <group by a, b, > in input  
+		 */
+		public static String replaceFormatForGroupBy(String input){
+			
+			Pattern p=Pattern.compile("[gG][rR][oO][uU][pp]\\s+[bB][yY]\\s*\\(([^\\(&&[^\\)]]+)\\)");
+			Matcher m=p.matcher(input);
+			int index=0;
+			while(m.find(index)){
+				index=m.start()+1;
+				input=m.replaceAll(" GROUP BY "+m.group(1)+" ");
+			}
+			return input;
+			
+		}
+		
+		public static String replaceKey(String query, String src, String target){
+			String srcUpper=src.toUpperCase();
+			String targetUpper=target.toUpperCase();
+			query=query.replace(src, targetUpper);
+			query=query.replace(srcUpper, targetUpper);
+			return query;
+		}
 
 	    /* rename of old method parseQuery
 	     *       
@@ -853,14 +918,21 @@ import util.TableMap;
 				queryString=queryString.trim().replaceAll(" +", " ");
 				
 				//JSQL PArser does not accept NATURAL LEFT OUTER . So Replace for parsing - To be changed in parser
-				queryString = queryString.replace( "NATURAL LEFT OUTER","NATURAL");
-				queryString = queryString.replace("NATURAL RIGHT OUTER","NATURAL");
+				//queryString = queryString.replace( "NATURAL LEFT OUTER","NATURAL");
+				//queryString = queryString.replace("NATURAL RIGHT OUTER","NATURAL");
 				
 				//establishing eqivalence of LEFT (resp. RIGHT, resp. FULL) JOIN and
 				// LEFT (resp. RIGHT, resp. FULL) OUTER JOIN, added by mathew on 7/FEB/2016
-				queryString = queryString.replace( "LEFT JOIN","LEFT OUTER JOIN");
-				queryString = queryString.replace("RIGHT JOIN","RIGHT OUTER JOIN");
-				queryString = queryString.replace("FULL JOIN","FULL OUTER JOIN");
+				queryString = replaceKey(queryString, "left join","left outer join");
+				queryString = replaceKey(queryString, "right join","right outer join");
+				queryString = replaceKey(queryString, "full join","full outer join");
+				
+				queryString = replaceKey(queryString, "except all","except");
+				queryString = replaceKey(queryString, "union all","union");
+				queryString = replaceKey(queryString, "intersect all","intersect");
+
+				queryString = replaceFormatForRowLists(queryString);
+				queryString = replaceFormatForGroupBy(queryString);
 
 				buildQueryStructureJSQL(queryId, queryString, true);
 
@@ -1285,6 +1357,7 @@ import util.TableMap;
 		 */
 		private void normalizeSelectedColumnsForWithItem(WithItem withItem, PlainSelect selectClause) {
 			// TODO Auto-generated method stub
+			System.out.println(withItem.getName()+" with item list"+withItem.getWithItemList());
 			if(withItem.getWithItemList()!=null &&!withItem.getWithItemList().isEmpty() ){
 				for(int i=0;i<withItem.getWithItemList().size();i++){
 					SelectItem withSelItem=withItem.getWithItemList().get(i);
@@ -1295,6 +1368,10 @@ import util.TableMap;
 							Alias a = new Alias(withSelItem.toString());
 							a.setUseAs(true);
 							selExpItem.setAlias(a);
+						}
+						else if(sItem instanceof AllColumns){			
+							AllColumns allColsItem=(AllColumns) sItem;
+							
 						}
 					}
 				}

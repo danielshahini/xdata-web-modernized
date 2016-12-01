@@ -3,8 +3,6 @@ package partialMarking;
 import java.io.Serializable;
 import java.util.Vector;
 
-import parsing.FromListElement;
-
 public class FromClauseElement extends parsing.FromListElement implements Serializable{
 	/**
 	 * 
@@ -32,6 +30,7 @@ public class FromClauseElement extends parsing.FromListElement implements Serial
 	public void setBag(Vector<FromClauseElement> tabs) {
 		this.bag = tabs;
 	}
+	@Override
 	public String toString(){
 		String retString= " aliasName: "+this.getAliasName() +
 				" tableName: "+getTableName()+

@@ -31,7 +31,7 @@ public class PartialMarker {
 	String studentId;
 	
 	// Maximum marks
-	static int maxMarks;
+	static int maxMarks=100;
 	
 	String guestStudentQuery;
 	
@@ -148,7 +148,7 @@ public class PartialMarker {
 		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
 		
 		//Check for distinct
-		boolean evaluateDistinct = EvaluateDistinct.evaluate(this.InstructorQuery,this.StudentQuery,this.assignmentId, this.questionId, this.queryId, this.course_id);		
+		//boolean evaluateDistinct = EvaluateDistinct.evaluate(this.InstructorQuery,this.StudentQuery,this.assignmentId, this.questionId, this.queryId, this.course_id);		
 		
 		float maxMainQueryScore = PartialMarker.calculateScore(this.InstructorQuery.getQueryStructure(), this.InstructorQuery.getQueryStructure(), 0).Marks;
 		
@@ -163,7 +163,11 @@ public class PartialMarker {
 		if(mainQueryScore < 0) 
 			mainQueryScore = 0;
 		
-		result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
+		if(maxMainQueryScore<=0.0001f){
+			result.Marks=0.0f;
+		}
+		else
+			result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
 		System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
 		return result;
 	}
@@ -1230,7 +1234,11 @@ private static QueryInfo populateQueryInfo(QueryData instructorData, QueryData s
 		
 				if(instructorData.getIsDistinct() && studentData.getIsDistinct()){
 					distinctOperatorScore++;
-				}else{
+				}
+				else if(!instructorData.getIsDistinct() && !studentData.getIsDistinct()){
+					distinctOperatorScore++;
+				}
+				else{
 					//Even if any one query doesnot has Distinct - there is a mismatch
 					distinctOperatorScore=distinctOperatorScore-0.5f;
 				}

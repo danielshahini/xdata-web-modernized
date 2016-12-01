@@ -127,7 +127,6 @@ public class QueryDetails {
 
 		preProcess.initializeConnectionDetails(cvc);
 				
-
 		qStructure=new QueryStructure(cvc.getTableMap());
 				
 		cvc.closeConn();

@@ -12,14 +12,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import parsing.AggregateFunction;
 import parsing.Node;
 
 /**
@@ -74,8 +71,8 @@ public class TestPartialMarking {
 		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
 //		for(parsing.Conjunct c:queryDetails.qStructure.conjuncts){
-			for(Node n :queryDetails.qStructure.getJoinConds())
-				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
+//			for(Node n :queryDetails.qStructure.getJoinConds())
+//				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
 //		}
 
 		return queryDetails;
@@ -350,25 +347,26 @@ public class TestPartialMarking {
 			String course_id=tableValues.getString(3);
 			String assignment_id=tableValues.getString(4);
 			String question_id=tableValues.getString(5);
-			try{
-				testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studQuery);
-				System.out.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
-						" rollnum:"+ rollnum + "SQL query: "+studQuery);
-				goodWriter.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
-						" rollnum:"+ rollnum + "SQL query: "+studQuery);
-				goodWriter.println();
-				goodWriter.flush();
+				try{
+					testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studQuery);
+					System.out.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
+							" rollnum:"+ rollnum + "SQL query: "+studQuery);
+					goodWriter.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
+							" rollnum:"+ rollnum + "SQL query: "+studQuery);
+					goodWriter.println();
+					goodWriter.flush();
+
 				}
-			catch(Exception e){
-				errCount++;
-				System.out.println(errCount+ " queryId "+count+" rollnum:"+ rollnum + " SQL query: "+studQuery);
-				writer.println(errCount+ " actualId "+count+" course_id: "+ course_id +" question_id: "+ question_id +
-						" rollnum:"+ rollnum + "SQL query: "+studQuery);
-				writer.println();
-				writer.flush();
-//				Scanner scan = new Scanner(System.in);
-//				String s = scan.next();
-			}
+				catch(Exception e){
+					errCount++;
+					System.out.println(errCount+ " queryId "+count+" rollnum:"+ rollnum + " SQL query: "+studQuery);
+					writer.println(errCount+ " actualId "+count+" course_id: "+ course_id +" question_id: "+ question_id +
+							" rollnum:"+ rollnum + "SQL query: "+studQuery);
+					writer.println();
+					writer.flush();
+					//				Scanner scan = new Scanner(System.in);
+					//				String s = scan.next();
+				}
 		}
 		System.out.println("count"+count);
 		conn.close();
@@ -478,8 +476,29 @@ public class TestPartialMarking {
 //		String studentQuery= " Select * from (Select d.id from department d) as sub, (Course as R INNER JOIN DEPARTMENT "+
 //				" ON Course.dept_name<=DEPARTMENT.dept_name OR R.dept_Id=Department.dept_Id) as S INNER JOIN (INSTRUCTOR I NATURAL JOIN DEPARTMENT D) as K ON R.dept_name=I.dept_name";
 
-		String studentQuery="select count(s1.id) from student s1 NATURAL JOIN student s2 where "
-				+ " s1.name=s2.name group by s2.dept_name" ;
+		
+		String studentQuery = "with max_time as ( with student_time as( "
+				+ "with totaltime as (select time_slot_id,sum(60*(end_hr-start_hr)+(end_min-start_min)) as time from time_slot "
+				+ "group by time_slot_id ) "
+				+ "select student.ID,sum(totaltime.time) as total from totaltime,student,takes,section "
+				+ "where student.id = takes.id and section.time_slot_id = totaltime.time_slot_id and "
+				+ "takes.course_id = section.course_id and takes.sec_id = section.sec_id and "
+				+ "takes.year = section.year and takes.semester = section.semester group by student.id) "
+				+ "select max(total) as max from student_time), student_time as( with totaltime as "
+				+ "(select time_slot_id,sum(60*(end_hr-start_hr)+(end_min-start_min)) as time from time_slot "
+				+ "group by time_slot_id) "
+				+ "select student.ID,sum(totaltime.time) as total from totaltime,student,takes,section "
+				+ "where student.id = takes.id and section.time_slot_id = totaltime.time_slot_id and "
+				+ "takes.course_id = section.course_id and "
+				+ "takes.sec_id = section.sec_id and takes.year = section.year and "
+				+ "takes.semester = section.semester group by student.id) "
+				+ "select id from max_time, student_time where student_time.total = max_time.max";
+		
+		studentQuery="WITH query as "
+				+ "	(WITH query as (select course_id,sec_id,year,semester,count(student.ID) as number "
+				+ " from section natural join takes,student  where takes.ID=student.ID and section.course_id=takes.course_id and section.sec_id = takes.sec_id and section.semester = takes.semester and section.year = takes.year group by section.course_id,section.sec_id,section.year,section.semester) "
+				+ "select max(number) from query) "
+				+ " select course_id,sec_id,year,semester,query.max as number from section natural join takes,student,query  where takes.ID=student.ID and section.course_id=takes.course_id and section.sec_id = takes.sec_id and section.semester = takes.semester and section.year = takes.year group by section.course_id,section.sec_id,section.year,section.semester,query.max";
 		
 //		String studentQuery="SELECT  DISTINCT DEPARTMENT.DEPT_NAME, TEACHES.course_id, TEACHES.SEC_ID, TEACHES.SEMESTER, TEACHES.YEAR,  INSTRUCTOR.ID "
 //				+ "FROM  DEPARTMENT D, TEACHES INNER JOIN INSTRUCTOR ON  TEACHES.ID=INSTRUCTOR.ID "
@@ -530,7 +549,7 @@ public class TestPartialMarking {
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
-//			readQueriesFromDBParseAndTest();
+			//readQueriesFromDBParseAndTest();
 			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		

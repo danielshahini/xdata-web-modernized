@@ -4,7 +4,6 @@
 
 package partialMarking;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Vector;
@@ -62,7 +61,6 @@ import parsing.JoinClauseInfo;
 import parsing.Node;
 import parsing.ProcessResultSetNode;
 import parsing.Query;
-import parsing.QueryParser;
 import parsing.Table;
 import parsing.Util;
 import parsing.WhereClauseVectorJSQL;
@@ -287,7 +285,7 @@ public class ProcessSelectClause {
 			return;
 		caseInWhereClause(whereClauseExpression,null,qStruct,plainSelect);
 		Node whereClause=ProcessSelectClause.processExpression(whereClauseExpression,qStruct.fromListElements, qStruct,plainSelect,null);
-		//System.out.println(" where clause "+whereClause);
+		logger.info(" where clause "+whereClause);
 
 		if( whereClause != null) 
 			qStruct.allConds.add(whereClause);
@@ -337,7 +335,8 @@ public class ProcessSelectClause {
 
 			if (groupExpression instanceof Column){
 				gbc = (Column)groupExpression;
-			} else {
+			} 				
+			else {
 				continue;
 			}
 
@@ -919,7 +918,21 @@ public class ProcessSelectClause {
 
 
 				//All these are string manipulation functions and not aggregate function
-				if(! (funcName.equalsIgnoreCase("Lower") || funcName.equalsIgnoreCase("substring") || funcName.equalsIgnoreCase("upper")
+				if(funcName.equalsIgnoreCase("ROW")){
+					Node n=new Node(true);
+					n.isComposite=true;
+					n.setType(Node.getCompositeNodeType());
+					if (an.getParameters()!=null){
+						ExpressionList anList = an.getParameters();
+						List<Expression> expList = anList.getExpressions();
+						for(Expression e:expList){
+							Node tempNode = processExpression(e,fle, qStruct,plainSelect,joinType);	
+							n.addComponentNode(tempNode);
+						}
+					}				
+					return n;
+				}
+				else if(! (funcName.equalsIgnoreCase("Lower") || funcName.equalsIgnoreCase("substring") || funcName.equalsIgnoreCase("upper")
 						||funcName.equalsIgnoreCase("trim") || funcName.equalsIgnoreCase("postion") || funcName.equalsIgnoreCase("octet_length")
 						|| funcName.equalsIgnoreCase("bit_length") || funcName.equalsIgnoreCase("char_length") || funcName.equalsIgnoreCase("overlay"))){
 
@@ -1022,7 +1035,7 @@ public class ProcessSelectClause {
 				return n; 
 			} else if (clause instanceof Column) {
 				Column columnReference = (Column) clause;
-				String colName= columnReference.getColumnName().toUpperCase();
+				String colName	= columnReference.getColumnName().toUpperCase();
 				String tableName  = columnReference.getTable().getFullyQualifiedName();
 
 				Node n = new Node();
@@ -1079,6 +1092,7 @@ public class ProcessSelectClause {
 						if(m.getColumn().getColumnName().equalsIgnoreCase(n.getColumn().getColumnName())){
 							n.setTable(m.getTable());
 							n.setTableNameNo(m.getTableNameNo());
+							n.setColumn(m.getColumn());
 							break;
 						}
 					}
@@ -1434,6 +1448,7 @@ public class ProcessSelectClause {
 				if(ndr!= null){
 					n.setRight(ndr);
 				}
+
 
 				if((ndl == null && ndr ==null)){
 					return null;
@@ -1923,6 +1938,13 @@ public class ProcessSelectClause {
 
 	}
 	
+	public static QueryStructure findRootQueryStructure(QueryStructure qStruct){
+		if(qStruct.parentQueryParser==null)
+			return qStruct;
+		else 
+			return findRootQueryStructure(qStruct.parentQueryParser);
+	}
+	
 	
 	/** @author mathew 
 	 * 
@@ -1937,7 +1959,8 @@ public class ProcessSelectClause {
 	 * to which the column belongs to  returns a node whose table, table name etc. are set with the respective values of t
 	 */
 	private static Node transformToAbsoluteTableNames(Node n, Vector<FromClauseElement> fleList, boolean aliasNameFound, QueryStructure qStruct) throws Exception {
-		// TODO Auto-generated method stub
+		// note that for any FromListElement object its tableName ==null iff it represents a subjoin or a subSelect
+		String oldTableNameNo=n.getTableNameNo();
 		for(FromClauseElement fle:fleList){
 			//iterates through the fleList, for each fle, tries to match its table name/alias name
 			//with the the name of the input node n
@@ -1948,14 +1971,17 @@ public class ProcessSelectClause {
 					n.setTableNameNo(fle.getTableNameNo());
 					Table table=qStruct.getTableMap().getTable(fle.getTableName());
 					n.setTable(table);
+					n.setColumn(new parsing.Column(n.getColumn().getColumnName(),table));
 					logger.info("table Name Found "+n);
 					return n;
 				}
 				else if(fle.getAliasName().equalsIgnoreCase(n.getTableNameNo())){
 					n.setTableNameNo(fle.getTableNameNo());
 					Table table=qStruct.getTableMap().getTable(fle.getTableName());
-					if(table!=null)
-						n.setTable(table);		
+					if(table!=null){
+						n.setTable(table);
+						n.setColumn(new parsing.Column(n.getColumn().getColumnName(),table));
+					}
 					logger.info("alias Name Found "+n);
 					return n;
 				}
@@ -1969,14 +1995,35 @@ public class ProcessSelectClause {
 					if((c=table.getColumn(n.getColumn().getColumnName().toUpperCase()))!=null){
 						n.setTableNameNo(fle.getTableNameNo());
 						n.setTable(table);
+						n.setColumn(c);
 						return n;
 					}
 				}
 			}
-			if(aliasNameFound){
+			// considers the case fle alias is provided and fle is not a table (hence, is a subquery or a subjoin)
+			// and alias name matches with n's table name
+			if(fle!=null&&fle.getTableName()==null && fle.getAliasName()!=null&&
+				fle.getAliasName().equalsIgnoreCase(n.getTableNameNo())){
+					logger.info(" alias name is not null, but table name is null");
+					
+					// case when fle is a subquery, then its from list elements are recursively traversed and searched for a match
+					if(fle.getSubQueryStructure()!=null){
+						Node k= transformToAbsoluteTableNames(n,fle.getSubQueryStructure().getFromListElements(),true,fle.getSubQueryStructure());
+						if(k!=null&&!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
+							return k;		
+					}
+					// case when fle is a sub join, then its tabs are recursively traversed and search for a match
+					else {
+						Node k= transformToAbsoluteTableNames(n,fle.getBag(),true, qStruct);
+						if(k!=null&& !n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
+							return k;		
+					}									
+			}
+			if(aliasNameFound 
+					&& fle.getTableName()==null){
 				logger.info("alias name found"+n);
 				if(fle.getBag()!=null&&!fle.getBag().isEmpty()){
-					Node k= transformToAbsoluteTableNames(n,fle.getBag(),false,qStruct);
+					Node k= transformToAbsoluteTableNames(n,fle.getBag(),true,qStruct);
 					if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 						return k;
 				}
@@ -1988,26 +2035,7 @@ public class ProcessSelectClause {
 				}
 				logger.info(" Alias name found, but column name cannot be resolved");
 			}
-			// considers the case fle alias is provided and fle is not a table (hence, is a subquery or a subjoin)
-			if(fle!=null&&fle.getTableName()==null && fle.getAliasName()!=null){
-				logger.info(" alias name is not null, but table name is null");
-				// if alias name matches with n's table name
-				if(fle.getAliasName().equalsIgnoreCase(n.getTableNameNo())){
-					// case when fle is a subquery, then its from list elements are recursively traversed and searched for a match
-					if(fle.getSubQueryStructure()!=null){
-						Node k= transformToAbsoluteTableNames(n,fle.getSubQueryStructure().getFromListElements(),true,fle.getSubQueryStructure());
 
-						if(k!=null&&!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
-							return k;		
-					}
-					// case when fle is a sub join, then its tabs are recursively traversed and search for a match
-					else {
-						Node k= transformToAbsoluteTableNames(n,fle.getBag(),true, qStruct);
-						if(k!=null&& !n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
-							return k;		
-					}
-				}						
-			}
 			// if fle represents a sub join then its tabs contains it's components, in which 
 			// case its tabs are recursively traversed for finding a match
 			if(fle!=null && fle.getBag()!=null && !fle.getBag().isEmpty()){
@@ -2017,33 +2045,135 @@ public class ProcessSelectClause {
 					return k;
 			}
 			// if fle represents a subquery then its columns' names/alias names are also examined for a match with n's column name
-			if(fle!=null && fle.getSubQueryStructure()!=null){
+			if(fle!=null && fle.getSubQueryStructure()!=null 
+					&& (aliasNameFound||n.getTableNameNo()==null||n.getTableNameNo().isEmpty())){
 				logger.info(" subQueryParser: checking projected cols");
-
-				for(Node m:fle.getSubQueryStructure().getProjectedCols()){
-					if(m.getAgg()!=null && m.getAgg().getAggAliasName()!=null){
-						if(n.getColumn().getColumnName().equalsIgnoreCase(m.getAgg().getAggAliasName())){
-							logger.info(" agg alias Name "+m.getAgg().getAggAliasName()+" node "+m);
-							return m;
-						}
-					}					
-					if(m.getColumn()!=null&&m.getColumn().getColumnName().equalsIgnoreCase(n.getColumn().getColumnName())){	
-						logger.info(" column Name found in subQueryParser "+m);
-						return m;
-					}
-					if(m.getAliasName()!=null&&m.getAliasName().equalsIgnoreCase(n.getColumn().getColumnName())){
-						logger.info(" column Name found as alias in subQueryParser "+m);
-						return m;
-					}
-				}	
-
-				Node k=transformToAbsoluteTableNames(n,fle.getSubQueryStructure().getFromListElements(),false, fle.getSubQueryStructure());
+				
+				Node k=transformToAbsoluteNamesForAliasNameFoundSubquery(n,fle.getSubQueryStructure());
 				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
 					return k;
 
+				k=transformToAbsoluteTableNames(n,fle.getSubQueryStructure().getFromListElements(),false, fle.getSubQueryStructure());
+				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
+					return k;
 
 			}
 		}
+		
+		if(n.getTableAlias().equalsIgnoreCase(oldTableNameNo) && qStruct.parentQueryParser!=null){
+			Node k=traverseAncestorsForAbsoluteNameTransformations(n,qStruct.parentQueryParser.getFromListElements(),false,qStruct.parentQueryParser);
+			if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
+				return k;
+
+		}
+
+		return n;
+	}
+
+	private static Node traverseAncestorsForAbsoluteNameTransformations(Node n,
+			Vector<FromClauseElement> fleList, boolean aliasNameFound, QueryStructure qStruct) {
+		// TODO Auto-generated method stub
+		for(FromClauseElement fle:fleList){
+			//iterates through the fleList, for each fle, tries to match its table name/alias name
+			//with the the name of the input node n
+			//case when fle under consideration is a table, in which case if there is a match, then fle's
+			//table name is copied to n's and also the respective table 
+			if(fle!=null&&fle.getTableName()!=null){
+				if(fle.getTableName().equalsIgnoreCase(n.getTableNameNo())){
+					n.setTableNameNo(fle.getTableNameNo());
+					Table table=qStruct.getTableMap().getTable(fle.getTableName());
+					n.setTable(table);
+					n.setColumn(new parsing.Column(n.getColumn().getColumnName(),table));
+					logger.info("table Name Found in ancestor"+n);
+					return n;
+				}
+				else if(fle.getAliasName().equalsIgnoreCase(n.getTableNameNo())){
+					n.setTableNameNo(fle.getTableNameNo());
+					Table table=qStruct.getTableMap().getTable(fle.getTableName());
+					if(table!=null){
+						n.setTable(table);
+						n.setColumn(new parsing.Column(n.getColumn().getColumnName(),table));
+					}
+					logger.info("alias Name Found in ancestor"+n);
+					return n;
+				}
+				// case when there is table name of n does not match with table/alias name of fle
+				// in which case fle's columns are searched for a column whose name is n's, if yes
+				// then fle's table and table name is copied to n's
+				else if(aliasNameFound){
+					logger.info("alias Name Found but not n in ancestor");
+					Table table=qStruct.getTableMap().getTable(fle.getTableName());
+					parsing.Column c;
+					if((c=table.getColumn(n.getColumn().getColumnName().toUpperCase()))!=null){
+						n.setTableNameNo(fle.getTableNameNo());
+						n.setTable(table);
+						n.setColumn(c);
+						return n;
+					}
+				}
+			}
+			// considers the case fle alias is provided and fle is not a table (hence, is a subquery or a subjoin)
+			// and alias name matches with n's table name
+			if(fle!=null&&fle.getTableName()==null && fle.getAliasName()!=null&&
+				fle.getAliasName().equalsIgnoreCase(n.getTableNameNo())){
+					logger.info(" alias name is not null, but table name is null");
+					
+					// case when fle is a subquery, then its from list elements are recursively traversed and searched for a match
+					if(fle.getSubQueryStructure()!=null){
+						Node k=transformToAbsoluteNamesForAliasNameFoundSubquery(n,fle.getSubQueryStructure());
+						if(k!=null&&!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
+							return k;		
+					}
+					// case when fle is a sub join, then its tabs are recursively traversed and search for a match
+					else {
+						Node k= traverseAncestorsForAbsoluteNameTransformations(n,fle.getBag(),true, qStruct);
+						if(k!=null&& !n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
+							return k;		
+					}									
+			}
+
+			// if fle represents a sub join then its tabs contains it's components, in which 
+			// case its tabs are recursively traversed for finding a match
+			if(fle!=null && fle.getBag()!=null && !fle.getBag().isEmpty()){
+				logger.info(" tabs is not null");
+				Node k= traverseAncestorsForAbsoluteNameTransformations(n,fle.getBag(),false,qStruct);
+				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
+					return k;
+			}
+			// if fle represents a subquery then its columns' names/alias names are also examined for a match with n's column name
+			if(fle!=null && fle.getSubQueryStructure()!=null 
+					&& (aliasNameFound||n.getTableNameNo()==null||n.getTableNameNo().isEmpty())){
+				logger.info(" subQueryParser: checking projected cols");
+				
+				Node k=transformToAbsoluteNamesForAliasNameFoundSubquery(n,fle.getSubQueryStructure());
+				if(!n.getTableNameNo().equalsIgnoreCase(k.getTableNameNo()))
+					return k;
+
+			}
+		}
+		return n;
+	
+}
+
+	private static Node transformToAbsoluteNamesForAliasNameFoundSubquery(Node n,QueryStructure subQueryStructure){
+		logger.info(" subQueryParser: checking projected cols");
+
+		for(Node m:subQueryStructure.getProjectedCols()){
+			if(m.getAgg()!=null && m.getAgg().getAggAliasName()!=null){
+				if(n.getColumn().getColumnName().equalsIgnoreCase(m.getAgg().getAggAliasName())){
+					logger.info(" agg alias Name "+m.getAgg().getAggAliasName()+" node "+m);
+					return m;
+				}
+			}					
+			if(m.getColumn()!=null&&m.getColumn().getColumnName().equalsIgnoreCase(n.getColumn().getColumnName())){	
+				logger.info(" column Name found in subQueryParser "+m);
+				return m;
+			}
+			if(m.getAliasName()!=null&&m.getAliasName().equalsIgnoreCase(n.getColumn().getColumnName())){
+				logger.info(" column Name found as alias in subQueryParser "+m);
+				return m;
+			}
+		}	
 
 		return n;
 	}

@@ -9,10 +9,8 @@ import java.util.logging.Logger;
 
 import parsing.ANDNode;
 import parsing.Conjunct;
-import parsing.GetNode;
 import parsing.Node;
 import parsing.ORNode;
-import parsing.QueryParser;
 
 public class ConjunctQueryStructure implements Serializable{
 

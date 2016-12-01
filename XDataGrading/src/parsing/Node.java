@@ -1,7 +1,9 @@
 package parsing;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
 import parsing.AggregateFunction;
@@ -36,6 +38,7 @@ public class Node implements Cloneable, Serializable{
 	private static String stringFuncType= "STRING FUNCTION NODE";
 	private static String extractFuncType ="EXTRACT NODE";
 	private static String caseNodeType ="CASE NODE";
+	private static String compositeNodeType=" COMPOSITE NODE";
 	
 	AggregateFunction agg;
 
@@ -82,8 +85,21 @@ public class Node implements Cloneable, Serializable{
 		subQueryStructure=null;
 		aliasName=null;
 	}
+
+	//the following lines added by mathew on 1st october 2016
+
+	public Node(boolean composite){
+		type = null;
+		queryType=-1;
+		queryIndex=-1;
+		isMutant = false;
+		subQueryStructure=null;
+		aliasName=null;
+		if(composite){
+			this.componentNodes=new ArrayList<Node>();
+		}
+	}
 	
-	//the following line added by mathew on 1st october 2016
 		QueryStructure subQueryStructure;
 		
 		public QueryStructure getSubQueryStructure(){
@@ -102,6 +118,21 @@ public class Node implements Cloneable, Serializable{
 		
 		public void setAliasName(String aName){
 			this.aliasName=aName;
+		}
+		
+		public boolean isComposite;
+		private List<Node> componentNodes;
+		
+		public List<Node> getComponentNodes(){
+			return componentNodes;
+		}
+		
+		public void setComponentNodes(List<Node> nodes){
+			componentNodes=nodes;
+		}
+		
+		public void addComponentNode(Node n){
+			componentNodes.add(n);
 		}
 	
 	/**
@@ -331,6 +362,10 @@ public class Node implements Cloneable, Serializable{
 //	public static String getAllAnyNodeType() {
 //		return allAnyNodeType;
 //	}
+	
+	public static String getCompositeNodeType(){
+		return compositeNodeType;
+	}
 	
 	public static String getAllNodeType() {
 		return allNodeType;
@@ -567,6 +602,16 @@ public class Node implements Cloneable, Serializable{
 		}
 		else if(this.getOperator()!=null) {
 			return this.getOperator();
+		}
+		else if(this.isComposite){
+			retString+="[";
+			int i;
+			for(i=0;i<componentNodes.size()-1;i++){
+				Node n=componentNodes.get(i);
+				retString+=n.toString()+", ";
+			}
+			retString+=(componentNodes.get(i)+"]");
+			return retString;
 		}
 		else {
 			return "";
