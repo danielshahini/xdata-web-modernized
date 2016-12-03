@@ -1,15 +1,12 @@
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -19,32 +16,20 @@ import java.util.logging.Logger;
 
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.derby.client.am.Statement;
-
 import database.*;
-import evaluation.FailedColumnValues;
 import evaluation.FailedDataSetValues;
 
 import com.google.gson.Gson;
 import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.JsonArray;
-
 import testDataGen.PopulateTestDataGrading;
 import util.DataSetValue;
 import util.DatabaseConnectionDetails;
-import util.TesterDatasource;
-
-import com.google.gson.Gson;
-import java.lang.reflect.Type;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.JsonArray;
 
 /**
  * Servlet implementation class StudentTestCase
@@ -64,6 +49,7 @@ public class StudentTestCase extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		boolean isForView = false;
@@ -215,7 +201,7 @@ public class StudentTestCase extends HttpServlet {
 			"<div class=\"info\">"+
 			"<h2>Question: "+question_id+"</h2>"+
 			"</div>"   
-			+"<p align=\"left\"> <strong> Your Answer: </strong>"+ "<pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent((String)request.getParameter("query")))+"</code></pre></p>");
+			+"<p align=\"left\"> <strong> Your Answer: </strong>"+ "<pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(request.getParameter("query")))+"</code></pre></p>");
 
 		if(status.equals("Error")){
 			out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:red;'>Error</label></div>");
@@ -426,7 +412,7 @@ public class StudentTestCase extends HttpServlet {
 											out_assignment.println("<div class='detail' id='"+dataSetId+"'>");
 											boolean refTableExists = false;
 											for(int i = 0 ; i < dsList.size();i++ ){
-												DataSetValue dsValue = (DataSetValue)dsList.get(i);
+												DataSetValue dsValue = dsList.get(i);
 												String tname = "",values;
 												
 												if(dsValue.getFilename().contains(".ref")){
@@ -475,7 +461,7 @@ public class StudentTestCase extends HttpServlet {
 													out_assignment.println("<p></p><div class='detail' id='"+failedDSValues.getQuery_id()+"R"+dataSetId+"'>");
 												
 												for(int i = 0 ; i < dsList.size();i++ ){ 
-													DataSetValue dsValue = (DataSetValue)dsList.get(i);
+													DataSetValue dsValue = dsList.get(i);
 													String tname = "",values;
 													//if(dsValue.getFilename().contains(".ref")){
 													//	tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref"));
@@ -603,6 +589,7 @@ public class StudentTestCase extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}

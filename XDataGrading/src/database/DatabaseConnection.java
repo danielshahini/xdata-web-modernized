@@ -4,8 +4,6 @@ import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import util.DatabaseConnectionDetails;
-
 public class DatabaseConnection {
 	private static Logger logger=Logger.getLogger(DatabaseConnection.class.getName());
 	private Connection dbConnection(String hostname, String dbName,

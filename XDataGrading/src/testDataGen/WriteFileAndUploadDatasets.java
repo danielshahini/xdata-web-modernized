@@ -22,8 +22,8 @@ import com.google.gson.reflect.TypeToken;
 
 import util.FailedColumnValues;
 import util.FailedDataSetValues;
-import util.DataSetValue;
 import util.Configuration;
+import util.DataSetValue;
 import util.DatabaseConnection;
 import util.MyConnection;
 import util.TableMap;

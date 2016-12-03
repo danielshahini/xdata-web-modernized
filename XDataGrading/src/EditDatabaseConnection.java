@@ -35,16 +35,17 @@ public class EditDatabaseConnection extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String courseId =  (String) request.getParameter("course_id");
-		String dbConnectionName = (String)request.getParameter("dbConnectionName");
-		String dbName = (String) request.getParameter("dbName");
-		String databaseType = (String) request.getParameter("databaseType");
-		String jdbcurl = (String) request.getParameter("jdbcurl");
-		String dbuserName = (String) request.getParameter("dbuserName");
-		String dbPassword = (String) request.getParameter("dbPassword");
-		String testUserName = (String) request.getParameter("testUserName");
-		String testPassword = (String) request.getParameter("testPassword");
+		String courseId =  request.getParameter("course_id");
+		String dbConnectionName = request.getParameter("dbConnectionName");
+		String dbName = request.getParameter("dbName");
+		String databaseType = request.getParameter("databaseType");
+		String jdbcurl = request.getParameter("jdbcurl");
+		String dbuserName = request.getParameter("dbuserName");
+		String dbPassword = request.getParameter("dbPassword");
+		String testUserName = request.getParameter("testUserName");
+		String testPassword = request.getParameter("testPassword");
 		DBConnectionInfo dbData = new DBConnectionInfo();
 		dbData.setConnName(dbConnectionName);
 		dbData.setDbName(dbName);
@@ -53,7 +54,8 @@ public class EditDatabaseConnection extends HttpServlet {
 		dbData.setJdbc_Url(jdbcurl);
 		dbData.setDbType(databaseType);
 
-		try(Connection dbcon = new DatabaseConnection().getConnection(dbData)){
+		new DatabaseConnection();
+		try(Connection dbcon = DatabaseConnection.getConnection(dbData)){
 				//Check DB user name and password
 				if(dbcon == null){ 
  					response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -62,7 +64,8 @@ public class EditDatabaseConnection extends HttpServlet {
 				dbData.setDbUser(testUserName);
 				dbData.setDbPwd(testPassword);
 				
-				try(Connection testCon = new DatabaseConnection().getConnection(dbData)){
+				new DatabaseConnection();
+				try(Connection testCon = DatabaseConnection.getConnection(dbData)){
 					if(testCon == null){ 
 	 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
 	 				}  
@@ -86,18 +89,19 @@ public class EditDatabaseConnection extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String courseId =  (String) request.getParameter("course_id");
-		int connectionId = (int)Integer.parseInt(request.getParameter("connection_id"));
-		String dbConnectionName = (String)request.getParameter("dbConnectionName");
-		String dbName = (String) request.getParameter("dbName");
-		String databaseType = (String) request.getParameter("databaseType");
-		String jdbcurl = (String) request.getParameter("jdbcurl");
+		String courseId =  request.getParameter("course_id");
+		int connectionId = Integer.parseInt(request.getParameter("connection_id"));
+		String dbConnectionName = request.getParameter("dbConnectionName");
+		String dbName = request.getParameter("dbName");
+		String databaseType = request.getParameter("databaseType");
+		String jdbcurl = request.getParameter("jdbcurl");
 	
-		String dbuserName = (String) request.getParameter("dbuserName");
-		String dbPassword = (String) request.getParameter("dbPassword");
-		String testUserName = (String) request.getParameter("testUserName");
-		String testPassword = (String) request.getParameter("testPassword");
+		String dbuserName = request.getParameter("dbuserName");
+		String dbPassword = request.getParameter("dbPassword");
+		String testUserName = request.getParameter("testUserName");
+		String testPassword = request.getParameter("testPassword");
 		
 		DBConnectionInfo dbData = new DBConnectionInfo();
 		dbData.setConnName(dbConnectionName);

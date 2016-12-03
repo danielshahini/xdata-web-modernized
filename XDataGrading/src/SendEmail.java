@@ -5,11 +5,6 @@ import java.util.logging.Logger;
 
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -20,16 +15,9 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import org.apache.commons.codec.digest.DigestUtils;
-
-
-import database.DatabaseConnection;
 
 public class SendEmail extends HttpServlet {
 
@@ -37,6 +25,7 @@ public class SendEmail extends HttpServlet {
 	Session mailSession;
 	MimeMessage emailMessage;
 	private static Logger logger = Logger.getLogger(SendEmail.class.getName());
+	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -102,6 +91,7 @@ public class SendEmail extends HttpServlet {
 		}*/
 	}
 
+	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -128,6 +118,7 @@ public class SendEmail extends HttpServlet {
 
 				Session session = Session.getDefaultInstance(props,
 					new javax.mail.Authenticator() {
+						@Override
 						protected PasswordAuthentication getPasswordAuthentication() {
 							return new PasswordAuthentication("fromUser","fromUserEmailPassword");
 						}

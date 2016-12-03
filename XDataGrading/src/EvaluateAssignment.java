@@ -36,11 +36,12 @@ public class EvaluateAssignment extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session=request.getSession();		
 		String courseID = (String) request.getSession().getAttribute(
 				"context_label");
-		String assignment_id = (String)request.getParameter("assignment_id");
+		String assignment_id = request.getParameter("assignment_id");
 		String question_id = "";// (String)request.getParameter("question_id");
 		
 		String questionSel="select * from xdata_qinfo where assignment_id = ? and course_id= ? ";
@@ -80,6 +81,7 @@ public class EvaluateAssignment extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}

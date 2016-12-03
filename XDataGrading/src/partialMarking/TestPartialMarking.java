@@ -477,28 +477,18 @@ public class TestPartialMarking {
 //				" ON Course.dept_name<=DEPARTMENT.dept_name OR R.dept_Id=Department.dept_Id) as S INNER JOIN (INSTRUCTOR I NATURAL JOIN DEPARTMENT D) as K ON R.dept_name=I.dept_name";
 
 		
-		String studentQuery = "with max_time as ( with student_time as( "
-				+ "with totaltime as (select time_slot_id,sum(60*(end_hr-start_hr)+(end_min-start_min)) as time from time_slot "
-				+ "group by time_slot_id ) "
-				+ "select student.ID,sum(totaltime.time) as total from totaltime,student,takes,section "
-				+ "where student.id = takes.id and section.time_slot_id = totaltime.time_slot_id and "
-				+ "takes.course_id = section.course_id and takes.sec_id = section.sec_id and "
-				+ "takes.year = section.year and takes.semester = section.semester group by student.id) "
-				+ "select max(total) as max from student_time), student_time as( with totaltime as "
-				+ "(select time_slot_id,sum(60*(end_hr-start_hr)+(end_min-start_min)) as time from time_slot "
-				+ "group by time_slot_id) "
-				+ "select student.ID,sum(totaltime.time) as total from totaltime,student,takes,section "
-				+ "where student.id = takes.id and section.time_slot_id = totaltime.time_slot_id and "
-				+ "takes.course_id = section.course_id and "
-				+ "takes.sec_id = section.sec_id and takes.year = section.year and "
-				+ "takes.semester = section.semester group by student.id) "
-				+ "select id from max_time, student_time where student_time.total = max_time.max";
+		String studentQuery = "with A(id,year) as  "
+				+ "(select id,year from takes,course where takes.course_id=course.course_id and dept_name='Comp. Sci.'), "
+				+ "B(less_id) as (select id from A where year<2010), "
+				+ "C(greater_id) as (select id from A where year>2010), "
+				+ "D(stud_id) as  ((select * from B) INTERSECT (select * from C)) "
+				+ "select id,name from student,D where id=stud_id";
 		
-		studentQuery="WITH query as "
-				+ "	(WITH query as (select course_id,sec_id,year,semester,count(student.ID) as number "
-				+ " from section natural join takes,student  where takes.ID=student.ID and section.course_id=takes.course_id and section.sec_id = takes.sec_id and section.semester = takes.semester and section.year = takes.year group by section.course_id,section.sec_id,section.year,section.semester) "
-				+ "select max(number) from query) "
-				+ " select course_id,sec_id,year,semester,query.max as number from section natural join takes,student,query  where takes.ID=student.ID and section.course_id=takes.course_id and section.sec_id = takes.sec_id and section.semester = takes.semester and section.year = takes.year group by section.course_id,section.sec_id,section.year,section.semester,query.max";
+//		studentQuery="WITH query as "
+//				+ "	(WITH query as (select course_id,sec_id,year,semester,count(student.ID) as number "
+//				+ " from section natural join takes,student  where takes.ID=student.ID and section.course_id=takes.course_id and section.sec_id = takes.sec_id and section.semester = takes.semester and section.year = takes.year group by section.course_id,section.sec_id,section.year,section.semester) "
+//				+ "select max(number) from query) "
+//				+ " select course_id,sec_id,year,semester,query.max as number from section natural join takes,student,query  where takes.ID=student.ID and section.course_id=takes.course_id and section.sec_id = takes.sec_id and section.semester = takes.semester and section.year = takes.year group by section.course_id,section.sec_id,section.year,section.semester,query.max";
 		
 //		String studentQuery="SELECT  DISTINCT DEPARTMENT.DEPT_NAME, TEACHES.course_id, TEACHES.SEC_ID, TEACHES.SEMESTER, TEACHES.YEAR,  INSTRUCTOR.ID "
 //				+ "FROM  DEPARTMENT D, TEACHES INNER JOIN INSTRUCTOR ON  TEACHES.ID=INSTRUCTOR.ID "
@@ -550,7 +540,7 @@ public class TestPartialMarking {
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();
-			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
+			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())

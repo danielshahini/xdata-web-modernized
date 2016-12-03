@@ -1,26 +1,16 @@
 
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
@@ -50,6 +40,7 @@ public class DownloadFile extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String download = request.getParameter("download");
@@ -106,7 +97,7 @@ public class DownloadFile extends HttpServlet {
 			
 		try(ServletOutputStream outStream = response.getOutputStream()){
 			response.setContentType("text/html");
-			response.setContentLength((int)downloadString.length());
+			response.setContentLength(downloadString.length());
 			int length = downloadString.length();
 			String fileName = downloadFileName; 
 			response.setHeader("Content-Disposition", "attachment; filename=\""+downloadFileName+"\"");
@@ -130,6 +121,7 @@ public class DownloadFile extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}

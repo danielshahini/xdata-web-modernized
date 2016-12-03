@@ -34,17 +34,18 @@ public class UpdateDatabaseConnection extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		 
-		String courseId =  (String) request.getParameter("course_id");
-		String dbConnectionName = (String)request.getParameter("dbConnectionName");
-		String dbName = (String) request.getParameter("dbName");
-		String databaseType = (String) request.getParameter("databaseType");
-		String jdbcurl = (String) request.getParameter("jdbcurl");
-		String dbuserName = (String) request.getParameter("dbuserName");
-		String dbPassword = (String) request.getParameter("dbPassword");
-		String testUserName = (String) request.getParameter("testUserName");
-		String testPassword = (String) request.getParameter("testPassword");
+		String courseId =  request.getParameter("course_id");
+		String dbConnectionName = request.getParameter("dbConnectionName");
+		String dbName = request.getParameter("dbName");
+		String databaseType = request.getParameter("databaseType");
+		String jdbcurl = request.getParameter("jdbcurl");
+		String dbuserName = request.getParameter("dbuserName");
+		String dbPassword = request.getParameter("dbPassword");
+		String testUserName = request.getParameter("testUserName");
+		String testPassword = request.getParameter("testPassword");
 		
 		DBConnectionInfo dbData = new DBConnectionInfo();
 		dbData.setConnName(dbConnectionName);
@@ -55,14 +56,16 @@ public class UpdateDatabaseConnection extends HttpServlet {
 		dbData.setDbType(databaseType);
 		Connection dbcon = null; 
 		try {
-				dbcon = new DatabaseConnection().getConnection(dbData);
+				new DatabaseConnection();
+				dbcon = DatabaseConnection.getConnection(dbData);
 				if(dbcon == null){ 
  					response.sendError(HttpServletResponse.SC_NOT_FOUND);
  				} 
 				
 				dbData.setDbUser(testUserName);
 				dbData.setDbPwd(testPassword);
-				dbcon = new DatabaseConnection().getConnection(dbData);
+				new DatabaseConnection();
+				dbcon = DatabaseConnection.getConnection(dbData);
 				
  				if(dbcon == null){ 
  					response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -88,19 +91,20 @@ public class UpdateDatabaseConnection extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		 
-		String courseId =  (String) request.getParameter("course_id");
-		String dbConnectionName = (String)request.getParameter("dbConnectionName");
-		String dbName = (String) request.getParameter("dbName");
-		String databaseType = (String) request.getParameter("databaseType");
-		String jdbcurl = (String) request.getParameter("jdbcurl");
-		String jdbcData =  (String) request.getParameter("jdbcurl");
-		String schemaid = (String) request.getParameter("schemaid");	
-		String dbuserName = (String) request.getParameter("dbuserName");
-		String dbPassword = (String) request.getParameter("dbPassword");
-		String testUserName = (String) request.getParameter("testUserName");
-		String testPassword = (String) request.getParameter("testPassword");
+		String courseId =  request.getParameter("course_id");
+		String dbConnectionName = request.getParameter("dbConnectionName");
+		String dbName = request.getParameter("dbName");
+		String databaseType = request.getParameter("databaseType");
+		String jdbcurl = request.getParameter("jdbcurl");
+		String jdbcData =  request.getParameter("jdbcurl");
+		String schemaid = request.getParameter("schemaid");	
+		String dbuserName = request.getParameter("dbuserName");
+		String dbPassword = request.getParameter("dbPassword");
+		String testUserName = request.getParameter("testUserName");
+		String testPassword = request.getParameter("testPassword");
 		
 		DBConnectionInfo dbData = new DBConnectionInfo();
 		dbData.setConnName(dbConnectionName);

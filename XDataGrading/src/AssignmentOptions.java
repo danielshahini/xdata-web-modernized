@@ -2,10 +2,8 @@
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import database.DatabaseConnection;
-import database.DatabaseProperties;
 
 /**
  * Servlet implementation class AssignmentOptions
@@ -39,6 +36,7 @@ public class AssignmentOptions extends HttpServlet {
 		// TODO Auto-generated constructor stub
 	}
 
+	@Override
 	public void init(ServletConfig c) throws ServletException {
 
 	}
@@ -47,6 +45,7 @@ public class AssignmentOptions extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
@@ -56,6 +55,7 @@ public class AssignmentOptions extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		// Open the connection here

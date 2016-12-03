@@ -9,9 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +53,7 @@ public class FailedTestCases extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session=request.getSession();
 		Connection dbCon = null, testcon = null;
@@ -65,7 +64,7 @@ public class FailedTestCases extends HttpServlet {
 		String course_id = (String) request.getSession().getAttribute("context_label");
 		String user_id=request.getParameter("user_id");
 		try {
-			DatabaseConnectionDetails dbConnDetails =(DatabaseConnectionDetails) (new util.DatabaseConnection()).getTesterConnection(assignment_id);
+			DatabaseConnectionDetails dbConnDetails =(new util.DatabaseConnection()).getTesterConnection(assignment_id);
     	    testcon = dbConnDetails.getTesterConn();
     	    dbCon = (new DatabaseConnection()).dbConnection();
     	      
@@ -433,7 +432,7 @@ public class FailedTestCases extends HttpServlet {
 						out_assignment.println("<div class='detail' id='"+dataSetId+"'>");
 						boolean refTableExists = false;
 						for(int i = 0 ; i < dsList.size();i++ ){
-							DataSetValue dsValue = (DataSetValue)dsList.get(i);
+							DataSetValue dsValue = dsList.get(i);
 							String tname="",values;
 							if(dsValue.getFilename().contains(".ref")){
 								refTableExists = true;
@@ -481,7 +480,7 @@ public class FailedTestCases extends HttpServlet {
 								out_assignment.println("<p></p><div class='detail' id='"+failedDSValues.getQuery_id()+"R"+dataSetId+"'>");
 							
 							for(int i = 0 ; i < dsList.size();i++ ){ 
-								DataSetValue dsValue = (DataSetValue)dsList.get(i);
+								DataSetValue dsValue = dsList.get(i);
 								String tname = "",values;
 								//if(dsValue.getFilename().contains(".ref")){
 								//	tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref"));
@@ -608,6 +607,7 @@ public class FailedTestCases extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 	}

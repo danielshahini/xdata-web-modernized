@@ -1,5 +1,4 @@
 package database;
-import java.sql.*;
 public class DatabseConnection {
 	/*public Connection dbConnection(String hostname, String dbName, String username, String passwd, String port) throws Exception{
 		Connection dbcon = null;

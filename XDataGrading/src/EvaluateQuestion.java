@@ -1,11 +1,7 @@
 
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import testDataGen.GenerateDataset_new;
 import evaluation.TestAssignment;
 import database.*;
 /**
@@ -40,13 +35,14 @@ public class EvaluateQuestion extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		HttpSession session=request.getSession();		
 		String courseID = (String) request.getSession().getAttribute(
 				"context_label");
-		String assignment_id = (String)request.getParameter("assignment_id");
-		String question_id= (String)request.getParameter("question_id");
+		String assignment_id = request.getParameter("assignment_id");
+		String question_id= request.getParameter("question_id");
 		//String query_id = (String)request.getParameter("query_id");
 		//int query_id = 1;
 		this.evaluateQuestion(assignment_id, question_id, courseID);
@@ -57,13 +53,14 @@ public class EvaluateQuestion extends HttpServlet {
 	 * 
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		HttpSession session=request.getSession();		
 		String courseID = (String) request.getSession().getAttribute(
 				"context_label");
-		String assignment_id = (String)request.getParameter("assignment_id");
-		String question_id= (String)request.getParameter("question_id");
+		String assignment_id = request.getParameter("assignment_id");
+		String question_id= request.getParameter("question_id");
 		boolean evaluationCompleted = false;
 		try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 			String update="select tajudgement from xdata_student_queries where assignment_id = ? and question_id=? and course_id= ? ";

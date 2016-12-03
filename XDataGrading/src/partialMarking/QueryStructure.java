@@ -1357,7 +1357,6 @@ import util.TableMap;
 		 */
 		private void normalizeSelectedColumnsForWithItem(WithItem withItem, PlainSelect selectClause) {
 			// TODO Auto-generated method stub
-			System.out.println(withItem.getName()+" with item list"+withItem.getWithItemList());
 			if(withItem.getWithItemList()!=null &&!withItem.getWithItemList().isEmpty() ){
 				for(int i=0;i<withItem.getWithItemList().size();i++){
 					SelectItem withSelItem=withItem.getWithItemList().get(i);
@@ -1368,10 +1367,6 @@ import util.TableMap;
 							Alias a = new Alias(withSelItem.toString());
 							a.setUseAs(true);
 							selExpItem.setAlias(a);
-						}
-						else if(sItem instanceof AllColumns){			
-							AllColumns allColsItem=(AllColumns) sItem;
-							
 						}
 					}
 				}

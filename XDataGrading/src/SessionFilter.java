@@ -15,11 +15,13 @@ public class SessionFilter implements Filter {
 
   private String contextPath;
 
-  public void init(FilterConfig fc) throws ServletException {
+  @Override
+public void init(FilterConfig fc) throws ServletException {
     contextPath = fc.getServletContext().getContextPath();
   }
 
-  public void doFilter(ServletRequest request, ServletResponse response, FilterChain fc) throws IOException, ServletException {
+  @Override
+public void doFilter(ServletRequest request, ServletResponse response, FilterChain fc) throws IOException, ServletException {
     HttpServletRequest req = (HttpServletRequest) request;
     HttpServletResponse res = (HttpServletResponse) response;  
     String path = ((HttpServletRequest) request).getRequestURI();
@@ -63,6 +65,7 @@ public class SessionFilter implements Filter {
     	fc.doFilter(request, response);
     }
 
-  public void destroy() {
+  @Override
+public void destroy() {
   }
 }

@@ -13,8 +13,6 @@ import partialMarking.PartialMarkParameters;
 import com.google.gson.Gson;
 
 import testDataGen.PopulateTestDataGrading;
-import util.GraderDatasource;
-
 import database.DatabaseConnection;
 
 import java.util.*;
@@ -44,6 +42,7 @@ public class UpdateSingleQuery extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		
@@ -53,7 +52,7 @@ public class UpdateSingleQuery extends HttpServlet {
 		String[] defaultDSId = request.getParameterValues("defaultDSId");
 		Gson gson = new Gson();
 		String json = gson.toJson(defaultDSId);
-		String questionId = (String) request.getParameter("question_id");
+		String questionId = request.getParameter("question_id");
 		int qId = Integer.parseInt(questionId);
 		int asID = Integer.parseInt(request.getParameter("assignment_id"));
 		int optId = Integer.parseInt(optionalSchemaId);
@@ -80,6 +79,7 @@ public class UpdateSingleQuery extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
@@ -105,7 +105,7 @@ public class UpdateSingleQuery extends HttpServlet {
 		Gson gson = new Gson();
 		String json = gson.toJson(defaultDSId);
 		String partialParamJson = "";
-		String questionId = (String) request.getParameter("question_id");
+		String questionId = request.getParameter("question_id");
 		int maxMarks = Integer.parseInt(request.getParameter("maxMarks"));
 		int qId = Integer.parseInt(questionId);
 		int asID = Integer.parseInt(request.getParameter("assignment_id"));
@@ -116,7 +116,7 @@ public class UpdateSingleQuery extends HttpServlet {
 		int newQueryId = 1;
 		String courseID = (String) request.getSession().getAttribute(
 				"context_label");
-		String queryDesc = (String) desc;/*.trim().replaceAll("\r\n+", " ").trim()
+		String queryDesc = desc;/*.trim().replaceAll("\r\n+", " ").trim()
 				.replaceAll("\n+", " ").trim().replaceAll(" +", " ");*/
 
 	
@@ -183,7 +183,7 @@ public class UpdateSingleQuery extends HttpServlet {
 							partialMarkParam = new PartialMarkParameters();
 						} 
 						partialParamJson = gson.toJson(partialMarkParam);
-						String queryToSave = (String) editedQueries[i];/*.trim()
+						String queryToSave = editedQueries[i];/*.trim()
 								.replaceAll("\r\n+", " ").trim()
 								.replaceAll("\n+", " ").trim()
 								.replaceAll(" +", " ").trim().replace(";", "")
@@ -308,7 +308,7 @@ public class UpdateSingleQuery extends HttpServlet {
 								partialMarkParam = new PartialMarkParameters();
 							}
 							partialParamJson = gson.toJson(partialMarkParam);
-							String queryToSave = (String) newQueries[i];
+							String queryToSave = newQueries[i];
 							/*.trim()
 									.replaceAll("\r\n+", " ").trim() 
 									.replaceAll("\n+", " ").trim()
@@ -371,7 +371,7 @@ public class UpdateSingleQuery extends HttpServlet {
 				// New query added, so insert the new query
 				for (int i = 0; i < newQueries.length; i++) {
 
-					String queryToSave = (String) newQueries[i];
+					String queryToSave = newQueries[i];
 					/*.trim()
 							.replaceAll("\r\n+", " ").trim()
 							.replaceAll("\n+", " ").trim()

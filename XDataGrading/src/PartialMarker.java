@@ -41,6 +41,7 @@ public class PartialMarker extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String userId = ""; String status = ""; 
@@ -61,19 +62,19 @@ public class PartialMarker extends HttpServlet {
 							int queryId = rs.getInt("query_id");
 							try{
 								partialMarking.PartialMarker marker = new partialMarking.PartialMarker(assignmentId, questionId, queryId,course_id,userId);
-								marker.Configuration.Predicate = Integer.parseInt(request.getParameter("predicate"));
-								marker.Configuration.Projection = Integer.parseInt(request.getParameter("projection"));
-								marker.Configuration.Relation = Integer.parseInt(request.getParameter("relation"));
-								marker.Configuration.GroupBy = Integer.parseInt(request.getParameter("groupBy"));
-								marker.Configuration.Joins = Integer.parseInt(request.getParameter("joins"));
-								marker.Configuration.HavingClause = Integer.parseInt(request.getParameter("having"));
-								marker.Configuration.SubQConnective = Integer.parseInt(request.getParameter("subQConnective"));
-								marker.Configuration.OuterQuery = Integer.parseInt(request.getParameter("outer"));
-								marker.Configuration.FromSubQueries = Integer.parseInt(request.getParameter("from"));
-								marker.Configuration.WhereSubQueries = Integer.parseInt(request.getParameter("where"));
-								marker.Configuration.Aggregates = Integer.parseInt(request.getParameter("aggregates"));
-								marker.Configuration.SetOperators = Integer.parseInt(request.getParameter("setoperators"));
-								marker.Configuration.Distinct = Integer.parseInt(request.getParameter("distinct"));
+								partialMarking.PartialMarker.Configuration.Predicate = Integer.parseInt(request.getParameter("predicate"));
+								partialMarking.PartialMarker.Configuration.Projection = Integer.parseInt(request.getParameter("projection"));
+								partialMarking.PartialMarker.Configuration.Relation = Integer.parseInt(request.getParameter("relation"));
+								partialMarking.PartialMarker.Configuration.GroupBy = Integer.parseInt(request.getParameter("groupBy"));
+								partialMarking.PartialMarker.Configuration.Joins = Integer.parseInt(request.getParameter("joins"));
+								partialMarking.PartialMarker.Configuration.HavingClause = Integer.parseInt(request.getParameter("having"));
+								partialMarking.PartialMarker.Configuration.SubQConnective = Integer.parseInt(request.getParameter("subQConnective"));
+								partialMarking.PartialMarker.Configuration.OuterQuery = Integer.parseInt(request.getParameter("outer"));
+								partialMarking.PartialMarker.Configuration.FromSubQueries = Integer.parseInt(request.getParameter("from"));
+								partialMarking.PartialMarker.Configuration.WhereSubQueries = Integer.parseInt(request.getParameter("where"));
+								partialMarking.PartialMarker.Configuration.Aggregates = Integer.parseInt(request.getParameter("aggregates"));
+								partialMarking.PartialMarker.Configuration.SetOperators = Integer.parseInt(request.getParameter("setoperators"));
+								partialMarking.PartialMarker.Configuration.Distinct = Integer.parseInt(request.getParameter("distinct"));
 								MarkInfo result = marker.getMarks();
 								if(result.Marks > markInfo.Marks)
 									markInfo = result;
@@ -117,6 +118,7 @@ public class PartialMarker extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
 		

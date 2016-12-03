@@ -1,13 +1,11 @@
 
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,12 +22,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import parsing.Node;
 import partialMarking.QueryData;
 import partialMarking.TestPartialMarking;
-
 import database.*;
 import evaluation.FailedDataSetValues;
+import parsing.Node;
 
 import com.google.gson.Gson;
 import java.lang.reflect.Type;
@@ -58,6 +55,7 @@ public class GuestStudentTestCase extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		//Write new method here
 boolean isForView = false;
@@ -77,8 +75,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		String course_id = (String) request.getSession().getAttribute("context_label");
 		String user_id=request.getParameter("user_id");
 		String status = request.getParameter("status");
-		int marks = Integer.parseInt((String)request.getParameter("marks"));
-		int maxMarks = Integer.parseInt((String)request.getParameter("maxMarks"));
+		int marks = Integer.parseInt(request.getParameter("marks"));
+		int maxMarks = Integer.parseInt(request.getParameter("maxMarks"));
 		Boolean learningMode = false;
 
 		//Instead of getting it from sessin, get it from student table - tajudgement attribute
@@ -451,13 +449,13 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		//"</head>"+
 
 		//"<body id=\"public\">";
-		String studAnswer = CommonFunctions.decodeURIComponent((String)request.getParameter("query"));
+		String studAnswer = CommonFunctions.decodeURIComponent(request.getParameter("query"));
 		FailedDataSetValues failedDS = (FailedDataSetValues)session.getAttribute("failedDS");
 		out_assignment += "<div class=\"fieldset\"><legend>Result</legend><fieldset>"+ 
 				"<div><div class=\"info\">"+
 					"<h2>Question: "+question_id+"</h2>"+
 					"</div>"   
-					+"<p align=\"left\"> <strong> Your Answer: </strong>"+ "<pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent((String)request.getParameter("query")))+"</code></pre></p>";
+					+"<p align=\"left\"> <strong> Your Answer: </strong>"+ "<pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(request.getParameter("query")))+"</code></pre></p>";
 
 		if(status.equals("Error")){
 			out_assignment += "<div style = 'font-weight: bold'>Status: <label style = 'color:red;'>Error</label></div>";
@@ -564,6 +562,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}
@@ -934,7 +933,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 							out_assignment += "<div class='detail' id='"+dataSetId+"'>";
 							boolean refTableExists = false;
 							for(int i = 0 ; i < dsList.size();i++ ){
-								DataSetValue dsValue = (DataSetValue)dsList.get(i);
+								DataSetValue dsValue = dsList.get(i);
 								String tname = "",values;
 								
 								if(dsValue.getFilename().contains(".ref")){
@@ -983,7 +982,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 									out_assignment += "<p></p><div class='detail' id='"+failedDSValues.getQuery_id()+"R"+dataSetId+"'>";
 								
 								for(int i = 0 ; i < dsList.size();i++ ){ 
-									DataSetValue dsValue = (DataSetValue)dsList.get(i);
+									DataSetValue dsValue = dsList.get(i);
 									String tname = "",values;
 									//if(dsValue.getFilename().contains(".ref")){
 									//	tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref"));
@@ -1140,7 +1139,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 								List<DataSetValue> dsList = new Gson().fromJson(value, listType);	
 								for(int i = 0 ; i < dsList.size();i++ ){
 											
-										DataSetValue dsValue = (DataSetValue)dsList.get(i);
+										DataSetValue dsValue = dsList.get(i);
 											
 										out_assignment += "<div >";
 										String tname = "",values;
@@ -1189,7 +1188,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 												out_assignment += "<p></p><div class='detail' id='"+failedDSValues.getQuery_id()+"R"+dataSetId+"'>";
 											
 											for(int i = 0 ; i < dsList.size();i++ ){ 
-												DataSetValue dsValue = (DataSetValue)dsList.get(i);
+												DataSetValue dsValue = dsList.get(i);
 												String tname = "",values;
 												//if(dsValue.getFilename().contains(".ref")){
 												//	tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref"));

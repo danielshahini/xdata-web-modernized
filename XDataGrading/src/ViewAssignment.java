@@ -3,15 +3,12 @@
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 //import javax.servlet.annotation.WebServlet;
@@ -19,12 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.sound.sampled.Port.Info;
-
-
 import database.CommonFunctions;
 import database.DatabaseConnection;
-import database.DatabaseProperties;
 
 /**
  * Servlet implementation class ViewAssignment
@@ -43,6 +36,7 @@ public class ViewAssignment extends HttpServlet {
 		dbCon=null;
 	}
 
+	@Override
 	public void init(ServletConfig c) throws ServletException {
 		super.init(c);
 		//Open the connection here
@@ -360,6 +354,7 @@ public class ViewAssignment extends HttpServlet {
 			throw new ServletException(e);
 		}
 	}
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		DatabaseConnection db = new DatabaseConnection();
@@ -376,7 +371,7 @@ public class ViewAssignment extends HttpServlet {
 		
 		HttpSession session=request.getSession();
 		String uname=(String) session.getAttribute("user_id");
-		String assgnid = (String)request.getParameter("assignmentid");
+		String assgnid = request.getParameter("assignmentid");
 		String assignments="Select * from xdata_assignment";
 		//Connection dbCon=(Connection) session.getAttribute("dbConnection");
 		try {
@@ -414,6 +409,7 @@ public class ViewAssignment extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}

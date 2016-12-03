@@ -1,9 +1,7 @@
 
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,7 +14,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import database.DatabaseConnection;
 
 /**
@@ -37,11 +34,12 @@ public class ShowSchemaFile extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		 
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();		  
-		String schemaID = (String)request.getParameter("schema_id");
+		String schemaID = request.getParameter("schema_id");
 		int i=Integer.parseInt(schemaID); 
 		String schemaName = ""; 
 		String fileContent= "";
@@ -65,6 +63,7 @@ public class ShowSchemaFile extends HttpServlet {
 	/** 
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}

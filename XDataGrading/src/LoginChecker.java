@@ -2,12 +2,9 @@
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,13 +17,6 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPAttribute;
-import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPAttributeSet;
-import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPConnection;
-import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPEntry;
-import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPException;
-import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPReferralException;
-import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPSearchResults;
 import database.*;
 
 /**
@@ -47,6 +37,7 @@ public class LoginChecker extends HttpServlet {
 		// TODO Auto-generated constructor stub
 	}
 
+	@Override
 	public void init(ServletConfig c) throws ServletException {
 		// Open the connection here
 
@@ -112,12 +103,14 @@ public class LoginChecker extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Override
 	public void destroy() {
 		// Close the connection here
 		try {
@@ -131,6 +124,7 @@ public class LoginChecker extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
@@ -249,7 +243,7 @@ public class LoginChecker extends HttpServlet {
 								pstmt1.setString(1,"XD1");
 								pstmt1.setString(2,"Administrator");
 								pstmt1.setString(3, uname);
-								pstmt1.setString(4, config.getProperty("adminPassword"));
+								pstmt1.setString(4, Configuration.getProperty("adminPassword"));
 								
 								pstmt1.executeQuery(); 
 								session.setAttribute("LOGIN_USER", "ADMIN");

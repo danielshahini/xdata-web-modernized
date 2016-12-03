@@ -38,6 +38,7 @@ public class UploadScore extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		double score = 0;
@@ -56,7 +57,7 @@ public class UploadScore extends HttpServlet {
 			max = Double.parseDouble(request.getParameter("max"));
 			String lis_result_sourcedid = "";
 			// Score has to be in the range of 0.0 - 1.0
-			score = (double) score / (double) max;
+			score = score / max;
 
 			//Shree modified this for marks updation in moodle for specific assignment
 			//PreparedStatement stmt = conn
@@ -158,7 +159,7 @@ public class UploadScore extends HttpServlet {
 								max = totalMarks;
 								String lis_result_sourcedid = "";
 								// Score has to be in the range of 0.0 - 1.0
-								score = (double) score / (double) max;
+								score = score / max;
 								try(PreparedStatement stmt1 = conn
 										.prepareStatement("select * from xdata_LTIResponseInfo where internal_user_id = ? and course_id = ? and assignment_id = ?")){
 								
@@ -247,6 +248,7 @@ public class UploadScore extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 	}

@@ -25,11 +25,11 @@ public class Configuration implements ConfigurationInterface{
 	//public static String assignmentFolder= getProperty("assignmentFolder");
 	public static ConfigurationInterface object;
 	static void getObject(){
-		try {
-			object = (ConfigurationInterface) Class.forName("database.Configuration").newInstance();
-		} catch (Exception e) {
-			// Ignoring error
-		}
+//		try {
+//			object = (ConfigurationInterface) Class.forName("database.Configuration").newInstance();
+//		} catch (Exception e) {
+//			// Ignoring error
+//		}
 		if(object == null){
 			object = new Configuration();
 			InitLogger.initLogger();

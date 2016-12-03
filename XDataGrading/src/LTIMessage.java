@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
-
 import org.apache.commons.codec.digest.DigestUtils;
 
 import com.google.gdata.client.authn.oauth.OAuthHmacSha1Signer;
@@ -115,7 +113,7 @@ public class LTIMessage {  // utility for sending LTI-compliant "POX" or "REST+J
 			Map<String, String> paramMap = params.getBaseParameters();
 			Object[] paramNames = paramMap.keySet().toArray();
 			for (Object paramName : paramNames) {
-				String value = paramMap.get((String) paramName);
+				String value = paramMap.get(paramName);
 				buffer.append(paramName + "=\"" + URLEncoder.encode(value,"UTF-8") + "\"");
 				cnt++;
 				if (paramNames.length > cnt) {

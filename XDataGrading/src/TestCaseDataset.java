@@ -1,11 +1,8 @@
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -18,7 +15,6 @@ import java.util.logging.Logger;
 
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,7 +27,6 @@ import database.*;
 import testDataGen.PopulateTestDataGrading;
 import util.DataSetValue;
 import util.DatabaseConnectionDetails;
-import util.TesterDatasource;
 
 /**
  * Servlet implementation class TestCaseDataset
@@ -52,6 +47,7 @@ public class TestCaseDataset extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request,
 		HttpServletResponse response) throws ServletException, IOException {
 		String query = request.getParameter("query");
@@ -148,7 +144,7 @@ public class TestCaseDataset extends HttpServlet {
 				
 								List<DataSetValue> dsList = new Gson().fromJson(value, listType);
 								for(int i = 0 ; i < dsList.size();i++ ){
-									DataSetValue dsValue = (DataSetValue)dsList.get(i);
+									DataSetValue dsValue = dsList.get(i);
 									String tname,values;
 									tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".copy"));
 									try(PreparedStatement detailStmt = testcon.prepareStatement("select * from " + tname + " where 1 = 0")){
@@ -233,6 +229,7 @@ public class TestCaseDataset extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub

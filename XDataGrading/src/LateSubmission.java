@@ -18,7 +18,6 @@ import util.DatabaseConnectionDetails;
 import evaluation.TestAssignment;
 
 import database.DatabaseConnection;
-import evaluation.QueryStatusData;
 
 /**
  * Servlet implementation class LateSubmission
@@ -38,6 +37,7 @@ public class LateSubmission extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}
@@ -45,15 +45,16 @@ public class LateSubmission extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String course_id = request.getParameter("courseId");
-		int assignment_id= Integer.parseInt((String)request.getParameter("assignment_id"));
+		int assignment_id= Integer.parseInt(request.getParameter("assignment_id"));
 		String username = request.getParameter("username");
 		String rollnum = request.getParameter("rollnum");
 		String email = request.getParameter("email");
-		int noOfQuestions = Integer.parseInt((String)request.getParameter("noOfQuestions")); 
-		int marksToBeReduced = Integer.parseInt((String)request.getParameter("marksToBeReduced"));
+		int noOfQuestions = Integer.parseInt(request.getParameter("noOfQuestions")); 
+		int marksToBeReduced = Integer.parseInt(request.getParameter("marksToBeReduced"));
 		Connection dbcon = null;
 		Connection testConn = null;
 		
@@ -63,7 +64,7 @@ public class LateSubmission extends HttpServlet {
 			PreparedStatement stmt;
 			ResultSet rs;
 		for(int i=1; i< noOfQuestions; i++){
-			String correctquery = (String) request.getParameter("newQuery"+i);
+			String correctquery = request.getParameter("newQuery"+i);
 			System.out.println("Correct Query " + correctquery);
 			
 			PreparedStatement updt= dbcon.prepareStatement("update xdata_qinfo set latesubmissionmarks = ? where assignment_id=? and question_id = ? and course_id=?");

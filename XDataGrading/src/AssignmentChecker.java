@@ -21,7 +21,6 @@ import javax.servlet.http.HttpSession;
 
 import database.CommonFunctions;
 import database.DatabaseConnection;
-import testDataGen.GenerateDataset_new;
 import testDataGen.preProcessForDataGeneration;
 
 //import testDataGen.TestAssignment;
@@ -51,6 +50,7 @@ public class AssignmentChecker extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -123,7 +123,8 @@ public class AssignmentChecker extends HttpServlet {
 			String args[] = { String.valueOf(assignment_id),
 					String.valueOf(question_id), String.valueOf(query_id) ,course_id};
 			ResultSet rsDataSet = null;
-			if (!Thread.currentThread().interrupted()) {
+			Thread.currentThread();
+			if (!Thread.interrupted()) {
 				try {
 					//GenerateDataset_new.entry(args);
 					preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
@@ -191,7 +192,8 @@ public class AssignmentChecker extends HttpServlet {
 						dataGenerationCompleted.remove(dataGeneratedID);
 						session.setAttribute("DataGenerationCompleted",dataGenerationCompleted);
 					}
-					if (Thread.currentThread().interrupted()) {
+					Thread.currentThread();
+					if (Thread.interrupted()) {
 						RequestDispatcher rd = request
 								.getRequestDispatcher("asgnmentList.jsp?assignmentId="
 										+ assignment_id+"&&showQuestions=true");
@@ -249,7 +251,7 @@ public class AssignmentChecker extends HttpServlet {
 					+ question_id + "&" + query_id;
 			if (requestAttribute != null && requestAttribute.size() > 0) {
 				// Remove the object for which processing is to be stopped
-				threadIDtoInterrupt = (Long) requestAttribute
+				threadIDtoInterrupt = requestAttribute
 						.get(requestProcessId);
 				requestAttribute.remove(requestProcessId);
 				session.setAttribute("DataGeneratingInProgressMap",
@@ -303,6 +305,7 @@ public class AssignmentChecker extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		if (!Thread.interrupted()) {
