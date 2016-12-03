@@ -12,7 +12,7 @@ management systems such as Moodle, Blackboard, etc.
 Website
 -------
 
-    http://www.cse.iitb.ac.in/infolab/xdata/
+    http://www.cse.iitb.ac.in/infolab/xdata
 
 
 Documentation
