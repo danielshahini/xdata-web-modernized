@@ -35,7 +35,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/apache-commons-lang.jar"/>
 	<classpathentry kind="lib" path="Jars/javax.servlet-3.0.0.v201112011016.jar"/>
 	<classpathentry kind="lib" path="Jars/javax.servlet.jsp-2.2.0.v201112011158.jar"/>
-	<classpathentry kind="lib" path="/XData/jars/tomcat-jdbc-7.0.54.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jsqlparser.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
