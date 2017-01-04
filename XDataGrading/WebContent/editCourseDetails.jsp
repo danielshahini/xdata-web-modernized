@@ -113,7 +113,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						<span>Course Id</span>
 						<input type ="hidden" name="courseId" value="<%=courseId%>">
 						<input placeholder="Specify the Course Id"
-							name="instrcourseId" value="<%=rs.getString("instructor_course_id")%>" disabled="disabled"/> 
+							name="instrcourseId1" value="<%=rs.getString("instructor_course_id")%>" disabled="disabled"/> 
+						<input type ="hidden" name="instrcourseId" value="<%=rs.getString("instructor_course_id")%>">
 					</div>					
 					<div>
 						<span>Course Name</span>
