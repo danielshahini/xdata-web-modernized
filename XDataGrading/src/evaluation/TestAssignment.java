@@ -35,6 +35,16 @@ import util.DatabaseHelper;
 import util.MyConnection;
 import util.TableMap;
 
+/*
+ * Code to be used for hasing a table in postgres : 
+ * SELECT        
+    md5(CAST((array_agg(f.* order by id))AS text)) /* id is a primary key of table (to avoid random sorting) FROM  foo f; 
+ */
+/***
+ * 
+ * @author shree
+ *
+ */
 public class TestAssignment {
 
 	private static Logger logger = Logger.getLogger(TestAssignment.class.getName());
@@ -590,10 +600,7 @@ public class TestAssignment {
 								upstmt.setBoolean(1, true);
 								flag = 1;
 							}
-							if (s instanceof DropTableNode) {
-								queryStatus = QueryStatus.Incorrect;
-								flag = 1;
-							}
+							
 							if (flag == 0) {
 								String ans = "";
 								try {
@@ -609,9 +616,7 @@ public class TestAssignment {
 									cvc.setCourseId(courseId);
 									preProcess.initializeConnectionDetails(cvc);
 								 	
-									
 									TableMap tm = cvc.getTableMap();
-
 									if (failedDs.getStatus().equalsIgnoreCase("Failed")) {
 										
 										// Get DS0
@@ -741,7 +746,81 @@ public class TestAssignment {
 	}
 
 	/**
-	 * This method return the student query's output for the loaded data set
+	 * To be used by instructor when evaluate assignment or evaluate questions link is clicked from UI
+	 * 
+	 * This gets all student answers, get the correct instructor_queries and loop thru the instructor queries and 
+	 * then for each instructor query, for each dataset, run all student queries and get the output data for failed students
+	 * save the result in DB.
+	 * 
+	 * @return
+	 */
+	public void newEvaluateAssignment(Connection dbcon, String[] args) throws SQLException, Exception {
+		
+		String StudQueryString = "select querystring,rollnum from xdata_student_queries where " + "assignment_id =?  and "
+									+ "question_id = ?";
+		int assignment_id = Integer.parseInt(args[0]);
+		int question_id = Integer.parseInt(args[1]);
+		String courseId = args[2];		
+		ArrayList<String> studentRollNums = new ArrayList<String>();
+		ArrayList<String> studentQueries = new ArrayList<String>();
+		TestAnswer test = new TestAnswer();
+		
+		String updateString = "update xdata_student_queries set tajudgement=?, result = ? "
+				+ "where assignment_id=? and question_id = ? and rollnum=? and course_id=?";
+
+		try (PreparedStatement upstmt = dbcon.prepareStatement(updateString)) {
+				try (PreparedStatement studQueriesStmt = dbcon.prepareStatement(StudQueryString)) {
+	
+						studQueriesStmt.setInt(1, assignment_id);
+						studQueriesStmt.setInt(2, question_id);
+						logger.log(Level.INFO, studQueriesStmt.toString());
+						try (ResultSet StudQueries = studQueriesStmt.executeQuery()) {
+							while(StudQueries.next()) {
+								studentRollNums.add(StudQueries.getString("rollnum"));
+								String studQuery = StudQueries.getString("querystring");
+								if(studQuery != null && !studQuery.isEmpty() && studQuery != ""){
+									studentQueries.add(StudQueries.getString("querystring"));
+								}else{
+									//If student has not answered the question, make it null for evaluation
+									studentQueries.add(null);
+								}
+							}
+						}//Got all student queries and rollnumbers				
+						String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
+						ArrayList<FailedDataSetValues> failedList = test.newTestAnswer(assignment_id, question_id, courseId,
+								studentQueries,studentRollNums,"4/" + courseId + "/" + queryId,"");				
+						// Get failedDataSets list - iterate on the list, get stud id and update xdata_students_queries table with the json obj and marks
+					 	 // update student table accordingly
+						String updateStudentTableString = "update xdata_student_queries set tajudgement=?, result = ?  where assignment_id=? and question_id = ? and rollnum=? and course_id=?";
+						Gson gson = new Gson();
+						String json = "";
+						int count = 1;
+						try (PreparedStatement updtstmt = dbcon.prepareStatement(updateStudentTableString)) {					
+								for(FailedDataSetValues fdv :  failedList){							
+										json = gson.toJson(fdv);
+										upstmt.setBoolean(1, true);
+										upstmt.setString(2, json);
+										upstmt.setInt(3, assignment_id);
+										upstmt.setInt(4, question_id);
+										upstmt.setString(5,fdv.getStudentRollNo());
+										upstmt.setString(6, courseId);
+										upstmt.executeUpdate();
+										logger.log(Level.WARNING,"***************************************************");
+										logger.log(Level.WARNING,"FailedDs Item : Roll No :: " + count +" :::: "+fdv.getStudentRollNo());						
+										logger.log(Level.WARNING,"FailedDs Status :: " + fdv.getStatus());
+										logger.log(Level.WARNING,"***************************************************");
+										count++;
+								}		
+						}catch (Exception e) {
+							logger.log(Level.SEVERE, "Exception caught here: " + e.getMessage(), e);
+							upstmt.setBoolean(1, true);
+						}	
+			}
+		}		
+		logger.log(Level.INFO, "Evaluation of Question "+question_id+" in Assignment "+assignment_id+" completed. ");
+	}
+	/**
+	 * This method return the <i>student query's</i> output for the loaded data set
 	 * Used to get results of student query on the failed data set for
 	 * displaying failed test cases
 	 * 
@@ -774,33 +853,23 @@ public class TestAssignment {
 					{
 						existingColNames.add(metadata.getColumnName(cl));
 					}
-					
-					
 					for (int cl = 1; cl <= no_of_columns; cl++) {
 						ArrayList<String> values = new ArrayList<String>();
 						FailedColumnValues failedColumns = new FailedColumnValues();
-						// out_assignment.println("<th>"+metadata.getColumnLabel(cl)+"</th>");
-						// result+=metadata.getColumnName(cl)+"@@";
-						// failedDs.getColValueMap().add(metadata.getColumnName(cl));
 						columnName = metadata.getColumnName(cl);
 						
 						existingColNames.remove(metadata.getColumnName(cl));
 						
-						//After removing , if still coName exists it is duplicate column- so suffix with index.
+						//After removing the column name, if still colName exists it is duplicate column- so suffix with index.
 						if(existingColNames.contains(metadata.getColumnName(cl))){
 							
 							columnName = metadata.getColumnName(cl)+index;
 							index ++;
-							existingColNames.add(metadata.getColumnName(cl));
-							
+							existingColNames.add(metadata.getColumnName(cl));							
 						}else{
-							columnName = metadata.getColumnName(cl);
-							
+							columnName = metadata.getColumnName(cl);							
 						}
-						
-						
-						
-						
+
 						try (ResultSet rr1 = pp.executeQuery()) {
 							metadata = rr1.getMetaData();
 							while (rr1.next()) {
@@ -808,11 +877,8 @@ public class TestAssignment {
 								// {
 								int type = metadata.getColumnType(cl);
 								values.add(rr1.getString(cl));
-
 							}
-							
-
-							
+													
 							failedColumns.setColumnName(metadata.getColumnName(cl));
 							failedColumns.setValues(values);
 							failedColMap.put(columnName, values);
@@ -827,17 +893,12 @@ public class TestAssignment {
 			
 		}
 		failedStudDataMap.put(dataSetId, failedColMap);
-		// if(!isDefaultDS){
 		failedDs.setStudentQueryOutput(failedStudDataMap);
-		// }else if(isDefaultDS){
-
-		// failedDs.setStudentQueryDefaultDSOutput(failedStudDataMap);
-		// }
 		return failedDs;
 	}
 
 	/**
-	 * This method return the instructor query's output for the loaded dataset
+	 * This method return the <i>instructor query's</i> output for the loaded dataset
 	 * Used to get results of instructor query on the failed dataset for
 	 * displaying failed test cases
 	 * 
@@ -1004,21 +1065,9 @@ public class TestAssignment {
 									qry = qry.trim().replaceAll(" +", " ");
 									qry = qry.replace("NATURAL LEFT OUTER", "NATURAL");
 									qry = qry.replace("NATURAL RIGHT OUTER", "NATURAL");
-									// if(qry.toLowerCase().contains("year")){
-									// qry=qry.replaceAll("year","year1");
-									// qry=qry.replaceAll("Year","year1");
-									// qry=qry.replaceAll("YEAR","year1");
-									// }
 									logger.log(Level.INFO, "Cleansed Query is " + qry);
 									try {
-										// Statement stmt = pm.parse(new
-										// StringReader(qry));
-										// String modQuery =
-										// TestAnswer.parseWithAsQueryJSQL(qry);//preParseQuery(testQuery);
-										// if(modQuery != null ){
-										// qry = modQuery;
-										// }
-										logger.log(Level.INFO, "queryString" + qry);
+																			logger.log(Level.INFO, "queryString" + qry);
 										qry = qry.trim().replaceAll("\n+", " ");
 										qry = qry.trim().replaceAll(" +", " ");
 										// Statement stmt = pm.parse(new
@@ -1031,11 +1080,6 @@ public class TestAssignment {
 										upstmt.setBoolean(1, true);
 										flag = 1;
 									}
-									// TODO : To be corrected with JSQL PARSER
-									/*
-									 * if(s instanceof DropTableNode) {
-									 * upstmt.setBoolean(1, false); flag=1; }
-									 */
 									if (flag == 0) {
 										String ans = "";
 										try {
@@ -1046,8 +1090,7 @@ public class TestAssignment {
 											logger.log(Level.INFO, "Answer is :" + ans);
 
 											if (failedDs.getStatus().equalsIgnoreCase("Failed")) {
-												// This is set to true to say
-												// the question is evaluated
+												// This is set to true to say the question is evaluated
 												upstmt.setBoolean(1, true);
 												// Get DS0
 												hs.add(failedDs.getDataSetIdList().get(0));
@@ -1063,11 +1106,6 @@ public class TestAssignment {
 
 														logger.log(Level.INFO, "Inside operator");
 														String dataset = failedDs.getDataSetIdList().get(i);
-														// p.fetchAndPopulateTestDatabase(dbcon,
-														// testCon,
-														// assignment_id,question_id,1,
-														// course_Id, dataset,
-														// tm);
 														if (dataset.startsWith("DS")) {
 															if (dataset.equalsIgnoreCase("DS_Default")) {
 																p.createTempTableData(dbcon, testCon, assignment_id,
@@ -1079,37 +1117,10 @@ public class TestAssignment {
 																		dataset, tm);
 
 															}
-															// failedDs =
-															// this.getStudentOutput(testCon,
-															// dataset,
-															// OriginalQry,
-															// failedList,
-															// failedDs,
-															// failedStudDataMap,false);
-															// failedDs=this.getInstructorOutput(testCon,
-															// dataset,
-															// failedDs.getInstrQuery(),
-															// failedList,
-															// failedDs,
-															// failedInstrDataMap,false);
 
 														} else {
 															p.createTempTableWithDefaultData(dbcon, testCon,
 																	assignment_id, question_id, course_Id, dataset);
-
-															// failedDs =
-															// this.getStudentOutput(testCon,
-															// dataset,
-															// OriginalQry,
-															// failedList,
-															// failedDs,
-															// failedStudDataMap,true);
-															// failedDs=this.getInstructorOutput(testCon,
-															// dataset,
-															// failedDs.getInstrQuery(),
-															// failedList,
-															// failedDs,
-															// failedInstrDataMap,true);
 														}
 														failedDs = this.getStudentOutput(testCon, dataset, OriginalQry,
 																failedList, failedDs, failedStudDataMap, false);
@@ -1129,9 +1140,7 @@ public class TestAssignment {
 														add.setInt(5, assignment_id);
 														add.setInt(6, question_id);
 														add.setString(7, course_Id);
-														// add.setString(4, );
 														add.executeUpdate();
-														// } // While each DS
 														// loop ends
 													} // for each DSloop ends
 												} // try block for statement
@@ -1259,35 +1268,10 @@ public class TestAssignment {
 
 								logger.log(Level.INFO, "Cleansed Query is " + qry);
 								try {
-									// String modQuery =
-									// TestAnswer.parseWithAsQueryJSQL(testQuery);//preParseQuery(testQuery);
-									// if(modQuery != null ){
-									// testQuery = modQuery;
-									// }
 									logger.log(Level.INFO, "queryString" + testQuery);
 									testQuery = testQuery.trim().replaceAll("\n+", " ");
 									testQuery = testQuery.trim().replaceAll(" +", " ");
 
-									// Statement stmt = pm.parse(new
-									// StringReader(testQuery));
-
-									/*
-									 * if(s instanceof InsertNode){ testQuery =
-									 * TestAnswer.convertInsertQueryToSelect(
-									 * testQuery); }else if(s instanceof
-									 * DeleteNode){ testQuery =
-									 * TestAnswer.convertDeleteQueryToSelect(
-									 * testQuery); }else if(s instanceof
-									 * UpdateNode){ testQuery =
-									 * TestAnswer.convertUpdateQueryToSelect(
-									 * testQuery); }
-									 */
-
-									/*
-									 * if(testQuery.toLowerCase().contains(
-									 * "year1")){ testQuery =
-									 * testQuery.replaceAll("year1","year"); }
-									 */
 									populateTestData.deleteAllTempTablesFromTestUser(testCon);
 									populateTestData.createTempTables(testCon, assignment_id, question_id);
 									try (PreparedStatement testStatement = testCon.prepareStatement(testQuery)) {
@@ -1352,8 +1336,6 @@ public class TestAssignment {
 			} // try block for testconn ends
 		} // try block for conn ends
 			// logger.log(Level.INFO,"TestAssignment - DS0 MODE :
-			// "+ro.kifs.diagnostic.Connection.getStillOpenedConnsStackTraces());
-
 		return queryStatus;
 	}
 
@@ -1370,7 +1352,11 @@ public class TestAssignment {
 			int assignment_id = Integer.parseInt(args[0]);
 			int question_id = Integer.parseInt(args[1]);
 			String course_id = args[2];
-			ta.evaluateQuestion(assignment_id, question_id, course_id);
+			
+			try (Connection dbcon = MyConnection.getDatabaseConnection()) {
+				ta.newEvaluateAssignment(dbcon, args);
+			} 
+			//ta.evaluateQuestion(assignment_id, question_id, course_id);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.log(Level.SEVERE, e.getMessage(), e);
@@ -1484,22 +1470,7 @@ public class TestAssignment {
 
 									newFailedDSValue.getDsValueMap().put(dataset, failedList);
 									failedDSToJson.add(newFailedDSValue);
-									/*
-									 * json = gson.toJson(failedDs);
-									 * logger.log(Level.INFO,
-									 * "JSON VALUE OF DataSetValue field :" +
-									 * json);
-									 * 
-									 * add.setString(1,StudQueries.getString(
-									 * "rollnum")); add.setString(2,oldQueryId);
-									 * add.setString(3, dataset);
-									 * add.setString(4, json);
-									 * add.setInt(5,assignment_id);
-									 * add.setInt(6,question_id);
-									 * add.setString(7,course_Id); //
-									 * add.setString(4, ); add.executeUpdate();
-									 */
-									// } // While each DS loop ends
+									
 								} // for each DSloop ends
 							} // if status failed loop ends
 							else {
@@ -1595,28 +1566,6 @@ public class TestAssignment {
 		TestAssignment ta = new TestAssignment();
 		try {
 			readQueriesFromFileParseAndTest();
-			/*
-			 * for(int i = 0 ; i < 60; i++){ TestEvaluationThread r = new
-			 * TestEvaluationThread(); Thread t1 = new Thread(r);
-			 * System.out.println(
-			 * "i created thread t1 and had it execute run method, which is currently looping for i = "
-			 * + i); logger.log(Level.INFO,"Started Thread:" + t1);
-			 * 
-			 * 
-			 * t1.start();
-			 * 
-			 * 
-			 * System.out.println("Finished running thread No = "+i);
-			 */
-			// String arga[] = {String.valueOf(asID),
-			// String.valueOf(questionID.trim()), studentID,courseID};
-			// ta.testQuery(args);
-
-			// int assignment_id=Integer.parseInt(args[0]);
-			// int question_id=Integer.parseInt(args[1]);
-			// String course_id=args[2];
-			// ta.evaluateQuestion(assignment_id, question_id,course_id);
-
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
 			// TODO Auto-generated catch block
@@ -1685,47 +1634,10 @@ public class TestAssignment {
 								 */
 								logger.log(Level.INFO, "Cleansed Query is " + qry);
 								try {
-									// testQuery =
-									// TestAnswer.preParseQuery(testQuery);
-									// String modQuery =
-									// TestAnswer.parseWithAsQueryJSQL(testQuery);//preParseQuery(testQuery);
-									// if(modQuery != null ){
-									// testQuery = modQuery;
-									// }
 									logger.log(Level.INFO, "queryString" + testQuery);
 									testQuery = testQuery.trim().replaceAll("\n+", " ");
 									testQuery = testQuery.trim().replaceAll(" +", " ");
-									/*
-									 * if(testQuery.toLowerCase().contains(
-									 * "year")){ testQuery =
-									 * testQuery.replaceAll("year","year1");
-									 * testQuery =
-									 * testQuery.replaceAll("Year","year1");
-									 * testQuery =
-									 * testQuery.replaceAll("YEAR","year1"); }
-									 */
-
-									// s= sqlParser.Statement(testQuery, null);
-									/*
-									 * Statement stmt = pm.parse(new
-									 * StringReader(testQuery));
-									 * 
-									 * if(s instanceof InsertNode){ testQuery =
-									 * TestAnswer.convertInsertQueryToSelect(
-									 * testQuery); }else if(s instanceof
-									 * DeleteNode){ testQuery =
-									 * TestAnswer.convertDeleteQueryToSelect(
-									 * testQuery); }else if(s instanceof
-									 * UpdateNode){ testQuery =
-									 * TestAnswer.convertUpdateQueryToSelect(
-									 * testQuery); }
-									 */
-
-									/*
-									 * if(testQuery.toLowerCase().contains(
-									 * "year1")){ testQuery =
-									 * testQuery.replaceAll("year1","year"); }
-									 */
+									
 									populateTestData.deleteAllTempTablesFromTestUser(testCon);
 									populateTestData.createTempTablesForTestThread(testCon, assignment_id, question_id);
 									try (PreparedStatement testStatement = testCon.prepareStatement(testQuery)) {

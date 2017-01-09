@@ -17,12 +17,15 @@ public class FailedDataSetValues {
 	private float Marks = 0.0f;
 	private float maxMarks = 0.0f;
 	private String ErrorMessage = "";
+	private String studentRollNo = "";
 	//This query id is used for displaying failed datasets when query equivalence is tested in TESTER mode
 	private int queryId = 0;
 	//If output for one specific dataset is to be stored using this bean, use this variable
 	private String dataSetId;
 	//Tag of failed dataset id
 	private String dataSetName;
+
+	private String studentQueryString="";
 	
 	private ArrayList<String> dataSetIdList = new ArrayList<String>();
 	
@@ -207,6 +210,19 @@ public class FailedDataSetValues {
 	}
 	public void setMaxMarks(float maxMarks) {
 		this.maxMarks = maxMarks;
+	}
+	public String getStudentRollNo() {
+		return studentRollNo;
+	}
+	public void setStudentRollNo(String studentRollNo) {
+		this.studentRollNo = studentRollNo;
+	}
+
+	public String getStudentQueryString() {
+		return studentQueryString;
+	}
+	public void setStudentQueryString(String studentQueryString) {
+		this.studentQueryString = studentQueryString;
 	}
 	
 }

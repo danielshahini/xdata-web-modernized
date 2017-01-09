@@ -4,9 +4,11 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -37,6 +39,7 @@ import java.util.*;
 import java.sql.*;
 
 import testDataGen.GenerateCVC1;
+import testDataGen.PopulateTestData;
 import testDataGen.PopulateTestDataGrading;
 import testDataGen.preProcessForDataGeneration;
 import parsing.AddSelectClauseForWithAs;
@@ -54,7 +57,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.derby.client.am.GetSystemPropertiesAction;
+import org.apache.tools.ant.util.CollectionUtils;
 import org.postgresql.util.PSQLException;
+
+//MD5 HASH for table :  SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_users f; 
 
 public class TestAnswer {
 	
@@ -69,171 +76,8 @@ public class TestAnswer {
 	public static void Dataset(String mut, String ds,String filePath, String query){		
 	}
 	
-	/**
-	 * This method parses WITH AS query using JSQL parser, processes it and returns
-	 * the modified query
-	 * 
-	 * @param queryId
-	 * @param queryString
-	 * @param debug
-	 * @throws Exception
-	 */
-	 public static String parseWithAsQueryJSQL(String orginalQuery) throws Exception{
-		 logger.log(Level.INFO,"queryString before Parsing : " + orginalQuery);
-		 
-		 	String alteredWithQuery = null;
-		 	if(orginalQuery != null && !orginalQuery.isEmpty()){
-		 	orginalQuery=orginalQuery.trim().replaceAll("\n+", " ");
-		 	orginalQuery=orginalQuery.trim().replaceAll(" +", " ");	
-		 	orginalQuery = orginalQuery.replace( "NATURAL LEFT OUTER","LEFT OUTER");
-		 	orginalQuery = orginalQuery.replace("NATURAL RIGHT OUTER","RIGHT OUTER");
-			CCJSqlParserManager pm = new CCJSqlParserManager();
-			Statement stmt = pm.parse(new StringReader(orginalQuery));
-			PlainSelect plainSelect =  null;
-			
-			//Check if query contains WithItem list - then Query is of the form  WITH S AS ()
-			if(((Select) stmt).getSelectBody() instanceof PlainSelect 
-					&& ((Select)stmt).getWithItemsList() != null){
-				PlainSelect selectClause =(PlainSelect) ((Select) stmt).getSelectBody();
-				
-				//Substitute the select body in WithItem to the PlainSelect inside select Body of 
-				// top element.
-				List withItemsList = ((Select)stmt).getWithItemsList();
-				//Use tokenizer to find the alias and substitute subselect
-				String newQuery = "";
-				for(int i=0;i<withItemsList.size();i++){ 
-					final WithItem item = (WithItem)withItemsList.get(i);
-					//The from item uses WITH AS ALIAS 
-					/**Changes for handling with as by  Start **/
-					//Call the method to check WITH AS alias is used in FromItem,
-					newQuery = modifyFromItemForWithAs(selectClause, item);
-					logger.log(Level.INFO,"After modifying FROM ITEM of main query : details : ");
-					logger.log(Level.INFO,"selectCaluse = \n" + selectClause.toString() +"\n");
-					if(newQuery != null && !newQuery.isEmpty()){
-						alteredWithQuery = newQuery;
-					}
-					newQuery = modifyWhereClauseforWithAs(selectClause, item);
-					logger.log(Level.INFO,"After modifying WHERE part : details : ");
-					
-					logger.log(Level.INFO,"selectCaluse = \n" + selectClause.toString() +"\n");
-					if(newQuery != null && !newQuery.isEmpty()){
-						alteredWithQuery = newQuery;
-					}
-					if(selectClause.getJoins() != null ){
-						List joinList = selectClause.getJoins();
-						
-						for(int j=0; j < joinList.size(); j++){
-							Join jcl = (Join)joinList.get(j);
-							
-							if(jcl.getRightItem().toString().equalsIgnoreCase(item.getName())){
-								//Get withItem and create new SubSelect if fromItem name is equal to with item name
-								SubSelect sub = new SubSelect();
-								Alias a = new Alias(item.getName());
-								a.setUseAs(true);
-								sub.setAlias(a);
-								sub.setSelectBody(item.getSelectBody());
-								
-								AddSelectClauseForWithAs addSB = new AddSelectClauseForWithAs(item.getSelectBody());
-								addSB.getNewFromItem(sub);
-								newQuery = addSB.getNewQuery(j,jcl,selectClause,sub); 
-								//This returns the new query - call JSQLParser on the new Query
-								alteredWithQuery = newQuery;
-								
-							}
-							
-						}						
-					}
-				}
-			}
-		 	}
-			return alteredWithQuery;		
-	 }
-	 /**
-		 * This method modifies the WITH AS queries. If From Item of the main query block
-		 * contains WITH AS Alias, then this method removes the alias and substitutes the original
-		 * query with the WITH AS query and returns the modified query for processing.
-		 * 
-		 * @param selectClause
-		 * @param item
-		 * @return
-		 */
-		public static String modifyFromItemForWithAs(PlainSelect selectClause, WithItem item){
-			
-			String newQuery = "";
-			if(selectClause.getFromItem().toString().equalsIgnoreCase(item.getName())){
-				//Get withItem and create new SubSelect if fromItem name is equal to with item name
-				SubSelect sub = new SubSelect();
-				Alias a = new Alias(item.getName());
-				a.setUseAs(true);
-				sub.setAlias(a);
-				sub.setSelectBody(item.getSelectBody());
-				
-				AddSelectClauseForWithAs addSB = new AddSelectClauseForWithAs(item.getSelectBody());
-				addSB.getNewFromItem(sub);
-				newQuery = addSB.getNewQuery(selectClause,sub); 
-				
-			}
-			return newQuery;
-		}
-		/**
-		 * This method modifies the WITH AS queries. If WHERE clause of the main query block
-		 * contains WITH AS Alias, then this method removes the alias and substitutes the original
-		 * query with the WITH AS query and returns the modified query for processing.
-		 * 
-		 * @param selectClause
-		 * @param item
-		 * @return
-		 */
-		public static String modifyWhereClauseforWithAs(PlainSelect selectClause, WithItem item){
-			String newQuery = "";
-			Expression newExp = null;
-			Expression exp = selectClause.getWhere();
-			if(exp != null && exp.toString().contains(item.getName())){
-				if(exp instanceof BinaryExpression){
-					Expression leftExpr = ((BinaryExpression)exp).getLeftExpression();
-					Expression rightExpr = ((BinaryExpression)exp).getRightExpression();
-					if(leftExpr != null && leftExpr.toString().contains(item.getName())){
-						if(leftExpr instanceof SubSelect){
-							SubSelect newS = ((SubSelect)leftExpr);
-							PlainSelect ps = (PlainSelect)newS.getSelectBody();
-							//Check if from item of SubSelect has WITH AS
-							newQuery = TestAnswer.modifyFromItemForWithAs(ps, item);
-							//New query contains alias name as same as in main query
-							//So change alias name - under discussion
-							((SubSelect) leftExpr).setSelectBody(ps);
-							logger.log(Level.INFO,"Modified left expr - now proceed to modify WHERE --> \n" + newQuery);
-						}
-					}
-					if(rightExpr != null && rightExpr.toString().contains(item.getName())){
-						if(rightExpr instanceof SubSelect){
-							SubSelect newS = ((SubSelect)rightExpr);
-							PlainSelect ps = (PlainSelect)newS.getSelectBody();
-							//Check if from item of SubSelect has WITH AS
-							newQuery = TestAnswer.modifyFromItemForWithAs(ps, item);
-							//New query contains alias name as same as in main query
-							//So change alias name - under discussion
-							((SubSelect) rightExpr).setSelectBody(ps);
-							logger.log(Level.INFO,"Modified right expr - now proceed to modify WHERE --> \n" + newQuery);
-						}
-					}
-				}
-				else if(exp!= null && exp instanceof SubSelect){
-					SubSelect newS = ((SubSelect)exp);
-					PlainSelect ps = (PlainSelect)newS.getSelectBody();
-					//Check if from item of SubSelect has WITH AS
-					newQuery = TestAnswer.modifyFromItemForWithAs(ps, item);
-					//New query contains alias name as same as in main query
-					//So change alias name - under discussion
-					((SubSelect) exp).setSelectBody(ps);
-					logger.log(Level.INFO,"Modified where - now proceed to modify WHERE --> \n" + newQuery);
-				}
-				newQuery = selectClause.toString();
-				logger.log(Level.INFO,"Modified Query fir WITH AS in  JOIN--> \n"+ newQuery);
-			}
-					
-			return newQuery;
-		}
-
+	
+@Deprecated
 	public static String preParseQuery(String queryString) throws Exception{
 
 		StringTokenizer st=new StringTokenizer(queryString.trim());
@@ -615,6 +459,340 @@ public class TestAnswer {
 			return queryIds;
     }
     
+    public static ArrayList<FailedDataSetValues> newCheckAgainstOriginalQuery(ArrayList<String> studentRollnums,ArrayList<String> studentQueries,
+    		String instrQueryId, String datasetName, String queryString, String filePath, 
+    		boolean orderIndependent, Vector<String> columnmismatch, Connection conn,Vector<String> resultOnDsetMap,
+    		int assignmentId,int questionId, String course_id,Connection mainConn,TableMap tm,Vector<String> vs) {
+    	
+    	PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		Vector<String> queryIds = new Vector<String>();	
+		ArrayList<FailedDataSetValues> fdValueList = new ArrayList<FailedDataSetValues>();
+		resultOnDsetMap = new Vector<String>();
+		try{
+			String hashValueOfInstructorQueryTable = "";
+			try{
+				pstmt = conn.prepareStatement("drop table if exists xdata_temp1;");
+				pstmt.execute();
+				pstmt = conn.prepareStatement("drop table if exists xdata_temp2;");
+				pstmt.execute();
+				pstmt = conn.prepareStatement("drop table if exists dataset;");
+				pstmt.execute();
+				//Create temporary tables based on the dataset (data generated by Xdata) that is passed
+				pstmt = conn.prepareStatement("CREATE TEMPORARY TABLE dataset(name varchar(20))");
+						//"AS (SELECT * FROM dataset WHERE (1=0))");
+				pstmt.executeUpdate();
+			}
+			catch(SQLException ex){
+				int errorCode = ex.getErrorCode();
+				logger.log(Level.SEVERE,"SQL Exception: "+ex.getMessage(),ex);
+			} 
+			
+			pstmt = conn.prepareStatement("insert into dataset values('" + datasetName + "')");
+			pstmt.executeUpdate();
+			int i=1;			
+
+			logger.log(Level.INFO,"queryString" + queryString);
+			queryString=queryString.trim().replaceAll("\n+", " ");
+			queryString=queryString.trim().replaceAll(" +", " ");	
+			queryString = queryString.trim().replace(";", " ");
+		
+			try{
+			//	PreparedStatement pstm1 = conn.prepareStatement("create temporary table xdata_temp1  as ("+queryString+");");
+				//PreparedStatement pstm1 = conn.prepareStatement("with x1 as ("+queryString+") SELECT md5(CAST((array_agg(f.*))AS text)) FROM x1 as f;");
+				//pstm1.execute();
+				}catch(Exception e){
+					logger.log(Level.SEVERE,"Error in Instructor Query :" +e.getMessage(),e);	
+				}
+			
+			//Calculate the MD5 HAsh for xdata_temp1 : using SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_temp1 f; 
+			//PreparedStatement hashStmnt = conn.prepareStatement("SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_temp1 f");
+			PreparedStatement hashStmnt = conn.prepareStatement("with x1 as ("+queryString+") SELECT md5(CAST((array_agg(f.*))AS text)) FROM x1 as f;");
+			ResultSet hashResult = hashStmnt.executeQuery();
+			if(hashResult.next()){
+				hashValueOfInstructorQueryTable = hashResult.getString(1);
+			}
+			logger.log(Level.INFO, "Hash of xdata_temp1 : "+hashValueOfInstructorQueryTable);
+			logger.log(Level.INFO,"****************************************");
+			logger.log(Level.INFO,"DATASET ID : "+ datasetName);
+			logger.log(Level.INFO,"****************************************");
+			logger.log(Level.INFO,"Instructor query -" +queryString.toString());
+			logger.log(Level.INFO,"****************************************");
+			
+			for(int l = 0 ; l < studentQueries.size() ; l++){
+				String mutant_qry = studentQueries.get(l);
+				String hashValueOfInstructorQueryTableAfterExecution = "";
+				if(mutant_qry != null && ! mutant_qry.isEmpty()){
+					mutant_qry=mutant_qry.trim().replace(';', ' ');				
+				
+				//Parse the instructor query to get number of projected columns
+				CCJSqlParserManager pm = new CCJSqlParserManager();
+				Statement stmnt = pm.parse(new StringReader(queryString));
+				PlainSelect plainSelect =  (PlainSelect)((Select) stmnt).getSelectBody();
+				List<SelectItem> rcList = plainSelect.getSelectItems();
+				
+				
+				PreparedStatement pstmt11 = conn.prepareStatement(queryString);
+				PreparedStatement pstmt22 = conn.prepareStatement(mutant_qry);
+				logger.log(Level.INFO,"*****************************************");
+				logger.log(Level.INFO,"Mutant query -" + mutant_qry.toString());
+				logger.log(Level.INFO,"*****************************************");
+				if(orderIndependent){
+					try{				
+						//Run both the queries against the temporary data set that is generated.
+						 
+						/*pstmt = conn.prepareStatement("with x1 as (" + queryString + ")," +
+								" x2 as (" + mutant_qry + ") select 'Q" + i 
+								+ " was killed by ' as const,dataset.name from dataset " +
+								"where exists ((select * from x1) except all (select * from x2)) " +
+								"or exists ((select * from x2) except all (select * from x1))");
+								*/
+						
+						/*try{
+							PreparedStatement pstm2 = conn.prepareStatement("create temporary table xdata_temp2  as ("+mutant_qry+");");
+							pstm2.execute();
+							}catch(SQLException e){
+								logger.log(Level.SEVERE,"Error in student Query :" +e.getMessage(),e);	
+								queryIds.add((String)instrQueryId);
+								columnmismatch.add((String)instrQueryId);
+								logger.log(Level.SEVERE,e.getMessage(), e);
+								resultOnDsetMap.add(studentRollnums.get(l));
+								//throw e;
+							}*/
+							
+							/*pstmt = conn.prepareStatement("select 'Q" + i 
+									+ " was killed by ' as const,dataset.name from dataset " +
+									"where exists ((select * from xdata_temp1) except all (select * from xdata_temp2)) " +
+									"or exists ((select * from xdata_temp2) except all (select * from xdata_temp1))");
+									*/
+						pstmt = conn.prepareStatement("with x1 as (" + queryString + ")," +
+								" x2 as (" + mutant_qry + ") select 'Q" + i 
+								+ " was killed by ' as const "+//,dataset.name from dataset " +
+								"where exists ((select * from x1) except all (select * from x2)) " +
+								"or exists ((select * from x2) except all (select * from x1))");
+	
+							logger.log(Level.INFO,"******************");
+							logger.log(Level.INFO,"Student Id : "+studentRollnums.get(l)+" evaluated");
+							logger.log(Level.INFO,"******************");
+							
+						rs = pstmt.executeQuery();
+						ResultSet rs11 = pstmt22.executeQuery(); 
+						while(rs11.next()){ 
+							//logger.log(Level.INFO,rs11.getString(1));
+						}
+						ResultSet rs22 = pstmt11.executeQuery();
+						while(rs22.next()){
+							//logger.log(Level.INFO,rs22.getString(1));
+						}		
+						
+						//Check the MD5 HASH of instructor table with newly calculated HASH - if it does not match, mark student query as incorrect
+						//Failed - and re-run the populateData method to re-load the dataset again.
+					//	PreparedStatement hashStmnt1 = conn.prepareStatement("SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_temp1 f");
+						PreparedStatement hashStmnt1 = conn.prepareStatement("with x1 as ("+queryString+") SELECT md5(CAST((array_agg(f.*))AS text)) FROM x1 as f;");
+						ResultSet hashResult1 = hashStmnt1.executeQuery();
+						if(hashResult1.next()){
+							hashValueOfInstructorQueryTableAfterExecution = hashResult1.getString(1);
+						} 
+						
+						
+						if(hashValueOfInstructorQueryTableAfterExecution!= null && hashValueOfInstructorQueryTable != null 
+								&& !(hashValueOfInstructorQueryTableAfterExecution.equals(hashValueOfInstructorQueryTable))){
+							//Student query fails as it has changed some existing table data 
+							resultOnDsetMap.add(studentRollnums.get(l));
+							queryIds.add((String)instrQueryId);
+							//Re-Load the data set
+							PopulateTestDataGrading p = new PopulateTestDataGrading();
+							if(! filePath.equals("NoPath")){
+								//Load the DataSet 
+								p.populateTestDataForTesting(vs, filePath+"/"+datasetName, tm, conn, assignmentId, questionId);
+							}else{
+								//Load DefaultDataSet
+								String dsName = p.createTempTableWithDefaultData(mainConn,conn,assignmentId,questionId,course_id,
+										datasetName);
+							}
+						}
+					//if mustant_query not empty
+				}
+				
+					catch(SQLException s){
+						if(s instanceof PSQLException && s.getMessage().trim().equalsIgnoreCase("No results were returned by the query.".trim())){
+							 
+						}else{
+							queryIds.add((String)instrQueryId);
+							columnmismatch.add((String)instrQueryId);
+							resultOnDsetMap.add(studentRollnums.get(l));							
+							logger.log(Level.SEVERE,s.getMessage(), s);
+							//throw s;
+						}
+						logger.log(Level.INFO," SQL EXCEPTION"+s.getMessage(),s);
+					}
+					catch(Exception ex){
+						logger.log(Level.SEVERE,ex.getMessage(), ex);
+						//ex.printStackTrace();
+						try{
+							pstmt = conn.prepareStatement(mutant_qry);
+							rs = pstmt.executeQuery();
+							ResultSetMetaData rsmd=rs.getMetaData();
+							Vector<String> projectedCols = new Vector<String>();
+							pstmt =conn.prepareStatement(queryString);
+							rs =pstmt.executeQuery();
+							ResultSetMetaData orgRsmd=rs.getMetaData();
+							for(int k=1;k<=orgRsmd.getColumnCount();k++){
+								projectedCols.add(orgRsmd.getColumnName(k));
+							}
+							if(orgRsmd.getColumnCount()!=rsmd.getColumnCount()){
+								columnmismatch.add((String)instrQueryId);
+							}
+							else{
+								for(int k=1;k<=rsmd.getColumnCount();k++){
+									if(!projectedCols.contains(rsmd.getColumnName(k))){
+										columnmismatch.add((String)instrQueryId);
+										break;
+									}
+								}
+							}
+							queryIds.add((String)instrQueryId);
+							resultOnDsetMap.add(studentRollnums.get(l));
+						}catch(Exception e){
+							logger.log(Level.SEVERE,e.getMessage(), e);
+							//e.printStackTrace();
+							queryIds.add((String)instrQueryId);
+							resultOnDsetMap.add(studentRollnums.get(l));
+						}
+						finally{
+							
+							pstmt = conn.prepareStatement("drop table if exists xdata_temp2;");
+							pstmt.execute();
+							pstmt = conn.prepareStatement("drop table  if exists dataset;");
+							pstmt.execute();
+						}
+					}finally{						
+						pstmt = conn.prepareStatement("drop table  if exists xdata_temp2;");
+						pstmt.execute();
+						pstmt = conn.prepareStatement("drop table  if exists dataset;");
+						pstmt.execute();
+					}
+					
+					if(rs==null){
+//						logger.log(Level.INFO,"rs is null");
+					}
+					
+					else if(rs!=null && rs.next()){						
+						//logger.log(Level.INFO,"Adding Query Id = "+(String)Id);
+						queryIds.add((String)instrQueryId);
+						resultOnDsetMap.add(studentRollnums.get(l));
+					}else{
+						//logger.log(Level.INFO,"rs is empty");
+					}
+				}
+				else{
+					PreparedStatement pstmt1 = conn.prepareStatement(queryString);
+					PreparedStatement pstmt2 = conn.prepareStatement(mutant_qry);
+	     			ResultSet rs1 = pstmt1.executeQuery();
+					ResultSet rs2 = pstmt2.executeQuery();
+					boolean outputEqual = true;
+					int k = 1;
+					while(rs1!=null && rs1.next() && rs2!=null && rs2.next()){
+						
+						while(rs1!=null && rs1.next() && rs2!=null && rs2.next()){
+							if(rs1.equals(rs2)){
+								
+							}
+							if(rs1.getString(k).equals(rs2.getString(k))){
+								
+							}
+							else{
+								outputEqual = false;
+							}
+							k++;
+						}
+					}
+								
+					if((rs1!=null && rs2 == null) || (rs1== null && rs2 !=null)){	
+						outputEqual = false;
+					}
+					if(!outputEqual){
+						queryIds.add((String)instrQueryId);
+						resultOnDsetMap.add(studentRollnums.get(l));
+					}
+					
+					pstmt1.close();
+					pstmt2.close();
+					rs1.close();
+					rs2.close();
+				}
+				}//if mutant_query is not null
+				else{
+					//If student_query is null, add it as failed
+					queryIds.add((String)instrQueryId);
+					resultOnDsetMap.add(studentRollnums.get(l));
+				}
+				
+				//Call the methods for storing the failed student_id and table data information in FailedDataSet object and return the list of FailesDSObject
+				
+				if(resultOnDsetMap.contains(studentRollnums.get(l))){
+					FailedDataSetValues fdv = new FailedDataSetValues();
+					//Set failed Student details
+					fdv.setStudentRollNo(studentRollnums.get(l));
+					fdv.setDataSetName(datasetName);
+					fdv.setInstrQuery(queryString);
+					//fdv.setDataSetId();
+					fdv.setStatus("Failed");
+					Map<String, Map<String, ArrayList<String>>> failedStudDataMap = new HashMap<String, Map<String, ArrayList<String>>>();
+					Map<String, Map<String, ArrayList<String>>> failedInstrDataMap = new HashMap<String, Map<String, ArrayList<String>>>();
+					ArrayList<FailedColumnValues> failedList = new ArrayList<FailedColumnValues>();
+					
+					fdv.setDataSetId(datasetName);
+					if(filePath.equals("NoPath")){
+						fdv = getStudentOutput(conn, datasetName,  studentQueries.get(l),
+							failedList, fdv, failedStudDataMap, true);
+						
+						fdv = getInstructorOutput(conn, datasetName,
+								fdv.getInstrQuery(), failedList, fdv,
+								failedInstrDataMap, true);
+					}
+					else{
+						fdv = getStudentOutput(conn, datasetName,  studentQueries.get(l),
+								failedList, fdv, failedStudDataMap, false);
+							
+							fdv = getInstructorOutput(conn, datasetName,
+									fdv.getInstrQuery(), failedList, fdv,
+									failedInstrDataMap, false);
+					}
+					fdv.getDsValueMap().put(datasetName, failedList);
+					fdv.setStudentQueryString(mutant_qry);
+					fdValueList.add(fdv);
+				}
+				
+			}
+						
+		}catch(Exception e){
+			logger.log(Level.SEVERE, "TestAnswer : ", e);
+
+		}finally{
+			try{
+				
+				pstmt = conn.prepareStatement("drop table xdata_temp1;");
+				pstmt.execute();
+			
+			}catch(SQLException e){
+				logger.log(Level.INFO,"TestAnswer : newCheckAgainstQuery : ",e.getMessage());
+			}
+		}
+		logger.log(Level.INFO,"--------------------------------------------- ");
+		logger.log(Level.INFO,"Dataset: "+datasetName+" Killed mutants: "+queryIds);		
+		logger.log(Level.INFO,"--------------------------------------------- ");
+		 
+		try {
+			pstmt.close();
+			
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "TestAnswer : ", e);
+			
+		}		
+		//	return resultOnDsetMap;
+		return fdValueList;
+    }
 	/**
 	 * 
 	 * @param mutants
@@ -699,6 +877,7 @@ public class TestAnswer {
 							if(orgRsmd.getColumnCount()!=rsmd.getColumnCount()){
 								//columnmismatch.add((String)Id);
 								queryIds.add((String)Id);
+								
 							}
 							else{
 								for(int k=1;k<=rsmd.getColumnCount();k++){
@@ -886,18 +1065,18 @@ public class TestAnswer {
 				datasets.add(datasetid);
 				dataSetForQueries.put(rs.getInt("query_id"), datasets);
 				
-				String dsPath=Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid;
+				/*String dsPath=Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid;
 				File f=new File(dsPath);
 				if(!f.exists()){
 					f.mkdirs();
 				}
 				else{
-					/*Runtime r = Runtime.getRuntime();
-					Process proc = r.exec("rm "+Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
+					//Runtime r = Runtime.getRuntime();
+					//Process proc = r.exec("rm "+Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
 									
-					proc.waitFor();
-					Utilities.closeProcessStreams(proc);
-					proc.destroy();*/
+				//	proc.waitFor();
+					//Utilities.closeProcessStreams(proc);
+					//proc.destroy();
 					Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
 				}
 				//JSON implementation reqd and test here.
@@ -926,7 +1105,8 @@ public class TestAnswer {
 						brd.write(writedata);
 						brd.close();		
 						fos.close();
-					}			
+					}
+					*/			
 			}
 		rs.close();
 		smt.close();
@@ -948,7 +1128,6 @@ public class TestAnswer {
 	 */
 	public QueryStatus testQueryAnswer(int assignmentId, int questionId,String course_id, String query, String user, String filePath) throws Exception{
 		
-
 		int queryId = 1;
 		String qId = "A"+assignmentId+"Q"+questionId+"S"+queryId;
 		Map <Integer,Boolean> resultOfDatasetMatchForEachQuery  = new HashMap<Integer,Boolean>();
@@ -1003,8 +1182,7 @@ public class TestAnswer {
 									try{
 									 p.deleteAllTempTablesFromTestUser(testConn);
 									}catch(Exception e){
-										logger.log(Level.INFO,"Temporary Table does not exist",e);
-										
+										logger.log(Level.INFO,"Temporary Table does not exist",e);										
 									}
 									try{
 									 p.createTempTableData(conn,testConn,assignmentId,questionId,course_id);
@@ -1065,8 +1243,6 @@ public class TestAnswer {
 													if (matcher.find()) {
 													    assignId = Integer.parseInt(matcher.group(1));
 													} 
-													
-													//cvc.initializeConnectionDetails(assignId,questionId,queryId,course_id);
 													preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
 													
 													cvc.setAssignmentId(assignmentId);
@@ -1586,6 +1762,498 @@ public String[] getDefaultDSForQuestion(int assignmentId,int questionId,String c
 	}
 	return defaultDSIdsPerQuestion;
 }
+
+/**
+ * This method evaluates all the student queries against each instructor query and calculates the marks for each student. 
+ * For each instructor query, load datasets, run each student query on the loaded dataset. Store results for failed students, calculate partial marks.
+ * For passed student query, assign marks based on the instructor query that it has passed. 
+ * 
+ *  Add them to final result list and return.
+ * 
+ * @param assignmentId
+ * @param questionId
+ * @param course_id
+ * @param studentRollNums - student roll numbers.
+ * @param studentQueries - student's answer corresponding to roll number. If student has not answered, it will have null as value.
+ * @param filePath
+ * @param studRole
+ * @return
+ * @throws Exception
+ */
+public ArrayList<FailedDataSetValues> newTestAnswer(int assignmentId,int questionId, String course_id,
+		ArrayList<String> studentQueries,ArrayList<String> studentRollNums, String filePath, String studRole) throws Exception{
+
+	 //These holds instructor_query_id as Key and arraylist of student Id's who have failed / passed that query
+	 Map<Integer,ArrayList<String>> instrQueryVsFailedStudentList = new HashMap<Integer, ArrayList<String>>();
+	 Map<Integer,ArrayList<String>> instrQueryVsPassedStudentList = new HashMap<Integer, ArrayList<String>>();
+	 //List that holds final result of all students
+	 ArrayList<FailedDataSetValues> finalFailedDsList = new ArrayList<FailedDataSetValues>();
+	 //Holds Roll number of students who have failed 
+	 ArrayList<String> failedStudentRollNumList = new ArrayList<String>();
+	 ArrayList<String> passedStudentRollNumList = new ArrayList<String>();
+	 String [] defaultDSIdsAssignment=new String[25];
+	 String [] defaultDSIdsPerQuestion=new String[25];
+	 int queryId = 1;
+	 int maxMarks = 0;
+	 int reduceLateSubmissionMarks = 0;
+	 boolean isMatchAll = false;
+	 boolean orderIndependent = false;
+	 String instrQuery = null;
+	 Map <Integer,Integer> maxMarksPerInstrQueryMap = new HashMap<Integer,Integer>();
+	 try(Connection conn = MyConnection.getDatabaseConnection()){
+		  try(Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){
+			    String getMatchAllOption = "select matchallqueries,orderIndependent,latesubmissionmarks from xdata_qinfo where assignment_id = ? and question_id = ? and course_id=?";
+				try(PreparedStatement pst = conn.prepareStatement(getMatchAllOption)){
+					pst.setInt(1,assignmentId);
+					pst.setInt(2,questionId);
+					pst.setString(3,course_id);
+					try(ResultSet rset = pst.executeQuery()){
+						rset.next(); 
+						isMatchAll = rset.getBoolean("matchallqueries");
+						orderIndependent = rset.getBoolean("orderIndependent");
+						reduceLateSubmissionMarks = rset.getInt("latesubmissionmarks");
+					}///close resultset try block
+				}//close stmt try blck
+			String qry = "select * from xdata_instructor_query a inner join xdata_qinfo b on a.assignment_id = b.assignment_id and " +
+						"a.question_id = b.question_id  where a.assignment_id = ?" +
+						" and a.question_id = ? and a.course_id=?";
+			defaultDSIdsAssignment = this.getDefaultDSForAssignment(assignmentId,course_id,conn);
+			defaultDSIdsPerQuestion = this.getDefaultDSForQuestion(assignmentId,questionId,course_id,conn);			
+			try(PreparedStatement pstmt = conn.prepareStatement(qry)){
+					pstmt.setInt(1,assignmentId);
+					pstmt.setInt(2,questionId); 
+					pstmt.setString(3,course_id);
+					try(ResultSet rs = pstmt.executeQuery()){
+							PopulateTestDataGrading p = new PopulateTestDataGrading();
+							GenerateCVC1 cvc = new GenerateCVC1();											
+							preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+							cvc.setAssignmentId(assignmentId);
+							cvc.setQuestionId(questionId);
+							cvc.setQueryId(queryId);
+							cvc.setCourseId(course_id);
+							preProcess.initializeConnectionDetails(cvc);
+						 	TableMap tm = cvc.getTableMap();
+							cvc.closeConn();	
+							// Check for views in student query
+							for(int i = 0 ; i < studentRollNums.size(); i++){
+								String rollnum = studentRollNums.get(i);
+								String query = studentQueries.get(i);
+								if(query!= null || !query.isEmpty()){
+									query=checkForViews(query,rollnum);
+								}//set updated query to student query
+								studentQueries.set(i,query);
+							}
+						//For each instructor answer loop to compare datasets
+						while(rs.next()){
+							
+							boolean incorrect=false;
+							Map <String,Vector<String>> resultPerStudentPerInstructorQuery =new HashMap<String,Vector<String>>();
+							String sqlQuery=rs.getString("sql");
+							queryId = rs.getInt("query_id");
+							maxMarks = rs.getInt("marks");
+							//FIXME we change the filepath to hold the query_id 
+							filePath = filePath.substring(0,filePath.length()-1)+queryId;
+							String instrQueryId = "A"+assignmentId +"Q"+questionId+"S"+queryId;
+							instrQuery = sqlQuery;
+							failedStudentRollNumList = new ArrayList<String>();
+							passedStudentRollNumList = new ArrayList<String>();
+							maxMarksPerInstrQueryMap.put(queryId,maxMarks);
+							Vector <String> resultOnDataSet = new Vector<String>();
+							Vector<String> dataSetIdListFailed = new Vector<String>(); 
+							//Get default dataset for question - run all stud queries on that.
+							try{								
+								if(defaultDSIdsPerQuestion != null){
+									  for(int dId= 0; dId < defaultDSIdsPerQuestion.length;dId++){
+											Vector<String> cmismatch = new Vector<String>();
+											logger.log(Level.INFO,"******************");
+											logger.log(Level.INFO,"Default dataset "+defaultDSIdsPerQuestion[dId]+" Loaded : ");
+											logger.log(Level.INFO,"******************");
+											 
+											 String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id,
+													 defaultDSIdsPerQuestion[dId].toString());
+											 ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery
+													 (studentRollNums, studentQueries, instrQueryId, defaultDSIdsPerQuestion[dId].toString(), instrQuery, 
+															 "NoPath", orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,null);
+											 
+											//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
+												//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList									
+												 for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){													 
+													 String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
+													 if(failedStudentRollNumList.contains(stdRoll)){
+														 processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
+													 }else{
+														 failedStudentRollNumList.add(stdRoll);
+														 finalFailedDsList.add(fdvFailedList.get(fl));
+													 }
+												 }
+									  }
+									}
+									p.deleteAllTempTablesFromTestUser(testConn);								
+								}catch(Exception e){
+									logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
+									e.printStackTrace();
+								}
+								
+							//Get default dataset for assignment - run all student queries on that
+							try{
+								if((defaultDSIdsPerQuestion == null || (defaultDSIdsPerQuestion != null && defaultDSIdsPerQuestion.length == 0))
+										&&  defaultDSIdsAssignment != null){
+									
+									for(int dId= 0; dId < defaultDSIdsAssignment.length;dId++){
+										Vector<String> cmismatch = new Vector<String>();
+										logger.log(Level.INFO,"******************");
+										logger.log(Level.INFO,"Default dataset "+defaultDSIdsAssignment[dId]+" Loaded : ");
+										logger.log(Level.INFO,"******************");
+										
+										 String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id,
+												 defaultDSIdsAssignment[dId].toString());
+										 ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery
+												 (studentRollNums, studentQueries, instrQueryId, defaultDSIdsAssignment[dId].toString(), instrQuery, 
+														 "NoPath", orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,null);
+										//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
+											//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList								
+											 for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){
+												 String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
+												 if(failedStudentRollNumList.contains(stdRoll)){
+													 processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
+												 }else{
+													 failedStudentRollNumList.add(stdRoll);
+													 finalFailedDsList.add(fdvFailedList.get(fl));
+												 }
+											 }
+									}
+									p.deleteAllTempTablesFromTestUser(testConn);
+								}	
+						}catch(Exception e){
+							logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
+							e.printStackTrace();
+						}
+							//Get generated datasets and loop on datasets.
+							Map <Integer,Vector<String>>  datasetForQueryMap =	downloadDatasets(assignmentId,questionId,queryId,course_id,conn,filePath, false);
+							//Even if no default data sets are there and no datasets are available for the query, , check against the sample Data file that the assignment uses.
+							
+								for(Integer id : datasetForQueryMap.keySet()){
+										Vector<String> datasets = datasetForQueryMap.get(id);
+										for(int i=0;i<datasets.size();i++){
+										 		boolean flag=true;
+												//load the contents of DS
+												String dsPath = Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasets.get(i);
+												File ds=new File(dsPath);
+												String copyFiles[] = ds.list();
+												Vector<String> vs = new Vector<String>();
+												for(int m=0;m<copyFiles.length;m++){
+												    vs.add(copyFiles[m]);
+												 }				 		
+											 	// query output handling
+												Pattern pattern = Pattern.compile("^A([0-9]+)Q[0-9]+");
+												Matcher matcher = pattern.matcher(instrQueryId);
+												int assignId = 1;
+												if (matcher.find()) {
+												    assignId = Integer.parseInt(matcher.group(1));
+												}
+												//populate datasets for testing
+												p.populateTestDataForTesting(vs, filePath+"/"+datasets.get(i), tm, testConn, assignmentId, questionId);
+												Vector<String> cmismatch=new Vector<String>();
+												//Check against the query	
+												ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery(studentRollNums, studentQueries, instrQueryId, datasets.get(i), instrQuery, filePath, 
+																		orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,vs);
+												//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
+												//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList									
+												 for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){
+													 String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
+													 if(failedStudentRollNumList.contains(stdRoll)){
+														 processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
+													 }else{
+														 failedStudentRollNumList.add(stdRoll);														 
+														 finalFailedDsList.add(fdvFailedList.get(fl));
+													 }
+												 }
+											 }
+									 }
+								//Put failedStudentsRollNumList against the instructor_query_id
+								instrQueryVsFailedStudentList.put(queryId,failedStudentRollNumList);	
+								//Get passed student roll number list for that query
+								for(String passedRollNum : studentRollNums){
+									if(! failedStudentRollNumList.contains(passedRollNum)){
+										//Add the roll num to passed student roll number
+										passedStudentRollNumList.add(passedRollNum);
+									}
+								}
+								instrQueryVsPassedStudentList.put(queryId,passedStudentRollNumList);
+							}//End of Instructor queries loop 	
+				 }
+			} 
+			int cnt = 0 ;
+			ArrayList<String> failedRollNum = new  ArrayList<String>();
+			if(isMatchAll){
+				//then update all students in FailedDsList as fail and calculate partial marks - update xdata_Student_queries table with updated data
+				Iterator it = instrQueryVsFailedStudentList.keySet().iterator();
+				//Store the students who have failed against all the instructor queries. Even if student queries fails against one instructor query, one DataSet,
+				//Query Fails as it is mathc All option
+				ArrayList<String> allFailedIds = new  ArrayList<String>();
+				while(it.hasNext()){
+					int qry_id = (Integer)it.next();
+					ArrayList<String> failedIds =  instrQueryVsFailedStudentList.get(qry_id);
+					for(String fsId : failedIds){
+						//Get partial marks for the students who have failed
+						for(FailedDataSetValues fdFailed : finalFailedDsList){
+							if(fdFailed.getStudentRollNo().equals(fsId)){
+								if(!allFailedIds.contains(fsId)){
+									allFailedIds.add(fsId);
+								}
+								fdFailed = getMarkDetails(testConn, fdFailed, false, studRole, assignmentId, questionId, course_id, fdFailed.getStudentQueryString(), fsId, false,maxMarks, 
+										reduceLateSubmissionMarks);
+								finalFailedDsList.add(fdFailed);
+							}
+						}	
+					}
+				}
+				//All other students with roll nums other than the ones in the allFailedIds will have status as Passed
+				//Passed students will have to send the maxmarks for the query in which they have passed. 
+				Iterator it1 = instrQueryVsPassedStudentList.keySet().iterator();				
+				while(it.hasNext()){
+					int qry_id = (Integer)it.next();
+					ArrayList<String> passedIds = new ArrayList<String>();
+					for(String psId : passedIds){
+						if(! allFailedIds.contains(psId)){
+							FailedDataSetValues passedDataSetObject = new FailedDataSetValues();
+							passedDataSetObject.setStatus("Passed");
+							//No failed datasets
+							passedDataSetObject.setDataSetIdList(null);
+							passedDataSetObject.setInstrQuery(instrQuery);								
+							passedDataSetObject = getMarkDetails(testConn, passedDataSetObject, true, studRole, assignmentId, questionId, course_id, instrQuery,psId, false,maxMarksPerInstrQueryMap.get(qry_id), 
+									reduceLateSubmissionMarks);
+							
+							for(FailedDataSetValues passedDS : finalFailedDsList){
+								if(passedDataSetObject.getStudentRollNo().equalsIgnoreCase(passedDS.getStudentRollNo())){
+									finalFailedDsList.add(passedDataSetObject);
+								}
+							}
+						}
+					}
+				}
+			}
+			else{ // Match Any 
+					//If the lists have common student Id, mark those students as FAILED, else mark them as Passed as they have passed atleast one answer					
+					Iterator it = instrQueryVsFailedStudentList.keySet().iterator();				
+					while(it.hasNext()){
+						
+						if(cnt ==0){
+							int qry_id = (Integer)it.next(); 
+							failedRollNum = instrQueryVsFailedStudentList.get(qry_id);
+						}
+						//If there are more than one instructor query, find the students who have failed in all - intersection of all failed Students list
+						if(it.hasNext()){
+							ArrayList<String> failedRollNumNxt = instrQueryVsFailedStudentList.get(it.next());//2nd elmnt
+							//RetainAll will give the elements that are common in both lists
+							failedRollNum.retainAll(failedRollNumNxt);
+						cnt++;
+						}					
+					}				
+					//List failedRollnum will have the Student Id's that have failed all instuctor_queries  - calculate marks for the same
+					for(String fdRoll: failedRollNum){
+						for(FailedDataSetValues fdvs : finalFailedDsList){
+							if(fdvs.getStudentRollNo().equalsIgnoreCase(fdRoll)){							    
+								fdvs = getMarkDetails(testConn, fdvs, false, studRole, assignmentId, questionId, course_id, fdvs.getStudentQueryString(), fdvs.getStudentRollNo(), false,maxMarks, 
+										reduceLateSubmissionMarks);
+								finalFailedDsList.add(fdvs);
+							}
+						}
+					}				
+					//Loop through all passed students per query and set FailedDataSets Object - calculate marks - update the DB
+					Iterator it1 = instrQueryVsPassedStudentList.keySet().iterator();				
+					while(it1.hasNext()){
+						int qry_id = (Integer)it1.next();
+						ArrayList<String> passedIds = instrQueryVsPassedStudentList.get(qry_id);
+						for(String psId : passedIds){
+							
+								FailedDataSetValues passedDataSetObject = new FailedDataSetValues();
+								passedDataSetObject.setStatus("Passed");
+								//No failed datasets
+								passedDataSetObject.setDataSetIdList(null);
+								passedDataSetObject.setInstrQuery(instrQuery);								
+								passedDataSetObject = getMarkDetails(testConn, passedDataSetObject, true, studRole, assignmentId, questionId, course_id, instrQuery,psId, false,maxMarksPerInstrQueryMap.get(qry_id), 
+										reduceLateSubmissionMarks);
+								
+								for(FailedDataSetValues passedDS : finalFailedDsList){
+									if(passedDataSetObject.getStudentRollNo().equalsIgnoreCase(passedDS.getStudentRollNo())){
+										finalFailedDsList.add(passedDataSetObject);
+									}
+								}				
+						}
+					}
+			}//Match any else stmnt ends
+		}
+	}
+	return finalFailedDsList;	
+}
+
+/**
+ * This method adds the failed Student Object details to existing FailedDataSetValue Object in the final list. 
+ * It appends the new datasetid in which the student has failed, and the query output on that dataset.
+ * 
+ * @param fdvFailed - FailedDataSet which holds student roll number which is already present in final FailedList
+ * @param finalFailedDsList
+ * @return
+ */
+public static ArrayList<FailedDataSetValues> processFailedDSList(FailedDataSetValues fdvFailed, ArrayList<FailedDataSetValues> finalFailedDsList) {
+	
+	for(int ffd = 0 ; ffd < finalFailedDsList.size(); ffd++){
+		
+		FailedDataSetValues finalFailedDs = finalFailedDsList.get(ffd);
+		
+		if(finalFailedDs.getStudentRollNo().equalsIgnoreCase(fdvFailed.getStudentRollNo())){
+			
+			finalFailedDs.getDataSetIdList().add(fdvFailed.getDataSetId());
+			
+			Map<String, Map<String, ArrayList<String>>> ffdStudentMap = finalFailedDs.getStudentQueryOutput();
+			ffdStudentMap.putAll(fdvFailed.getStudentQueryOutput());
+			
+			Map<String, Map<String, ArrayList<String>>> ffdInstrMap = finalFailedDs.getInstrQueryOutput();
+			ffdInstrMap.putAll(fdvFailed.getInstrQueryOutput());
+						
+			finalFailedDs.getDsValueMap().putAll(fdvFailed.getDsValueMap());
+			
+		}
+	}
+	return finalFailedDsList;
+}
+
+/**
+ * This method return the <i>student query's</i> output for the loaded data set
+ * Used to get results of student query on the failed data set for
+ * displaying failed test cases
+ * 
+ * @param testCon
+ * @param dataSetId
+ * @param OriginalQry
+ * @param failedList
+ * @param failedStudDataMap
+ * @return
+ * @throws SQLException
+ */
+public static FailedDataSetValues  getStudentOutput (Connection testCon, String dataSetId, String OriginalQry,
+		ArrayList<FailedColumnValues> failedList, FailedDataSetValues failedDs,
+		Map<String, Map<String, ArrayList<String>>> failedStudDataMap, boolean isDefaultDS) {
+	
+	Map<String, ArrayList<String>> failedColMap = new HashMap<String, ArrayList<String>>();
+
+	try {
+		// execute student query on the failed DS and get the output
+		try (PreparedStatement pp = testCon.prepareStatement(OriginalQry)) {
+			try (ResultSet rr = pp.executeQuery()) {
+				ResultSetMetaData metadata = rr.getMetaData();
+				int no_of_columns = metadata.getColumnCount();
+				String result = "";
+				String columnName = "";
+				List<String> existingColNames = new ArrayList<String>();  
+				int index = 1;
+				for(int cl=1;cl<=no_of_columns;cl++)
+				{
+					existingColNames.add(metadata.getColumnName(cl));
+				}
+				for (int cl = 1; cl <= no_of_columns; cl++) {
+					ArrayList<String> values = new ArrayList<String>();
+					FailedColumnValues failedColumns = new FailedColumnValues();
+					columnName = metadata.getColumnName(cl);					
+					existingColNames.remove(metadata.getColumnName(cl));					
+					//If colName exists after removing, it is a duplicate column - suffix it with index.
+					if(existingColNames.contains(metadata.getColumnName(cl))){
+						columnName = metadata.getColumnName(cl)+index;
+						index ++;
+						existingColNames.add(metadata.getColumnName(cl));							
+					}else{
+						columnName = metadata.getColumnName(cl);							
+					}
+
+					try (ResultSet rr1 = pp.executeQuery()) {
+						metadata = rr1.getMetaData();
+						while (rr1.next()) {
+							int type = metadata.getColumnType(cl);
+							values.add(rr1.getString(cl));
+						}												
+						failedColumns.setColumnName(metadata.getColumnName(cl));
+						failedColumns.setValues(values);						
+						failedList.add(failedColumns);
+					}
+				}
+			} // try block to close rr resultset
+		} // try block for pp statement ends
+	} catch (SQLException e) {
+		logger.log(Level.SEVERE,
+				"Student test case output generation fails because of syntax error :" + e.getMessage(), e);		
+	}
+	failedStudDataMap.put(dataSetId, failedColMap);
+	failedDs.setStudentQueryOutput(failedStudDataMap);
+	return failedDs;
+}
+
+/**
+ * This method return the <i>instructor query's</i> output for the loaded dataset
+ * Used to get results of instructor query on the failed dataset for
+ * displaying failed test cases
+ * 
+ * @param testCon
+ * @param dataSetId
+ * @param OriginalQry
+ * @param failedList
+ * @param failedStudDataMap
+ * @return
+ * @throws SQLException
+ */
+public static FailedDataSetValues  getInstructorOutput (Connection testCon, String dataSetId, String OriginalQry,
+		ArrayList<FailedColumnValues> failedList, FailedDataSetValues failedDs,
+		Map<String, Map<String, ArrayList<String>>> failedInstrDataMap, boolean isDefaultDS) {
+
+	Map<String, ArrayList<String>> failedInstrColMap = new HashMap<String, ArrayList<String>>();
+	try {
+		try (PreparedStatement pp = testCon.prepareStatement(OriginalQry)) {
+			try (ResultSet rr = pp.executeQuery()) {
+				ResultSetMetaData metadata = rr.getMetaData();
+				int no_of_columns = metadata.getColumnCount();
+				String result = "";
+				String columnName = "";
+				List<String> existingColNames = new ArrayList<String>();  
+				int index = 1;
+				for(int cl=1;cl<=no_of_columns;cl++)
+				{
+					existingColNames.add(metadata.getColumnName(cl));
+				}				
+				for (int cl = 1; cl <= no_of_columns; cl++) {
+					ArrayList<String> values = new ArrayList<String>();
+					FailedColumnValues failedColumns = new FailedColumnValues();
+					columnName = metadata.getColumnName(cl);
+					existingColNames.remove(metadata.getColumnName(cl));
+					//If colName exists after removing, it is a duplicate column - suffix it with index.
+					if(existingColNames.contains(metadata.getColumnName(cl))){						
+						columnName = metadata.getColumnName(cl)+index;
+						index ++;
+						existingColNames.add(metadata.getColumnName(cl));						
+					}else{
+						columnName = metadata.getColumnName(cl);						
+					}				
+					try (ResultSet rr1 = pp.executeQuery()) {
+						metadata = rr1.getMetaData();
+						while (rr1.next()) {
+							int type = metadata.getColumnType(cl);
+							values.add(rr1.getString(cl));
+						}
+						failedColumns.setInstrColumnName(metadata.getColumnName(cl));
+						failedColumns.setInstrValues(values);
+						failedInstrColMap.put(columnName, values);
+					}
+				}
+			}
+		}
+	} catch (SQLException e) {
+		logger.log(Level.SEVERE, "Instructor output fails because of syntax error :" + e.getMessage(), e);
+	}
+	failedInstrDataMap.put(dataSetId, failedInstrColMap);
+	failedDs.setInstrQueryOutput(failedInstrDataMap);
+	return failedDs;
+}
+
+
 /**
  * This method tests the student queries against SQL query submitted by the instructor 
  * for evaluation
@@ -1751,25 +2419,6 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 						Map <Integer,Vector<String>>  datasetForQueryMap =	downloadDatasets(assignmentId,questionId,queryId,course_id,conn,filePath, false);
 						//Even if no default data sets are there and no datasets are available for the query, , check against the sample Data file that the assignment uses.
 						
-						//Check if this method is executed, else remove this if loop.
-						if(datasetForQueryMap.isEmpty() && defaultDSIdsAssignment == null 
-								&& defaultDSIdsPerQuestion == null ){
-							 //Load the default sample data file
-							/*boolean flag=true;
-							Vector<String> cmismatch = new Vector<String>();
-						
-							Vector<String> killedMutants = checkAgainstOriginalQuery(mutants, "DS_Default", sqlQuery,"NoPath", orderIndependent, cmismatch, testConn);
-							logger.log(Level.INFO,"******************");
-							logger.log(Level.INFO,"Default dataset Loaded : " + " " + killedMutants.size());
-							logger.log(Level.INFO,"******************");
-							resultOfDatasetMatchForEachQuery = this.processResult(failedDataSets,killedMutants, mutants, incorrect, instrQuery,queryId,resultOfDatasetMatchForEachQuery);
-							
-							if(!(resultOfDatasetMatchForEachQuery.containsKey(queryId))){
-								resultOfDatasetMatchForEachQuery.put(queryId,true);
-							}*/
-						}
-							//Load all generated datasets and evaluate instructor against that.
-						else{
 								for(Integer id : datasetForQueryMap.keySet()){
 									
 									Vector<String> datasets = datasetForQueryMap.get(id);
@@ -1807,7 +2456,7 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 									logger.log(Level.INFO,"******************");
 									logger.log(Level.INFO,"Student Id : "+user+" evaluated against DS Id: ");
 									logger.log(Level.INFO,"******************");
-						}//Else data exists part ends
+				
 				}catch(Exception e){
 				logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
 				e.printStackTrace();
@@ -1818,16 +2467,19 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 			
 		/*******Check for Match all or match One Option Start******/
 		isQueryPass = this.getMatchForAllQueries(resultOfDatasetMatchForEachQuery,isQueryPass,isMatchAll);
-	      //Set Marks for the failedStudentQuery
-			failedDataSets = this.getMarkDetails(conn,failedDataSets, isQueryPass,studRole,assignmentId,questionId,course_id,query,user,isLateSubmission,maxMarks,reduceLateSubmissionMarks);
-			return failedDataSets;
+		
+		//Set Marks for the failedStudentQuery
+		failedDataSets = this.getMarkDetails(conn,failedDataSets, isQueryPass,studRole,assignmentId,questionId,course_id,query,user,isLateSubmission,maxMarks,reduceLateSubmissionMarks);
+		return failedDataSets;
 			
 		}// try block for TestConn ends
 	}//try block for Conn ends 
 }
 
 /**
- * This method checks if the student query passes all instructor query datasets or any one intructor answer
+ * This method checks if the student query passes all instructor answer datasets or any one intructor answer.
+ * The result depends on the 'Match all' or 'Match any' options selected by the instructor during 
+ * assignment question creation when more than one correct SQL answer exists for a instructor question. 
  * 
  * @param resultOfDatasetMatchForEachQuery
  * @param isQueryPass
@@ -1860,7 +2512,9 @@ public boolean getMatchForAllQueries(Map<Integer,Boolean> resultOfDatasetMatchFo
 }
 
 /**
- * This method processes the result of checking the instructor and student query equivalence
+ * This method processes the result and updates the status of student query result in a map that contains the instructor query ID as key value.
+ * This returned result map is later used for manipulating the student result based on  'Match all' or 'Match any' option given by the instructor during 
+ * assignment question creation.
  * 
  * @param failedDataSets
  * @param killedMutants
@@ -1961,7 +2615,7 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 					while(rs.next()){	
 						int queryId = rs.getInt("query_id");
 						try{
-							PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,course_id,user,query);
+							PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,course_id,user,failedDataSets.getStudentQueryString());
 							if(!studRole.equals("guest")){
 								
 							}else{
@@ -1993,6 +2647,7 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 	}
 		return failedDataSets;
 }
+
 /**
  * This method checks the multiple SQL queries for the equivalence and gives the dataset in which the 
  * queries are not equivalent 
