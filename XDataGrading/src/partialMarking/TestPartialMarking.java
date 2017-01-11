@@ -477,12 +477,22 @@ public class TestPartialMarking {
 //				" ON Course.dept_name<=DEPARTMENT.dept_name OR R.dept_Id=Department.dept_Id) as S INNER JOIN (INSTRUCTOR I NATURAL JOIN DEPARTMENT D) as K ON R.dept_name=I.dept_name";
 
 		
-		String studentQuery = "with A(id,year) as  "
-				+ "(select id,year from takes,course where takes.course_id=course.course_id and dept_name='Comp. Sci.'), "
-				+ "B(less_id) as (select id from A where year<2010), "
-				+ "C(greater_id) as (select id from A where year>2010), "
-				+ "D(stud_id) as  ((select * from B) INTERSECT (select * from C)) "
-				+ "select id,name from student,D where id=stud_id";
+//		String studentQuery = "with A(id,year) as  "
+//				+ "(select id,year from takes,course where takes.course_id=course.course_id and dept_name='Comp. Sci.'), "
+//				+ "B(less_id) as (select id from A where year<2010), "
+//				+ "C(greater_id) as (select id from A where year>2010), "
+//				+ "D(stud_id) as  ((select * from B) INTERSECT (select * from C)) "
+//				+ "select id,name from student,D where id=stud_id";
+		
+		String studentQuery=" select cntrycode, count(*) as numcust, "
+				+ "sum(c_acctbal) as totacctbal from ( select "
+				+ "substring(c_phone) as cntrycode, c_acctbal from customer "
+				+ "where substring(c_phone) = 1 "
+				+ "and c_acctbal > ( select avg(c_acctbal) from customer where "
+				+ "c_acctbal > 0.00 and substring(c_phone)=2) "
+				+ "and not exists ( select * from orders where "
+				+ "o_custkey = c_custkey)) as custsale group by cntrycode "
+				+ "order by cntrycode";
 		
 //		studentQuery="WITH query as "
 //				+ "	(WITH query as (select course_id,sec_id,year,semester,count(student.ID) as number "
@@ -530,6 +540,7 @@ public class TestPartialMarking {
 
 		String instructorQuery="SELECT INSTRUCTOR.ID FROM  INSTRUCTOR INNER JOIN DEPARTMENT D ON  INSTRUCTOR.dept_name=D.dept_name WHERE D.dept_name>30000";
 		
+		
 //		String strQuery= " WITH R AS (SELECT * FROM TEACHES INNER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.ID)"
 //				+ "SELECT R.course_id FROM  R "
 //				+ " INNER JOIN  DEPARTMENT ON R.dept_name=DEPARTMENT.dept_name";
@@ -540,6 +551,8 @@ public class TestPartialMarking {
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();
+			studentQuery="SELECT  ID, D.budget FROM  INSTRUCTOR, DEPARTMENT D WHERE INSTRUCTOR.dept_name=D.dept_name";
+			
 			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		

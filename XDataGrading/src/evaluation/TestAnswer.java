@@ -58,7 +58,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.derby.client.am.GetSystemPropertiesAction;
-import org.apache.tools.ant.util.CollectionUtils;
 import org.postgresql.util.PSQLException;
 
 //MD5 HASH for table :  SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_users f; 

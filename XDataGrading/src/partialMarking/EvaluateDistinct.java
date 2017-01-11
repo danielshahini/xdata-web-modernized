@@ -63,7 +63,7 @@ public class EvaluateDistinct {
 		
 		//Mutate studentquery - send student query to a method, -that does single distinct mutation by using parsetree and regenerating the query
 		// then- get projectionlist, remove distinct and return the query
-		String studentQueryMutation = mutateForDistinct(instrQuery);
+		//String studentQueryMutation = mutateForDistinct(instrQuery);
 		//String studentQueryMutation = mutateForDistinct(studentQuery);
 		String qId = "A"+assignmentId +"Q"+questionId+"S"+queryId;
 		String filePath = "4/"+course_id+"/"+qId;
@@ -194,23 +194,23 @@ public class EvaluateDistinct {
 	 * @param studentQuery
 	 * @return
 	 */
-	public static String mutateForDistinct(String instrQuery) throws Exception{
-		String newQuery = "";
-		PlainSelect plainSelect = null;
-		String newInstrQuery = TestAnswer.parseWithAsQueryJSQL(instrQuery);
-		boolean isSelectDistinct = false;
-		boolean isAggregateWithDistinct = false;
-		boolean isHavingWithDistinct = false;
-		boolean isSubqWithDistinct = false;
-		
-		CCJSqlParserManager pm = new CCJSqlParserManager();
-		Statement stmt = pm.parse(new StringReader(instrQuery));
-		//If Distinct is in select items
-		if(stmt instanceof Select){
-			newQuery = mutateBasicQuery(plainSelect,stmt, newQuery);
-		}
-		return newQuery;
-	}
+//	public static String mutateForDistinct(String instrQuery) throws Exception{
+//		String newQuery = "";
+//		PlainSelect plainSelect = null;
+//		String newInstrQuery = TestAnswer.parseWithAsQueryJSQL(instrQuery);
+//		boolean isSelectDistinct = false;
+//		boolean isAggregateWithDistinct = false;
+//		boolean isHavingWithDistinct = false;
+//		boolean isSubqWithDistinct = false;
+//		
+//		CCJSqlParserManager pm = new CCJSqlParserManager();
+//		Statement stmt = pm.parse(new StringReader(instrQuery));
+//		//If Distinct is in select items
+//		if(stmt instanceof Select){
+//			newQuery = mutateBasicQuery(plainSelect,stmt, newQuery);
+//		}
+//		return newQuery;
+//	}
 	/**
 	 * 
 	 */
