@@ -117,7 +117,7 @@ import util.TableMap;
 		// aggregation
 		Vector<AggregateFunction> aggFunc;
 		Vector<Node> groupByNodes;
-		Node havingClause;
+		Vector<Node> havingClauses;
 
 		JoinTreeNode root;//currently not used
 		public RelationHierarchyNode topLevelRelation;//currently not used
@@ -241,8 +241,7 @@ import util.TableMap;
 
 				
 
-				if(this.getHavingClause()!=null)
-					this.lstHavingConditions.add(this.getHavingClause());
+				this.lstHavingConditions.addAll(this.getHavingClause());
 
 				this.lstProjectedCols.addAll(this.getProjectedCols());
 
@@ -553,8 +552,8 @@ import util.TableMap;
 			for(Node n:this.groupByNodes)
 				retString+=" "+n;
 			retString+="\n Having \n";
-			if(this.havingClause!=null)
-				retString+=" "+this.havingClause;
+			for(Node n:this.havingClauses)
+				retString+=" "+n;
 			retString+="\n Order By \n";
 			for(Node n:this.orderByNodes)
 				retString+=" "+n;
@@ -710,12 +709,18 @@ import util.TableMap;
 			this.groupByNodes = groupByNodes;
 		}
 
-		public Node getHavingClause() {
-			return havingClause;
+		public Vector<Node> getHavingClause() {
+			return havingClauses;
 		}
 
-		public void setHavingClause(Node havingClause) {
-			this.havingClause = havingClause;
+		public void setHavingClause(Node n) {		
+			
+				if(n != null && n.getNodeType()!=null&& !n.getNodeType().equals(Node.getAndNodeType()) && n.getNodeType().equals(Node.getBroNodeType())){
+					this.havingClauses.add(n);
+				}else if(n != null && n.getNodeType()!=null && n.getNodeType().equals(Node.getAndNodeType())){
+					this.setHavingClause(n.getLeft());
+					this.setHavingClause(n.getRight());
+				}	
 		}
 		
 		/* @author mathew on June 18 2016
@@ -818,7 +823,7 @@ import util.TableMap;
 			groupByNodes = new Vector<Node>();
 			//following line added by mathew on 25 June 2016
 			this.orderByNodes=new Vector<Node>();
-			havingClause = new Node();
+			havingClauses = new Vector<Node>();
 			allSubQueryConds = new Vector<Node>();
 			allCondsExceptSubQuery = new Vector<Node>();
 
@@ -913,6 +918,7 @@ import util.TableMap;
 	     *       
 	     */
 		public void buildQueryStructure(String queryId, String queryString) throws Exception {
+			
 			try{
 				queryString=queryString.trim().replaceAll("\n+", " ");
 				queryString=queryString.trim().replaceAll(" +", " ");

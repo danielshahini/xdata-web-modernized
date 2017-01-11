@@ -86,8 +86,8 @@ public class TestPartialMarking {
 
 		CanonicalizeQuery.Canonicalize(queryDetails.qStructure);
 
-//		for(Node n:queryDetails.getParser().getGroupByNodes())
-//			System.out.println(" Grouping conditions "+n);
+//		for(Node n:queryDetails.getQueryStructure().getLstHavingConditions())
+//			System.out.println(" Having conditions "+n);
 		
 		return queryDetails;
 				
@@ -484,17 +484,12 @@ public class TestPartialMarking {
 //				+ "D(stud_id) as  ((select * from B) INTERSECT (select * from C)) "
 //				+ "select id,name from student,D where id=stud_id";
 		
-		String studentQuery=" select cntrycode, count(*) as numcust, "
-				+ "sum(c_acctbal) as totacctbal from ( select "
-				+ "substring(c_phone) as cntrycode, c_acctbal from customer "
-				+ "where substring(c_phone) = 1 "
-				+ "and c_acctbal > ( select avg(c_acctbal) from customer where "
-				+ "c_acctbal > 0.00 and substring(c_phone)=2) "
-				+ "and not exists ( select * from orders where "
-				+ "o_custkey = c_custkey)) as custsale group by cntrycode "
-				+ "order by cntrycode";
 		
-//		studentQuery="WITH query as "
+	String	studentQuery="SELECT c.dept_name, SUM(c.credits)  FROM course c  INNER JOIN  department d  "
+			+ " ON (c.dept_name = d.dept_name)  GROUP BY c.dept_name  HAVING SUM(c.credits)>5 AND COUNT(c.credits)<0";		
+	
+
+			//		studentQuery="WITH query as "
 //				+ "	(WITH query as (select course_id,sec_id,year,semester,count(student.ID) as number "
 //				+ " from section natural join takes,student  where takes.ID=student.ID and section.course_id=takes.course_id and section.sec_id = takes.sec_id and section.semester = takes.semester and section.year = takes.year group by section.course_id,section.sec_id,section.year,section.semester) "
 //				+ "select max(number) from query) "
@@ -538,7 +533,8 @@ public class TestPartialMarking {
 //		+ " (SELECT INSTRUCTOR.ID FROM INSTRUCTOR  WHERE INSTRUCTOR.ID NOT IN ( 1,2,3 ))";
 
 
-		String instructorQuery="SELECT INSTRUCTOR.ID FROM  INSTRUCTOR INNER JOIN DEPARTMENT D ON  INSTRUCTOR.dept_name=D.dept_name WHERE D.dept_name>30000";
+		String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON "
+				+ "(c.dept_name = d.dept_name) GROUP BY c.dept_name  HAVING SUM(c.credits)>10 AND COUNT(c.credits)>1 and COUNT(c.credits)<4";
 		
 		
 //		String strQuery= " WITH R AS (SELECT * FROM TEACHES INNER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.ID)"
@@ -551,7 +547,6 @@ public class TestPartialMarking {
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();
-			studentQuery="SELECT  ID, D.budget FROM  INSTRUCTOR, DEPARTMENT D WHERE INSTRUCTOR.dept_name=D.dept_name";
 			
 			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
@@ -561,12 +556,12 @@ public class TestPartialMarking {
 			
 //			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-//			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery, instructorQuery);
+			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instructorQuery);
 
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
-//			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
-//			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
-//			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
+			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
+			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
+			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
 			//testObj.copyData();
 		}
 		catch(Exception e){
