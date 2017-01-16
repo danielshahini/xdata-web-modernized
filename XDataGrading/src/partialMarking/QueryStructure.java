@@ -944,11 +944,18 @@ import util.TableMap;
 
 			}catch(ParseException ex){
 				
-				logger.log(Level.SEVERE," Function parseQuery : "+ex.getMessage(),ex);
-				throw new Exception("QueryStructure.java: parseQuery() : JSQLParser Error : Query Parsing failed for the following query : \n"+queryString+" \n. \n Please check the logs for details."); 
+				logger.log(Level.SEVERE," Function buildQueryStructure : "+ex.getMessage(),ex);
+				String tempStr="";
+				for(StackTraceElement ele:ex.getStackTrace())
+					tempStr+="\n"+ele.toString();
+
+				throw new Exception("QueryStructure.java: buildQueryStructure() : JSQLParser Error : Query Parsing failed for the following query : \n"+queryString+" \n. \n Please check the logs for details.\n"+tempStr); 
 			} catch(Exception e){
-				logger.log(Level.SEVERE," Function parseQuery : "+e.getMessage(),e);			
-				throw new Exception("QueryStructure.java: parseQuery() : JSQLParser Error : Query Parsing failed for the following query : \n"+queryString+" \n. \n Please check the logs for details.");  
+				logger.log(Level.SEVERE," Function buildQueryStructure : "+e.getMessage(),e);			
+				String tempStr="";
+				for(StackTraceElement ele:e.getStackTrace())
+					tempStr+="\n"+ele.toString();
+				throw new Exception("QueryStructure.java: buildQueryStructure() : Building Query Structure failed for the following query : \n"+queryString+" \n. \n Please check the logs for details.\n"+tempStr);  
 			}
 		}
 	   
@@ -958,8 +965,8 @@ import util.TableMap;
 		public void buildQueryStructureJSQL(String queryId, String queryString, boolean debug)
 				throws Exception {
 			logger.info("beginning to parse query");
-			try{
-				if(this.query==null)
+
+			if(this.query==null)
 					this.query = new Query(queryId, queryString);
 				else
 					this.query.setQueryString(queryString);
@@ -1006,10 +1013,6 @@ import util.TableMap;
 							parseQueriesForSetOp(setOpList,debug); 
 						} 
 					}
-				}catch (ParseException e){
-					logger.log(Level.SEVERE,"Error in Query parsing : "+e.getMessage(),e);
-					throw new Exception(e.getMessage());
-			}
 				
 			}
 		

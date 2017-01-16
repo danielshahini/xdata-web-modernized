@@ -86,7 +86,7 @@ public class ProcessSelectClause {
 
 	public static void ProcessSelect(PlainSelect plainSelect, boolean debug, QueryStructure qStruct) throws Exception {
 		logger.info("processing select query"+plainSelect.toString());
-		Vector<Node> joinConditions=new Vector<Node>();
+		Vector<Node> joinConditions=new Vector<Node>();		
 		/* processes the from clause and extracts the join conditions, also the components such as tables,
 		 * subqueries, and subjoins are stored in qStruct.fromListElements
 		 */

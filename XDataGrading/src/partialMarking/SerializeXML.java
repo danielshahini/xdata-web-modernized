@@ -3,6 +3,7 @@ package partialMarking;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import parsing.JoinClauseInfo;
@@ -84,21 +85,26 @@ public class SerializeXML {
 		  return printString;		
 	}
 	
-	public static String getProjectedColumnsString(QueryStructure qData,boolean openFlag){
+	public static String getProjectedColumnsString(QueryStructure qStruct,boolean openFlag){
+		String retString="";
 		if(openFlag){
-		 String retString="<item text=\"Projected Columns\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstProjectedCols())){
-			 retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-		 }
-		 retString+="</item>\n";
+			if(qStruct.getLstProjectedCols().size()>0){
+				retString+="<item text=\"Projected Columns\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstProjectedCols())){
+					retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
 		 return retString;
 		}
 		else{
-			 String retString="<item text=\"Projected Columns\" id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstProjectedCols())){
-				 retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-			 }
-			 retString+="</item>\n";
+			if(qStruct.getLstProjectedCols().size()>0){
+				retString+="<item text=\"Projected Columns\" id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstProjectedCols())){
+					retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
 			 return retString;
 
 		}		
@@ -112,59 +118,69 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
-	public static String getFromSubqueriesString(QueryStructure qData, boolean openFlag) throws IOException, CloneNotSupportedException{
+	public static String getFromSubqueriesString(QueryStructure qStruct, boolean openFlag) throws IOException, CloneNotSupportedException{
+		String retString="";
 		if(openFlag){
-		 String retString="<item text=\"From Subqueries\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 int i=1;
-		 for(QueryStructure subquery:qData.getFromClauseSubqueries()){
-			 retString+=spaceTab+"<item text=\"fromSubquery"+i+"\" id=\""+ idCounter++ +"\">\n";
-			 retString+=getQueryStructureString(subquery,false);
-			 retString+=spaceTab+"</item>\n";
-			 i++;
-		 }
-		 retString+="</item>\n";
-		 return retString;
+			if(qStruct.getFromClauseSubqueries().size()>0){
+				retString+="<item text=\"From Subqueries\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				int i=1;
+				for(QueryStructure subquery:qStruct.getFromClauseSubqueries()){
+					retString+=spaceTab+"<item text=\"fromSubquery"+i+"\" id=\""+ idCounter++ +"\">\n";
+					retString+=getQueryStructureString(subquery,false);
+					retString+=spaceTab+"</item>\n";
+					i++;
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 
 		}
 		else{
-			 String retString="<item text=\"From Subqueries\" id=\""+ idCounter++ +"\">\n";
-			 int i=1;
-			 for(QueryStructure subquery:qData.getFromClauseSubqueries()){
-				 retString+=spaceTab+"<item text=\"fromSubquery"+i+"\" id=\""+ idCounter++ +"\">\n";
-				 retString+=getQueryStructureString(subquery,false);
-				 retString+=spaceTab+"</item>\n";
-				 i++;
-			 }
-			 retString+="</item>\n";
-			 return retString;
-			
+			if(qStruct.getFromClauseSubqueries().size()>0){
+				retString+="<item text=\"From Subqueries\" id=\""+ idCounter++ +"\">\n";
+				int i=1;
+				for(QueryStructure subquery:qStruct.getFromClauseSubqueries()){
+					retString+=spaceTab+"<item text=\"fromSubquery"+i+"\" id=\""+ idCounter++ +"\">\n";
+					retString+=getQueryStructureString(subquery,false);
+					retString+=spaceTab+"</item>\n";
+					i++;
+				}
+				retString+="</item>\n";
+			}
+			return retString;
+
 		}
 	}
 	
-	public static String getWhereSubqueriesString(QueryStructure qData, boolean openFlag) throws IOException, CloneNotSupportedException{
+	public static String getWhereSubqueriesString(QueryStructure qStruct, boolean openFlag) throws IOException, CloneNotSupportedException{
+		String retString="";
 		if(openFlag){
-		 String retString="<item text=\"Where Subqueries\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 int i=1;
-		 for(QueryStructure subquery:qData.getWhereClauseSubqueries()){
-			 retString+=spaceTab+"<item text=\"whereSubquery"+i+"\" id=\""+ idCounter++ +"\">\n";
-			 retString+=getQueryStructureString(subquery,false);
-			 retString+=spaceTab+"</item>\n";
-			 i++;
-		 }
-		 retString+="</item>\n";
+			if(qStruct.getWhereClauseSubqueries().size()>0){
+				retString+="<item text=\"Where Subqueries\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				int i=1;
+				for(QueryStructure subquery:qStruct.getWhereClauseSubqueries()){
+					retString+=spaceTab+"<item text=\"whereSubquery"+i+"\" id=\""+ idCounter++ +"\">\n";
+					retString+=getQueryStructureString(subquery,false);
+					retString+=spaceTab+"</item>\n";
+					i++;
+				}
+				retString+="</item>\n";
+			}
 		 return retString;
 		}
 		else{
-			String retString="<item text=\"Where Subqueries\"  id=\""+ idCounter++ +"\">\n";
-			 int i=1;
-			 for(QueryStructure subquery:qData.getWhereClauseSubqueries()){
-				 retString+=spaceTab+"<item text=\"whereSubquery"+i+"\" id=\""+ idCounter++ +"\">\n";
-				 retString+=getQueryStructureString(subquery,false);
-				 retString+=spaceTab+"</item>\n";
-				 i++;
-			 }
-			 retString+="</item>\n";
-			 return retString;
+			if(qStruct.getWhereClauseSubqueries().size()>0){
+				retString+="<item text=\"Where Subqueries\"  id=\""+ idCounter++ +"\">\n";
+				int i=1;
+				for(QueryStructure subquery:qStruct.getWhereClauseSubqueries()){
+					retString+=spaceTab+"<item text=\"whereSubquery"+i+"\" id=\""+ idCounter++ +"\">\n";
+					retString+=getQueryStructureString(subquery,false);
+					retString+=spaceTab+"</item>\n";
+					i++;
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 	}
 	
@@ -224,51 +240,83 @@ public class SerializeXML {
 		
 	}
 	
-	public static String getJoinConditionsString(QueryStructure qData, boolean openFlag) throws CloneNotSupportedException{
+	public static String getJoinConditionsString(QueryStructure qStruct, boolean openFlag) throws CloneNotSupportedException{
+		 String retString="";
 		if(openFlag){
-		 String retString="<item text=\"Join Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 retString+="<item text=\"Outer\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstJoinConditions())){
-			 if(n.getJoinType()!=null&&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
-					 ||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
-					 ||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin)))
-				 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-		 }
-		 retString+="</item>\n";
-		 retString+="<item text=\"Inner\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstJoinConditions())){
-			 if(n.getJoinType()!=null&& !n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
-					 && !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
-					 && !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
+			if(qStruct.getLstSelectionConditions().size()>0){
+				retString+="<item text=\"Join Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				if(hasOuterJoinCondition(qStruct.getLstJoinConditions())){
+					retString+="<item text=\"Outer\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+					for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstJoinConditions())){
+						if(n.getJoinType()!=null&&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+								||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+								||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin)))
+							retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+					}
+					retString+="</item>\n";
+				}
+				if(hasInnerJoinCondition(qStruct.getLstJoinConditions())){
+					retString+="<item text=\"Inner\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+					for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstJoinConditions())){
+						if(n.getJoinType()!=null&& !n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+								&& !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+								&& !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
 
-				 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-		 }
-		 retString+="</item>\n";
-		 retString+="</item>\n";
+							retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+					}
+					retString+="</item>\n";
+				}
+				retString+="</item>\n";
+			}
 		 return retString;
 		}
 		else{
-			String retString="<item text=\"Join Conditions\"  id=\""+ idCounter++ +"\">\n";
-			 retString+="<item text=\"Outer\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstJoinConditions())){
-				 if(n.getJoinType()!=null&&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
-						 ||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
-						 ||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin)))
-					 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-			 }
-			 retString+="</item>\n";
-			 retString+="<item text=\"Inner\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstJoinConditions())){
-				 if(n.getJoinType()!=null&& !n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
-						 && !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
-						 && !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
-
-					 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-			 }
-			 retString+="</item>\n";
-			 retString+="</item>\n";
+			if(qStruct.getLstSelectionConditions().size()>0){
+				retString+="<item text=\"Join Conditions\"  id=\""+ idCounter++ +"\">\n";
+				if(hasOuterJoinCondition(qStruct.getLstJoinConditions())){
+					retString+="<item text=\"Outer\"  id=\""+ idCounter++ +"\">\n";
+					for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstJoinConditions())){
+						if(n.getJoinType()!=null&&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+								||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+								||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin)))
+							retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+					}
+					retString+="</item>\n";
+				}
+				if(hasInnerJoinCondition(qStruct.getLstJoinConditions())){
+					retString+="<item text=\"Inner\"  id=\""+ idCounter++ +"\">\n";
+					for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstJoinConditions())){
+						if(n.getJoinType()!=null&& !n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+								&& !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+								&& !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
+							retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+					}
+					retString+="</item>\n";
+				}
+				retString+="</item>\n";
+			}
 			 return retString;
 		}
+	}
+	
+	public static boolean hasOuterJoinCondition(ArrayList<Node> joinConditions){
+		for(parsing.Node n:joinConditions){
+			if(n.getJoinType()!=null&&(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+					||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+					||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin)))
+				return true;
+		}
+		return false;
+	}
+	
+	public static boolean hasInnerJoinCondition(ArrayList<Node> joinConditions){
+		for(parsing.Node n:joinConditions){
+			if(n.getJoinType()!=null&& !n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+					&&!n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+					&&!n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
+				return true;
+		}
+		return false;
 	}
 	
 	public static void printJoinConditions(QueryData qData) throws CloneNotSupportedException{
@@ -304,113 +352,122 @@ public class SerializeXML {
 		return -1;
 	}
 	
-	public static String getSubqueryConditionsString(QueryStructure qData, boolean openFlag) throws  CloneNotSupportedException{
+	public static String getSubqueryConditionsString(QueryStructure qStruct, boolean openFlag) throws  CloneNotSupportedException{
+		String retString="";
 		if(openFlag){
-		 String retString="<item text=\"Subquery Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:Util.toSetOfNodes(qData.getAllSubQueryConds())){
-			 if(n!=null && n.getType()!=null){
-				 if(n.getType().equals(Node.getInNodeType())||n.getType().equals(Node.getNotInNodeType())){
-					 if(n.getLeft()!=null&&n.getRight()!=null){
-					 if(n.getRight().getSubQueryStructure()!=null){
-						 String projCol="."+n.getRight().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
-						 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getRight().getSubQueryStructure());
-						 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getType()+" "+ "subquery"+index+projCol +"\" id=\""+ idCounter++ +"\"/>\n";
-					 }
-					 else if(n.getLeft().getSubQueryStructure()!=null){
-						 String projCol="."+n.getLeft().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
-						 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getLeft().getSubQueryStructure());
-						 retString+=spaceTab+"<item text=\""+"subquery"+index+projCol+ " "+n.getType()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-					 }
-					 }
-				 }
-				 else if(n.getType().equals(Node.getBroNodeSubQType())){
-					 if(n.getLeft()!=null&&n.getRight()!=null){
-						 if(n.getRight().getSubQueryStructure()!=null){
-							 String projCol="."+n.getRight().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
-							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getRight().getSubQueryStructure());
-							 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getOperator()+" "+n.getRight().getType()+ " subquery"+index +projCol+"\" id=\""+ idCounter++ +"\"/>\n";
-						 }
-						 else if(n.getLeft().getSubQueryStructure()!=null){
-							 String projCol="."+n.getLeft().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
-							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getLeft().getSubQueryStructure());
-							 retString+=spaceTab+"<item text=\""+"subquery"+index+projCol+ " "+n.getLeft().getType()+" "+n.getOperator()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-						 }						 
-					 }					 
-				 }
-				 else if(n.getType().equalsIgnoreCase(Node.getExistsNodeType())||n.getType().equalsIgnoreCase(Node.getNotExistsNodeType())){
-					 if(n.getSubQueryStructure()!=null){
-						 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getSubQueryStructure());
-						 retString+=spaceTab+"<item text=\""+ n.getType()+ " "+ "subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
+			if(qStruct.getAllSubQueryConds().size()>0){
+				retString+="<item text=\"Subquery Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getAllSubQueryConds())){
+					if(n!=null && n.getType()!=null){
+						if(n.getType().equals(Node.getInNodeType())||n.getType().equals(Node.getNotInNodeType())){
+							if(n.getLeft()!=null&&n.getRight()!=null){
+								if(n.getRight().getSubQueryStructure()!=null){
+									String projCol="."+n.getRight().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
+									int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getRight().getSubQueryStructure());
+									retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getType()+" "+ "subquery"+index+projCol +"\" id=\""+ idCounter++ +"\"/>\n";
+								}
+								else if(n.getLeft().getSubQueryStructure()!=null){
+									String projCol="."+n.getLeft().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
+									int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getLeft().getSubQueryStructure());
+									retString+=spaceTab+"<item text=\""+"subquery"+index+projCol+ " "+n.getType()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+								}
+							}
+						}
+						else if(n.getType().equals(Node.getBroNodeSubQType())){
+							if(n.getLeft()!=null&&n.getRight()!=null){
+								if(n.getRight().getSubQueryStructure()!=null){
+									String projCol="."+n.getRight().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
+									int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getRight().getSubQueryStructure());
+									retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getOperator()+" "+n.getRight().getType()+ " subquery"+index +projCol+"\" id=\""+ idCounter++ +"\"/>\n";
+								}
+								else if(n.getLeft().getSubQueryStructure()!=null){
+									String projCol="."+n.getLeft().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
+									int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getLeft().getSubQueryStructure());
+									retString+=spaceTab+"<item text=\""+"subquery"+index+projCol+ " "+n.getLeft().getType()+" "+n.getOperator()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+								}						 
+							}					 
+						}
+						else if(n.getType().equalsIgnoreCase(Node.getExistsNodeType())||n.getType().equalsIgnoreCase(Node.getNotExistsNodeType())){
+							if(n.getSubQueryStructure()!=null){
+								int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getSubQueryStructure());
+								retString+=spaceTab+"<item text=\""+ n.getType()+ " "+ "subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
 
-					 }
-				 }
-				 
-			 }
-		 }
-		 retString+="</item>\n";
+							}
+						}
+
+					}
+				}
+				retString+="</item>\n";
+			}
 		 return retString;
 		}
 		else{
-			String retString="<item text=\"Subquery Conditions\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:Util.toSetOfNodes(qData.getAllSubQueryConds())){
-				 if(n!=null && n.getType()!=null){
-					 if(n.getType().equals(Node.getInNodeType())||n.getType().equals(Node.getNotInNodeType())){
-						 if(n.getLeft()!=null&&n.getRight()!=null){
-						 if(n.getRight().getSubQueryStructure()!=null){
-							 String projCol="."+n.getRight().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
-							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getRight().getSubQueryStructure());
-							 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getType()+" "+ "subquery"+index+projCol +"\" id=\""+ idCounter++ +"\"/>\n";
-						 }
-						 else if(n.getLeft().getSubQueryStructure()!=null){
-							 String projCol="."+n.getLeft().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
-							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getLeft().getSubQueryStructure());
-							 retString+=spaceTab+"<item text=\""+"subquery"+index+projCol+ " "+n.getType()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-						 }
-						 }
-					 }
-					 else if(n.getType().equals(Node.getBroNodeSubQType())){
-						 if(n.getLeft()!=null&&n.getRight()!=null){
-							 if(n.getRight().getSubQueryStructure()!=null){
-								 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getRight().getSubQueryStructure());
-								 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getOperator()+" "+n.getRight().getType()+ " subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
-							 }
-							 else if(n.getLeft().getSubQueryStructure()!=null){
-								 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getLeft().getSubQueryStructure());
-								 retString+=spaceTab+"<item text=\""+"subquery"+index+ " "+n.getLeft().getType()+" "+n.getOperator()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-							 }						 
-						 }					 
-					 }
-					 else if(n.getType().equalsIgnoreCase(Node.getExistsNodeType())||n.getType().equalsIgnoreCase(Node.getNotExistsNodeType())){
-						 if(n.getSubQueryStructure()!=null){
-							 int index=getSubQueryIndex(qData.getWhereClauseSubqueries(),n.getSubQueryStructure());
-							 retString+=spaceTab+"<item text=\""+ n.getType()+ " "+ "subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
+			if(qStruct.getAllSubQueryConds().size()>0){
+				retString+="<item text=\"Subquery Conditions\"  id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getAllSubQueryConds())){
+					if(n!=null && n.getType()!=null){
+						if(n.getType().equals(Node.getInNodeType())||n.getType().equals(Node.getNotInNodeType())){
+							if(n.getLeft()!=null&&n.getRight()!=null){
+								if(n.getRight().getSubQueryStructure()!=null){
+									String projCol="."+n.getRight().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
+									int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getRight().getSubQueryStructure());
+									retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getType()+" "+ "subquery"+index+projCol +"\" id=\""+ idCounter++ +"\"/>\n";
+								}
+								else if(n.getLeft().getSubQueryStructure()!=null){
+									String projCol="."+n.getLeft().getSubQueryStructure().projectedCols.get(0).getColumn().getColumnName();
+									int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getLeft().getSubQueryStructure());
+									retString+=spaceTab+"<item text=\""+"subquery"+index+projCol+ " "+n.getType()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+								}
+							}
+						}
+						else if(n.getType().equals(Node.getBroNodeSubQType())){
+							if(n.getLeft()!=null&&n.getRight()!=null){
+								if(n.getRight().getSubQueryStructure()!=null){
+									int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getRight().getSubQueryStructure());
+									retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n.getLeft()).toString()+ " "+n.getOperator()+" "+n.getRight().getType()+ " subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
+								}
+								else if(n.getLeft().getSubQueryStructure()!=null){
+									int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getLeft().getSubQueryStructure());
+									retString+=spaceTab+"<item text=\""+"subquery"+index+ " "+n.getLeft().getType()+" "+n.getOperator()+" "+ cloneNodeForXMLserialization(n.getRight()).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+								}						 
+							}					 
+						}
+						else if(n.getType().equalsIgnoreCase(Node.getExistsNodeType())||n.getType().equalsIgnoreCase(Node.getNotExistsNodeType())){
+							if(n.getSubQueryStructure()!=null){
+								int index=getSubQueryIndex(qStruct.getWhereClauseSubqueries(),n.getSubQueryStructure());
+								retString+=spaceTab+"<item text=\""+ n.getType()+ " "+ "subquery"+index +"\" id=\""+ idCounter++ +"\"/>\n";
+							}
+						}
 
-						 }
-					 }
-					 
-				 }
-			 }
-			 retString+="</item>\n";
+					}
+				}
+				retString+="</item>\n";
+			}
 			 return retString;
 		}
 	}
 	
-	public static String getSelectionConditionsString(QueryStructure qData, boolean openFlag) throws  CloneNotSupportedException{
+	public static String getSelectionConditionsString(QueryStructure qStruct, boolean openFlag) throws  CloneNotSupportedException{
+		 String retString="";
 		if(openFlag){
-		 String retString="<item text=\"Selection Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstSelectionConditions())){
-			 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-		 }
-		 retString+="</item>\n";
-		 return retString;
+			if(qStruct.getLstSelectionConditions().size()>0){
+				retString+="<item text=\"Selection Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstSelectionConditions())){
+					retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 		else{
-			String retString="<item text=\"Selection Conditions\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstSelectionConditions())){
-				 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-			 }
-			 retString+="</item>\n";
-			 return retString;
+			if(qStruct.getLstSelectionConditions().size()>0){
+				retString+="<item text=\"Selection Conditions\"  id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstSelectionConditions())){
+					retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 	}
 	
@@ -422,22 +479,27 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
-	public static String getSubqueryConnectivesString(QueryStructure qData, boolean openFlag){
+	public static String getSubqueryConnectivesString(QueryStructure qStruct, boolean openFlag){
+		String retString="";
 		if(openFlag){
-		String retString="<item text=\"Subquery Connectives\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(String str:qData.getLstSubQConnectives()){
-			 retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
-		 }
-		 retString+="</item>\n";
-		 return retString;
+			if(qStruct.getLstSubQConnectives().size()>0){
+				retString+="<item text=\"Subquery Connectives\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				for(String str:qStruct.getLstSubQConnectives()){
+					retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 		else{
-			String retString="<item text=\"Subquery Connectives\" id=\""+ idCounter++ +"\">\n";
-			 for(String str:qData.getLstSubQConnectives()){
-				 retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
-			 }
-			 retString+="</item>\n";
-			 return retString;
+			if(qStruct.getLstSubQConnectives().size()>0){
+				retString+="<item text=\"Subquery Connectives\" id=\""+ idCounter++ +"\">\n";
+				for(String str:qStruct.getLstSubQConnectives()){
+					retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 	}
 	
@@ -450,21 +512,26 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
-	public static String getHavingConditionsString(QueryStructure qData, boolean openFlag) throws CloneNotSupportedException{
+	public static String getHavingConditionsString(QueryStructure qStruct, boolean openFlag) throws CloneNotSupportedException{
+		String retString="";
 		if(openFlag){
-		String retString="<item text=\"Having Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstHavingConditions())){
-			 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-		 }
-		 retString+="</item>\n";
-		 return retString;
+			if(qStruct.getLstHavingConditions().size()>0){
+				retString+="<item text=\"Having Conditions\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstHavingConditions())){
+					retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 		else{
-			String retString="<item text=\"Having Conditions\" id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstHavingConditions())){
-				 retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-			 }
-			 retString+="</item>\n";
+			if(qStruct.getLstHavingConditions().size()>0){
+				retString+="<item text=\"Having Conditions\" id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstHavingConditions())){
+					retString+=spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
 			 return retString;
 		}
 	}
@@ -477,22 +544,27 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
-	public static String getGroupByColumnsString(QueryStructure qData, boolean openFlag) {
+	public static String getGroupByColumnsString(QueryStructure qStruct, boolean openFlag) {
+		String retString="";
 		if(openFlag){
-		String retString="<item text=\"GroupBy Columns\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(parsing.Node n:Util.toSetOfNodes(qData.getLstGroupByNodes())){
-			 retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-		 }
-		 retString+="</item>\n";
-		 return retString;
+			if(qStruct.getLstGroupByNodes().size()>0){
+				retString+="<item text=\"GroupBy Columns\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstGroupByNodes())){
+					retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 		else{
-			String retString="<item text=\"GroupBy Columns\"  id=\""+ idCounter++ +"\">\n";
-			 for(parsing.Node n:Util.toSetOfNodes(qData.getLstGroupByNodes())){
-				 retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
-			 }
-			 retString+="</item>\n";
-			 return retString;
+			if(qStruct.getLstGroupByNodes().size()>0){
+				retString+="<item text=\"GroupBy Columns\"  id=\""+ idCounter++ +"\">\n";
+				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstGroupByNodes())){
+					retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 	}
 
@@ -505,22 +577,28 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
-	public static String getJoinTablesString(QueryStructure qData, boolean openFlag){
+	public static String getJoinTablesString(QueryStructure qStruct, boolean openFlag){
+		String retString="";
 		if(openFlag){
-		 String retString="<item text=\"Table Instances\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 for(String str:qData.getLstRelationInstances()){
-			 retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
-		 }
-		 retString+="</item>\n";
-		 return retString;
+			if(qStruct.getLstRelationInstances().size()>0){
+				retString+="<item text=\"Table Instances\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				for(String str:qStruct.getLstRelationInstances()){
+					retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 		else{
-			String retString="<item text=\"Table Instances\" id=\""+ idCounter++ +"\">\n";
-			 for(String str:qData.getLstRelationInstances()){
-				 retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
-			 }
-			 retString+="</item>\n";
-			 return retString;
+			if(qStruct.getLstRelationInstances().size()>0){
+
+				retString+="<item text=\"Table Instances\" id=\""+ idCounter++ +"\">\n";
+				for(String str:qStruct.getLstRelationInstances()){
+					retString+=spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n";
+				}
+				retString+="</item>\n";
+			}
+			return retString;
 		}
 	}
 
@@ -533,26 +611,31 @@ public class SerializeXML {
 		 out.println("</item>");
 	}
 	
-	public static String getRedundantTablesString(QueryStructure qData, boolean openFlag){
+	public static String getRedundantTablesString(QueryStructure qStruct, boolean openFlag){
+		String retString="";
 		if(openFlag){
-		String retString="<item text=\"Redundant Tables\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-		 if(qData.lstRedundantRelations!=null){
-			 for(String str:qData.lstRedundantRelations){
-				 retString+=(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n");
-			 }
-		 }
-		 retString+=("</item>\n");
-		 return retString;
+			if(qStruct.lstRedundantRelations.size()>0){
+				retString+="<item text=\"Redundant Tables\" open=\"1\" id=\""+ idCounter++ +"\">\n";
+				if(qStruct.lstRedundantRelations!=null){
+					for(String str:qStruct.lstRedundantRelations){
+						retString+=(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n");
+					}
+				}
+				retString+=("</item>\n");
+			}
+			return retString;
 		}
 		else{
-			String retString="<item text=\"Redundant Tables\" id=\""+ idCounter++ +"\">\n";
-			 if(qData.lstRedundantRelations!=null){
-				 for(String str:qData.lstRedundantRelations){
-					 retString+=(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n");
-				 }
-			 }
-			 retString+=("</item>\n");
-			 return retString;
+			if(qStruct.lstRedundantRelations.size()>0){
+				retString+="<item text=\"Redundant Tables\" id=\""+ idCounter++ +"\">\n";
+				if(qStruct.lstRedundantRelations!=null){
+					for(String str:qStruct.lstRedundantRelations){
+						retString+=(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>\n");
+					}
+				}
+				retString+=("</item>\n");
+			}
+			return retString;
 		}
 	}
 	

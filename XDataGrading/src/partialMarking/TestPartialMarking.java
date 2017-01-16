@@ -38,6 +38,7 @@ public class TestPartialMarking {
 	public PartialMarkerConfig Configuration;
 	
 	static int assignNo=11;
+	//static int assignNo=4; //for TPCH Schema
 		
 	public QueryData OuterQuery;
 
@@ -66,14 +67,33 @@ public class TestPartialMarking {
 		this.Configuration.OrderBy=1;
 	}
 	
+	public TestPartialMarking(int assignmentId){
+		assignNo=assignmentId;
+		this.Configuration = new PartialMarkerConfig();
+		this.Configuration.Relation=1;
+		this.Configuration.Predicate=1;
+		this.Configuration.Projection=1;
+		this.Configuration.Joins=1;
+		this.Configuration.OuterQuery=2;
+		this.Configuration.GroupBy=1;
+		this.Configuration.HavingClause=1;
+		this.Configuration.SubQConnective=1;
+		this.Configuration.SetOperators=1;
+		this.Configuration.Distinct=1;
+		this.Configuration.Aggregates=1;
+		this.Configuration.WhereSubQueries=1;
+		this.Configuration.FromSubQueries=1;
+		this.Configuration.OrderBy=1;
+	}
+	
 	public QueryDetails process(QueryDetails queryDetails, String strQuery) throws Exception{
 		queryDetails=new QueryDetails();
 		queryDetails.startProcessing(assignNo, 1, strQuery);	
 	
-//		for(parsing.Conjunct c:queryDetails.qStructure.conjuncts){
-//			for(Node n :queryDetails.qStructure.getJoinConds())
-//				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
-//		}
+		for(ConjunctQueryStructure c:queryDetails.qStructure.conjuncts){
+			for(Node n :c.getJoinCondsForEquivalenceClasses())
+				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
+		}
 
 		return queryDetails;
 				
@@ -485,8 +505,8 @@ public class TestPartialMarking {
 //				+ "select id,name from student,D where id=stud_id";
 		
 		
-	String	studentQuery="SELECT c.dept_name, SUM(c.credits)  FROM course c  INNER JOIN  department d  "
-			+ " ON (c.dept_name = d.dept_name)  GROUP BY c.dept_name  HAVING SUM(c.credits)>5 AND COUNT(c.credits)<0";		
+	String	studentQuery="SELECT c.dept_name, SUM(c.credits)  FROM course  INNER JOIN  department  "
+			+ " using (dept_name) GROUP BY course.dept_name  HAVING SUM(course.credits)>5 AND COUNT(course.credits)<0";		
 	
 
 			//		studentQuery="WITH query as "
@@ -548,7 +568,7 @@ public class TestPartialMarking {
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();
 			
-			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQuery);
+			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
@@ -556,12 +576,12 @@ public class TestPartialMarking {
 			
 //			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instructorQuery);
+//			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instructorQuery);
 
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
-			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
-			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
-			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
+//			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
+//			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
+//			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
 			//testObj.copyData();
 		}
 		catch(Exception e){
