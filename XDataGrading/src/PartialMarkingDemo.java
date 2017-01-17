@@ -124,12 +124,12 @@ public class PartialMarkingDemo extends HttpServlet {
 		try{
 				
 					
-					testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQuery);
-					testObj1.StudentQuery=testObj1.process(testObj1.StudentQuery, studentQuery);
+					testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
+					testObj1.StudentQuery=testObj1.process(testObj1.StudentQuery,1, studentQuery);
 				  
 					for(String instQuery:instructorQueries){
 						
-								testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instQuery);		
+								testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery);		
 								
 								Float studMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.StudentQuery.OuterQuery, 0).Marks;
 								Float instMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.InstructorQuery.OuterQuery, 0).Marks;
@@ -144,7 +144,7 @@ public class PartialMarkingDemo extends HttpServlet {
 					}
 					for(String instQuery:instructorQueries){
 						
-						testObj1.InstructorQuery=testObj1.process(testObj1.InstructorQuery, instQuery);
+						testObj1.InstructorQuery=testObj1.process(testObj1.InstructorQuery,1, instQuery);
 						
 						Float studMarks1=testObj1.calculateScore(false, testObj1.InstructorQuery.OuterQuery, testObj1.StudentQuery.OuterQuery, 0).Marks;
 						Float instMarks1=testObj1.calculateScore(false, testObj1.InstructorQuery.OuterQuery, testObj1.InstructorQuery.OuterQuery, 0).Marks;

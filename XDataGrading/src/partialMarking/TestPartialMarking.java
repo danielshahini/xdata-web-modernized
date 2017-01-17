@@ -86,9 +86,9 @@ public class TestPartialMarking {
 		this.Configuration.OrderBy=1;
 	}
 	
-	public QueryDetails process(QueryDetails queryDetails, String strQuery) throws Exception{
+	public QueryDetails process(QueryDetails queryDetails, int questionId, String strQuery) throws Exception{
 		queryDetails=new QueryDetails();
-		queryDetails.startProcessing(assignNo, 1, strQuery);	
+		queryDetails.startProcessing(assignNo, questionId, strQuery);	
 	
 		for(ConjunctQueryStructure c:queryDetails.qStructure.conjuncts){
 			for(Node n :c.getJoinCondsForEquivalenceClasses())
@@ -99,10 +99,10 @@ public class TestPartialMarking {
 				
 	}
 	
-	public QueryDetails processCanonicalize(QueryDetails queryDetails, String strQuery) throws Exception{
+	public QueryDetails processCanonicalize(QueryDetails queryDetails, int questionId, String strQuery) throws Exception{
 		queryDetails=new QueryDetails();
 		
-		queryDetails.startProcessing(assignNo, 1, strQuery);		
+		queryDetails.startProcessing(assignNo, questionId, strQuery);		
 
 		CanonicalizeQuery.Canonicalize(queryDetails.qStructure);
 
@@ -368,7 +368,7 @@ public class TestPartialMarking {
 			String assignment_id=tableValues.getString(4);
 			String question_id=tableValues.getString(5);
 				try{
-					testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studQuery);
+					testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studQuery);
 					System.out.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
 							" rollnum:"+ rollnum + "SQL query: "+studQuery);
 					goodWriter.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
@@ -414,7 +414,7 @@ public class TestPartialMarking {
 					String actualQuery=query.substring(query.indexOf(")")+1);
 					System.out.println(serialNum);
 					try{
-						testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, actualQuery);
+						testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, actualQuery);
 						System.out.println("good query "+serialNum +" : "+ actualQuery);
 					}
 					catch(Exception e){
@@ -505,8 +505,9 @@ public class TestPartialMarking {
 //				+ "select id,name from student,D where id=stud_id";
 		
 		
-	String	studentQuery="SELECT c.dept_name, SUM(c.credits)  FROM course  INNER JOIN  department  "
-			+ " using (dept_name) GROUP BY course.dept_name  HAVING SUM(course.credits)>5 AND COUNT(course.credits)<0";		
+	String	studentQuery="SELECT distinct time_slot.day FROM teaches, section, time_slot where teaches.course_id=section.course_id "
+			+ "AND teaches.semester=section.semester AND teaches.year=section.year AND teaches.sec_id=section.sec_id AND "
+			+ "section.time_slot_id= time_slot.time_slot_id AND section.semester='Fall' AND section.year='2009' and teaches.id='22222'";		
 	
 
 			//		studentQuery="WITH query as "
@@ -568,7 +569,7 @@ public class TestPartialMarking {
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();
 			
-			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
+			testObj.StudentQuery=testObj.process(testObj.StudentQuery,1, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
@@ -640,8 +641,8 @@ public class TestPartialMarking {
 		for(int i=0;i<studentQueries.length;i++){
 			try{
 
-				testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studentQueries[i][1]);
-				testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, intructorQuery);
+				testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQueries[i][1]);
+				testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, intructorQuery);
 				Float studentMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.StudentQuery.OuterQuery, 0).Marks;
 				int numRedundantRelations=testObj.StudentQuery.OuterQuery.RedundantRelations.size();
 				results.add("\nRollno: "+studentQueries[i][0]+ " Student Query "+studentQueries[i][1]+"\n # of redundant relations="+numRedundantRelations+"\n Marks:"+studentMarks);

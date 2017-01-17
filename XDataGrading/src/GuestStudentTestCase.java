@@ -628,7 +628,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
     	  /** taken from PartialMarkDemo Page - Start to show partial mark details for unsaved query **/
 		TestPartialMarking testObj=new TestPartialMarking();
 		//Call partial mark with instructor and student query and display the details on click of show me! I give up link. Dont toggle
-		testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery, studAnswer);
+		testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studAnswer);
 		QueryData bestInstructorQueryData=null;
 		String bestInstructorQueryString="";
 		float marks = 0.0f;
@@ -637,7 +637,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		
 		for(String instQuery:instructorQueries){
 			
-			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instQuery);		
+			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery);		
 			//Initialize the values
 			if(i == 0 ){
 				bestInstructorQueryData=testObj.InstructorQuery.OuterQuery;

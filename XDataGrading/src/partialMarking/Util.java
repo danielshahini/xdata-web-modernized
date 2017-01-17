@@ -357,6 +357,7 @@ public class Util {
 			logger.log(Level.INFO,"fkClosureQueue Not Empty and contains table \n"+table.getTableName());
 			for(Table tempTable : qParser.getTableMap().foreignKeyGraph.getAllVertex())
 			{  
+				logger.log(Level.INFO,"tempTable"+tempTable);
 				Map<Table,Vector<ForeignKey>> neighbours = qParser.getTableMap().foreignKeyGraph.getNeighbours(tempTable);
 				for(Table neighbourTable : neighbours.keySet())
 				{
