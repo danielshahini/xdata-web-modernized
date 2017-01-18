@@ -533,7 +533,7 @@ public class ProcessSelectClause {
 
 				}
 				Expression e=join.getOnExpression();
-				if(e!=null){
+				if(e!=null){/*Handling joins with ON Conditions*/
 					Node joinCondition=null;
 					if(join.isLeft())
 						joinCondition=ProcessSelectClause.processExpression(e,qStruct.fromListElements, qStruct,plainSelect,JoinClauseInfo.leftOuterJoin);
@@ -546,7 +546,48 @@ public class ProcessSelectClause {
 
 					joinConditions.add(joinCondition);
 				}		
-				else if(join.isNatural()){
+				else if(join.getUsingColumns()!=null && !join.getUsingColumns().isEmpty()){/*Handling joins with using Conditions*/
+					Vector<FromClauseElement> leftFLEVector=new Vector<FromClauseElement>();
+					leftFLEVector.add(leftFLE);
+					Vector<FromClauseElement> rightFLEVector=new Vector<FromClauseElement>();
+					rightFLEVector.add(rightFLE);
+					Vector<Node> leftColumns=partialMarking.Util.getAllProjectedColumns(leftFLEVector, qStruct);
+					Vector<Node> rightColumns=partialMarking.Util.getAllProjectedColumns(rightFLEVector, qStruct);
+					for(Column column:join.getUsingColumns()){
+						Node matchedLeftColumn=null;
+						for(Node leftColumn:leftColumns){
+							if(leftColumn.getColumn().getColumnName().equalsIgnoreCase(column.getColumnName())){
+								matchedLeftColumn=leftColumn;
+								break;
+							}
+						}
+						Node matchedRightColumn=null;
+						for(Node rightColumn:rightColumns){
+							if(rightColumn.getColumn().getColumnName().equalsIgnoreCase(column.getColumnName())){
+								matchedRightColumn=rightColumn;
+								break;
+							}
+						}
+						if(matchedLeftColumn!=null && matchedRightColumn!=null){
+							Node equiJoinNode=new Node();
+							equiJoinNode.setType(Node.getBroNodeType());	
+							equiJoinNode.setOperator(QueryStructure.cvcRelationalOperators[1]);
+							equiJoinNode.setLeft(matchedLeftColumn);
+							equiJoinNode.setRight(matchedRightColumn);
+							if(join.isLeft())
+								equiJoinNode.setJoinType(JoinClauseInfo.leftOuterJoin);
+							else if(join.isRight())
+								equiJoinNode.setJoinType(JoinClauseInfo.rightOuterJoin);
+							else if(join.isFull())
+								equiJoinNode.setJoinType(JoinClauseInfo.leftOuterJoin);
+							else
+								equiJoinNode.setJoinType(JoinClauseInfo.innerJoin);
+							joinConditions.add(equiJoinNode);
+							logger.info(" join condition added for join with using condition: "+equiJoinNode);
+						}
+					}
+				}
+				else if(join.isNatural()){/*Handling natural joins*/
 					Vector<FromClauseElement> leftFLEVector=new Vector<FromClauseElement>();
 					leftFLEVector.add(leftFLE);
 					Vector<FromClauseElement> rightFLEVector=new Vector<FromClauseElement>();

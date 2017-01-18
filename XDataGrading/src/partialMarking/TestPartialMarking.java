@@ -505,9 +505,9 @@ public class TestPartialMarking {
 //				+ "select id,name from student,D where id=stud_id";
 		
 		
-	String	studentQuery="SELECT distinct time_slot.day FROM teaches, section, time_slot where teaches.course_id=section.course_id "
-			+ "AND teaches.semester=section.semester AND teaches.year=section.year AND teaches.sec_id=section.sec_id AND "
-			+ "section.time_slot_id= time_slot.time_slot_id AND section.semester='Fall' AND section.year='2009' and teaches.id='22222'";		
+	String	studentQuery="SELECT c.dept_name, SUM(i.salary) FROM course c LEFT OUTER JOIN department d using (dept_name) "
+			+ "INNER JOIN instructor i using (dept_name) GROUP BY c.dept_name HAVING SUM(i.salary)>100000 "
+			+ "AND MAX(i.salary)<75000";		
 	
 
 			//		studentQuery="WITH query as "

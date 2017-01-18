@@ -91,7 +91,7 @@ public class SerializeXML {
 			if(qStruct.getLstProjectedCols().size()>0){
 				retString+="<item text=\"Projected Columns\" open=\"1\" id=\""+ idCounter++ +"\">\n";
 				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstProjectedCols())){
-					retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
+					retString+=spaceTab+"<item text=\""+ n.toString() +"\" style=\"color:#ff0000;\" id=\""+ idCounter++ +"\"/>\n";
 				}
 				retString+="</item>\n";
 			}
@@ -99,7 +99,7 @@ public class SerializeXML {
 		}
 		else{
 			if(qStruct.getLstProjectedCols().size()>0){
-				retString+="<item text=\"Projected Columns\" id=\""+ idCounter++ +"\">\n";
+				retString+="<item text=\"Projected Columns\" style=\"color:#ff0000;\" id=\""+ idCounter++ +"\">\n";
 				for(parsing.Node n:Util.toSetOfNodes(qStruct.getLstProjectedCols())){
 					retString+=spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>\n";
 				}
@@ -184,25 +184,25 @@ public class SerializeXML {
 		}
 	}
 	
-	public static String getHasDistinctString(QueryStructure qData, boolean openFlag){
+	public static String getHasDistinctString(QueryStructure qStruct, boolean openFlag){
 		if(openFlag){
-			String retString="<item text=\"Distinct Present\" open=\"1\" id=\""+ idCounter++ +"\">\n";
-			if(qData.getIsDistinct()){
-				retString+=spaceTab+"<item text=\"True\" id=\""+ idCounter++ +"\"/>\n";
+			String retString="<item text=\"Distinct Present\"  open=\"1\" id=\""+ idCounter++ +"\">\n";
+			if(qStruct.getIsDistinct()){
+				retString+=spaceTab+"<item text=\"True\" style=\"color:#ff0000;\" id=\""+ idCounter++ +"\"/>\n";
 			}
 			else{
-				retString+=spaceTab+"<item text=\"False\" id=\""+ idCounter++ +"\"/>\n";
+				retString+=spaceTab+"<item text=\"False\" style=\"color:#ff0000;\" id=\""+ idCounter++ +"\"/>\n";
 			}
 			retString+="</item>\n";
 			return retString;
 		}
 		else{
-			String retString="<item text=\"Distinct Present\" id=\""+ idCounter++ +"\">\n";
-			if(qData.getIsDistinct()){
-				retString+=spaceTab+"<item text=\"True\" id=\""+ idCounter++ +"\"/>\n";
+			String retString="<item text=\"Distinct Present\"  id=\""+ idCounter++ +"\">\n";
+			if(qStruct.getIsDistinct()){
+				retString+=spaceTab+"<item text=\"True\" style=\"color:#ff0000;\" id=\""+ idCounter++ +"\"/>\n";
 			}
 			else{
-				retString+=spaceTab+"<item text=\"False\" id=\""+ idCounter++ +"\"/>\n";
+				retString+=spaceTab+"<item text=\"False\" style=\"color:#ff0000;\" id=\""+ idCounter++ +"\"/>\n";
 			}
 			retString+="</item>\n";
 			return retString;
