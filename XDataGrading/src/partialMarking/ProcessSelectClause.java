@@ -343,14 +343,22 @@ public class ProcessSelectClause {
 			Node groupByColumn=processExpression(groupExpression,qStruct.fromListElements, qStruct,plainSelect,null);
 			if(groupByColumn.getTableNameNo()==null||groupByColumn.getTableNameNo().isEmpty()){
 				for(Node n:partialMarking.Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
-					if(n.getColumn().getColumnName().equalsIgnoreCase(groupByColumn.getColumn().getColumnName())){
+					if(groupByColumn.getColumn()!=null && n.getColumn()!=null&& n.getColumn().getColumnName().equalsIgnoreCase(groupByColumn.getColumn().getColumnName())){
 						groupByColumn.setTable(n.getTable());
 						groupByColumn.setTableNameNo(n.getTableNameNo());
 						break;
 					}
+					else if(groupByColumn.getColumn()!=null && n.getType().equals(Node.getValType())&&n.getAliasName().equals(groupByColumn.getColumn().getColumnName())){
+						groupByColumn=new Node(n);
+						break;
+					}
 				}
 			}
-			if(groupByColumn.getTableNameNo()==null||groupByColumn.getTableNameNo().isEmpty()){
+			if(groupByColumn.getType().equals(Node.getValType())){
+				qStruct.groupByNodes.addElement(groupByColumn);
+				continue;
+			}
+			else if(groupByColumn.getTableNameNo()==null||groupByColumn.getTableNameNo().isEmpty()){
 				List<SelectItem> projectedItems=plainSelect.getSelectItems();
 				for(int j=0;j<projectedItems.size();j++){
 					SelectItem projectedItem=projectedItems.get(j);
@@ -705,7 +713,8 @@ public class ProcessSelectClause {
 
 					if(qStruct.setOperator==null||qStruct.setOperator.isEmpty()){
 						//deals with the case when the table name of the projected column  cannot be resolved  
-						if(projectedColumn.getType().equals(Node.getColRefType())&&(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty())){
+						if(!projectedColumn.getType().equals(Node.getBaoNodeType())&&!projectedColumn.getType().equals(Node.getValType()) 
+							&&!projectedColumn.getType().equals(Node.getAggrNodeType())	&&(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty())){
 							logger.info(" Column name could not be resolved, query parsing failed, exception thrown, query: "+plainSelect.toString());
 							throw new Exception(" Column name could not be resolved, query parsing failed, exception thrown");
 						}
@@ -1132,17 +1141,23 @@ public class ProcessSelectClause {
 
 				if(n.getTableNameNo()==null||n.getTableNameNo().isEmpty()){
 					for(Node m:partialMarking.Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
-						if(m.getColumn().getColumnName().equalsIgnoreCase(n.getColumn().getColumnName())){
+						if(m.getColumn()!=null&&m.getColumn().getColumnName().equalsIgnoreCase(n.getColumn().getColumnName())){
 							n.setTable(m.getTable());
 							n.setTableNameNo(m.getTableNameNo());
 							n.setColumn(m.getColumn());
 							break;
+						}
+						else if(m.getType().equals(Node.getValType())&&m.getAliasName().equals(n.getColumn().getColumnName())){
+							n=new Node(m);
+							return n;
 						}
 					}
 				}
 
 
 				n=transformToAbsoluteTableNames(n,fle,false, qStruct);				
+				if(n.getType().equals(Node.getValType()))
+					return n;
 
 				if(n.getTableNameNo()==null||n.getTableNameNo().isEmpty()){
 					List<SelectItem> projectedItems=plainSelect.getSelectItems();
@@ -1165,7 +1180,6 @@ public class ProcessSelectClause {
 					}
 
 				}
-
 
 
 
