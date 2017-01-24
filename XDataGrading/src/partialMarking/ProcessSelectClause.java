@@ -665,6 +665,7 @@ public class ProcessSelectClause {
 				}
 				// deals with the case expression
 				if(e instanceof net.sf.jsqlparser.expression.CaseExpression){
+					logger.info("case expression: "+e);
 
 					List<Expression> whenClauses = ((CaseExpression) e).getWhenClauses();
 					for(int j=0;j < whenClauses.size();j++ ){
@@ -674,6 +675,7 @@ public class ProcessSelectClause {
 						cC.setCaseConditionNode(n);
 						cC.setCaseCondition(n.toString());
 						cC.setConstantValue(((WhenClause)((CaseExpression) e).getWhenClauses().get(j)).getThenExpression().toString());
+						logger.info(" when exp: "+n+" then expression "+cC.getConstantValue());
 						caseConditionsVector.add(cC);
 						// qStruct.getCaseConditions().add(cC);
 					}
@@ -699,11 +701,11 @@ public class ProcessSelectClause {
 						projectedColumn.setAliasName(selExpItem.getAlias().getName());
 					}
 					qStruct.projectedCols.add(projectedColumn);
-					logger.info("Select Expression"+projectedItem.toString()+ " "+projectedColumn);
+					logger.info("Select Expression"+projectedItem.toString()+ " "+projectedColumn+" type "+projectedColumn.getType());
 
 					if(qStruct.setOperator==null||qStruct.setOperator.isEmpty()){
 						//deals with the case when the table name of the projected column  cannot be resolved  
-						if(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty()){
+						if(projectedColumn.getType().equals(Node.getColRefType())&&(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty())){
 							logger.info(" Column name could not be resolved, query parsing failed, exception thrown, query: "+plainSelect.toString());
 							throw new Exception(" Column name could not be resolved, query parsing failed, exception thrown");
 						}
@@ -720,7 +722,7 @@ public class ProcessSelectClause {
 	 * @author mathew
 	 * 
 	 * displays the contents of a list of FromListElements, by hierachically traversing the iterating the list, 
-	 * if any member fle represents is subquery, then it traverses into the fromListElements of the subquery,
+	 * if any member fle represents a subquery, then it traverses into the fromListElements of the subquery,
 	 * if any member fle represents a subjoin, then it traverses into it (by recursion on getTabs)
 	 * 
 	 * @param visitedFromListElements

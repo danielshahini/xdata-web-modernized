@@ -57,19 +57,19 @@ public class Node implements Cloneable, Serializable{
 	
 	Node lhsRhs; 	//has value if IN NODE
 	Vector<Node> subQueryConds; //has value if any sub query node: IN NODE, EXISTS NODE etc.
-	CaseCondition CaseConditionNode;
+	CaseCondition caseCondition;
 	
 	/**
 	 * @return the ccNode
 	 */
-	public CaseCondition getCaseConjunctNode() {
-		return CaseConditionNode;
+	public CaseCondition getCaseCondition() {
+		return caseCondition;
 	}
 	/**
 	 * @param ccNode the ccNode to set
 	 */
-	public void setCcNode(CaseCondition CaseConditionNode) {
-		this.CaseConditionNode = CaseConditionNode;
+	public void setCaseCondition(CaseCondition cCondition) {
+		this.caseCondition = cCondition;
 	}
 	Node left;
 	Node right;
@@ -83,6 +83,7 @@ public class Node implements Cloneable, Serializable{
 		queryIndex=-1;
 		isMutant = false;
 		subQueryStructure=null;
+		caseCondition=null;
 		aliasName=null;
 	}
 
@@ -94,6 +95,7 @@ public class Node implements Cloneable, Serializable{
 		queryIndex=-1;
 		isMutant = false;
 		subQueryStructure=null;
+		caseCondition=null;
 		aliasName=null;
 		if(composite){
 			this.componentNodes=new ArrayList<Node>();
@@ -184,6 +186,11 @@ public class Node implements Cloneable, Serializable{
 		else
 			this.joinType = new String(n.getJoinType());
 		this.isDistinct = n.isDistinct;
+		if(n.getCaseCondition()==null)
+			this.caseCondition=null;
+			else{
+				
+			}
 		if(n.getLhsRhs() == null)
 			this.lhsRhs = null;
 		else

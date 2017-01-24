@@ -104,8 +104,8 @@ public class ConjunctQueryStructure implements Serializable{
 		isNullConds.addAll(right.getIsNullConds());
 		likeConds.addAll(left.getLikeConds());
 		likeConds.addAll(right.getLikeConds());
-		equivalenceClasses.addAll(left.getEquivalenceClasses());
 		equivalenceClasses.addAll(right.getEquivalenceClasses());
+		equivalenceClasses.addAll(left.getEquivalenceClasses());
 		allSubQueryConds.addAll(left.getAllSubQueryConds());
 		allSubQueryConds.addAll(right.getAllSubQueryConds());
 		joinCondsForEquivalenceClasses.addAll(left.getJoinCondsForEquivalenceClasses());

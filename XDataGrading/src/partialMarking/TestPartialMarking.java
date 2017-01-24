@@ -505,9 +505,16 @@ public class TestPartialMarking {
 //				+ "select id,name from student,D where id=stud_id";
 		
 		
-	String	studentQuery="SELECT c.dept_name, SUM(i.salary) FROM course c LEFT OUTER JOIN department d using (dept_name) "
-			+ "INNER JOIN instructor i using (dept_name) GROUP BY c.dept_name HAVING SUM(i.salary)>100000 "
-			+ "AND MAX(i.salary)<75000";		
+	String	studentQuery="SELECT SUM(T) "
+			+ "as su FROM (SELECT CASE when salary > 50000 then 60000 when salary = 50000 then 50000 else 40000 "
+			+ "end as T FROM instructor) as temp";
+	
+	studentQuery="SELECT SUM(T) "
+			+ "as su FROM (SELECT  salary "
+			+ "as T FROM instructor) as temp";
+	
+	studentQuery="select * from instructor I where not exists (select 1+1 from "
+			+ "teaches where teaches.ID=I.id group by ID,course_id having count(*) > 1)";
 	
 
 			//		studentQuery="WITH query as "
@@ -569,15 +576,16 @@ public class TestPartialMarking {
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();
 			
-			testObj.StudentQuery=testObj.process(testObj.StudentQuery,1, studentQuery);
+//			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
 //				System.out.println("key:"+e.getKey()+" value"+e.getValue().getPrimaryKey());
 			
-//			testObj.StudentQuery=testObj.process(testObj.StudentQuery, studentQuery);
+			testObj.StudentQuery=testObj.process(testObj.StudentQuery,1, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-//			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, instructorQuery);
+//			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery,1, instructorQuery);
+//			SerializeXML.serializeXML("student.xml", "instructor.xml", testObj.StudentQuery.qStructure, testObj.InstructorQuery.qStructure);
 
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
 //			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
