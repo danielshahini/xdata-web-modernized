@@ -85,6 +85,7 @@ public class Node implements Cloneable, Serializable{
 		subQueryStructure=null;
 		caseCondition=null;
 		aliasName=null;
+		caseExpression=null;
 	}
 
 	//the following lines added by mathew on 1st october 2016
@@ -100,6 +101,7 @@ public class Node implements Cloneable, Serializable{
 		if(composite){
 			this.componentNodes=new ArrayList<Node>();
 		}
+		caseExpression=null;
 	}
 	
 		QueryStructure subQueryStructure;
@@ -135,6 +137,21 @@ public class Node implements Cloneable, Serializable{
 		
 		public void addComponentNode(Node n){
 			componentNodes.add(n);
+		}
+		
+		CaseExpression caseExpression;
+		
+		/**
+		 * @return the ccNode
+		 */
+		public CaseExpression getCaseExpression() {
+			return caseExpression;
+		}
+		/**
+		 * @param ccNode the ccNode to set
+		 */
+		public void setCaseExpression(CaseExpression cExpression) {
+			this.caseExpression = cExpression;
 		}
 	
 	/**
@@ -181,11 +198,21 @@ public class Node implements Cloneable, Serializable{
 			this.tableNameNo =null;
 		else
 			this.tableNameNo = new String(n.getTableNameNo());
+
 		if(n.getJoinType() == null)
 			this.joinType = null;
 		else
 			this.joinType = new String(n.getJoinType());
+		
 		this.isDistinct = n.isDistinct;
+		
+		if(n.getCaseExpression()==null){
+			this.caseExpression=null;
+		}
+		else{
+			this.setCaseExpression(n.getCaseExpression());
+		}
+		
 		if(n.getCaseCondition()==null)
 			this.caseCondition=null;
 			else{
@@ -203,6 +230,9 @@ public class Node implements Cloneable, Serializable{
 			for(Node n2: n.getSubQueryConds())
 				this.subQueryConds.add(new Node(n2));
 		}
+		
+		
+		
 		if(n.getLeft() == null)
 			this.left =null;
 		else
@@ -594,6 +624,9 @@ public class Node implements Cloneable, Serializable{
 			}
 			return retString;
 		}
+		 else if(this.getType()!=null&&this.getType().equalsIgnoreCase(Node.getCaseNodeType())){
+			 return this.getCaseExpression().toString();
+		 }
 		if(this.getType()!=null&&this.getType().equalsIgnoreCase(Node.getValType())){
 			return this.getStrConst();
 		}

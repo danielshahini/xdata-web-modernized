@@ -4,6 +4,7 @@
 
 package partialMarking;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Vector;
@@ -190,9 +191,9 @@ public class ProcessSelectClause {
 
 					CaseCondition cC = new CaseCondition();
 					Node n = processExpression(((WhenClause)((CaseExpression) whereClause).getWhenClauses().get(i)).getWhenExpression(), qStruct.fromListElements,qStruct,plainSelect,null);
-					cC.setCaseConditionNode(n);
-					cC.setCaseCondition(n.toString());
-					cC.setConstantValue(((WhenClause)((CaseExpression) whereClause).getWhenClauses().get(i)).getThenExpression().toString());
+					//cC.setCaseConditionNode(n);
+					//cC.setCaseCondition(n.toString());
+					//cC.setConstantValue(((WhenClause)((CaseExpression) whereClause).getWhenClauses().get(i)).getThenExpression().toString());
 					if(colExpression!= null && colExpression instanceof Column){
 						Node n1 = ((processExpression((colExpression), qStruct.fromListElements,qStruct,plainSelect,null)));
 						cC.setColValueForConjunct(UtilsRelatedToNode.getColumn(n1));
@@ -216,8 +217,8 @@ public class ProcessSelectClause {
 				if(((CaseExpression) whereClause).getElseExpression() != null){
 					CaseCondition cC = new CaseCondition();
 					//cC.setCaseConditionNode(n);
-					cC.setCaseCondition("else");
-					cC.setConstantValue(((CaseExpression) whereClause).getElseExpression().toString());
+					//cC.setCaseCondition("else");
+					//cC.setConstantValue(((CaseExpression) whereClause).getElseExpression().toString());
 					if(colExpression != null && colExpression instanceof Column){
 						Node n1 = ((processExpression((colExpression), qStruct.fromListElements,qStruct,plainSelect,null)));
 						cC.setColValueForConjunct(UtilsRelatedToNode.getColumn(n1));
@@ -645,7 +646,6 @@ public class ProcessSelectClause {
 	 */
 	private static void processProjectionList(PlainSelect plainSelect, QueryStructure qStruct) throws Exception{
 		// TODO Auto-generated method stub
-		Vector<CaseCondition> caseConditionsVector = new Vector<CaseCondition>();
 
 		List<SelectItem> projectedItems=plainSelect.getSelectItems();
 		for(int i=0;i<projectedItems.size();i++){
@@ -674,16 +674,58 @@ public class ProcessSelectClause {
 				// deals with the case expression
 				if(e instanceof net.sf.jsqlparser.expression.CaseExpression){
 					logger.info("case expression: "+e);
+					Vector<CaseCondition> caseConditionsVector = new Vector<CaseCondition>();
 
-					List<Expression> whenClauses = ((CaseExpression) e).getWhenClauses();
+					CaseExpression caseExpr=(CaseExpression) e;
+					
+					List<Expression> whenClauses = caseExpr.getWhenClauses();
+					Expression switchExpression=caseExpr.getSwitchExpression();
+					Node switchExpressionNode=processExpression(switchExpression, qStruct.fromListElements, qStruct,plainSelect,null);
+					parsing.CaseExpression retCaseExpr=new parsing.CaseExpression();
+					ArrayList<CaseCondition> whenConditionals=new ArrayList<CaseCondition>();
+					
+					for(Expression whenClauseExpr:whenClauses){
+						WhenClause whenClause=(WhenClause)whenClauseExpr;
+						Node antecedentNode=processExpression(whenClause.getWhenExpression(),qStruct.fromListElements, qStruct,plainSelect,null);
+						Node consequentNode=processExpression(whenClause.getThenExpression(),qStruct.fromListElements, qStruct,plainSelect,null);
+						if(switchExpression!=null){
+							Node tempNode=new Node();
+							tempNode.setType(Node.getBroNodeType());
+							tempNode.setOperator(QueryStructure.cvcRelationalOperators[1]);
+							tempNode.setLeft(switchExpressionNode);
+							tempNode.setRight(antecedentNode);
+							antecedentNode=tempNode;
+						}
+						CaseCondition cC=new CaseCondition();
+						cC.setWhenNode(antecedentNode);
+						cC.setThenNode(consequentNode);
+						whenConditionals.add(cC);
+						
+					}
+					retCaseExpr.setWhenConditionals(whenConditionals);
+					
+					if(caseExpr.getElseExpression()!=null){
+						CaseCondition cC=new CaseCondition();
+						Node consequestNode=processExpression(caseExpr.getElseExpression(),qStruct.fromListElements, qStruct,plainSelect,null);
+						cC.setThenNode(consequestNode);
+						retCaseExpr.setElseConditional(cC);
+					}
+					Node projectedColumn=new Node();
+					projectedColumn.setType(Node.getCaseNodeType());
+					if(selExpItem.getAlias()!=null)
+						projectedColumn.setAliasName(selExpItem.getAlias().getName());
+					projectedColumn.setCaseExpression(retCaseExpr);
+					qStruct.projectedCols.add(projectedColumn);
+					logger.info(" Case Expresssion Projected Column Added "+projectedColumn);
+
+					
 					for(int j=0;j < whenClauses.size();j++ ){
 
 						CaseCondition cC = new CaseCondition();
 						Node n = processExpression(((WhenClause)((CaseExpression) e).getWhenClauses().get(j)).getWhenExpression(), qStruct.fromListElements, qStruct,plainSelect,null);
-						cC.setCaseConditionNode(n);
-						cC.setCaseCondition(n.toString());
-						cC.setConstantValue(((WhenClause)((CaseExpression) e).getWhenClauses().get(j)).getThenExpression().toString());
-						logger.info(" when exp: "+n+" then expression "+cC.getConstantValue());
+						//cC.setCaseConditionNode(n);
+						//cC.setCaseCondition(n.toString());
+						//cC.setConstantValue(((WhenClause)((CaseExpression) e).getWhenClauses().get(j)).getThenExpression().toString());
 						caseConditionsVector.add(cC);
 						// qStruct.getCaseConditions().add(cC);
 					}
@@ -691,8 +733,8 @@ public class ProcessSelectClause {
 					if(((CaseExpression) e).getElseExpression() != null){
 						CaseCondition cC = new CaseCondition();
 						//cC.setCaseConditionNode(n);
-						cC.setCaseCondition("else");
-						cC.setConstantValue(((CaseExpression) e).getElseExpression().toString());
+						//cC.setCaseCondition("else");
+						//cC.setConstantValue(((CaseExpression) e).getElseExpression().toString());
 						caseConditionsVector.add(cC);
 					}
 					//Add Case conditions to queryparser
@@ -714,7 +756,8 @@ public class ProcessSelectClause {
 					if(qStruct.setOperator==null||qStruct.setOperator.isEmpty()){
 						//deals with the case when the table name of the projected column  cannot be resolved  
 						if(!projectedColumn.getType().equals(Node.getBaoNodeType())&&!projectedColumn.getType().equals(Node.getValType()) 
-							&&!projectedColumn.getType().equals(Node.getAggrNodeType())	&&(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty())){
+							&&!projectedColumn.getType().equals(Node.getAggrNodeType())	&&!projectedColumn.getType().equals(Node.getCaseNodeType())
+							&&(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty())){
 							logger.info(" Column name could not be resolved, query parsing failed, exception thrown, query: "+plainSelect.toString());
 							throw new Exception(" Column name could not be resolved, query parsing failed, exception thrown");
 						}
@@ -992,6 +1035,7 @@ public class ProcessSelectClause {
 					if (an.getParameters()!=null){
 						ExpressionList anList = an.getParameters();
 						List<Expression> expList = anList.getExpressions();//FIXME not only 1 expression but all expressions
+
 						Node n = processExpression(expList.get(0), fle,  qStruct,plainSelect,joinType);
 						af.setAggExp(n);
 
@@ -1013,6 +1057,7 @@ public class ProcessSelectClause {
 						agg.setTableNameNo(af.getAggExp().getTableNameNo());
 						agg.setTableAlias(af.getAggExp().getTableAlias());
 						agg.setColumn(af.getAggExp().getColumn());
+
 
 					}//Added by Shree for count(*) 
 					else if(af.getFunc().toUpperCase().contains("COUNT") && an.isAllColumns()){				
@@ -1138,7 +1183,6 @@ public class ProcessSelectClause {
 				n.setRight(null); 
 
 
-
 				if(n.getTableNameNo()==null||n.getTableNameNo().isEmpty()){
 					for(Node m:partialMarking.Util.getAllProjectedColumns(qStruct.fromListElements, qStruct)){
 						if(m.getColumn()!=null&&m.getColumn().getColumnName().equalsIgnoreCase(n.getColumn().getColumnName())){
@@ -1148,6 +1192,10 @@ public class ProcessSelectClause {
 							break;
 						}
 						else if(m.getType().equals(Node.getValType())&&m.getAliasName().equals(n.getColumn().getColumnName())){
+							n=new Node(m);
+							return n;
+						}
+						else if(m.getType().equals(Node.getCaseNodeType())&& m.getAliasName().equals(n.getColumn().getColumnName())){
 							n=new Node(m);
 							return n;
 						}
@@ -1726,26 +1774,45 @@ public class ProcessSelectClause {
 				}
 				return n;
 			} else if(clause instanceof CaseExpression){
-				CaseExpression expr =  (CaseExpression)clause;
-				Node n = new Node();
-				List<Expression> whenExprList = expr.getWhenClauses();
-				Vector <Node> caseConditionNode = new Vector<Node>();
-				//If it is a case expression, then create a vector of nodes that holds case condition and else cond
-				//Add that to cvc or qparser and return a node that is of type casecondition.
-
-				if(expr.getElseExpression() != null){
-					n = processExpression(expr.getElseExpression(), fle, qStruct,plainSelect,joinType);
-				}
-				else if(expr.getWhenClauses() != null){
-					for(int i = 0; i < expr.getWhenClauses().size();i++){
-						Expression ex = expr.getWhenClauses().get(i);
-						n = processExpression(ex, fle,qStruct,plainSelect,joinType);
+				CaseExpression caseExpr =  (CaseExpression)clause;								
+				List<Expression> whenClauses = caseExpr.getWhenClauses();
+				Expression switchExpression=caseExpr.getSwitchExpression();
+				Node switchExpressionNode=processExpression(switchExpression, qStruct.fromListElements, qStruct,plainSelect,null);
+				parsing.CaseExpression retCaseExpr=new parsing.CaseExpression();
+				ArrayList<CaseCondition> whenConditionals=new ArrayList<CaseCondition>();
+				
+				for(Expression whenClauseExpr:whenClauses){
+					WhenClause whenClause=(WhenClause)whenClauseExpr;
+					logger.info(" when exp: "+whenClause.getWhenExpression()+" then expression "+whenClause.getThenExpression());
+					Node antecedentNode=processExpression(whenClause.getWhenExpression(),qStruct.fromListElements, qStruct,plainSelect,null);
+					Node consequentNode=processExpression(whenClause.getThenExpression(),qStruct.fromListElements, qStruct,plainSelect,null);
+					if(switchExpression!=null){
+						Node tempNode=new Node();
+						tempNode.setType(Node.getBroNodeType());
+						tempNode.setOperator(QueryStructure.cvcRelationalOperators[1]);
+						tempNode.setLeft(switchExpressionNode);
+						tempNode.setRight(antecedentNode);
+						antecedentNode=tempNode;
 					}
-
-					return n;
-				}else{
-					return null;
+					CaseCondition cC=new CaseCondition();
+					cC.setWhenNode(antecedentNode);
+					cC.setThenNode(consequentNode);
+					whenConditionals.add(cC);
+					
 				}
+				retCaseExpr.setWhenConditionals(whenConditionals);
+				
+				if(caseExpr.getElseExpression()!=null){
+					CaseCondition cC=new CaseCondition();
+					Node consequestNode=processExpression(caseExpr.getElseExpression(),qStruct.fromListElements, qStruct,plainSelect,null);
+					cC.setThenNode(consequestNode);
+					retCaseExpr.setElseConditional(cC);
+				}
+				Node retNode=new Node();
+				retNode.setType(Node.getCaseNodeType());
+				retNode.setCaseExpression(retCaseExpr);
+				return retNode;
+				
 			}
 			else if (clause instanceof AllComparisonExpression){
 

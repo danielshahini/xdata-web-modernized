@@ -509,13 +509,9 @@ public class TestPartialMarking {
 			+ "as su FROM (SELECT CASE when salary > 50000 then 60000 when salary = 50000 then 50000 else 40000 "
 			+ "end as T FROM instructor) as temp";
 	
-	studentQuery="SELECT SUM(T) as su"
-			+ " FROM (SELECT  7000 "
-			+ "as T FROM instructor group by T) as temp";
-	
-//	studentQuery="select * from instructor I where not exists (select 1+1 from "
-//			+ "teaches where teaches.ID=I.id group by ID,course_id having count(*) > 1)";
-	
+//	studentQuery="SELECT SUM(T) as su"
+//			+ " FROM (SELECT  7000 "
+//			+ "as T FROM instructor group by T) as temp";
 
 			//		studentQuery="WITH query as "
 //				+ "	(WITH query as (select course_id,sec_id,year,semester,count(student.ID) as number "
