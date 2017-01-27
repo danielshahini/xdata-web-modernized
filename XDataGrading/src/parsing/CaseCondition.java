@@ -7,7 +7,8 @@ import java.io.Serializable;
 import java.util.Vector;
 import parsing.Column;
 /**
- * @author shree
+ * @author shree, 
+ * modified by Mathew on 26 Jan 2017
  *
  */
 public class CaseCondition implements Cloneable,Serializable{
@@ -20,38 +21,6 @@ public class CaseCondition implements Cloneable,Serializable{
 	//This holds the case condition that needs to be satisfied for getting constantValue
 	Node whenNode;
 	Node thenNode;
-	
-	String caseOperator = "";
-	/**
-	 * @return the caseOperator
-	 */
-	public String getCaseOperator() {
-		return caseOperator;
-	}
-
-	/**
-	 * @param caseOperator the caseOperator to set
-	 */
-	public void setCaseOperator(String caseOperator) {
-		this.caseOperator = caseOperator;
-	}
-
-	//This variable holds the column name to which the "then"  value will be assigned
-	Column colValueForConjunct;
-	/**
-	 * @return the colValueForConjunct
-	 */
-	public Column getColValueForConjunct() {
-		return colValueForConjunct;
-	}
-
-	/**
-	 * @param colValueForConjunct the colValueForConjunct to set
-	 */
-	public void setColValueForConjunct(Column colValueForConjunct) {
-		this.colValueForConjunct = colValueForConjunct;
-	}
-
 
 	/**
 	 * @return the caseConditionNode

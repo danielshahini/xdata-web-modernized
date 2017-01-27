@@ -1,3 +1,13 @@
+/**@author mathew
+ * 
+ * Class used for encoding a CaseExpression. Any Case expression (currently assumes that
+ * case expressions are non-nested, i.e. no case expression within  another) is 
+ * encoded as a list of when Conditionals and an else conditional. Also 
+ * assumes that cases with switch expressions are normalized to ones that does not 
+ * have switch expressions. For instance, Case A When X1 then Y1 When X2 Then Y2 ..
+ * is normalized to Case When A=X1 then Y1 When A=X2 Then Y2 ...
+ * 
+ * */
 package parsing;
 
 import java.io.Serializable;

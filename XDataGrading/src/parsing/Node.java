@@ -438,7 +438,7 @@ public class Node implements Cloneable, Serializable{
 	}
 	
 	public void setDistinct(boolean isDistinct){
-		this.isDistinct = this.isDistinct;
+		this.isDistinct = isDistinct;
 	}
 	
 	public static String getAggrNodeType() {
@@ -626,6 +626,13 @@ public class Node implements Cloneable, Serializable{
 		}
 		 else if(this.getType()!=null&&this.getType().equalsIgnoreCase(Node.getCaseNodeType())){
 			 return this.getCaseExpression().toString();
+		 }
+		 else if(this.getType()!=null&&this.getType().equalsIgnoreCase(Node.getExtractFuncType())){
+			 retString=" Extract("+this.getStrConst()+" FROM ";
+					 if(this.getLeft()!=null)
+						 retString+=this.getLeft();
+					 retString+=")";
+			 		return retString;
 		 }
 		if(this.getType()!=null&&this.getType().equalsIgnoreCase(Node.getValType())){
 			return this.getStrConst();

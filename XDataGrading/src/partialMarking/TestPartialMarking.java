@@ -37,8 +37,8 @@ public class TestPartialMarking {
 	// Configuration values required for the scoring function
 	public PartialMarkerConfig Configuration;
 	
-	static int assignNo=11;
-	//static int assignNo=4; //for TPCH Schema
+//	static int assignNo=11;
+	static int assignNo=4; //for TPCH Schema
 		
 	public QueryData OuterQuery;
 
@@ -505,13 +505,12 @@ public class TestPartialMarking {
 //				+ "select id,name from student,D where id=stud_id";
 		
 		
-	String	studentQuery="SELECT SUM(T) "
-			+ "as su FROM (SELECT CASE when salary > 50000 then 60000 when salary = 50000 then 50000 else 40000 "
-			+ "end as T FROM instructor) as temp";
+	String	studentQuery="select 100.00 * sum(case when p_type like 'PROMO%' "
+			+ "then l_extendedprice * (1 - l_discount) else 0 end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue "
+			+ "from lineitem, part where l_partkey = p_partkey and l_shipdate >= date ':1' "
+			+ "and l_shipdate < date ':1' + interval '1' month";
 	
-//	studentQuery="SELECT SUM(T) as su"
-//			+ " FROM (SELECT  7000 "
-//			+ "as T FROM instructor group by T) as temp";
+	//studentQuery="SELECT extract(year from '2015-11-22') as temp from  supplier";
 
 			//		studentQuery="WITH query as "
 //				+ "	(WITH query as (select course_id,sec_id,year,semester,count(student.ID) as number "

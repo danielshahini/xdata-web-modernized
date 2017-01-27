@@ -51,9 +51,7 @@ public class Configuration implements ConfigurationInterface{
 		// Class.forName(name, initialize, loader)
 		
 		try{
-        properties.load(Configuration.class.getResourceAsStream("XData.properties"));
-		
-	          
+        properties.load(Configuration.class.getResourceAsStream("XData.properties"));      		
 		}catch(IOException e){
 			logger.log(Level.SEVERE,e.getMessage(),e);
 			//e.printStackTrace();

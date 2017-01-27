@@ -18,10 +18,13 @@ import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
+import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.Parenthesis;
@@ -196,9 +199,9 @@ public class ProcessSelectClause {
 					//cC.setConstantValue(((WhenClause)((CaseExpression) whereClause).getWhenClauses().get(i)).getThenExpression().toString());
 					if(colExpression!= null && colExpression instanceof Column){
 						Node n1 = ((processExpression((colExpression), qStruct.fromListElements,qStruct,plainSelect,null)));
-						cC.setColValueForConjunct(UtilsRelatedToNode.getColumn(n1));
+//						cC.setColValueForConjunct(UtilsRelatedToNode.getColumn(n1));
 						nodeColumnValue = UtilsRelatedToNode.getColumn(n1);
-						cC.setCaseOperator("=");
+//						cC.setCaseOperator("=");
 					}
 					/*if(cC.getColValueForConjunct() == null){
 
@@ -221,7 +224,7 @@ public class ProcessSelectClause {
 					//cC.setConstantValue(((CaseExpression) whereClause).getElseExpression().toString());
 					if(colExpression != null && colExpression instanceof Column){
 						Node n1 = ((processExpression((colExpression), qStruct.fromListElements,qStruct,plainSelect,null)));
-						cC.setColValueForConjunct(UtilsRelatedToNode.getColumn(n1));
+//						cC.setColValueForConjunct(UtilsRelatedToNode.getColumn(n1));
 					}
 					/* if(cC.getColValueForConjunct() == null){
 
@@ -353,10 +356,29 @@ public class ProcessSelectClause {
 						groupByColumn=new Node(n);
 						break;
 					}
+					else if(groupByColumn.getColumn()!=null && n.getType().equals(Node.getCaseNodeType())&&n.getAliasName().equals(groupByColumn.getColumn().getColumnName())){
+						groupByColumn=new Node(n);
+						break;
+					}
+					else if(groupByColumn.getColumn()!=null && n.getType().equals(Node.getExtractFuncType())&&n.getAliasName().equals(groupByColumn.getColumn().getColumnName())){
+						groupByColumn=new Node(n);
+						break;
+					}
 				}
 			}
 			if(groupByColumn.getType().equals(Node.getValType())){
 				qStruct.groupByNodes.addElement(groupByColumn);
+				logger.info(groupExpression.toString()+ " group by column "+groupByColumn);
+				continue;
+			}
+			else if(groupByColumn.getType().equals(Node.getCaseNodeType())){
+				qStruct.groupByNodes.addElement(groupByColumn);
+				logger.info(groupExpression.toString()+ " group by column "+groupByColumn);
+				continue;
+			}
+			else if(groupByColumn.getType().equals(Node.getExtractFuncType())){
+				qStruct.groupByNodes.addElement(groupByColumn);
+				logger.info(groupExpression.toString()+ " group by column "+groupByColumn);
 				continue;
 			}
 			else if(groupByColumn.getTableNameNo()==null||groupByColumn.getTableNameNo().isEmpty()){
@@ -757,6 +779,7 @@ public class ProcessSelectClause {
 						//deals with the case when the table name of the projected column  cannot be resolved  
 						if(!projectedColumn.getType().equals(Node.getBaoNodeType())&&!projectedColumn.getType().equals(Node.getValType()) 
 							&&!projectedColumn.getType().equals(Node.getAggrNodeType())	&&!projectedColumn.getType().equals(Node.getCaseNodeType())
+							&&!projectedColumn.getType().equals(Node.getExtractFuncType())
 							&&(projectedColumn.getTableNameNo()==null||projectedColumn.getTableNameNo().isEmpty())){
 							logger.info(" Column name could not be resolved, query parsing failed, exception thrown, query: "+plainSelect.toString());
 							throw new Exception(" Column name could not be resolved, query parsing failed, exception thrown");
@@ -1130,7 +1153,39 @@ public class ProcessSelectClause {
 				n.setLeft(null); 
 				n.setRight(null); 
 				return n; 
-			} else if (clause instanceof Column) {
+			}
+			else if(clause instanceof DateTimeLiteralExpression){
+				DateTimeLiteralExpression dateTimeExpr=(DateTimeLiteralExpression) clause;
+				Node n=new Node();
+				n.setType(Node.getValType());
+				n.setStrConst(dateTimeExpr.getValue());
+				n.setLeft(null); 
+				n.setRight(null); 
+				logger.info("DateTimeLiteralExpression Processed"+n);
+				return n; 
+			}
+			else if(clause instanceof DateValue){
+				DateValue dateValue=(DateValue) clause;
+				System.out.println("its a date"+dateValue.getValue());
+				Node n=new Node();
+				n.setType(Node.getValType());
+				n.setStrConst(dateValue.getValue().toString());
+				n.setLeft(null); 
+				n.setRight(null); 
+				return n; 
+
+			}
+			else if(clause instanceof IntervalExpression){
+				IntervalExpression dateTimeExpr=(IntervalExpression) clause;
+				Node n=new Node();
+				n.setType(Node.getValType());
+				n.setStrConst(dateTimeExpr.toString());
+				n.setLeft(null); 
+				n.setRight(null); 
+				logger.info("IntervalExpression Processed"+n);
+				return n; 
+			}
+			else if (clause instanceof Column) {
 				Column columnReference = (Column) clause;
 				String colName	= columnReference.getColumnName().toUpperCase();
 				String tableName  = columnReference.getTable().getFullyQualifiedName();
@@ -1199,13 +1254,23 @@ public class ProcessSelectClause {
 							n=new Node(m);
 							return n;
 						}
+						else if(m.getType().equals(Node.getExtractFuncType())&& m.getAliasName().equals(n.getColumn().getColumnName())){
+							n=new Node(m);
+							return n;
+						}
 					}
 				}
 
 
 				n=transformToAbsoluteTableNames(n,fle,false, qStruct);				
+
 				if(n.getType().equals(Node.getValType()))
 					return n;
+				else if(n.getType().equals(Node.getExtractFuncType()))
+					return n;
+				else if(n.getType().equals(Node.getCaseNodeType()))
+					return n;
+
 
 				if(n.getTableNameNo()==null||n.getTableNameNo().isEmpty()){
 					List<SelectItem> projectedItems=plainSelect.getSelectItems();
@@ -1845,6 +1910,19 @@ public class ProcessSelectClause {
 				/*Assuming the ExtractExpression clause holds name and Column alone*/
 				ExtractExpression exp = (ExtractExpression)clause;
 				Node n=new Node(); // Main node
+				n.setType(Node.getExtractFuncType());
+				if(exp.getName()!=null){
+					n.setStrConst(exp.getName());
+				}
+				if(exp.getExpression()!=null){
+					Node n1=processExpression(exp.getExpression(),fle, qStruct,plainSelect,joinType);
+					n.setLeft(n1);
+				}
+				n.setRight(null);				
+				logger.info("Extract expression processed"+n);
+				return n;
+
+				/*
 				String name = exp.getName();
 				Node table = processExpression(exp.getExpression(),fle, qStruct,plainSelect,joinType);
 				if(name.equalsIgnoreCase("year")){
@@ -2002,8 +2080,7 @@ public class ProcessSelectClause {
 					nr1r1.setRight(null);
 					nr1.setRight(nr1r1);
 					n.setRight(nr1);
-				}
-				return n;
+				}*/
 			}
 
 			else {
