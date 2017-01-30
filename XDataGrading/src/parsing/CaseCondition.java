@@ -59,10 +59,10 @@ public class CaseCondition implements Cloneable,Serializable{
 		Node right= new Node();
 		
 		if(this.getWhenNode() !=null)
-			left=this.getWhenNode().clone(); 
+			left=(Node)this.getWhenNode().clone(); 
 		
 		if(this.getThenNode()!=null)
-			right=this.getThenNode().clone();
+			right=(Node)this.getThenNode().clone();
 		
 		((CaseCondition)obj).setWhenNode(left);
 		((CaseCondition)obj).setThenNode(right);

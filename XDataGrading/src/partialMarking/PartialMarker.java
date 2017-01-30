@@ -919,7 +919,7 @@ private static QueryInfo populateQueryInfo(QueryData instructorData, QueryData s
 					}
 					else{
 						try {
-							newNode = n.clone();
+							newNode = (Node)n.clone();
 						} catch (CloneNotSupportedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

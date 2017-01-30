@@ -900,7 +900,7 @@ public class SerializeXML {
 
 	
 	public static parsing.Node cloneNodeForXMLserialization(parsing.Node m) throws CloneNotSupportedException{
-		parsing.Node n=m.clone();
+		parsing.Node n=(Node)m.clone();
 		
 		if(n!=null&&n.getOperator()!=null){
 			if(n.getOperator().equals("<")){

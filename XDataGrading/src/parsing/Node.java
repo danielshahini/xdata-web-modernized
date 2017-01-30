@@ -13,7 +13,7 @@ import parsing.Table;
 import partialMarking.QueryStructure;
 import util.*;
 
-public class Node implements Cloneable, Serializable{
+public class Node implements Cloneable, Serializable, NodeInterface{
 	
 	private static final long serialVersionUID = -7192918525557389737L;
 	private static String valType = "VALUE";
@@ -350,6 +350,7 @@ public class Node implements Cloneable, Serializable{
 			right=this.getRight().clone();
 		((Node)obj).setLeft(left);
 		((Node)obj).setRight(right);
+		
 		return (Node)obj;
 	}
 
@@ -465,6 +466,7 @@ public class Node implements Cloneable, Serializable{
 	public void setColumn(Column column) {
 		this.column = column;
 	}
+
 	public Node getLeft() {
 		return left;
 	}
@@ -481,7 +483,7 @@ public class Node implements Cloneable, Serializable{
 		return right;
 	}
 	public void setRight(Node right) {
-		this.right = right;
+		this.right = (Node)right;
 	}
 	public String getStrConst() {
 		return strConst;

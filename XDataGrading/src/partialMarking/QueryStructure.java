@@ -62,7 +62,7 @@ import parsing.TreeNode;
 import util.TableMap;
 
 
-	public class QueryStructure implements Serializable{
+	public class QueryStructure implements Serializable, QueryStructureInterface{
 
 		private static Logger logger = Logger.getLogger(QueryStructure.class.getName());
 		private static final long serialVersionUID = 8049915037697741933L;
@@ -148,9 +148,7 @@ import util.TableMap;
 		private Vector<QueryStructure> WhereClauseSubqueries;//To store where clause sub queries
 
 
-		static String[] cvcRelationalOperators = { "DUMMY", "=", "/=", ">",
-			">=", "<", "<=", "&&"}; // IsNull and IsNotNull not supported currently
-									/*&& added by mathew on 1st Aug 2016.*/
+
 		
 		
 		/** The following data members added by mathew on 11 Oct 2016
@@ -839,7 +837,9 @@ import util.TableMap;
 
 		}
 		
-		
+		/** @author mathew
+		 * @param input
+		 */
 		public static String replaceFormatForRowLists(String input){
 			// 1st pattern (a1,b1,...)=(a2,b2,...)
 			Pattern p=Pattern.compile("(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))\\s*=\\s*(\\([^\\(&&[^\\)]]+,[^\\(&&[^\\)]]+\\))");
@@ -1010,7 +1010,7 @@ import util.TableMap;
 									
 							//Test in different scenarios - joins in SET  Op and test
 							//Get the select list to check it has select statement or nested SET operation
-							parseQueriesForSetOp(setOpList,debug); 
+							processQueriesForSetOp(setOpList,debug); 
 						} 
 					}
 				
@@ -1397,7 +1397,7 @@ import util.TableMap;
 		 * @param setOpList
 		 * @throws Exception
 		 */
-		public void parseQueriesForSetOp(SetOperationList setOpList, boolean debug) throws Exception {
+		public void processQueriesForSetOp(SetOperationList setOpList, boolean debug) throws Exception {
 			
 			logger.info(" set operation List"+setOpList.toString());
 			SetOperation setOperation =  setOpList.getOperations().get(0);
@@ -1620,6 +1620,11 @@ import util.TableMap;
 		public void setParamCount(int paramCount) {
 			this.paramCount = paramCount;
 		}
+		
+		public static String[] cvcRelationalOperators = { "DUMMY", "=", "/=", ">",
+				">=", "<", "<=", "&&"}; // IsNull and IsNotNull not supported currently
+										/*&& added by mathew on 1st Aug 2016.*/
+
 
 		public static String[] getCvcRelationalOperators() {
 			return cvcRelationalOperators;
