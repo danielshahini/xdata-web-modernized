@@ -8,7 +8,9 @@ import java.util.Vector;
 
 import parsing.JoinClauseInfo;
 import parsing.Node;
-import partialMarking.QueryData;
+import parsing.QueryData;
+import parsing.QueryStructure;
+import parsing.Util;
 
 public class SerializeXML {
 	public static PrintWriter  out;

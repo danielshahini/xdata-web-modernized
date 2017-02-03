@@ -6,7 +6,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import parsing.QueryData;
 import parsing.QueryParser;
+import parsing.QueryStructure;
 import testDataGen.GenerateCVC1;
 import testDataGen.preProcessForDataGeneration;
 import util.MyConnection;
@@ -107,7 +109,7 @@ public class QueryDetails {
 		
 	}
 	
-	QueryStructure qStructure;
+	public QueryStructure qStructure;
 	
 	public QueryStructure getQueryStructure(){
 		return qStructure;
@@ -147,18 +149,18 @@ public class QueryDetails {
 		preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
 
 		preProcess.initializeConnectionDetails(cvc);
-		
-		cvc.setqParser( new QueryParser(cvc.getTableMap()));
+		cvc.closeConn();
+		/*cvc.setqParser( new QueryParser(cvc.getTableMap()));
 		
 		cvc.closeConn();
 
-		/** Parse the query */
+		//** Parse the query 
 		cvc.getqParser().parseQuery("q1", query);
 
 		this.parser = cvc.getqParser();
 						
-		/**Initialize the query details to the object*/
-		cvc.initializeQueryDetails(parser);
+		//**Initialize the query details to the object
+		cvc.initializeQueryDetails(parser);*/
 		
 		this.data = cvc;
 		

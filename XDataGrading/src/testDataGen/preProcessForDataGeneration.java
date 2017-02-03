@@ -65,7 +65,7 @@ public class preProcessForDataGeneration {
 					
 				}
 			}
-			//DataGenController.generateDatasetForQuery(cvc);
+			DataGenController.generateDatasetForQuery(cvc);
 			
 			/** Check the data sets generated for this query */
 			ArrayList<String> dataSets = RelatedToPreprocessing.getListOfDataset(cvc);

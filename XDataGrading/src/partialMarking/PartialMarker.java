@@ -11,6 +11,8 @@ import com.google.gson.Gson;
 
 import parsing.AggregateFunction;
 import parsing.Node;
+import parsing.QueryData;
+import parsing.QueryStructure;
 import util.MyConnection;
 
 public class PartialMarker {
@@ -1581,8 +1583,12 @@ float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
 	
 	private void cleanup(){
 		try {
-			this.InstructorQuery.getData().closeConn();
-			this.StudentQuery.getData().closeConn();
+			if(this.InstructorQuery.getData() != null && this.InstructorQuery.getData().getConnection() != null){
+				this.InstructorQuery.getData().closeConn();
+			}
+			if(this.StudentQuery.getData() != null && this.StudentQuery.getData().getConnection() != null ){
+				this.StudentQuery.getData().closeConn();
+			}
 		}
 		catch(Exception ex){
 			logger.log(Level.SEVERE,ex.getMessage(), ex);

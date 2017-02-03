@@ -18,7 +18,10 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import parsing.ConjunctQueryStructure;
 import parsing.Node;
+import parsing.QueryData;
+import parsing.Util;
 
 /**
  * @author mathew
