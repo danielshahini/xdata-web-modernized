@@ -206,7 +206,7 @@ public class WriteFileAndUploadDatasets {
 											}catch(Exception e){
 												//If exception occurs, then this is duplicate column
 												logger.log(Level.FINE," Contraint violated ERROR:" + inst+"/n while inserting datasets");
-												e.printStackTrace();
+												//e.printStackTrace();
 											} finally{
 												inst.close();
 											}

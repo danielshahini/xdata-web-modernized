@@ -15,9 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import parsing.Node;
-import partialMarking.QueryData;
 import partialMarking.TestPartialMarking;
+import parsing.Node;
+import parsing.QueryData;
 import testDataGen.PopulateTestDataGrading;
 
 /**

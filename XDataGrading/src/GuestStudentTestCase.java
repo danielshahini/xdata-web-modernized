@@ -22,11 +22,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import partialMarking.QueryData;
+import parsing.QueryData;
 import partialMarking.TestPartialMarking;
+import parsing.Node;
 import database.*;
 import evaluation.FailedDataSetValues;
-import parsing.Node;
 
 import com.google.gson.Gson;
 import java.lang.reflect.Type;

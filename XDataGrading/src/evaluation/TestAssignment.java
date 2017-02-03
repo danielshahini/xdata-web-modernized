@@ -20,14 +20,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import org.apache.derby.iapi.error.StandardException;
-import org.apache.derby.impl.sql.compile.DropTableNode;
 import org.apache.derby.impl.sql.compile.StatementNode;
 import com.google.gson.Gson;
 
 import evaluation.QueryStatusData.QueryStatus;
 
 import testDataGen.GenerateCVC1;
-import testDataGen.GenerateDataset_new;
 import testDataGen.PopulateTestDataGrading;
 import testDataGen.preProcessForDataGeneration;
 import util.DatabaseConnection;
@@ -99,9 +97,11 @@ public class TestAssignment {
 					List<String> corrAns = new ArrayList<String>();
 					for (int i = 0; i < corr_queries.size(); i++) {
 						String filePath = Integer.toString(assignment_id);
-						GenerateDataset_new g = new GenerateDataset_new(filePath);
-						g.generateDatasetForQuery(assignment_id, corr_query_id.get(i), 1, "AutomatedTesting", "true",
-								corr_queries.get(i), "");
+						preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+						preProcess.generateDatasetForQuery(assignment_id, corr_query_id.get(i), 1, "AutomatedTesting", 0);
+						//GenerateDataset_new g = new GenerateDataset_new(filePath);
+						//g.generateDatasetForQuery(assignment_id, corr_query_id.get(i), 1, "AutomatedTesting", "true",
+						//		corr_queries.get(i), "");
 						String StudQueryString = "select rollnum,querystring from xdata_student_queries where question_id=? and assignment_id=?";
 						try (PreparedStatement studQueriesStmt = dbcon.prepareStatement(StudQueryString)) {
 							studQueriesStmt.setInt(1, corr_query_id.get(i));

@@ -12,22 +12,16 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.expression.Expression;
+
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.statement.select.WithItem;
 
 import com.google.gson.Gson;
 
 import util.Configuration;
-import util.DataSetValue;
 import util.DatabaseConnection;
 import util.DatabaseHelper;
 import util.MyConnection;
@@ -36,13 +30,10 @@ import util.Utilities;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.sql.*;
 
 import testDataGen.GenerateCVC1;
-import testDataGen.PopulateTestData;
 import testDataGen.PopulateTestDataGrading;
 import testDataGen.preProcessForDataGeneration;
-import parsing.AddSelectClauseForWithAs;
 import partialMarking.MarkInfo;
 import partialMarking.PartialMarker;
 
@@ -57,7 +48,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.derby.client.am.GetSystemPropertiesAction;
 import org.postgresql.util.PSQLException;
 
 //MD5 HASH for table :  SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_users f; 

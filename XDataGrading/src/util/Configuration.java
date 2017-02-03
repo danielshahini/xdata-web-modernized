@@ -30,10 +30,6 @@ public class Configuration implements ConfigurationInterface{
 		} catch (Exception e) {
 			// Ignoring error
 		}
-//		if(object == null){
-//			object = new Configuration();
-//			InitLogger.initLogger();
-//		}
 	}
 	
 	public static String getProperty(String property)
@@ -51,7 +47,9 @@ public class Configuration implements ConfigurationInterface{
 		// Class.forName(name, initialize, loader)
 		
 		try{
-        properties.load(Configuration.class.getResourceAsStream("XData.properties"));      		
+        properties.load(Configuration.class.getResourceAsStream("XData.properties"));
+		
+	          
 		}catch(IOException e){
 			logger.log(Level.SEVERE,e.getMessage(),e);
 			//e.printStackTrace();
