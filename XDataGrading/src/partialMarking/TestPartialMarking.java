@@ -6,6 +6,7 @@ package partialMarking;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -38,7 +39,8 @@ public class TestPartialMarking {
 	public PartialMarkerConfig Configuration;
 	
 //	static int assignNo=11;
-	static int assignNo=4; //for TPCH Schema
+//	static int assignNo=4; //for TPCH Schema
+	static int assignNo=13; //for Amol sirs Schema
 		
 	public QueryData OuterQuery;
 
@@ -505,10 +507,18 @@ public class TestPartialMarking {
 //				+ "select id,name from student,D where id=stud_id";
 		
 		
-	String	studentQuery="select 100.00 * sum(case when p_type like 'PROMO%' "
-			+ "then l_extendedprice * (1 - l_discount) else 0 end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue "
-			+ "from lineitem, part where l_partkey = p_partkey and l_shipdate >= date ':1' "
-			+ "and l_shipdate < date ':1' + interval '1' month";
+	String	studentQuery="select	ps_partkey, "
+			+ "sum(ps_supplycost * ps_availqty) as value from 	"
+			+ "partsupp, supplier, nation where ps_suppkey = s_suppkey "
+			+ "and s_nationkey = n_nationkey and n_name = ':1' "
+			+ "group by ps_partkey having sum(ps_supplycost * ps_availqty) > "
+			+ "( select sum(ps_supplycost * ps_availqty)  from "
+			+ "partsupp, supplier, nation where ps_suppkey = s_suppkey "
+			+ "and s_nationkey = n_nationkey and n_name = ':1' ) order by value desc;";
+	
+	studentQuery="select 1 from partsupp where ps_partkey >   ( select sum(ps_supplycost*2)*2 from partsupp)";
+	
+	
 	
 	//studentQuery="SELECT extract(year from '2015-11-22') as temp from  supplier";
 
@@ -556,7 +566,8 @@ public class TestPartialMarking {
 //		+ " (SELECT INSTRUCTOR.ID FROM INSTRUCTOR  WHERE INSTRUCTOR.ID NOT IN ( 1,2,3 ))";
 
 
-		String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON "
+
+String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON "
 				+ "(c.dept_name = d.dept_name) GROUP BY c.dept_name  HAVING SUM(c.credits)>10 AND COUNT(c.credits)>1 and COUNT(c.credits)<4";
 		
 		
@@ -576,6 +587,18 @@ public class TestPartialMarking {
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
 //				System.out.println("key:"+e.getKey()+" value"+e.getValue().getPrimaryKey());
+			
+			BufferedReader reader=new BufferedReader(new InputStreamReader(System.in));
+			studentQuery="";
+			String line="";
+			while((line=reader.readLine())!=null){
+				if(line.equals("q"))
+					break;
+				else
+					studentQuery+=(line+" ");
+			}
+			
+
 			
 			testObj.StudentQuery=testObj.process(testObj.StudentQuery,1, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);

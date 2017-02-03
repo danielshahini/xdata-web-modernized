@@ -4,6 +4,8 @@
 
 package partialMarking;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -11,7 +13,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.derby.impl.sql.compile.ColumnReference;
+
 
 import generateConstraints.UtilsRelatedToNode;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
@@ -28,7 +30,11 @@ import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.TimeKeyExpression;
+import net.sf.jsqlparser.expression.TimeValue;
+import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
@@ -1090,11 +1096,13 @@ public class ProcessSelectClause {
 							af.setAggExp(n1);
 							af.setFunc(funcName.toUpperCase());
 							af.setDistinct(an.isDistinct());
-
+							
+							if(af.getAggExp()!=null){
 							agg.setTable(af.getAggExp().getTable());
 							agg.setTableNameNo(af.getAggExp().getTableNameNo());
 							agg.setTableAlias(af.getAggExp().getTableAlias());
 							agg.setColumn(af.getAggExp().getColumn());
+							}
 
 							agg.setLeft(null);
 							agg.setRight(null);
@@ -1154,6 +1162,37 @@ public class ProcessSelectClause {
 				n.setRight(null); 
 				return n; 
 			}
+			else if(clause instanceof TimeValue){
+				TimeValue timeValue=(TimeValue) clause;
+				Time t=timeValue.getValue();
+				Node n=new Node();
+				n.setType(Node.getValType());
+				n.setStrConst(t.toString());
+				n.setLeft(null); 
+				n.setRight(null);
+				logger.info("TimeValue"+clause);
+			}
+			else if(clause instanceof TimestampValue){
+				TimestampValue timeStampValue=(TimestampValue) clause;
+				Timestamp ts=timeStampValue.getValue();
+				Node n=new Node();
+				n.setType(Node.getValType());
+				n.setStrConst(ts.toString());
+				n.setLeft(null); 
+				n.setRight(null);
+				logger.info("TimestampValue"+clause);
+				return n;
+			}
+			else if(clause instanceof TimeKeyExpression){
+				TimeKeyExpression timeKey=(TimeKeyExpression) clause;
+				Node n=new Node();
+				n.setType(Node.getValType());
+				n.setStrConst(timeKey.getStringValue());
+				n.setLeft(null); 
+				n.setRight(null); 
+
+				return n;
+			}
 			else if(clause instanceof DateTimeLiteralExpression){
 				DateTimeLiteralExpression dateTimeExpr=(DateTimeLiteralExpression) clause;
 				Node n=new Node();
@@ -1166,7 +1205,7 @@ public class ProcessSelectClause {
 			}
 			else if(clause instanceof DateValue){
 				DateValue dateValue=(DateValue) clause;
-				System.out.println("its a date"+dateValue.getValue());
+				logger.info("its a date"+dateValue.getValue());
 				Node n=new Node();
 				n.setType(Node.getValType());
 				n.setStrConst(dateValue.getValue().toString());
@@ -1184,6 +1223,16 @@ public class ProcessSelectClause {
 				n.setRight(null); 
 				logger.info("IntervalExpression Processed"+n);
 				return n; 
+			}
+			else if(clause instanceof SignedExpression){
+				SignedExpression sExpr=(SignedExpression) clause;
+				logger.info("its a signed expression"+sExpr);
+				Node n=processExpression(sExpr.getExpression(),qStruct.fromListElements, qStruct,plainSelect,joinType);
+				if(n.getType().equals(Node.getValType())){
+					n.setStrConst(sExpr.getSign()+n.getStrConst());
+				}
+				return n; 
+
 			}
 			else if (clause instanceof Column) {
 				Column columnReference = (Column) clause;
@@ -1450,6 +1499,8 @@ public class ProcessSelectClause {
 					else
 						n.setJoinType(JoinClauseInfo.innerJoin);
 				}
+				else if(n.getLeft().getType().equals(Node.getBroNodeSubQType())||n.getRight().getType().equals(Node.getBroNodeSubQType()))
+					n.setType(Node.getBroNodeSubQType());
 				return n;
 			} 
 			else if (clause instanceof DoubleAnd) {
@@ -1566,11 +1617,12 @@ public class ProcessSelectClause {
 				if(rc.getExpression() instanceof Function){ 
 					return node;
 				}
-				else if(rc.getExpression() instanceof ColumnReference || 
+				else if(rc.getExpression() instanceof Column || rc.getExpression() instanceof Expression||
 						(((Parenthesis)rc.getExpression()).getExpression()) instanceof Column){
 					//the result of subquery must be a single tuple
 					logger.log(Level.WARNING,"the result of subquery must be a single tuple");
 				}
+				return node;
 			}
 			else if(clause instanceof Between){
 

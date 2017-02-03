@@ -649,6 +649,9 @@ public class Node implements Cloneable, Serializable, NodeInterface{
 		else if (this.getLeft()!=null&&this.getRight()!=null){
 			return "(" + this.getLeft().toString()  + this.getOperator() + this.getRight().toString() + ")";
 		}
+		else if(this.getSubQueryStructure()!=null){
+			return "("+this.getSubQueryStructure().getQuery().getQueryString()+")";
+		}
 		else if(this.getOperator()!=null) {
 			return this.getOperator();
 		}
