@@ -30,6 +30,12 @@ public class Configuration implements ConfigurationInterface{
 		} catch (Exception e) {
 			// Ignoring error
 		}
+//		try {
+//				object = new Configuration();
+//				InitLogger.initLogger();
+//		} catch (Exception e) {
+//			// Ignoring error
+//		}
 	}
 	
 	public static String getProperty(String property)

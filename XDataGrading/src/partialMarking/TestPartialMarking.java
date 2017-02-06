@@ -41,9 +41,9 @@ public class TestPartialMarking {
 	// Configuration values required for the scoring function
 	public PartialMarkerConfig Configuration;
 	
-//	static int assignNo=11;
+	static int assignNo=11;//for University Schema
 //	static int assignNo=4; //for TPCH Schema
-	static int assignNo=13; //for Amol sirs Schema
+//	static int assignNo=13; //for Amol sirs Schema
 		
 	public QueryData OuterQuery;
 
@@ -442,6 +442,18 @@ public class TestPartialMarking {
 		}
 	}
 
+	public static void processStudentQueryFromKeyboard(TestPartialMarking testObj) throws Exception{
+		BufferedReader reader=new BufferedReader(new InputStreamReader(System.in));
+		String studentQuery="";
+		String line="";
+		while((line=reader.readLine())!=null){
+			if(line.equals("q"))
+				break;
+			else
+				studentQuery+=(line+" ");
+		}
+		testObj.StudentQuery=testObj.process(testObj.StudentQuery,1, studentQuery);
+	}
 
 	/**
 	 * @param args
@@ -585,25 +597,15 @@ String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER J
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();
 			
+			processStudentQueryFromKeyboard(testObj);
 //			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
 //				System.out.println("key:"+e.getKey()+" value"+e.getValue().getPrimaryKey());
 			
-			BufferedReader reader=new BufferedReader(new InputStreamReader(System.in));
-			studentQuery="";
-			String line="";
-			while((line=reader.readLine())!=null){
-				if(line.equals("q"))
-					break;
-				else
-					studentQuery+=(line+" ");
-			}
-			
 
 			
-			testObj.StudentQuery=testObj.process(testObj.StudentQuery,1, studentQuery);
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
 //			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery,1, instructorQuery);
 //			SerializeXML.serializeXML("student.xml", "instructor.xml", testObj.StudentQuery.qStructure, testObj.InstructorQuery.qStructure);
