@@ -331,15 +331,16 @@ public class WriteFileAndUploadDatasets {
 						}
 					}
 					if(dataExists){
-						String insertquery="update xdata_datasetvalue set datasetid=?,value=? where assignment_id=? and question_id=? and query_id=? and course_id=? and datasetid=?";
+						String insertquery="update xdata_datasetvalue set datasetid=?,value=?,tag=? where assignment_id=? and question_id=? and query_id=? and course_id=? and datasetid=?";
 						try(PreparedStatement smt = conn.prepareStatement(insertquery)){
 								smt.setString(1,datasetid);
 								smt.setString(2,json);
-								smt.setInt(3,assignmentId);
-								smt.setInt(4,questionId);
-								smt.setInt(5,queryId);
-								smt.setString(6, course_id);
-								smt.setString(7,datasetid);
+								smt.setString(3, tag);
+								smt.setInt(4,assignmentId);
+								smt.setInt(5,questionId);
+								smt.setInt(6,queryId);
+								smt.setString(7, course_id);
+								smt.setString(8,datasetid);
 								
 								smt.executeUpdate(); 			 	
 						}

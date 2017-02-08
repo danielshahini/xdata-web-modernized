@@ -114,7 +114,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 				// +"alert(dataString);"
 				  +"$.ajax({" 	
 				  +"    type: \"POST\","  
-				  +"    url: 'PartialMarker'," 
+				  +"    url: 'PartialMarkerServlet'," 
 				  +" 	data: dataString,"
 				  +"	context:$(this),"        
 				  +"      success: function(data) {"

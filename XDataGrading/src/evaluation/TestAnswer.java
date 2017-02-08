@@ -2610,7 +2610,7 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 							}else{
 								
 							}
-							MarkInfo result = marker.getMarks();
+							MarkInfo result = marker.getMarksForQueryStructures();
 							if(result.Marks > markInfo.Marks)
 								markInfo = result;
 								

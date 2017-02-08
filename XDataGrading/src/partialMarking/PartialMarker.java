@@ -175,6 +175,7 @@ public class PartialMarker {
 	}
 	
 	// Returns the marks corresponding to the query of the student in comparison to the instructor query
+	@Deprecated	
 	public MarkInfo getMarks() throws Exception{
 		
 		this.initialize();
@@ -1276,6 +1277,7 @@ private static QueryInfo populateQueryInfo(QueryData instructorData, QueryData s
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
 		
+	if(instructorData != null && studentData != null){
 		MarkInfo whereSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
 		
 		MarkInfo fromSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
@@ -1433,7 +1435,7 @@ float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
 		float score = student/instructor * PartialMarker.maxMarks;
 		
 		marks.Marks = Configuration.OuterQuery * score + Configuration.FromSubQueries * fromSubQuery.Marks + Configuration.WhereSubQueries * whereSubQuery.Marks;
-		
+	}
 		return marks;
 	}
 	

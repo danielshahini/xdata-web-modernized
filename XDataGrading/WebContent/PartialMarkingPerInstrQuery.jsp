@@ -92,7 +92,7 @@ hljs.initHighlightingOnLoad();
 		  alert(dataString);
 		  $.ajax({ 
 		        type: "POST",  
-		        url: 'PartialMarker', 
+		        url: 'PartialMarkerServlet', 
 		        data: dataString,
 		        context:$(this),        
 		        success: function(data) {
@@ -106,7 +106,7 @@ hljs.initHighlightingOnLoad();
 		        }        
 		      });			
 		  
-		  /*$.post('PartialMarker', {assignmentId:assignId, questionId:quesId, queryId:queryId, predicate:$('#predicates').val(), projection:$('#projections').val(), 
+		  /*$.post('PartialMarkerServlet', {assignmentId:assignId, questionId:quesId, queryId:queryId, predicate:$('#predicates').val(), projection:$('#projections').val(), 
 			  relation:$('#relations').val(), groupBy:$('#groupBy').val(), joins:$('#joins').val(), outer:$('#outer').val(),
 			  from:$('#fromSub').val(), where:$('#whereSub').val()},function(responseText) {   		
 			  if (responseText.trim()) {

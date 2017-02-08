@@ -347,12 +347,12 @@
     <url-pattern>/UpdateMarks</url-pattern>
   </servlet-mapping>
   <servlet>
-    <servlet-name>PartialMarker</servlet-name>
-    <servlet-class>PartialMarker</servlet-class>
+    <servlet-name>PartialMarkerServlet</servlet-name>
+    <servlet-class>PartialMarkerServlet</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>PartialMarker</servlet-name>
-    <url-pattern>/PartialMarker</url-pattern>
+    <servlet-name>PartialMarkerServlet</servlet-name>
+    <url-pattern>/PartialMarkerServlet</url-pattern>
   </servlet-mapping>
   <servlet>
     <servlet-name>AssignmentScores</servlet-name>

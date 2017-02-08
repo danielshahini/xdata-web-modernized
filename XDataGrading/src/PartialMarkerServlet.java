@@ -26,14 +26,14 @@ import util.MyConnection;
 /**
  * Servlet implementation class UploadScore
  */
-@WebServlet("/PartialMarker")
-public class PartialMarker extends HttpServlet {
+@WebServlet("/PartialMarkerServlet")
+public class PartialMarkerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    private static Logger logger = Logger.getLogger(PartialMarker.class.getName());
+    private static Logger logger = Logger.getLogger(PartialMarkerServlet.class.getName());
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public PartialMarker() {
+    public PartialMarkerServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -75,7 +75,7 @@ public class PartialMarker extends HttpServlet {
 								partialMarking.PartialMarker.Configuration.Aggregates = Integer.parseInt(request.getParameter("aggregates"));
 								partialMarking.PartialMarker.Configuration.SetOperators = Integer.parseInt(request.getParameter("setoperators"));
 								partialMarking.PartialMarker.Configuration.Distinct = Integer.parseInt(request.getParameter("distinct"));
-								MarkInfo result = marker.getMarks();
+								MarkInfo result = marker.getMarksForQueryStructures();
 								if(result.Marks > markInfo.Marks)
 									markInfo = result;
 							}
