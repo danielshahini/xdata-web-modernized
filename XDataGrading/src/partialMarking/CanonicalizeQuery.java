@@ -20,11 +20,9 @@ import parsing.Column;
 import parsing.ForeignKey;
 import parsing.JoinClauseInfo;
 import parsing.Node;
-import parsing.NodeComparator;
 import parsing.Pair;
-import parsing.QueryData;
 import parsing.QueryStructure;
-import parsing.Util;
+import parsing.QueryData;
 
 public class CanonicalizeQuery {
 	
@@ -1108,7 +1106,7 @@ public class CanonicalizeQuery {
 		
 		for(Vector<Node> expKey:expandedKeys){
 			// if prefix functionally determines any of the equivalent keys then return True
-			if(Util.containsElements(prefix,expKey)){
+			if(parsing.Util.containsElements(prefix,expKey)){
 				return true;
 			}
 			/* if all the attributes in expKey belong to the same table T and if it T has no been visited before 
@@ -1128,7 +1126,7 @@ public class CanonicalizeQuery {
 			Vector<Column> primaryKeyCols=validKey.get(0).getTable().getPrimaryKey();
 			Vector<Node> primaryKeyNodes=convertColumnVectorToNodeVector(primaryKeyCols,validKey.get(0));
 			logger.info(" primaryKey"+primaryKeyNodes);
-			if(Util.containsElements(prefix,primaryKeyNodes))
+			if(parsing.Util.containsElements(prefix,primaryKeyNodes))
 				return true;
 			else{
 				/* prepare for recursion
@@ -1169,7 +1167,7 @@ public class CanonicalizeQuery {
 		
 		for(Vector<Node> expKey:expandedKeys){
 			// if prefix functionally determines any of the equivalent keys then return True
-			if(Util.containsElements(prefix,expKey)){
+			if(parsing.Util.containsElements(prefix,expKey)){
 				return true;
 			}
 			/* if all the attributes in expKey belong to the same table T and if it T has no been visited before 
@@ -1189,7 +1187,7 @@ public class CanonicalizeQuery {
 			Vector<Column> primaryKeyCols=validKey.get(0).getTable().getPrimaryKey();
 			Vector<Node> primaryKeyNodes=convertColumnVectorToNodeVector(primaryKeyCols,validKey.get(0));
 			logger.info(" primaryKey"+primaryKeyNodes);
-			if(Util.containsElements(prefix,primaryKeyNodes))
+			if(parsing.Util.containsElements(prefix,primaryKeyNodes))
 				return true;
 			else{
 				/* prepare for recursion

@@ -96,8 +96,8 @@ public class TestPartialMarking {
 		queryDetails.startProcessing(assignNo, questionId, strQuery);	
 	
 		for(ConjunctQueryStructure c:queryDetails.qStructure.conjuncts){
-			for(Node n :c.getJoinCondsForEquivalenceClasses())
-				System.out.println("join Conditions :"+n.getJoinType()+" "+n);
+			for(Node n :c.getSelectionConds())
+				System.out.println("join Conditions : "+n);
 		}
 
 		return queryDetails;
@@ -589,15 +589,15 @@ String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER J
 //		String strQuery= " WITH R AS (SELECT * FROM TEACHES INNER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.ID)"
 //				+ "SELECT R.course_id FROM  R "
 //				+ " INNER JOIN  DEPARTMENT ON R.dept_name=DEPARTMENT.dept_name";
-		
+
 		TestPartialMarking testObj=new TestPartialMarking();
 		try{
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
-			//readQueriesFromDBParseAndTest();
+			readQueriesFromDBParseAndTest();
 			
-			processStudentQueryFromKeyboard(testObj);
+//			processStudentQueryFromKeyboard(testObj);
 //			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		

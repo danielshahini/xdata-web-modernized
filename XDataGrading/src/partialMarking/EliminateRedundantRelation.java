@@ -13,11 +13,10 @@ import java.util.logging.Logger;
 import parsing.Column;
 import parsing.ForeignKey;
 import parsing.Node;
-import parsing.Pair;
-import parsing.QueryData;
 import parsing.QueryParser;
+import parsing.Pair;
 import parsing.QueryStructure;
-import parsing.Util;
+import parsing.QueryData;
 
 import java.util.Set;
 
@@ -297,7 +296,7 @@ public class EliminateRedundantRelation {
 		if(query.getLstJoinConditions()!=null)
 		selectionConds.addAll(query.getLstJoinConditions());
 		
-		selectionConds=Util.removeDuplicates(selectionConds);
+		selectionConds=parsing.Util.removeDuplicates(selectionConds);
 
 		Map<String, ArrayList<Node>> relationToSelConds=createRelationToSelectionConditions(selectionConds);
 				
@@ -523,7 +522,7 @@ public class EliminateRedundantRelation {
 				joinConds.add(selCond);
 		}
 		if(joinConds!=null&&joinConds.size()>0){
-			joinConds=Util.removeDuplicates(joinConds);
+			joinConds=parsing.Util.removeDuplicates(joinConds);
 			if(joinConds.size()>=2){
 				logger.info("Table "+tableNameNo +" is involved in multiple join conditions, and hence cannot be removed");
 				return true;

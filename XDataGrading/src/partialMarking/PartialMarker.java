@@ -11,9 +11,9 @@ import com.google.gson.Gson;
 
 import parsing.AggregateFunction;
 import parsing.Node;
-import parsing.QueryData;
-import parsing.QueryStructure;
 import util.MyConnection;
+import parsing.QueryStructure;
+import parsing.QueryData;
 
 public class PartialMarker {
 	private static Logger logger = Logger.getLogger(PartialMarker.class.getName());
@@ -175,7 +175,6 @@ public class PartialMarker {
 	}
 	
 	// Returns the marks corresponding to the query of the student in comparison to the instructor query
-	@Deprecated	
 	public MarkInfo getMarks() throws Exception{
 		
 		this.initialize();
@@ -1277,7 +1276,6 @@ private static QueryInfo populateQueryInfo(QueryData instructorData, QueryData s
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
 		
-	if(instructorData != null && studentData != null){
 		MarkInfo whereSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
 		
 		MarkInfo fromSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
@@ -1435,7 +1433,7 @@ float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
 		float score = student/instructor * PartialMarker.maxMarks;
 		
 		marks.Marks = Configuration.OuterQuery * score + Configuration.FromSubQueries * fromSubQuery.Marks + Configuration.WhereSubQueries * whereSubQuery.Marks;
-	}
+		
 		return marks;
 	}
 	
@@ -1585,12 +1583,8 @@ float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
 	
 	private void cleanup(){
 		try {
-			if(this.InstructorQuery.getData() != null && this.InstructorQuery.getData().getConnection() != null){
-				this.InstructorQuery.getData().closeConn();
-			}
-			if(this.StudentQuery.getData() != null && this.StudentQuery.getData().getConnection() != null ){
-				this.StudentQuery.getData().closeConn();
-			}
+			this.InstructorQuery.getData().closeConn();
+			this.StudentQuery.getData().closeConn();
 		}
 		catch(Exception ex){
 			logger.log(Level.SEVERE,ex.getMessage(), ex);

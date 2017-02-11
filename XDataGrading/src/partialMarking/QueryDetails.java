@@ -6,12 +6,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import parsing.QueryData;
 import parsing.QueryParser;
-import parsing.QueryStructure;
 import testDataGen.GenerateCVC1;
 import testDataGen.preProcessForDataGeneration;
 import util.MyConnection;
+import parsing.QueryStructure;
+import parsing.QueryData;
 
 public class QueryDetails {
 	
@@ -109,7 +109,7 @@ public class QueryDetails {
 		
 	}
 	
-	public QueryStructure qStructure;
+	QueryStructure qStructure;
 	
 	public QueryStructure getQueryStructure(){
 		return qStructure;
@@ -139,35 +139,35 @@ public class QueryDetails {
 	}
 
 	
-	public void initialize(int assignmentId, int questionId, String query) throws Exception {
-		GenerateCVC1 cvc = new GenerateCVC1();
-		cvc.setAssignmentId(assignmentId);
-		cvc.setQuestionId(questionId);
-		cvc.setQueryId(1);
-		cvc.setCourseId("");
-
-		preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
-
-		preProcess.initializeConnectionDetails(cvc);
-		cvc.closeConn();
-		/*cvc.setqParser( new QueryParser(cvc.getTableMap()));
-		
-		cvc.closeConn();
-
-		//** Parse the query 
-		cvc.getqParser().parseQuery("q1", query);
-
-		this.parser = cvc.getqParser();
-						
-		//**Initialize the query details to the object
-		cvc.initializeQueryDetails(parser);*/
-		
-		this.data = cvc;
-		
-		this.OuterQuery = new QueryData(this.parser, this.data.outerBlock, this.data);		
-		
-		cvc.closeConn();
-	}
+//	public void initialize(int assignmentId, int questionId, String query) throws Exception {
+//		GenerateCVC1 cvc = new GenerateCVC1();
+//		cvc.setAssignmentId(assignmentId);
+//		cvc.setQuestionId(questionId);
+//		cvc.setQueryId(1);
+//		cvc.setCourseId("");
+//
+//		preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
+//
+//		preProcess.initializeConnectionDetails(cvc);
+//		
+//		cvc.setqParser( new QueryParser(cvc.getTableMap()));
+//		
+//		cvc.closeConn();
+//
+//		/** Parse the query */
+//		cvc.getqParser().parseQuery("q1", query);
+//
+//		this.parser = cvc.getqParser();
+//						
+//		/**Initialize the query details to the object*/
+//		cvc.initializeQueryDetails(parser);
+//		
+//		this.data = cvc;
+//		
+//		this.OuterQuery = new QueryData(this.parser, this.data.outerBlock, this.data);		
+//		
+//		cvc.closeConn();
+//	}
 
 
 }
