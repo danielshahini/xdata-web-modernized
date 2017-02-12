@@ -41,8 +41,8 @@ public class TestPartialMarking {
 	// Configuration values required for the scoring function
 	public PartialMarkerConfig Configuration;
 	
-	static int assignNo=11;//for University Schema
-//	static int assignNo=4; //for TPCH Schema
+//	static int assignNo=11;//for University Schema
+	static int assignNo=4; //for TPCH Schema
 //	static int assignNo=13; //for Amol sirs Schema
 		
 	public QueryData OuterQuery;
@@ -595,9 +595,8 @@ String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER J
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
-			readQueriesFromDBParseAndTest();
-			
-//			processStudentQueryFromKeyboard(testObj);
+			//readQueriesFromDBParseAndTest();			
+			processStudentQueryFromKeyboard(testObj);
 //			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
