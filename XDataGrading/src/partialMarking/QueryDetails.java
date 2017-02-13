@@ -11,7 +11,6 @@ import testDataGen.GenerateCVC1;
 import testDataGen.preProcessForDataGeneration;
 import util.MyConnection;
 import parsing.QueryStructure;
-import parsing.QueryData;
 
 public class QueryDetails {
 	
@@ -25,7 +24,6 @@ public class QueryDetails {
 	
 	// Start Region - Public members
 	
-	public QueryData OuterQuery;
 	public String query;
 
 	// End Region - Public members
