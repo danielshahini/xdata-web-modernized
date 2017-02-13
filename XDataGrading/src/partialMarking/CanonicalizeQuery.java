@@ -20,6 +20,7 @@ import parsing.Column;
 import parsing.ForeignKey;
 import parsing.JoinClauseInfo;
 import parsing.Node;
+import parsing.NodeComparator;
 import parsing.Pair;
 import parsing.QueryStructure;
 import parsing.QueryData;
