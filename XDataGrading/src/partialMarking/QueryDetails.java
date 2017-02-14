@@ -120,7 +120,7 @@ public class QueryDetails {
 				
 		cvc.closeConn();
 
-		qStructure.buildQueryStructure("q1", query);
+		qStructure.buildQueryStructure(query);
 		
 		
 	}
