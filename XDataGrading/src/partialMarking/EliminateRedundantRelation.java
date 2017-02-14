@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 import parsing.Column;
 import parsing.ForeignKey;
 import parsing.Node;
-import parsing.QueryParser;
 import parsing.Pair;
 import parsing.QueryStructure;
 
