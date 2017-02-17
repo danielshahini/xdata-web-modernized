@@ -13,10 +13,8 @@ import java.util.logging.Logger;
 import parsing.Column;
 import parsing.ForeignKey;
 import parsing.Node;
-import parsing.QueryParser;
 import parsing.Pair;
 import parsing.QueryStructure;
-import parsing.QueryData;
 
 import java.util.Set;
 
@@ -24,13 +22,6 @@ public class EliminateRedundantRelation {
 
 	private static Logger logger = Logger.getLogger(EliminateRedundantRelation.class.getName());
 
-	public static void EliminateRedundantRelations(QueryData queryData) throws CloneNotSupportedException{
-		EliminateRedundantRelation.EliminateRelations(queryData);
-		if(queryData!=null){
-			queryData.reviseAfterFindingRedundantRelations();
-		}
-	}
-	
 	public static void EliminateRedundantRelations(QueryStructure queryStruct) throws CloneNotSupportedException{
 
 			EliminateRedundantRelation.EliminateRelations(queryStruct);
@@ -39,243 +30,7 @@ public class EliminateRedundantRelation {
 //			}
 	}
 
-	private static void EliminateRelations(QueryData query) throws CloneNotSupportedException{
-		if(query==null)
-			return;
 
-		if(query != null && query.WhereClauseQueries != null){
-			for(QueryData qd : query.WhereClauseQueries){
-				EliminateRedundantRelation.EliminateRelations(qd);
-				qd.reviseAfterFindingRedundantRelations();
-			}}
-
-		if(query != null && query.FromClauseQueries != null){
-			for(QueryData qd : query.FromClauseQueries){
-				EliminateRedundantRelation.EliminateRelations(qd);
-				qd.reviseAfterFindingRedundantRelations();
-			}}
-
-		ArrayList<String> eliminateRelations = new ArrayList<String>();
-
-		QueryParser parser = query.Parser;	
-
-		Vector<Node> groupByCols=parser.getGroupByNodes();
-
-		Map<String,ArrayList<Node>> relationToGroupByCols=EliminateRedundantRelation.createRelationToGroupByColumns(groupByCols);
-
-		ArrayList<Node> havingConds=query.getHavingClause();
-		Map<String,ArrayList<Node>> relationToHavingConds=EliminateRedundantRelation.createRelationToHavingConditions(havingConds);
-
-		
-		ArrayList<Node> selectionConds = query.getSelectionConditions();
-		selectionConds.addAll(query.getJoinConditions());
-		
-		//selectionConds=removeDuplicates(selectionConds);
-
-		Map<String, ArrayList<Node>> relationToSelConds=createRelationToSelectionConditions(selectionConds);
-		
-		Map<String, ArrayList<Node>> relationToProjCols=createRelationToProjectedColumns(parser.getProjectedCols());
-
-		Map<String, ArrayList<Node>> relationToOrderByCols=createRelationToProjectedColumns(parser.getOrderByNodes());
-
-		Vector<Vector<Node>> eqClasses = query.getEqClasses();		
-		
-
-		Map<Node, ArrayList<Node> > nodeToEqNodes = new HashMap<Node, ArrayList<Node>>();
-		Map<String, ArrayList<Node>> relationToEqNodes = new HashMap<String, ArrayList<Node>>();
-		Map<String, HashMap<String, ArrayList<Pair>>> relationToRelationEqNodes = new HashMap<String, HashMap<String, ArrayList<Pair>>>(); 
-		if(eqClasses != null){
-			for(Vector<Node> t : eqClasses){
-				for(Node n1 : t){
-
-					ArrayList<Node> temp = null;
-					if(nodeToEqNodes.containsKey(n1)){
-						temp = nodeToEqNodes.get(n1);
-					}
-					else{
-						temp = new ArrayList<Node>();
-					}
-
-					for(Node n2 : t){
-						if(!n1.equals(n2)){
-							temp.add(n2);
-						}
-					}
-
-					ArrayList<Node> temp2 = null;
-					if(relationToEqNodes.containsKey(n1.getTableNameNo())){
-						temp2 = relationToEqNodes.get(n1.getTableNameNo());
-					}
-					else{
-						temp2 = new ArrayList<Node>();
-					}
-
-					temp2.add(n1);
-
-					relationToEqNodes.put(n1.getTableNameNo(), temp2);
-
-					nodeToEqNodes.put(n1, temp);
-				}
-			}
-		}
-
-		for (Entry<String, ArrayList<Node>> entry : relationToEqNodes.entrySet()) {
-
-			String key = entry.getKey();
-			ArrayList<Node> value = entry.getValue();
-
-			Map<String, ArrayList<Pair>> data = relationToRelationEqNodes.get(key);
-
-			if(data == null){
-				relationToRelationEqNodes.put(key, new HashMap<String, ArrayList<Pair>>());
-				data = relationToRelationEqNodes.get(key);
-			}
-
-			for(Node n : value){		    	
-				ArrayList<Node> nodes = nodeToEqNodes.get(n);
-
-				for(Node n1 : nodes){
-					String temp = n1.getTableNameNo();
-
-					ArrayList<Pair> tempData = null;
-
-					if(data.containsKey(temp)){
-						tempData = data.get(temp);
-					}
-					else {
-						tempData = new ArrayList<Pair>();
-					}			    	
-
-					tempData.add(new Pair(n, n1));
-					data.put(temp, tempData);	
-				}	    	
-			}
-		}
-		
-
-		logger.info(" relation to Selection Conds Map "+relationToSelConds);
-		//		for(Entry<String, ArrayList<Node>> entry:relationToSelConds.entrySet()){
-		//		System.out.println("key="+entry.getKey());
-		//		System.out.println("Values:");
-		//		for(Node n:entry.getValue()){
-		//			System.out.print(n.getLeft().getTable().getTableName()+":");
-		//			System.out.print(n.getLeft().getColumn().getTableName()+":");
-		//			System.out.print(n.getLeft().getColumn().getColumnName()+"\n");
-		//			System.out.println(n.getLeft()+"="+n.getRight());
-		//		}
-		//	}
-		logger.info(" relation to Projection Conds Map "+relationToProjCols);
-		logger.info(" relation to Group By Cols Map "+relationToGroupByCols);
-		logger.info(" relation to Having Conds Map "+relationToHavingConds);
-		logger.info(" relation to Order By Conds Map "+relationToOrderByCols);
-		
-		/////////////////////code for revised detection of redundant relation starts here
-
-		/** Get the list of foreign keys*/
-		ArrayList<ForeignKey> foreignKeys = query.WholeData.getForeignKeysModified();
-	
-		Set<String> baseTables=new HashSet<String>();
-		//for(String table: query.WholeData)
-		for(String table: query.getRelationInstances()){
-			baseTables.add(table);
-		}
-		logger.info( " baseTables "+baseTables);
-
-
-		Set<String> baseTablesOld;
-
-		/*
-		 * Do while loop below computes a fix point of the  eliminateRelations
-		 * which in each iteration stores the set of eliminated relations so far
-		 * 
-		 * eliminated relations are removed from set baseTables which is the set of 
-		 * non eliminated relations in the query, hence the termination condition 
-		 * depends on the fixpoint of baseTables
-		 */
-		do{
-			baseTablesOld=new HashSet<String>();
-
-			for(String table: baseTables)
-				baseTablesOld.add(table);			
-
-			/* referencedRelations are the set of relations R s.t. key attributes
-			 * in R are refered to by foreign keys of another table R'  and the corresponding attributes 
-			 * of referencing table R' and referenced table R are part of the eqivalence
-			 * relation induced by the query
-			 */
-			ArrayList<String> referencedRelations=QueryData.getReferencedRelations(baseTables, eliminateRelations, foreignKeys, relationToRelationEqNodes);	
-			logger.info("Referenced Relations:"+referencedRelations);
-
-			/* any referenced relation is a candidates for 
-			 * a redundant relation if every projected (resp. selected) column c1 from this relation 
-			 * have an equivalent projected (resp. selected ) column c2 with c1.tableName != c2.tableName
-			 */
-
-			/*
-			 * Now check if for any referenced relation R, every selected (resp. projected) column c1 
-			 * there is another equivalent column c2 s.t c1.tableName!= c2.tableName  
-			 */
-
-
-			for(String refTable: referencedRelations){
-				
-				if(isInvolvedInMultipleSelConditions(refTable,relationToSelConds))
-					continue;
-
-				boolean altEqSelFlag=existsAlternateEquivalentSelectionConditions(refTable, relationToSelConds, nodeToEqNodes, baseTables);
-				if(!altEqSelFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
-					continue;
-				}				
-				boolean altEqProjFlag=existsAlternateEquivalentProjections(refTable, relationToProjCols, nodeToEqNodes, baseTables);
-
-				if(!altEqProjFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
-					continue;
-				}
-				boolean altEqGroupByFlag=existsAlternateEquivalentGroupByCols(refTable, relationToGroupByCols, nodeToEqNodes, baseTables);
-				if(!altEqGroupByFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
-					continue;
-				}
-				boolean altEqHavingFlag=existsAlternateEquivalentHavingConditions(refTable, relationToHavingConds, nodeToEqNodes, baseTables);
-				if(!altEqHavingFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
-					continue;
-				}
-				boolean altEqOrderByFlag=existsAlternateEquivalentProjections(refTable, relationToOrderByCols, nodeToEqNodes, baseTables);
-				if(!altEqOrderByFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
-					continue;
-				}
-
-				if(altEqSelFlag && altEqProjFlag && altEqGroupByFlag && altEqHavingFlag && altEqOrderByFlag){
-					logger.info("Relation "+refTable+ " is a redundant relation");
-					foreignKeys=EliminateRedundantRelation.removeForeignKey(refTable, foreignKeys);
-					eliminateRelations.add(refTable);
-					baseTables.remove(refTable);
-					relationToProjCols=updateRelationsToProjectedColumns(baseTables, refTable, relationToProjCols,nodeToEqNodes);
-					relationToSelConds=updateRelationsToSelectionConditions(baseTables, refTable, relationToSelConds, nodeToEqNodes);
-					relationToGroupByCols=updateRelationsToGroupByColumns(baseTables, refTable, relationToGroupByCols, nodeToEqNodes);
-					relationToHavingConds=updateRelationsToHavingConditions(baseTables, refTable, relationToHavingConds, nodeToEqNodes);
-					relationToOrderByCols=updateRelationsToProjectedColumns(baseTables, refTable, relationToOrderByCols,nodeToEqNodes);
-					
-
-				}
-			}
-
-		} while(!baseTables.containsAll(baseTablesOld));
-
-		/////////////////////code for revised detection of redundant relation ends here
-
-		logger.info(" eliminated relations "+eliminateRelations);
-		
-		if(query.RedundantRelations.isEmpty())
-			query.RedundantRelations = eliminateRelations;
-		else
-			query.RedundantRelations.addAll(eliminateRelations);
-	
-	}
 	
 	
 	private static void EliminateRelations(QueryStructure query) throws CloneNotSupportedException{
@@ -431,7 +186,7 @@ public class EliminateRedundantRelation {
 			 * of referencing table R' and referenced table R are part of the eqivalence
 			 * relation induced by the query
 			 */
-			ArrayList<String> referencedRelations=QueryData.getReferencedRelations(baseTables, eliminateRelations, foreignKeys, relationToRelationEqNodes);	
+			ArrayList<String> referencedRelations=parsing.Util.getReferencedRelations(baseTables, eliminateRelations, foreignKeys, relationToRelationEqNodes);	
 			logger.info("Referenced Relations:"+referencedRelations);
 
 			/* any referenced relation is a candidates for 
