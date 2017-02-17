@@ -6,39 +6,27 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import parsing.QueryParser;
 import testDataGen.GenerateCVC1;
 import testDataGen.preProcessForDataGeneration;
 import util.MyConnection;
 import parsing.QueryStructure;
-import parsing.QueryData;
 
 public class QueryDetails {
 	
 	// Start Region - Private members
 	
-	private QueryParser parser;
 	
 	private GenerateCVC1 data;
 		
 	// End Region - Private members
 	
 	// Start Region - Public members
-	
-	public QueryData OuterQuery;
+
 	public String query;
 
 	// End Region - Public members
 	
-	public QueryParser getParser(){
-		return this.parser;
-	}
-	
-	public void setQueryParser(QueryParser qp){
-		this.parser = qp;
-	}
-	
-	public GenerateCVC1 getData(){
+		public GenerateCVC1 getData(){
 		return this.data;
 	}
 	
@@ -133,7 +121,7 @@ public class QueryDetails {
 				
 		cvc.closeConn();
 
-		qStructure.buildQueryStructure("q1", query,false);
+		qStructure.buildQueryStructure(query);
 		
 		
 	}

@@ -1,5 +1,4 @@
 
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -13,27 +12,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import parsing.QueryData;
+import parsing.QueryStructure;
 import partialMarking.TestPartialMarking;
 import parsing.Node;
 import database.*;
 import evaluation.FailedDataSetValues;
-
 import com.google.gson.Gson;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-
 import com.google.gson.reflect.TypeToken;
-
 import testDataGen.PopulateTestDataGrading;
 import util.DataSetValue;
 import util.DatabaseConnectionDetails;
@@ -51,7 +44,6 @@ public class GuestStudentTestCase extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
-
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -64,7 +56,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;
 }
-
 		
 		
 		Connection dbCon = null, testcon = null;
@@ -78,7 +69,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		int marks = Integer.parseInt(request.getParameter("marks"));
 		int maxMarks = Integer.parseInt(request.getParameter("maxMarks"));
 		Boolean learningMode = false;
-
 		//Instead of getting it from sessin, get it from student table - tajudgement attribute
 		//If evaluation status of the assignment is true, then the assignment is evaluated, set this label to true.
 		
@@ -100,11 +90,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	    	       throw new ServletException(ex);
 	    	}	
   		}
-
   		logger.log(Level.FINE,"Assignment_id :"+assignment_id);
   		logger.log(Level.FINE,"Question_id :"+question_id);
   		logger.log(Level.FINE,"User id : "+user_id);
-
 		if(dbCon == null){ 
 			dbCon=(Connection) session.getAttribute("dbConnection");
 		}
@@ -133,7 +121,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		
 		out_assignment.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""+
 		"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
-
 		"<html xmlns=\"http://www.w3.org/1999/xhtml\">"+
 		"<head>"+
 		"<title>"+
@@ -147,7 +134,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		"<script type=\"text/javascript\" src=\"../scripts/jquery.js\"></script>"+
 		"<script type=\"text/javascript\" src=\"../scripts/wufoo.js\"></script>"+
  		"<script src=\"../highlight/highlight.pack.js\"></script>  "+
-
 		"<link rel=\"stylesheet\" href=\"css/structure.css\" type=\"text/css\" />"+
 		"<link rel=\"stylesheet\" href=\"css/form.css\" type=\"text/css\" />"+
 		"<link rel=\"stylesheet\" href=\"css/theme.css\" type=\"text/css\" />"+
@@ -165,7 +151,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		"<script type=\"text/javascript\">"+  "hljs.initHighlightingOnLoad();" 
 		+"function toggleRefTables(id){"
 			+"$(id).toggle();"
-
 			+"if($(id).parent().children()[0].innerHTML==\"View Referenced Tables\"){"
 				+"$(id).parent().children()[0].innerHTML=\"Hide Referenced Tables\";"
 			+"}"
@@ -179,18 +164,15 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		"<style> html,body {background: #fff;} fieldset {background: #f2f2e6; padding: 10px;	border: 1px solid #fff;	border-color: #fff #666661 #666661 #fff;	margin-bottom: 36px;}"+
 		"#breadcrumbs{  position: absolute;  padding-left:10px;  padding-right:10px;  left: 5px;  top: 10px;  font: 13px/13px Arial, Helvetica, sans-serif;  background-color: #f0f0f0;  font-weight: bold;}</style>"+
 		"</head>"+
-
 		"<body id=\"public\">");
 		String studAnswer = CommonFunctions.decodeURIComponent((String)request.getParameter("query"));
 		FailedDataSetValues failedDS = (FailedDataSetValues)session.getAttribute("failedDS");
 		out_assignment.println("<div id=\"fieldset\">"+ 
 				"<form class=\"wufoo\" action=\"LoginChecker\" method=\"post\">"+
-
 					"<div class=\"info\">"+
 					"<h2>Question: "+question_id+"</h2>"+
 					"</div>"   
 					+"<p align=\"left\"> <strong> Your Answer: </strong>"+ "<pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent((String)request.getParameter("query")))+"</code></pre></p>");
-
 			
 		if(status.equals("Error")){
 			out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:red;'>Error</label></div>");
@@ -227,7 +209,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		if(status == null || (status != null && status.isEmpty()) || (status != null && status.equalsIgnoreCase("error"))){
 			status ="Incorrect";
 		}
-
 		if(status.equals("Failed")){
 				ArrayList <String>instructorQueries = new ArrayList<String>(); 
 				String out = "";
@@ -261,10 +242,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			 //Then close the toggling DIV
 			 out += "</div></div>";
 			 out_assignment.println(out);
-
 		out_assignment.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""+
 		"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
-
 		"<html xmlns=\"http://www.w3.org/1999/xhtml\">"+
 		"<head>"+
 		"<title>"+
@@ -278,7 +257,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		"<script type=\"text/javascript\" src=\"../scripts/jquery.js\"></script>"+
 		"<script type=\"text/javascript\" src=\"../scripts/wufoo.js\"></script>"+
  		"<script src=\"../highlight/highlight.pack.js\"></script>  "+
-
 		"<link rel=\"stylesheet\" href=\"css/structure.css\" type=\"text/css\" />"+
 		"<link rel=\"stylesheet\" href=\"css/form.css\" type=\"text/css\" />"+
 		"<link rel=\"stylesheet\" href=\"css/theme.css\" type=\"text/css\" />"+
@@ -296,7 +274,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		"<script type=\"text/javascript\">"+  "hljs.initHighlightingOnLoad();" 
 		+"function toggleRefTables(id){"
 			+"$(id).toggle();"
-
 			+"if($(id).parent().children()[0].innerHTML==\"View Referenced Tables\"){"
 				+"$(id).parent().children()[0].innerHTML=\"Hide Referenced Tables\";"
 			+"}"
@@ -310,18 +287,15 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		"<style> html,body {background: #fff;} fieldset {background: #f2f2e6; padding: 10px;	border: 1px solid #fff;	border-color: #fff #666661 #666661 #fff;	margin-bottom: 36px;}"+
 		"#breadcrumbs{  position: absolute;  padding-left:10px;  padding-right:10px;  left: 5px;  top: 10px;  font: 13px/13px Arial, Helvetica, sans-serif;  background-color: #f0f0f0;  font-weight: bold;}</style>"+
 		"</head>"+
-
 		"<body id=\"public\">");
 		String studAnswer = CommonFunctions.decodeURIComponent((String)request.getParameter("query"));
 		FailedDataSetValues failedDS = (FailedDataSetValues)session.getAttribute("failedDS");
 		out_assignment.println("<div id=\"fieldset\">"+ 
 				"<form class=\"wufoo\" action=\"LoginChecker\" method=\"post\">"+
-
 					"<div class=\"info\">"+
 					"<h2>Question: "+question_id+"</h2>"+
 					"</div>"   
 					+"<p align=\"left\"> <strong> Your Answer: </strong>"+ "<pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent((String)request.getParameter("query")))+"</code></pre></p>");
-
 			
 		if(status.equals("Error")){
 			out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:red;'>Error</label></div>");
@@ -358,7 +332,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		if(status == null || (status != null && status.isEmpty()) || (status != null && status.equalsIgnoreCase("error"))){
 			status ="Incorrect";
 		}
-
 		if(status.equals("Failed")){
 				ArrayList <String>instructorQueries = new ArrayList<String>(); 
 				String out = "";
@@ -396,7 +369,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
        //	String out_assignment="";
 		/*out_assignment += "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""+
 		"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
-
 		"<html xmlns=\"http://www.w3.org/1999/xhtml\">"+
 		"<head>"+
 		"<title>"+
@@ -410,7 +382,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		"<script type=\"text/javascript\" src=\"../scripts/jquery.js\"></script>"+
 		"<script type=\"text/javascript\" src=\"../scripts/wufoo.js\"></script>"+
  		"<script src=\"../highlight/highlight.pack.js\"></script>  "+
-
 		"<link rel=\"stylesheet\" href=\"css/structure.css\" type=\"text/css\" />"+
 		"<link rel=\"stylesheet\" href=\"css/form.css\" type=\"text/css\" />"+
 		"<link rel=\"stylesheet\" href=\"css/theme.css\" type=\"text/css\" />"+
@@ -447,7 +418,6 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		+"</script>";
 		
 		//"</head>"+
-
 		//"<body id=\"public\">";
 		String studAnswer = CommonFunctions.decodeURIComponent(request.getParameter("query"));
 		FailedDataSetValues failedDS = (FailedDataSetValues)session.getAttribute("failedDS");
@@ -456,7 +426,6 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 					"<h2>Question: "+question_id+"</h2>"+
 					"</div>"   
 					+"<p align=\"left\"> <strong> Your Answer: </strong>"+ "<pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(request.getParameter("query")))+"</code></pre></p>";
-
 		if(status.equals("Error")){
 			out_assignment += "<div style = 'font-weight: bold'>Status: <label style = 'color:red;'>Error</label></div>";
 			out_assignment += "<br/><div style = 'font-weight:bold'>Message: <span style='font-weight:normal;'>Sorry, your query could not be executed. Please check the syntax and try again.</span></div>";
@@ -492,7 +461,6 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		if(status == null || (status != null && status.isEmpty()) || (status != null && status.equalsIgnoreCase("error"))){
 			status ="Incorrect";
 		}
-
 		if(status.equals("Failed")){
 				ArrayList <String>instructorQueries = new ArrayList<String>(); 
 				String out = "";
@@ -551,14 +519,11 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		response.getWriter().write(out_assignment);	
 		
 		//out_assignment.close();
-
 	//	session.removeAttribute("dbConn");
 	//	session.removeAttribute("testConn");
 	//	session.removeAttribute("displayTestCase");
 		
-
 	}
-
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -607,7 +572,6 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		ret += "</ul>";
 		return ret;
 	}
-
 	/**
 	 * This method is used to round of marks
 	 * @param marks
@@ -616,7 +580,6 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
     public float roundToDecimal(float marks){
 	return BigDecimal.valueOf(marks).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
 }
-
     /**
      * This method returns a partial mark details string that holds the HTML data to display partail mark details
      * @param instructorQueries
@@ -629,7 +592,7 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		TestPartialMarking testObj=new TestPartialMarking();
 		//Call partial mark with instructor and student query and display the details on click of show me! I give up link. Dont toggle
 		testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studAnswer);
-		QueryData bestInstructorQueryData=null;
+		QueryStructure bestInstructorQueryData=null;
 		String bestInstructorQueryString="";
 		float marks = 0.0f;
 		String out = "";
@@ -640,23 +603,22 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery);		
 			//Initialize the values
 			if(i == 0 ){
-				bestInstructorQueryData=testObj.InstructorQuery.OuterQuery;
+				bestInstructorQueryData=testObj.InstructorQuery.getQueryStructure();
 				bestInstructorQueryString=instQuery;
 			}
-			Float studMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.StudentQuery.OuterQuery, 0).Marks;
-			Float instMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.InstructorQuery.OuterQuery, 0).Marks;
+			Float studMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.StudentQuery.getQueryStructure(), 0).Marks;
+			Float instMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.InstructorQuery.getQueryStructure(), 0).Marks;
 			i++;
 			Float newMarks=studMarks*100/instMarks;
-
 			if(newMarks> marks){
 				marks=newMarks;
-				bestInstructorQueryData=testObj.InstructorQuery.OuterQuery;
+				bestInstructorQueryData=testObj.InstructorQuery.getQueryStructure();
 				bestInstructorQueryString=instQuery;
 			}
 			
 		}
-		QueryData instrData = bestInstructorQueryData;
-		QueryData studentData = testObj.StudentQuery.OuterQuery;
+		QueryStructure instrData = bestInstructorQueryData;
+		QueryStructure studentData = testObj.StudentQuery.getQueryStructure();
 		
 		
 		out += "<div  style='background-color:#FFF'>";
@@ -664,42 +626,41 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		out+="<table class='queryTable' width='70%' cellpadding='3' cellspacing='1'><tr>"+
 					"<th width='20%'>&nbsp;</th><th width='20%' align='center'>Student</th><th width='20%' align='center'>Instructor</th></tr>";
 		
-		if( (instrData != null && instrData.getRelations().size() > 0)
-			|| (studentData != null && studentData.getRelations().size() > 0)){
+		if( (instrData != null && instrData.getLstRelationInstances().size() > 0)
+			|| (studentData != null && studentData.getLstRelationInstances().size() > 0)){
 			out += "<tr><td class='emph''>Relations</td>" +
-					"<td width=\"20%\">"+listToString(studentData.getRelations(),instrData.getRelations())+"</td>"+
-					"<td width=\"20%\">"+listToString(instrData.getRelations(), studentData.getRelations())+"</td></tr>";
+					"<td width=\"20%\">"+listToString(studentData.getLstRelationInstances(),instrData.getLstRelationInstances())+"</td>"+
+					"<td width=\"20%\">"+listToString(instrData.getLstRelationInstances(), studentData.getLstRelationInstances())+"</td></tr>";
 		
 		}
 		
-		if( (instrData != null && instrData.getProjectionList().size() > 0)
-	  			|| (studentData != null && studentData.getProjectionList().size() > 0)){
+		if( (instrData != null && instrData.getLstProjectedCols().size() > 0)
+	  			|| (studentData != null && studentData.getLstProjectedCols().size() > 0)){
 			out += "<tr><td class='emph''>Projections</td>" +
-							"<td width=\"20%\">"+listToString(studentData.getProjectionList(),instrData.getProjectionList())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData.getProjectionList(), studentData.getProjectionList())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData.getLstProjectedCols(),instrData.getLstProjectedCols())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData.getLstProjectedCols(), studentData.getLstProjectedCols())+"</td></tr>";
 	  		
 				}
 		
-		if( (instrData != null && instrData.hasDistinct)
-	  			|| (studentData != null && studentData.hasDistinct)){
+		if( (instrData != null && instrData.getIsDistinct())
+	  			|| (studentData != null && studentData.getIsDistinct())){
 			out += "<tr><td class='emph''>Distinct</td>" ;
 			
 			int instDistinct = 0;
 			int studDistinct = 0;
-			if(instrData.hasDistinct){
+			if(instrData.getIsDistinct()){
 				instDistinct =1;
-			}if(studentData.hasDistinct){
+			}if(studentData.getIsDistinct()){
 				studDistinct = 1;
 			}
-			if(studentData.hasDistinct && !instrData.hasDistinct){
+			if(studentData.getIsDistinct() && !instrData.getIsDistinct()){
 				
 				out += "<td width=\"20%\" align='center' class=\"number\" style=\"color: red;\">"+studDistinct+"</td>";
 			}else{
 				out += "<td width=\"20%\" align='center' class='number'>"+studDistinct+"</td>";
 			}
 				
-
-			if((instrData.hasDistinct && !studentData.hasDistinct)){
+			if((instrData.getIsDistinct() && !studentData.getIsDistinct())){
 				out += "<td width=\"20%\" align='center' class=\"number\" style=\"color: red;\">"+instDistinct+"</td></tr>";
 				
 			}else{
@@ -708,73 +669,72 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 			}
 		
 		
-		if( (instrData != null && instrData.GroupByNodes.size() > 0)
-	  			|| (studentData != null && studentData.GroupByNodes.size() > 0)){
+		if( (instrData != null && instrData.getLstGroupByNodes().size() > 0)
+	  			|| (studentData != null && studentData.getLstGroupByNodes().size() > 0)){
 			out += "<tr><td class='emph''>Group By</td>" +
-							"<td width=\"20%\">"+listToString(studentData.GroupByNodes,instrData.GroupByNodes)+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData.GroupByNodes, studentData.GroupByNodes)+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData.getLstGroupByNodes(),instrData.getLstGroupByNodes())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData.getLstGroupByNodes(), studentData.getLstGroupByNodes())+"</td></tr>";
 	  		
 			}
 			
-			if( (instrData != null && instrData.orderByNodes.size() > 0)
-	  			|| (studentData != null && studentData.orderByNodes.size() > 0)){
+			if( (instrData != null && instrData.getLstOrderByNodes().size() > 0)
+	  			|| (studentData != null && studentData.getLstOrderByNodes().size() > 0)){
 			
 				out += "<tr><td class='emph''>Order By</td>" +
-							"<td width=\"20%\">"+listToString(studentData.orderByNodes,instrData.orderByNodes)+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData.orderByNodes, studentData.orderByNodes)+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData.getLstOrderByNodes(),instrData.getLstOrderByNodes())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData.getLstOrderByNodes(), studentData.getLstOrderByNodes())+"</td></tr>";
 			}
 			
-			if( (instrData != null && instrData.getHavingClause().size() > 0)
-	  			|| (studentData != null && studentData.getHavingClause().size() > 0)){
+			if( (instrData != null && instrData.getLstHavingConditions().size() > 0)
+	  			|| (studentData != null && studentData.getLstHavingConditions().size() > 0)){
 				out += "<tr><td class='emph''>Having Clause</td>" +
-						  "<td width=\"20%\">"+listToString(studentData.getHavingClause(),instrData.getHavingClause())+"</td>"+
-						  "<td width=\"20%\">"+listToString(instrData.getHavingClause(), studentData.getHavingClause())+"</td></tr>";
-
+						  "<td width=\"20%\">"+listToString(studentData.getLstHavingConditions(),instrData.getLstHavingConditions())+"</td>"+
+						  "<td width=\"20%\">"+listToString(instrData.getLstHavingConditions(), studentData.getLstHavingConditions())+"</td></tr>";
 	}
-		if( (instrData != null && instrData.getSubQConnectives().size() > 0)
-	  			|| (studentData != null && studentData.getSubQConnectives().size() > 0)){
+		if( (instrData != null && instrData.getLstSubQConnectives().size() > 0)
+	  			|| (studentData != null && studentData.getLstSubQConnectives().size() > 0)){
 	  			
 			out += "<tr><td class='emph''>SubQuery Connectives</td>" +
-							"<td width=\"20%\">"+listToString(studentData.getSubQConnectives(),instrData.getSubQConnectives())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData.getSubQConnectives(), studentData.getSubQConnectives())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData.getLstSubQConnectives(),instrData.getLstSubQConnectives())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData.getLstSubQConnectives(), studentData.getLstSubQConnectives())+"</td></tr>";
 	  			
 	  			}
 	
-	if( (instrData != null && instrData.getSetOpetators().size() > 0)
-	  			|| (studentData != null && studentData.getSetOpetators().size() > 0)){
+	if( (instrData != null && instrData.getLstSetOpetators().size() > 0)
+	  			|| (studentData != null && studentData.getLstSetOpetators().size() > 0)){
 	  			
 		out += "<tr><td class='emph''>Set Operators</td>" +
-							"<td width=\"20%\">"+listToString(studentData.getSetOpetators(),instrData.getSetOpetators())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData.getSetOpetators(), studentData.getSetOpetators())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData.getLstSetOpetators(),instrData.getLstSetOpetators())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData.getLstSetOpetators(), studentData.getLstSetOpetators())+"</td></tr>";
 	  			
 	  			
 	  			}
-	if( (instrData != null && instrData.getSelectionConditions().size() > 0)
-	  			|| (studentData != null && studentData.getSelectionConditions().size() > 0)){
+	if( (instrData != null && instrData.getLstSelectionConditions().size() > 0)
+	  			|| (studentData != null && studentData.getLstSelectionConditions().size() > 0)){
 	  			
 		out += "<tr><td class='emph''>Selection Conditions</td>" +
-							"<td width=\"20%\">"+listToString(studentData.getSelectionConditions(),instrData.getSelectionConditions())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData.getSelectionConditions(), studentData.getSelectionConditions())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData.getLstSelectionConditions(),instrData.getLstSelectionConditions())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData.getLstSelectionConditions(), studentData.getLstSelectionConditions())+"</td></tr>";
 	  		
 	  		
 	  			}
 	
-	if( (instrData != null && instrData.getJoinTables().size() > 0)
-			  			|| (studentData != null && studentData.getJoinTables().size() > 0)){
+	if( (instrData != null && instrData.getLstJoinTables().size() > 0)
+			  			|| (studentData != null && studentData.getLstJoinTables().size() > 0)){
 			  			
 		out += "<tr><td class='emph''>Join Tables</td>" +
-									"<td width=\"20%\">"+listToString(studentData.getJoinTables(),instrData.getJoinTables())+"</td>"+
-									"<td width=\"20%\">"+listToString(instrData.getJoinTables(), studentData.getJoinTables())+"</td></tr>";
+									"<td width=\"20%\">"+listToString(studentData.getLstJoinTables(),instrData.getLstJoinTables())+"</td>"+
+									"<td width=\"20%\">"+listToString(instrData.getLstJoinTables(), studentData.getLstJoinTables())+"</td></tr>";
 			  		
 			  		
 			  			}
 			  			
-	if( (instrData != null && instrData.getJoinConditions().size() > 0)
-			  			|| (studentData != null && studentData.getJoinConditions().size() > 0)){
+	if( (instrData != null && instrData.getLstJoinTables().size() > 0)
+			  			|| (studentData != null && studentData.getLstJoinTables().size() > 0)){
 			
 		out += "<tr><td class='emph'>Join Conditions </td>" +
-									"<td width=\"20%\">"+listToString(studentData.getJoinConditions(),instrData.getJoinConditions())+"</td>"+
-									"<td width=\"20%\">"+listToString(instrData.getJoinConditions(), studentData.getJoinConditions())+"</td></tr>";
+									"<td width=\"20%\">"+listToString(studentData.getLstJoinTables(),instrData.getLstJoinTables())+"</td>"+
+									"<td width=\"20%\">"+listToString(instrData.getLstJoinTables(), studentData.getLstJoinTables())+"</td></tr>";
 			  		
 			  		}
 	out += "</table></div>";
@@ -1235,4 +1195,3 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 		return out_assignment;
     }
 }
-

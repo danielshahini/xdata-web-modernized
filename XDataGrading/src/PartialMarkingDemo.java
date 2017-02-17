@@ -1,5 +1,4 @@
 
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -7,19 +6,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import partialMarking.TestPartialMarking;
 import parsing.Node;
-import parsing.QueryData;
+import parsing.QueryStructure;
 import testDataGen.PopulateTestDataGrading;
-
 /**
  * Servlet implementation class PartialMarkingDemo
  */
@@ -34,7 +30,6 @@ public class PartialMarkingDemo extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
-
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -42,7 +37,6 @@ public class PartialMarkingDemo extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}
-
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -58,7 +52,6 @@ public class PartialMarkingDemo extends HttpServlet {
 		String studentQuery = request.getParameter("studentQuery");
 		String isProcessCanonicalize = request.getParameter("canonicalize");
 		String instructorQueries[]=instructorQuery.split("#@###@#");
-
 		float marks=0.0f;		
 		float marks1=0.0f;	
 		String errorMessage;
@@ -67,8 +60,8 @@ public class PartialMarkingDemo extends HttpServlet {
 		String textareaCount;
 		String hiddenSting;
 		
-		QueryData bestInstructorQueryData=null;
-		QueryData bestInstructorQueryData1=null;
+		QueryStructure bestInstructorQueryData=null;
+		QueryStructure bestInstructorQueryData1=null;
 		String bestInstructorQueryString="";
 		String bestInstructorQueryString1=""; 
 		TestPartialMarking testObj=new TestPartialMarking();
@@ -76,7 +69,6 @@ public class PartialMarkingDemo extends HttpServlet {
 		Connection graderConn=null;
 		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		Exception caughtException=null;
-
 		int assignId=9;  //Hard code some existing assignment ID here and in TestPartialMarking.java - process and processcanonicalize methods
 				
 				graderConn = new util.DatabaseConnection().getGraderConnection(assignId);
@@ -98,7 +90,6 @@ public class PartialMarkingDemo extends HttpServlet {
 					e.printStackTrace(); 
 					caughtException = e;
 					response. sendError(88,e.getMessage());
-
 				}
 				try{
 					for(String instQuery:instructorQueries){
@@ -131,14 +122,14 @@ public class PartialMarkingDemo extends HttpServlet {
 						
 								testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery);		
 								
-								Float studMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.StudentQuery.OuterQuery, 0).Marks;
-								Float instMarks=testObj.calculateScore(false, testObj.InstructorQuery.OuterQuery, testObj.InstructorQuery.OuterQuery, 0).Marks;
+								Float studMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.StudentQuery.getQueryStructure(), 0).Marks;
+								Float instMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.InstructorQuery.getQueryStructure(), 0).Marks;
 								
 								Float newMarks=studMarks*100/instMarks;
 			
 						if(newMarks> marks){
 							marks=newMarks;
-							bestInstructorQueryData=testObj.InstructorQuery.OuterQuery;
+							bestInstructorQueryData=testObj.InstructorQuery.getQueryStructure();
 							bestInstructorQueryString=instQuery;
 						}
 					}
@@ -146,14 +137,14 @@ public class PartialMarkingDemo extends HttpServlet {
 						
 						testObj1.InstructorQuery=testObj1.process(testObj1.InstructorQuery,1, instQuery);
 						
-						Float studMarks1=testObj1.calculateScore(false, testObj1.InstructorQuery.OuterQuery, testObj1.StudentQuery.OuterQuery, 0).Marks;
-						Float instMarks1=testObj1.calculateScore(false, testObj1.InstructorQuery.OuterQuery, testObj1.InstructorQuery.OuterQuery, 0).Marks;
+						Float studMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.StudentQuery.getQueryStructure(), 0).Marks;
+						Float instMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.InstructorQuery.getQueryStructure(), 0).Marks;
 						
 						Float newMarks1=studMarks1*100/instMarks1;
 						
 						if(newMarks1> marks1){
 							marks1=newMarks1;
-							bestInstructorQueryData1=testObj1.InstructorQuery.OuterQuery;
+							bestInstructorQueryData1=testObj1.InstructorQuery.getQueryStructure();
 							bestInstructorQueryString1=instQuery;
 						}
 					
@@ -165,11 +156,11 @@ public class PartialMarkingDemo extends HttpServlet {
 		throw new ServletException();
 		
 	}
-					QueryData instrData = bestInstructorQueryData;
-					QueryData studentData = testObj.StudentQuery.OuterQuery;
+					QueryStructure instrData = bestInstructorQueryData;
+					QueryStructure studentData = testObj.StudentQuery.getQueryStructure();
 					
-					QueryData instrData1 = bestInstructorQueryData1;
-					QueryData studentData1 = testObj1.StudentQuery.OuterQuery;
+					QueryStructure instrData1 = bestInstructorQueryData1;
+					QueryStructure studentData1 = testObj1.StudentQuery.getQueryStructure();
 					
 					//Upload the details of with canonicalization in first div
 					String output="";
@@ -180,42 +171,41 @@ public class PartialMarkingDemo extends HttpServlet {
 					output+="<table class='queryTable' width='70%' cellpadding='3' cellspacing='1'><tr>"+
 								"<th width='20%'>&nbsp;</th><th width='20%' align='center'>Student</th><th width='20%' align='center'>Instructor</th></tr>";
 					
-					if( (instrData != null && instrData.getRelations().size() > 0)
-		  			|| (studentData != null && studentData.getRelations().size() > 0)){
+					if( (instrData != null && instrData.getLstRelationInstances().size() > 0)
+		  			|| (studentData != null && studentData.getLstRelationInstances().size() > 0)){
 						output += "<tr><td class='emph''>Relations</td>" +
-								"<td width=\"20%\">"+listToString(studentData.getRelations(),instrData.getRelations())+"</td>"+
-								"<td width=\"20%\">"+listToString(instrData.getRelations(), studentData.getRelations())+"</td></tr>";
+								"<td width=\"20%\">"+listToString(studentData.getLstRelationInstances(),instrData.getLstRelationInstances())+"</td>"+
+								"<td width=\"20%\">"+listToString(instrData.getLstRelationInstances(), studentData.getLstRelationInstances())+"</td></tr>";
 		  		
 					}
 					
-					if( (instrData != null && instrData.getProjectionList().size() > 0)
-				  			|| (studentData != null && studentData.getProjectionList().size() > 0)){
+					if( (instrData != null && instrData.getLstProjectedCols().size() > 0)
+				  			|| (studentData != null && studentData.getLstProjectedCols().size() > 0)){
 								output += "<tr><td class='emph''>Projections</td>" +
-										"<td width=\"20%\">"+listToString(studentData.getProjectionList(),instrData.getProjectionList())+"</td>"+
-										"<td width=\"20%\">"+listToString(instrData.getProjectionList(), studentData.getProjectionList())+"</td></tr>";
+										"<td width=\"20%\">"+listToString(studentData.getLstProjectedCols(),instrData.getLstProjectedCols())+"</td>"+
+										"<td width=\"20%\">"+listToString(instrData.getLstProjectedCols(), studentData.getLstProjectedCols())+"</td></tr>";
 				  		
 							}
 					
-					if( (instrData != null && instrData.hasDistinct)
-				  			|| (studentData != null && studentData.hasDistinct)){
+					if( (instrData != null && instrData.getIsDistinct())
+				  			|| (studentData != null && studentData.getIsDistinct())){
 						output += "<tr><td class='emph''>Distinct</td>" ;
 						
 						int instDistinct = 0;
 						int studDistinct = 0;
-						if(instrData.hasDistinct){
+						if(instrData.getIsDistinct()){
 							instDistinct =1;
-						}if(studentData.hasDistinct){
+						}if(studentData.getIsDistinct()){
 							studDistinct = 1;
 						}
-						if(studentData.hasDistinct && !instrData.hasDistinct){
+						if(studentData.getIsDistinct() && !instrData.getIsDistinct()){
 							
 							output += "<td width=\"20%\" align='center' class=\"number\" style=\"color: red;\">"+studDistinct+"</td>";
 						}else{
 							output += "<td width=\"20%\" align='center' class='number'>"+studDistinct+"</td>";
 						}
 							
-
-						if((instrData.hasDistinct && !studentData.hasDistinct)){
+						if((instrData.getIsDistinct() && !studentData.getIsDistinct())){
 							output += "<td width=\"20%\" align='center' class=\"number\" style=\"color: red;\">"+instDistinct+"</td></tr>";
 							
 						}else{
@@ -224,73 +214,73 @@ public class PartialMarkingDemo extends HttpServlet {
 						}
 					
 					
-					if( (instrData != null && instrData.GroupByNodes.size() > 0)
-				  			|| (studentData != null && studentData.GroupByNodes.size() > 0)){
+					if( (instrData != null && instrData.getLstGroupByNodes().size() > 0)
+				  			|| (studentData != null && studentData.getLstGroupByNodes().size() > 0)){
 								output += "<tr><td class='emph''>Group By</td>" +
-										"<td width=\"20%\">"+listToString(studentData.GroupByNodes,instrData.GroupByNodes)+"</td>"+
-										"<td width=\"20%\">"+listToString(instrData.GroupByNodes, studentData.GroupByNodes)+"</td></tr>";
+										"<td width=\"20%\">"+listToString(studentData.getLstGroupByNodes(),instrData.getLstGroupByNodes())+"</td>"+
+										"<td width=\"20%\">"+listToString(instrData.getLstGroupByNodes(), studentData.getLstGroupByNodes())+"</td></tr>";
 				  		
 						}
 						
-						if( (instrData != null && instrData.orderByNodes.size() > 0)
-				  			|| (studentData != null && studentData.orderByNodes.size() > 0)){
+						if( (instrData != null && instrData.getLstOrderByNodes().size() > 0)
+				  			|| (studentData != null && studentData.getLstOrderByNodes().size() > 0)){
 						
 							output += "<tr><td class='emph''>Order By</td>" +
-										"<td width=\"20%\">"+listToString(studentData.orderByNodes,instrData.orderByNodes)+"</td>"+
-										"<td width=\"20%\">"+listToString(instrData.orderByNodes, studentData.orderByNodes)+"</td></tr>";
+										"<td width=\"20%\">"+listToString(studentData.getLstOrderByNodes(),instrData.getLstOrderByNodes())+"</td>"+
+										"<td width=\"20%\">"+listToString(instrData.getLstOrderByNodes(), studentData.getLstOrderByNodes())+"</td></tr>";
 						}
 						
-						if( (instrData != null && instrData.getHavingClause().size() > 0)
-				  			|| (studentData != null && studentData.getHavingClause().size() > 0)){
+						if( (instrData != null && instrData.getLstHavingConditions().size() > 0)
+				  			|| (studentData != null && studentData.getLstHavingConditions().size() > 0)){
 							output += "<tr><td class='emph''>Having Clause</td>" +
-									  "<td width=\"20%\">"+listToString(studentData.getHavingClause(),instrData.getHavingClause())+"</td>"+
-									  "<td width=\"20%\">"+listToString(instrData.getHavingClause(), studentData.getHavingClause())+"</td></tr>";
+									  "<td width=\"20%\">"+listToString(studentData.getLstHavingConditions(),instrData.getLstHavingConditions())+"</td>"+
+									  "<td width=\"20%\">"+listToString(instrData.getLstHavingConditions(), studentData.getLstHavingConditions())+"</td></tr>";
 		
 				}
-					if( (instrData != null && instrData.getSubQConnectives().size() > 0)
-				  			|| (studentData != null && studentData.getSubQConnectives().size() > 0)){
+					if( (instrData != null && instrData.getLstSubQConnectives().size() > 0)
+				  			|| (studentData != null && studentData.getLstSubQConnectives().size() > 0)){
 				  			
 				  			output += "<tr><td class='emph''>SubQuery Connectives</td>" +
-										"<td width=\"20%\">"+listToString(studentData.getSubQConnectives(),instrData.getSubQConnectives())+"</td>"+
-										"<td width=\"20%\">"+listToString(instrData.getSubQConnectives(), studentData.getSubQConnectives())+"</td></tr>";
+										"<td width=\"20%\">"+listToString(studentData.getLstSubQConnectives(),instrData.getLstSubQConnectives())+"</td>"+
+										"<td width=\"20%\">"+listToString(instrData.getLstSubQConnectives(), studentData.getLstSubQConnectives())+"</td></tr>";
 				  			
 				  			}
 				
-				if( (instrData != null && instrData.getSetOpetators().size() > 0)
-				  			|| (studentData != null && studentData.getSetOpetators().size() > 0)){
+				if( (instrData != null && instrData.getLstSetOpetators().size() > 0)
+				  			|| (studentData != null && studentData.getLstSetOpetators().size() > 0)){
 				  			
 				  			output += "<tr><td class='emph''>Set Operators</td>" +
-										"<td width=\"20%\">"+listToString(studentData.getSetOpetators(),instrData.getSetOpetators())+"</td>"+
-										"<td width=\"20%\">"+listToString(instrData.getSetOpetators(), studentData.getSetOpetators())+"</td></tr>";
+										"<td width=\"20%\">"+listToString(studentData.getLstSetOpetators(),instrData.getLstSetOpetators())+"</td>"+
+										"<td width=\"20%\">"+listToString(instrData.getLstSetOpetators(), studentData.getLstSetOpetators())+"</td></tr>";
 				  			
 				  			
 				  			}
-				if( (instrData != null && instrData.getSelectionConditions().size() > 0)
-				  			|| (studentData != null && studentData.getSelectionConditions().size() > 0)){
+				if( (instrData != null && instrData.getLstSelectionConditions().size() > 0)
+				  			|| (studentData != null && studentData.getLstSelectionConditions().size() > 0)){
 				  			
 				  				output += "<tr><td class='emph''>Selection Conditions</td>" +
-										"<td width=\"20%\">"+listToString(studentData.getSelectionConditions(),instrData.getSelectionConditions())+"</td>"+
-										"<td width=\"20%\">"+listToString(instrData.getSelectionConditions(), studentData.getSelectionConditions())+"</td></tr>";
+										"<td width=\"20%\">"+listToString(studentData.getLstSelectionConditions(),instrData.getLstSelectionConditions())+"</td>"+
+										"<td width=\"20%\">"+listToString(instrData.getLstSelectionConditions(), studentData.getLstSelectionConditions())+"</td></tr>";
 				  		
 				  		
 				  			}
 				
-		if( (instrData != null && instrData.getJoinTables().size() > 0)
-				  			|| (studentData != null && studentData.getJoinTables().size() > 0)){
+		if( (instrData != null && instrData.getLstJoinTables().size() > 0)
+				  			|| (studentData != null && studentData.getLstJoinTables().size() > 0)){
 				  			
 				  				output += "<tr><td class='emph''>Join Tables</td>" +
-										"<td width=\"20%\">"+listToString(studentData.getJoinTables(),instrData.getJoinTables())+"</td>"+
-										"<td width=\"20%\">"+listToString(instrData.getJoinTables(), studentData.getJoinTables())+"</td></tr>";
+										"<td width=\"20%\">"+listToString(studentData.getLstJoinTables(),instrData.getLstJoinTables())+"</td>"+
+										"<td width=\"20%\">"+listToString(instrData.getLstJoinTables(), studentData.getLstJoinTables())+"</td></tr>";
 				  		
 				  		
 				  			}
 				  			
-		if( (instrData != null && instrData.getJoinConditions().size() > 0)
-				  			|| (studentData != null && studentData.getJoinConditions().size() > 0)){
+		if( (instrData != null && instrData.getLstJoinConditions().size() > 0)
+				  			|| (studentData != null && studentData.getLstJoinConditions().size() > 0)){
 				
 				output += "<tr><td class='emph'>Join Conditions </td>" +
-										"<td width=\"20%\">"+listToString(studentData.getJoinConditions(),instrData.getJoinConditions())+"</td>"+
-										"<td width=\"20%\">"+listToString(instrData.getJoinConditions(), studentData.getJoinConditions())+"</td></tr>";
+										"<td width=\"20%\">"+listToString(studentData.getLstJoinConditions(),instrData.getLstJoinConditions())+"</td>"+
+										"<td width=\"20%\">"+listToString(instrData.getLstJoinConditions(), studentData.getLstJoinConditions())+"</td></tr>";
 				  		
 				  		}
 		output += "</table></section></div>";
@@ -301,42 +291,41 @@ public class PartialMarkingDemo extends HttpServlet {
 		output+="<table class='queryTable1' width='70%' cellpadding='3' cellspacing='1'><tr>"+
 					"<th width='20%'>&nbsp;</th><th width='20%' align='center'>Student</th><th width='20%' align='center'>Instructor</th></tr>";
 		
-		if( (instrData1 != null && instrData1.getRelations().size() > 0)
-			|| (studentData1 != null && studentData1.getRelations().size() > 0)){
+		if( (instrData1 != null && instrData1.getLstRelationInstances().size() > 0)
+			|| (studentData1 != null && studentData1.getLstRelationInstances().size() > 0)){
 			output += "<tr><td class='emph''>Relations</td>" +
-					"<td width=\"20%\">"+listToString(studentData1.getRelations(),instrData1.getRelations())+"</td>"+
-					"<td width=\"20%\">"+listToString(instrData1.getRelations(), studentData1.getRelations())+"</td></tr>";
+					"<td width=\"20%\">"+listToString(studentData1.getLstRelationInstances(),instrData1.getLstRelationInstances())+"</td>"+
+					"<td width=\"20%\">"+listToString(instrData1.getLstRelationInstances(), studentData1.getLstRelationInstances())+"</td></tr>";
 		
 		}
 		
-		if( (instrData1 != null && instrData1.getProjectionList().size() > 0)
-	  			|| (studentData1 != null && studentData1.getProjectionList().size() > 0)){
+		if( (instrData1 != null && instrData1.getLstProjectedCols().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstProjectedCols().size() > 0)){
 					output += "<tr><td class='emph''>Projections</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.getProjectionList(),instrData1.getProjectionList())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.getProjectionList(), studentData1.getProjectionList())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData1.getLstProjectedCols(),instrData1.getLstProjectedCols())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData1.getLstProjectedCols(), studentData1.getLstProjectedCols())+"</td></tr>";
 	  		
 				}
 		
-		if( (instrData1 != null && instrData1.hasDistinct)
-	  			|| (studentData1 != null && studentData1.hasDistinct)){
+		if( (instrData1 != null && instrData1.getIsDistinct())
+	  			|| (studentData1 != null && studentData1.getIsDistinct())){
 			output += "<tr><td class='emph'>Distinct</td>" ;
 			
 			int instDistinct = 0;
 			int studDistinct = 0;
-			if(instrData1.hasDistinct){
+			if(instrData1.getIsDistinct()){
 				instDistinct =1;
-			}if(studentData1.hasDistinct){
+			}if(studentData1.getIsDistinct()){
 				studDistinct = 1;
 			}
-			if(studentData1.hasDistinct && !instrData1.hasDistinct){
+			if(studentData1.getIsDistinct() && !instrData1.getIsDistinct()){
 				
 				output += "<td width=\"20%\" align='center' class=\"number\" style=\"color: red;\">"+studDistinct+"</td>";
 			}else{
 				output += "<td width=\"20%\" align='center' class='number'>"+studDistinct+"</td>";
 			}
 				
-
-			if((instrData1.hasDistinct && !studentData1.hasDistinct)){
+			if((instrData1.getIsDistinct() && !studentData1.getIsDistinct())){
 				output += "<td width=\"20%\" align='center' class=\"number\" style=\"color: red;\">"+instDistinct+"</td></tr>";
 				
 			}else{
@@ -345,73 +334,72 @@ public class PartialMarkingDemo extends HttpServlet {
 			}
 		
 		
-		if( (instrData1 != null && instrData1.GroupByNodes.size() > 0)
-	  			|| (studentData1 != null && studentData1.GroupByNodes.size() > 0)){
+		if( (instrData1 != null && instrData1.getLstGroupByNodes().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstGroupByNodes().size() > 0)){
 					output += "<tr><td class='emph''>Group By</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.GroupByNodes,instrData1.GroupByNodes)+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.GroupByNodes, studentData1.GroupByNodes)+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData1.getLstGroupByNodes(),instrData1.getLstGroupByNodes())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData1.getLstGroupByNodes(), studentData1.getLstGroupByNodes())+"</td></tr>";
 	  		
 			} 
 			
-			if( (instrData1 != null && instrData1.orderByNodes.size() > 0)
-	  			|| (studentData1 != null && studentData1.orderByNodes.size() > 0)){
+			if( (instrData1 != null && instrData1.getLstOrderByNodes().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstOrderByNodes().size() > 0)){
 			
 				output += "<tr><td class='emph''>Order By</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.orderByNodes,instrData1.orderByNodes)+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.orderByNodes, studentData1.orderByNodes)+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData1.getLstOrderByNodes(),instrData1.getLstOrderByNodes())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData1.getLstOrderByNodes(), studentData1.getLstOrderByNodes())+"</td></tr>";
 			}
 			
-			if( (instrData1 != null && instrData1.getHavingClause().size() > 0)
-	  			|| (studentData1 != null && studentData1.getHavingClause().size() > 0)){
+			if( (instrData1 != null && instrData1.getLstHavingConditions().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstHavingConditions().size() > 0)){
 				output += "<tr><td class='emph''>Having Clause</td>" +
-						  "<td width=\"20%\">"+listToString(studentData1.getHavingClause(),instrData1.getHavingClause())+"</td>"+
-						  "<td width=\"20%\">"+listToString(instrData1.getHavingClause(), studentData1.getHavingClause())+"</td></tr>";
-
+						  "<td width=\"20%\">"+listToString(studentData1.getLstHavingConditions(),instrData1.getLstHavingConditions())+"</td>"+
+						  "<td width=\"20%\">"+listToString(instrData1.getLstHavingConditions(), studentData1.getLstHavingConditions())+"</td></tr>";
 	}
-		if( (instrData1 != null && instrData1.getSubQConnectives().size() > 0)
-	  			|| (studentData1 != null && studentData1.getSubQConnectives().size() > 0)){
+		if( (instrData1 != null && instrData1.getLstSubQConnectives().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstSubQConnectives().size() > 0)){
 	  			
 	  			output += "<tr><td class='emph''>SubQuery Connectives</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.getSubQConnectives(),instrData1.getSubQConnectives())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.getSubQConnectives(), studentData1.getSubQConnectives())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData1.getLstSubQConnectives(),instrData1.getLstSubQConnectives())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData1.getLstSubQConnectives(), studentData1.getLstSubQConnectives())+"</td></tr>";
 	  			
 	  			}
 	
-	if( (instrData1 != null && instrData1.getSetOpetators().size() > 0)
-	  			|| (studentData1 != null && studentData1.getSetOpetators().size() > 0)){
+	if( (instrData1 != null && instrData1.getLstSetOpetators().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstSetOpetators().size() > 0)){
 	  			
 	  			output += "<tr><td class='emph''>Set Operators</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.getSetOpetators(),instrData1.getSetOpetators())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.getSetOpetators(), studentData1.getSetOpetators())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData1.getLstSetOpetators(),instrData1.getLstSetOpetators())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData1.getLstSetOpetators(), studentData1.getLstSetOpetators())+"</td></tr>";
 	  			
 	  			
 	  			}
-	if( (instrData1 != null && instrData1.getSelectionConditions().size() > 0)
-	  			|| (studentData1 != null && studentData1.getSelectionConditions().size() > 0)){
+	if( (instrData1 != null && instrData1.getLstSelectionConditions().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstSelectionConditions().size() > 0)){
 	  			
 	  				output += "<tr><td class='emph''>Selection Conditions</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.getSelectionConditions(),instrData1.getSelectionConditions())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.getSelectionConditions(), studentData1.getSelectionConditions())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData1.getLstSelectionConditions(),instrData1.getLstSelectionConditions())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData1.getLstSelectionConditions(), studentData1.getLstSelectionConditions())+"</td></tr>";
 	  		
 	  		
 	  			}
 	
-if( (instrData1 != null && instrData1.getJoinTables().size() > 0)
-	  			|| (studentData1 != null && studentData1.getJoinTables().size() > 0)){
+if( (instrData1 != null && instrData1.getLstJoinTables().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstJoinTables().size() > 0)){
 	  			
 	  				output += "<tr><td class='emph''>Join Tables</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.getJoinTables(),instrData1.getJoinTables())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.getJoinTables(), studentData1.getJoinTables())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData1.getLstJoinTables(),instrData1.getLstJoinTables())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData1.getLstJoinTables(), studentData1.getLstJoinTables())+"</td></tr>";
 	  		
 	  		
 	  			}
 	  			
-if( (instrData1 != null && instrData1.getJoinConditions().size() > 0)
-	  			|| (studentData1 != null && studentData1.getJoinConditions().size() > 0)){
+if( (instrData1 != null && instrData1.getLstJoinConditions().size() > 0)
+	  			|| (studentData1 != null && studentData1.getLstJoinConditions().size() > 0)){
 	
 	output += "<tr><td class='emph'>Join Conditions</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.getJoinConditions(),instrData1.getJoinConditions())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.getJoinConditions(), studentData1.getJoinConditions())+"</td></tr>";
+							"<td width=\"20%\">"+listToString(studentData1.getLstJoinConditions(),instrData1.getLstJoinConditions())+"</td>"+
+							"<td width=\"20%\">"+listToString(instrData1.getLstJoinConditions(), studentData1.getLstJoinConditions())+"</td></tr>";
 	  		
 	  		}
 	output += "</table></section></div>";
@@ -458,7 +446,6 @@ if( (instrData1 != null && instrData1.getJoinConditions().size() > 0)
 			ret += "</ul>";
 			return ret;
 		}
-
 		/**
 		 * This method is used to round of marks
 		 * @param marks
@@ -469,5 +456,4 @@ if( (instrData1 != null && instrData1.getJoinConditions().size() > 0)
 	}
 	    
 	    
-
 }
