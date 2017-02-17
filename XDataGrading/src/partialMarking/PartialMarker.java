@@ -13,6 +13,7 @@ import parsing.AggregateFunction;
 import parsing.Node;
 import util.MyConnection;
 import parsing.QueryStructure;
+import parsing.QueryData;
 
 public class PartialMarker {
 	private static Logger logger = Logger.getLogger(PartialMarker.class.getName());
@@ -173,7 +174,38 @@ public class PartialMarker {
 		return result;
 	}
 	
+	// Returns the marks corresponding to the query of the student in comparison to the instructor query
+	public MarkInfo getMarks() throws Exception{
+		
+		this.initialize();
+			
+		// Canonicalizing the queries
+		CanonicalizeQuery.Canonicalize(this.InstructorQuery.getQueryStructure());
 
+		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
+		
+		//Check for distinct
+		boolean evaluateDistinct = EvaluateDistinct.evaluate(this.InstructorQuery,this.StudentQuery,this.assignmentId, this.questionId, this.queryId, this.course_id);		
+		float maxMainQueryScore = PartialMarker.calculateScore(evaluateDistinct, this.InstructorQuery.OuterQuery, this.InstructorQuery.OuterQuery, 0).Marks;
+		
+		MarkInfo result = PartialMarker.calculateScore(evaluateDistinct,this.InstructorQuery.OuterQuery, this.StudentQuery.OuterQuery, 0);
+		float studentQueryScore=result.Marks;
+	
+		result.Configuration = PartialMarker.Configuration;
+		
+		float mainQueryScore = result.Marks;
+		
+		// Cleaning up the connections
+		this.cleanup();
+		
+		// Setting the negative scores to zero
+		if(mainQueryScore < 0) 
+			mainQueryScore = 0;
+		
+		result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
+		System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
+		return result;
+	}
 		
 	public static void main(String args[]) throws Exception{		
 		//Connection conn = MyConnection.getExistingDatabaseConnection();
@@ -329,6 +361,16 @@ public class PartialMarker {
 	}
 
 
+	// Calculates a score based on the relations involved in the join
+	// Number of inner and outer joins are also compared
+	public static float getJoinScore(QueryData masterData, QueryData slaveData){
+		float score = compare(masterData.getJoinTables(), slaveData.getJoinTables());
+		
+		score = masterData.getNumberOfOuterJoins() == slaveData.getNumberOfOuterJoins() ? score + 1 : score - 0.5f;
+		score = masterData.getNumberOfInnerJoins() == slaveData.getNumberOfInnerJoins() ? score + 1 : score - 0.5f;
+		
+		return score;
+	}	
 	
 	public static float compare(ArrayList<String> master, ArrayList<String> slave) {
 		float score = 0;
@@ -705,7 +747,115 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 	
 
 	
-
+private static QueryInfo populateQueryInfo(QueryData instructorData, QueryData studentData, int level, boolean isEvaluateDistinct){
+		
+		QueryInfo qInfo = new QueryInfo();
+		qInfo.Level = level;
+		
+		for(Node n: instructorData.getSelectionConditions()){
+			Node newN=checkTableOccurence(n,instructorData.getSelectionConditions());
+			qInfo.InstructorPredicates.add(newN.toString());
+			//qInfo.Predicates.add(qInfo.InstructorPredicates);
+		}
+		
+		for(Node n: studentData.getSelectionConditions()){
+			
+			Node newN=checkTableOccurence(n,studentData.getSelectionConditions());
+			qInfo.StudentPredicates.add(newN.toString());
+			//qInfo.Predicates.add(qInfo.StudentPredicates);
+		}
+		
+		for(Node n: instructorData.getProjectionList()){
+			
+			Node newN=checkTableOccurence(n,instructorData.getProjectionList());
+			qInfo.InstructorProjections.add(newN.toString()); 
+			//qInfo.Projections.add(qInfo.InstructorProjections);
+			
+		}
+		
+		for(Node n: studentData.getProjectionList()){
+			Node newN=checkTableOccurence(n,studentData.getProjectionList());
+			qInfo.StudentProjections.add(newN.toString());
+			//qInfo.Projections.add(qInfo.StudentProjections);
+		}
+		
+		for(Node n: instructorData.GroupByNodes){
+			Node newN=checkTableOccurence(n,instructorData.GroupByNodes);
+			qInfo.InstructorGroupBy.add(newN.toString());
+			//qInfo.GroupBy.add(qInfo.InstructorGroupBy);
+		}
+		
+		for(Node n: studentData.GroupByNodes){
+			Node newN=checkTableOccurence(n,studentData.GroupByNodes);
+			qInfo.StudentGroupBy.add(newN.toString());
+			//qInfo.GroupBy.add(qInfo.StudentGroupBy);
+		} 
+		
+		for(String n: instructorData.getRelations()){
+			qInfo.InstructorRelations.add(n.toString());
+			//qInfo.Relations.add(qInfo.InstructorRelations);
+		}
+		
+		for(String n: studentData.getRelations()){
+			qInfo.StudentRelations.add(n);
+			//qInfo.Relations.add(qInfo.StudentRelations);
+		}
+		
+		for(Node n : instructorData.getHavingClause()){
+			Node newN=checkTableOccurence(n,instructorData.getHavingClause());
+			qInfo.InstructorHavingClause.add(newN.toString());
+			//qInfo.HavingClause.add(qInfo.InstructorHavingClause);
+		}
+		
+		for(Node n : studentData.getHavingClause()){
+			Node newN=checkTableOccurence(n,studentData.getHavingClause());
+			qInfo.StudentHavingClause.add(newN.toString());
+			//qInfo.HavingClause.add(qInfo.StudentHavingClause);
+		}
+		
+		for(String n : instructorData.getSubQConnectives()){
+			qInfo.InstructorSubQConnective.add(n);
+			//qInfo.SubQConnective.add(qInfo.InstructorSubQConnective);
+		}
+		for(String n : studentData.getSubQConnectives()){
+			qInfo.StudentSubQConnective.add(n);
+			//qInfo.SubQConnective.add(qInfo.StudentSubQConnective);
+		}
+		
+		for(AggregateFunction n : instructorData.getAggregateList()){
+			qInfo.InstructorAggregates.add(n.toString());
+			//qInfo.Aggregates.add(qInfo.InstructorAggregates);
+		}
+		for(AggregateFunction n : studentData.getAggregateList()){
+			qInfo.StudentAggregates.add(n.toString());
+			//qInfo.Aggregates.add(qInfo.StudentAggregates);
+		}
+		
+		for(String n : instructorData.getSetOpetators()){
+			qInfo.InstructorSetOperators.add(n);
+			//qInfo.SetOperators.add(qInfo.InstructorSetOperators);
+		}
+		for(String n : studentData.getSetOpetators()){
+			qInfo.StudentSetOperators.add(n);
+			//qInfo.SetOperators.add(qInfo.StudentSetOperators);
+		}
+		qInfo.InstructorInnerJoins = instructorData.getNumberOfInnerJoins();
+		qInfo.StudentInnerJoins = studentData.getNumberOfInnerJoins();
+		//qInfo.InnerJoins.add(qInfo.InstructorInnerJoins);
+		//qInfo.InnerJoins.add(qInfo.StudentInnerJoins);
+		
+		qInfo.InstructorOuterJoins = instructorData.getNumberOfOuterJoins();
+		qInfo.StudentOuterJoins = studentData.getNumberOfOuterJoins();
+		//qInfo.OuterJoins.add(qInfo.InstructorOuterJoins);
+		//qInfo.OuterJoins.add(qInfo.StudentOuterJoins);
+		
+		qInfo.instructorDistinct = instructorData.hasDistinct;
+		qInfo.studentDistinct = studentData.hasDistinct;
+		//qInfo.Distinct.add(qInfo.instructorDistinct );
+		//qInfo.Distinct.add(qInfo.studentDistinct );
+		 
+		return qInfo;
+	}
 
 		private static Node checkTableOccurence(Node n,ArrayList<Node> nodeList) {
 			Node newNode = null;
@@ -1121,7 +1271,171 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 
 	}
 		
+	private static MarkInfo calculateScore(boolean isEvaluateDistinct, QueryData instructorData, QueryData studentData, int level){
+		
+		int distinctWeightage = 0;
+		MarkInfo marks = new MarkInfo();
+		
+		MarkInfo whereSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.WhereClauseQueries, studentData.WhereClauseQueries, level + 1);
+		
+		MarkInfo fromSubQuery = compareListOfQueries(isEvaluateDistinct,instructorData.FromClauseQueries, studentData.FromClauseQueries, level + 1);
+		
+		ArrayList<QueryInfo> temp = new ArrayList<QueryInfo>();
+		temp.addAll(whereSubQuery.SubqueryData);
+		temp.addAll(fromSubQuery.SubqueryData);
+		if(isEvaluateDistinct){
+			distinctWeightage = PartialMarker.Configuration.Distinct;
+		}else{
+			distinctWeightage = 0;
+		}
+		
+		float totalWeightage = PartialMarker.Configuration.Predicate + PartialMarker.Configuration.Relation + 
+				PartialMarker.Configuration.Projection + PartialMarker.Configuration.Joins + PartialMarker.Configuration.GroupBy +
+				PartialMarker.Configuration.HavingClause + PartialMarker.Configuration.SubQConnective + 
+				PartialMarker.Configuration.Aggregates + PartialMarker.Configuration.SetOperators + distinctWeightage;
+		
+		float predWeightage = (PartialMarker.Configuration.Predicate * 100)/totalWeightage;
+		float relationWeightage = (PartialMarker.Configuration.Relation * 100)/totalWeightage;
+		float projWeightage = (PartialMarker.Configuration.Projection* 100)/totalWeightage;
+		float joinWeightage = (PartialMarker.Configuration.Joins * 100)/totalWeightage;
+		float groupByWeightage = (PartialMarker.Configuration.GroupBy * 100)/totalWeightage;
+		float havingClauseWeightage = (PartialMarker.Configuration.HavingClause * 100)/totalWeightage;
+		float subQConnectiveWeightage = (PartialMarker.Configuration.SubQConnective * 100)/totalWeightage;
+		float aggregateWeightage = (PartialMarker.Configuration.Aggregates * 100) / totalWeightage;
+		float setOperatorWeightage = (PartialMarker.Configuration.SetOperators * 100) / totalWeightage;
+		float distinctOpWeightage = (distinctWeightage * 100) / totalWeightage;
 
+		
+		float uniquePredicates = instructorData.getSelectionConditions().size();
+		float uniqueRelations = instructorData.getRelationCount();
+		float uniqueProj = instructorData.getProjectionList().size();
+		float instructorJoin = getJoinScore(instructorData, instructorData);
+		float uniqueGroupBy = instructorData.GroupByNodes.size();
+		float uniqueHavingClause = instructorData.getHavingClause().size();
+		float uniqueSubQConnective = instructorData.getSubQConnectives().size();
+		float uniqueAggregates = instructorData.getAggregateList().size(); 
+		float uniqueSetOperators = instructorData.getSetOpetators().size();
+		float uniqueDistinct = 1;
+	
+float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
+		
+		float perRelation = uniqueRelations == 0 ? 0 : relationWeightage/uniqueRelations;
+		
+		float perProjection = uniqueProj == 0 ? 0 : projWeightage/uniqueProj;
+		
+		float perJoin = instructorJoin == 0 ? 0 : joinWeightage/instructorJoin;
+		
+		float perGroupBy = uniqueGroupBy == 0 ? 0 : groupByWeightage/uniqueGroupBy;
+		
+		float perHavingClause = uniqueHavingClause == 0 ? 0 : havingClauseWeightage/uniqueHavingClause;
+		
+		float perSubQConnective = uniqueSubQConnective == 0 ? 0 : subQConnectiveWeightage/uniqueSubQConnective;
+		
+		float perAggregate = uniqueAggregates == 0 ? 0 : aggregateWeightage/ uniqueAggregates;
+		
+		float perSetOperator = uniqueSetOperators == 0 ? 0 : setOperatorWeightage / uniqueSetOperators;
+		
+		float perDistinctOperator = uniqueDistinct == 0? 0 : distinctOpWeightage / uniqueDistinct;
+		
+		QueryInfo qInfo = populateQueryInfo(instructorData, studentData, level, isEvaluateDistinct);
+		
+		float predicateScore = compareSelection(instructorData.getSelectionConditions(), studentData.getSelectionConditions());
+		float predicateScoreTotal=(perPredicate==0&&predicateScore!=0)?-predWeightage/2:
+			perPredicate*normalizeNegativeValuesToZero(predicateScore);
+				
+		
+		float projectionScore = compareProjection(instructorData.getProjectionList(), studentData.getProjectionList());		
+		projectionScore = instructorData.hasDistinct == studentData.hasDistinct ? projectionScore : projectionScore/2;
+		float projectionScoreTotal=(perProjection==0 && projectionScore!=0)?-projWeightage/2:
+			perProjection*normalizeNegativeValuesToZero(projectionScore);
+		
+		float relationScore = compare(instructorData.getRelations(), studentData.getRelations());
+		float relationScoreTotal=(perRelation==0 && relationScore!=0)?-relationWeightage/2:
+			perRelation*normalizeNegativeValuesToZero(relationScore);
+		
+		float joinScore = getJoinScore(instructorData, studentData);
+		float joinScoreTotal=(perJoin==0 && joinScore!=0)?-joinWeightage/2:
+			perJoin*normalizeNegativeValuesToZero(joinScore);
+		
+		float groupByScore = compareProjection(instructorData.GroupByNodes, studentData.GroupByNodes);
+		float groupByScoreTotal=(perGroupBy==0 && groupByScore!=0)?-groupByWeightage/2:
+			perGroupBy*normalizeNegativeValuesToZero(groupByScore);
+		
+		float havingClauseScore = compareHavingClause(instructorData.getHavingClause(), studentData.getHavingClause());
+		float havingClauseScoreTotal=(perHavingClause==0 && havingClauseScore!=0)?-havingClauseWeightage/2:
+			perHavingClause*normalizeNegativeValuesToZero(havingClauseScore);
+		
+		float subQConnectiveScore = compare(instructorData.getSubQConnectives(),studentData.getSubQConnectives());
+		float subQConnectiveScoreTotal=(perSubQConnective==0 && subQConnectiveScore!=0)?-subQConnectiveWeightage/2:
+			perSubQConnective*normalizeNegativeValuesToZero(subQConnectiveScore);
+		
+		float aggregateScore = compareAggregates(instructorData.getAggregateList(), studentData.getAggregateList());
+		float aggregateScoreTotal=(perAggregate==0 && aggregateScore!=0)?-aggregateWeightage/2:
+			perAggregate*normalizeNegativeValuesToZero(aggregateScore);
+
+		float setOperatorScore = compare(instructorData.getSetOpetators(),studentData.getSetOpetators());
+		float setOperatorScoreTotal=(perSetOperator==0 && setOperatorScore!=0)?-setOperatorWeightage/2:
+			perSetOperator*normalizeNegativeValuesToZero(setOperatorScore);
+		
+		float distinctOperatorScore = 0;
+		
+		if(isEvaluateDistinct){
+			//if(instructorData.hasDistinct || studentData.hasDistinct){
+				if(instructorData.hasDistinct && studentData.hasDistinct){
+					distinctOperatorScore++;
+				}else{
+					//Even if any one query doesnot has Distinct - there is a mismatch
+					distinctOperatorScore=distinctOperatorScore-0.5f;
+				}
+			//}
+		}else{
+			distinctOperatorScore++;
+		}
+		float distinctOperatorScoreTotal=(perDistinctOperator==0 && distinctOperatorScore!=0)?-distinctWeightage/2:
+			perDistinctOperator*distinctOperatorScore;
+		
+		qInfo.studentPredicateMarks= perPredicate * predicateScore;
+		qInfo.studentRelationsMarks = perRelation * relationScore;
+		qInfo.studentProjectionMarks = perProjection * projectionScore;
+		qInfo.studentInnerJoinMarks = perJoin * joinScore ;
+		qInfo.studentGroupbyMarks =  perGroupBy * groupByScore;
+		qInfo.studentHavingMarks =perHavingClause * havingClauseScore ;
+		qInfo.studentSubqMarks = perSubQConnective * subQConnectiveScore;
+		qInfo.studentAggregateMarks = perAggregate * aggregateScore ;
+		qInfo.studentSetOperatorMarks = perSetOperator * setOperatorScore;
+		qInfo.studentDistinctMarks = perDistinctOperator * distinctOperatorScore;
+		
+		qInfo.instructorPredicateMarks = perPredicate * uniquePredicates;
+		qInfo.instructorRelationMarks = perRelation * uniqueRelations;
+		qInfo.instructorProjectionMarks =  perProjection * uniqueProj;
+		qInfo.instructorInnerJoinMarks = perJoin * instructorJoin;
+		qInfo.instructorGroupbyMarks = perGroupBy * uniqueGroupBy;
+		qInfo.instructorHavingMarks =  perHavingClause * uniqueHavingClause;
+		qInfo.instructorSubqMarks = perSubQConnective * uniqueSubQConnective;
+		qInfo.instructorAggregateMarks = perAggregate * uniqueAggregates;
+		qInfo.instructorSetOperatorMarks = perSetOperator * uniqueSetOperators ;
+		qInfo.instructorDistinctMarks = perDistinctOperator * uniqueDistinct;
+		
+		temp.add(qInfo);
+		
+		marks.SubqueryData = temp;
+		
+		float student =  normalizeNegativeValuesToZero(predicateScoreTotal + relationScoreTotal + projectionScoreTotal 
+				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
+			aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal);
+				
+		float instructor = perPredicate * uniquePredicates + perRelation * uniqueRelations 
+				+ perProjection * uniqueProj + perJoin * instructorJoin + perGroupBy * uniqueGroupBy 
+				+ perHavingClause * uniqueHavingClause + perSubQConnective * uniqueSubQConnective 
+				+ perAggregate * uniqueAggregates + perSetOperator * uniqueSetOperators 
+				+ perDistinctOperator * uniqueDistinct;
+		
+		float score = student/instructor * PartialMarker.maxMarks;
+		
+		marks.Marks = Configuration.OuterQuery * score + Configuration.FromSubQueries * fromSubQuery.Marks + Configuration.WhereSubQueries * whereSubQuery.Marks;
+		
+		return marks;
+	}
 	
 	// Compares all permutations of the queries and allocates the maximum mark.
 	public static MarkInfo compareListOfQueries( Vector<QueryStructure> master, Vector<QueryStructure> slave, int level){
@@ -1181,7 +1495,63 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		return marks;
 	}
 	
-
+	// Compares all permutations of the queries and allocates the maximum mark.
+	public static MarkInfo compareListOfQueries(boolean isEvaluateDistinct, Vector<QueryData> master, Vector<QueryData> slave, int level){
+		int result = 0;
+		
+		MarkInfo marks = new MarkInfo();
+		ArrayList<QueryInfo> currentInfo = null;
+		ArrayList<QueryInfo> maxInfo = new ArrayList<QueryInfo>();
+				
+		int masterCount = master.size();		
+		int slaveCount = slave.size();
+		
+		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
+		if(masterCount < slaveCount){						
+			generateCombinations(combinations, masterCount, slaveCount, new ArrayList<Integer>(), 0);
+			
+			result = 0;
+			for(ArrayList<Integer> combination : combinations){
+				int score = 0;
+				currentInfo = new ArrayList<QueryInfo>();
+				for(int i = 0; i < combination.size(); i++){					
+					MarkInfo e = calculateScore(isEvaluateDistinct,master.get(i), slave.get(combination.get(i)), level);
+					currentInfo.addAll(e.SubqueryData);
+					score += e.Marks;
+				}
+				
+				if(score > result){
+					result = score;
+					maxInfo = currentInfo;
+				}
+			}
+		} else {						
+			generateCombinations(combinations, slaveCount, masterCount, new ArrayList<Integer>(), 0);
+			
+			result = 0;
+			for(ArrayList<Integer> combination : combinations){
+				int score = 0;
+				currentInfo = new ArrayList<QueryInfo>();
+				for(int i = 0; i < combination.size(); i++){
+					MarkInfo e = calculateScore(isEvaluateDistinct,master.get(combination.get(i)), slave.get(i), level);
+					currentInfo.addAll(e.SubqueryData);
+					score += e.Marks;
+				}
+				
+				if(score > result){
+					result = score;
+					maxInfo = currentInfo;
+				}
+			}
+		}
+		
+		logger.log(Level.INFO,combinations.toString());
+		logger.log(Level.INFO,"size ="+combinations.size());
+		
+		marks.SubqueryData = maxInfo;
+		marks.Marks = result/(Math.abs(masterCount - slaveCount) + 1); 
+		return marks;
+	}
 	
 	public static boolean isInteger( String input )
 	{

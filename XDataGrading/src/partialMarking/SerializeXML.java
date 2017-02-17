@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import parsing.JoinClauseInfo;
 import parsing.Node;
+import parsing.QueryData;
 import parsing.QueryStructure;
 import parsing.Util;
 
@@ -16,7 +17,23 @@ public class SerializeXML {
 	public static int idCounter=1;
 	public static String spaceTab="    ";
 	
-
+	public static void serializeXML(String fileName, QueryData qData) throws IOException, CloneNotSupportedException{
+		  out = new PrintWriter(new FileWriter(fileName));
+		  printHead(out);
+		  printHasDistinct(qData);
+		  printProjectedColumns(qData);
+		  printJoinConditions(qData);
+		  printSelectionConditions(qData);
+		  printGroupByColumns(qData);
+		  printHavingConditions(qData);
+		  printJoinTables(qData);
+		  printRedundantTables(qData);
+		  printSubqueryConnectives(qData);
+		  printTail(out);
+		  out.flush();
+		  out.close();
+	}
+	
 	
 	public static void serializeXML(String fileName, QueryStructure qStruct) throws IOException, CloneNotSupportedException{
 		qStruct.reAdjustJoins(); //needed for removing any join conditions from selection conditions
@@ -772,6 +789,13 @@ public class SerializeXML {
 		}		
 	}
 	
+	public static void printProjectedColumns(QueryData qData){
+		 out.println("<item text=\"Projected Columns\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getProjectionList())){
+			 out.println(spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
 	
 	public static String getFromSubqueriesString(QueryStructure qStruct, boolean openFlag) throws IOException, CloneNotSupportedException{
 		String retString="";
@@ -864,6 +888,16 @@ public class SerializeXML {
 		}
 	}
 	
+	public static void printHasDistinct(QueryData qData){
+		 out.println("<item text=\"Distinct Present\" open=\"1\" id=\""+ idCounter++ +"\">");
+		if(qData.hasDistinct){
+			 out.println(spaceTab+"<item text=\"True\" id=\""+ idCounter++ +"\"/>");
+		 }
+		else{
+			out.println(spaceTab+"<item text=\"False\" id=\""+ idCounter++ +"\"/>");
+		}
+		 out.println("</item>");
+	}
 	
 
 	
@@ -987,6 +1021,27 @@ public class SerializeXML {
 		return false;
 	}
 	
+	public static void printJoinConditions(QueryData qData) throws CloneNotSupportedException{
+		 out.println("<item text=\"Join Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 out.println("<item text=\"Outer\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getJoinConditions())){
+			 if(n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+					 ||n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+					 ||n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
+			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+		 out.println("<item text=\"Inner\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getJoinConditions())){
+			 if(!n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)
+					 && !n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)
+					 && !n.getJoinType().equals(JoinClauseInfo.fullOuterJoin))
+
+			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+		 out.println("</item>");
+	}
 
 	public static int getSubQueryIndex(Vector<QueryStructure> qStructVector, QueryStructure subQueryStruct){
 		int i=1;
@@ -1117,7 +1172,15 @@ public class SerializeXML {
 			return retString;
 		}
 	}
-		
+	
+	public static void printSelectionConditions(QueryData qData) throws  CloneNotSupportedException{
+		 out.println("<item text=\"Selection Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getSelectionConditions())){
+			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
+	
 	public static String getSubqueryConnectivesString(QueryStructure qStruct, boolean openFlag){
 		String retString="";
 		if(openFlag){
@@ -1142,6 +1205,14 @@ public class SerializeXML {
 		}
 	}
 	
+	public static void printSubqueryConnectives(QueryData qData){
+		
+		 out.println("<item text=\"Subquery Connectives\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(String str:qData.getSubQConnectives()){
+			 out.println(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
 	
 	public static String getHavingConditionsString(QueryStructure qStruct, boolean openFlag) throws CloneNotSupportedException{
 		String retString="";
@@ -1167,6 +1238,13 @@ public class SerializeXML {
 		}
 	}
 	
+	public static void printHavingConditions(QueryData qData) throws CloneNotSupportedException{
+		 out.println("<item text=\"Having Conditions\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:Util.toSetOfNodes(qData.getHavingClause())){
+			 out.println(spaceTab+"<item text=\""+ cloneNodeForXMLserialization(n).toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
 	
 	public static String getGroupByColumnsString(QueryStructure qStruct, boolean openFlag) {
 		String retString="";
@@ -1193,7 +1271,14 @@ public class SerializeXML {
 	}
 
 	
-		
+	public static void printGroupByColumns(QueryData qData) {
+		 out.println("<item text=\"GroupBy Columns\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(parsing.Node n:Util.toSetOfNodes(qData.GroupByNodes)){
+			 out.println(spaceTab+"<item text=\""+ n.toString() +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
+	
 	public static String getJoinTablesString(QueryStructure qStruct, boolean openFlag){
 		String retString="";
 		if(openFlag){
@@ -1220,6 +1305,13 @@ public class SerializeXML {
 	}
 
 	
+	public static void printJoinTables(QueryData qData){
+		 out.println("<item text=\"Tables\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 for(String str:qData.getRelations()){
+			 out.println(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>");
+		 }
+		 out.println("</item>");
+	}
 	
 	public static String getRedundantTablesString(QueryStructure qStruct, boolean openFlag){
 		String retString="";
@@ -1247,6 +1339,16 @@ public class SerializeXML {
 			}
 			return retString;
 		}
+	}
+	
+	public static void printRedundantTables(QueryData qData){
+		 out.println("<item text=\"Redundant Tables\" open=\"1\" id=\""+ idCounter++ +"\">");
+		 if(qData.RedundantRelations!=null){
+			 for(String str:qData.RedundantRelations){
+				 out.println(spaceTab+"<item text=\""+ str +"\" id=\""+ idCounter++ +"\"/>");
+			 }
+		 }
+		 out.println("</item>");
 	}
 	
 	public static void printHead(PrintWriter out){
