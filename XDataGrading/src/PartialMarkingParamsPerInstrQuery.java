@@ -93,6 +93,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 				 +"  var queryId = $('#queryId').text();"
 				 +" var assignId = $('#assignId').text();"
 				 +" var quesId = $('#questionId').text();"
+				 +" var reqFromPage = $(#reqFrom).text();"
 				 +"var predicate =$('#predicates').val();"
 				 +"var projection=$('#projections').val();"
 				 +"var relation=$('#relations').val();"
@@ -106,7 +107,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 				 +"var distinct=$('#distinct').val();"
 				 +"var from=$('#fromSub').val();"
 				 +"var where=$('#whereSub').val();"
-				 +" var dataString =\"assignmentId=\"+assignId+\"&&questionId=\"+quesId+\"&&queryId=\"+queryId" 
+				 +" var dataString =\"assignmentId=\"+assignId+\"&&questionId=\"+quesId+\"&&queryId=\"+queryId+\"&&reqFromPage=\"+reqFromPage" 
 				 + "+\"&&predicate=\"+$('#predicates').val()+\"&&projection=\"+$('#projections').val()+" 
 				 + "\"&&relation=\"+$('#relations').val()+\"&&groupBy=\"+$('#groupBy').val()+\"&&outer=\"+" 
 				 + "$('#outer').val()+\"&&joins=\"+$('#joins').val()+\"&&distinct=\"+$('#distinct').val()+\"&&having=\"+$('#having').val()+\"&&setoperators=\"+$('#setoperators').val()"
@@ -188,11 +189,13 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 		      if(!requestingPage.equalsIgnoreCase("demo")){ 
 			       out.println("<p><h4>Assignment: <label id='assignId'>"+assignID+"</label></h4></p>"
 			    		   +"<p><h4>Question: <label id='questionId'>"+questionID+"</label></h4></p>"
-			    		   +"<p><h4>Query Id: <label id='queryId'>"+ queryId +"</label></h4></p>");
+			    		   +"<p><h4>Query Id: <label id='queryId'>"+ queryId +"</label></h4></p>"
+			    		   + "<p><label hidden' id='reqFrom' "+ "Partial Mark" +"</label></p>");
 		      }else{
-		    	  out.println("<p> <label  'hidden' id='assignId'"+assignID+"</label>"
-		    			  		+"<label 'hidden'  id='questionId'"+questionID+"</label>"
-		    			  		+"<label hidden'  id='queryId' "+ queryId +"</label></p>" );
+		    	  out.println("<p> <label 'hidden' id='assignId' "+assignID+"</label>"
+		    			  		+"<label 'hidden'  id='questionId' "+questionID+"</label>"
+		    			  		+"<label hidden'  id='queryId' "+ queryId +"</label>" 
+		    			  		+"<label hidden'  id='reqFrom' "+ requestingPage +"</label></p>" );
 		      }
 			       PreparedStatement stmt = conn.prepareStatement("select * from xdata_instructor_query where assignment_id = ? and question_id = ? and query_id=?");
 	  		       stmt.setInt(1, assignID);
