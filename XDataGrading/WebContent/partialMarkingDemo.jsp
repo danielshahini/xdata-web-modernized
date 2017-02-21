@@ -121,14 +121,27 @@ $(document).on('click', '.queryBox' ,function (event) {
 	  	newTextAreaDiv.attr("class","answer");                                                                    
 	    
 	  	var htmlString = "<label style='float: left;height: 30px; width:100%;'>Instructor Query:"+counter+"</label><br/>"
-	  //	"<div style='height: 30px; width:100%;position:relative;'><label style='float: left'>Instructor Query:"+boxname+"</label></div> "
+		
 	  	+'<textarea  style="padding:5px;width:98%; height:200px;" class="textForSQL" name="newQuery" id="'+txtBoxId+'"></textarea>'
-		+ '<br/><input type="button" class="remove" id="remove" name="" value="Delete">';
+	  	
+	  	+"<div style='height: 25px; width:100%'>"
+	  	+"<b><a data-toggle=\"modal\" data-target=\"#PartialParamModal"+counter+"\" "
+		+	"href=\"PartialMarkingParamsPerInstrQuery?reqFrom=demo&&assignment_id=0&question_id="+counter+"&query_id=0\">View/Edit partial marking parameters</a></b></td></div>"
+	
+				
+		+ '<br/><input type="button" class="remove" id="remove" name="" value="Delete">'
+		+'<div class="modal fade" id="PartialParamModal'+counter+'" tabindex="-1" role="dialog" aria-labelledby="PartialParamModal" aria-hidden="true">'
+		+'	 <div class="modal-dialog">'
+		+'	  <div class="modal-content">'
+		+'	     <div class="modal-header"></div>'
+		+'	            <div class="modal-body"></div>'         
+		+'   </div>'
+		+' </div></div>';
 	   // + '<textarea" style="padding:5px;width:98%; height:200px;" id="'+txtBoxId+'" class="textForSQL" name="newQuery" ></textarea> ';
 		//+ '<br/><div style="position:relative;"><input type="button" class="remove" id="remove" name="remove" value="Delete"></div>';
 		 //+'<input type="hidden" name="newQueries" value="javascript:editor.getValue();">';
 	  	 
-		newTextAreaDiv.after().html(htmlString);
+		newTextAreaDiv.add().html(htmlString);
  		newTextAreaDiv.appendTo("#dynamicAdd");
 		correctId++; 
 		prevId = idname;
@@ -482,7 +495,14 @@ $(document).ready(function() {
 			<textarea name='query' class="textForSQL"
 								id='query1'>
 			</textarea>
-							<br/>
+			<br/>
+			<%int questionId = 1; %>
+		<div style="height: 25px; width:100%">
+			<b><a data-toggle="modal" data-target="#PartialParamModal<%=questionId %>"
+				href="PartialMarkingParamsPerInstrQuery?reqFrom=demo&&assignment_id=0&question_id=1&query_id=0">View/Edit partial marking parameters</a></b></td>
+		</div>		
+									
+		
 		<input type="button" class="queryBox" id="1" name="1" value="Add Instructor Query"/>  
 			<input type='hidden' name='instructorQuery' id='instructorQuery'  value='javascript:editor.getValue();'/>
 							<br/>
@@ -504,6 +524,18 @@ $(document).ready(function() {
 			<input type="button" align="left" id="getPartialMarks" value="Compute Partial Marks"></div>
 			<br/>
 
+		<!-- Modal to show Partial Marking Parameters Start -->
+					<div class="modal fade" id="PartialParamModal<%=questionId%>" tabindex="-1" role="dialog" aria-labelledby="PartialParamModal" aria-hidden="false">
+			   			 <div class="modal-dialog">
+				   			  <div class="modal-content">
+							     <div class="modal-header"></div>
+							            <div class="modal-body"></div>         
+						    </div>
+						<!-- <div class="modal-footer"><br><button type="button" class="btn btn-default" data-dismiss="modal">Set</button></div></br> -->
+					  </div>
+					  </div>
+		  <!-- Modal to show Partial Marking Parameters End -->
+		  
 <!--<div class="fieldset" id="canonicalizeSteps" style='display:none;'> -->
 <!--<fieldset>-->
 <!--<label id="label_0" style="display: none;">Canonicalizing queries...</label><br/> -->

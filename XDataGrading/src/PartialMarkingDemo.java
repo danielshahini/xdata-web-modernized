@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import partialMarking.PartialMarkParameters;
 import partialMarking.TestPartialMarking;
 import parsing.Node;
 import parsing.QueryStructure;
@@ -51,6 +53,7 @@ public class PartialMarkingDemo extends HttpServlet {
 		response.setContentType("text/html;charset=UTF-8");
 		String studentQuery = request.getParameter("studentQuery");
 		String isProcessCanonicalize = request.getParameter("canonicalize");
+		
 		String instructorQueries[]=instructorQuery.split("#@###@#");
 		float marks=0.0f;		
 		float marks1=0.0f;	
@@ -114,16 +117,18 @@ public class PartialMarkingDemo extends HttpServlet {
 				if(caughtException== null ){	
 		try{
 				
-					
+					int i=0;
 					testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 					testObj1.StudentQuery=testObj1.process(testObj1.StudentQuery,1, studentQuery);
 				  
 					for(String instQuery:instructorQueries){
-						
-								testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery);		
+								i++;
+								PartialMarkParameters params = (PartialMarkParameters)session.getAttribute("PartialMarkDemo"+i);
 								
-								Float studMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.StudentQuery.getQueryStructure(), 0).Marks;
-								Float instMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.InstructorQuery.getQueryStructure(), 0).Marks;
+								testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery,params);		
+								
+								Float studMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.StudentQuery.getQueryStructure(), 0,params).Marks;
+								Float instMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.InstructorQuery.getQueryStructure(), 0,params).Marks;
 								
 								Float newMarks=studMarks*100/instMarks;
 			
@@ -133,12 +138,15 @@ public class PartialMarkingDemo extends HttpServlet {
 							bestInstructorQueryString=instQuery;
 						}
 					}
+					i = 0;
 					for(String instQuery:instructorQueries){
+						i++;
+						PartialMarkParameters params = (PartialMarkParameters)session.getAttribute("PartialMarkDemo"+i);
 						
-						testObj1.InstructorQuery=testObj1.process(testObj1.InstructorQuery,1, instQuery);
+						testObj1.InstructorQuery=testObj1.process(testObj1.InstructorQuery,1, instQuery,params);
 						
-						Float studMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.StudentQuery.getQueryStructure(), 0).Marks;
-						Float instMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.InstructorQuery.getQueryStructure(), 0).Marks;
+						Float studMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.StudentQuery.getQueryStructure(), 0,params).Marks;
+						Float instMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.InstructorQuery.getQueryStructure(), 0,params).Marks;
 						
 						Float newMarks1=studMarks1*100/instMarks1;
 						

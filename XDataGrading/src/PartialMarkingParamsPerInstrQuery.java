@@ -119,7 +119,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 				  +"	context:$(this),"        
 				  +"      success: function(data) {"
 				  +"		try{"
-				        		//+"alert(\"Partial marking Parameters are set.\");"
+				        		+"alert(\"Partial marking Parameters are set.\");"
 				        		+"$('#modalClose').show();"
 				        		//+"alert(\"Show div\");"
 				        		+"$('#close').click();"
@@ -185,228 +185,235 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 		       int queryId = Integer.parseInt(request.getParameter("query_id"));
 		       Connection conn = (new DatabaseConnection()).dbConnection();
 		       
-		       out.println("<p><h4>Assignment: <label id='assignId'>"+assignID+"</label></h4></p>"
-		    		   +"<p><h4>Question: <label id='questionId'>"+questionID+"</label></h4></p>"
-		    		   +"<p><h4>Query Id: <label id='queryId'>"+ queryId +"</label></h4></p>");
-		       PreparedStatement stmt = conn.prepareStatement("select * from xdata_instructor_query where assignment_id = ? and question_id = ? and query_id=?");
-  		       stmt.setInt(1, assignID);
-		       stmt.setInt(2, questionID);
-		       stmt.setInt(3,queryId);
-  		       ResultSet rs = stmt.executeQuery();
-  		     out.println("<div id=\"output\"></div>");
-  		   //out.println("<div class=\"modal fade\" id=\"PartialParamModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"PartialParamModal\" aria-hidden=\"true\">"
-  				 //  	+"<div class=\"modal-dialog\">"
-  				   //	+"<div class=\"modal-content\">"
-  				 // +"<div class=\"modal-header\"></div>"
-  				//+" <div class=\"modal-body\"></div>    "     
-			 //   +"</div></div>  ");
-  		     if(rs.next()){
-  		       out.println("<p><h4>Instructor Query: <pre><code class=\"sql\">"+ rs.getString("sql")+"</code></pre></h4></p>");
-  		   
-  		       PartialMarkParameters marksParam = new PartialMarkParameters();
-		     	Gson gson = new Gson();
-		     	PartialMarkParameters marks = gson.fromJson( rs.getString("partialmarkinfo"), PartialMarkParameters.class);
-		     	
-		     	if(marks != null){
-		     	out.println("<table style=\"width: 70%; border: 0px;\" cellpadding=\"2\" cellspacing=\"0\">"	
-		     			+"<tr>"
-		     			+"<td colspan=\"2\" class=\"web_dialog_title\" style=\"text-align: center;\">Partial Marking Parameters</td>"
-		     				//+"<td class=\"web_dialog_title\">&nbsp;"
-		     			//+"</td>"
-		     			+"</tr>"
-		     			//+"<tr>"
-		     			//	+"<td>&nbsp;</td> <td>&nbsp;</td>"
-		     			//+"</tr>" 
-		     			+"<tr>"
-		     				+"<td colspan=\"2\" style=\"text-align: center;\">"
-		     				+"<b>Set weightage for partial marking parameters</b>"
-		     				+"</td>" 
-		     			+"</tr>" 	);	     				
-		     				
-			         //   +"<tr><td>&nbsp;</td><td>&nbsp;</td> </tr>");
-		     	
-		     	out.println("  <tr>"
-		     				+"<td colspan=\"2\" style=\"padding-left: 15px;\">"
-		     					+"<div id=\"paremeters\">"
-			                    	+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px; width:100px;'>Predicates:</label>"
-										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id='predicates' type='range' min='0' max=10 value='"+marks.getPredicate()+"' data-rangeslider-sub>"
-										 +"</div>"
-										  +"<output style='float: left; width: 30px;'></output>"										
-									+"</div>"
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Projections:</label>"
-										 +" <div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'projections' type='range' min='0' max=10 value='"+marks.getProjection()+"' data-rangeslider-sub>"
-										 +"</div>"
-										 +"<output style='float: left; width: 30px;'></output>"
-										 +"</div>");
-		     	out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Relations:</label>"
-										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'relations' type='range' min='0' max=10 value='"+marks.getRelation()+"' data-rangeslider-sub>"
-										 +"</div>"
-										 +"<output style='float: left; width: 30px;'></output>"
-									+"</div>"
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Group By:</label>"
-									+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'groupBy' type='range' min='0' max=10 value='"+marks.getGroupBy() +"' data-rangeslider-sub>"
-										 +"</div>"
-										  +"<output style='float: left; width: 30px;'></output>"										
-									+"</div>");		
-		     	out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Joins:</label>"
-										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'joins' type='range' min='0' max=10 value='"+marks.getJoins()+"' data-rangeslider-sub>"
-										 +"</div>"
-										 +"<output style='float: left; width: 30px;'></output>"	
-										 
-									+"</div>"
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Having Clause:</label>"
-									 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-									 	+"<input id = 'having' type='range' min='0' max=10 value='"+marks.getHavingClause() +"' data-rangeslider-sub>"
-									 +"</div>" +"<output style='float: left; width: 30px;'></output>"	 
-									 	
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Subquery Connective:</label>"
-									 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-									 	+"<input id = 'subQconnective' type='range' min='0' max=10 value='"+marks.getSubQConnective() +"' data-rangeslider-sub>"
-									 +"</div>" +"<output style='float: left; width: 30px;'></output>"	
-	 	
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Aggregates:</label>"
-									 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-									 	+"<input id = 'aggregates' type='range' min='0' max=10 value='"+marks.getAggregates() +"' data-rangeslider-sub>"
-									 +"</div>" +"<output style='float: left; width: 30px;'></output>"	
-									 	
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Set Operators:</label>"
-									 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-									 	+"<input id = 'setoperators' type='range' min='0' max=10 value='"+marks.getSetOperators() +"' data-rangeslider-sub>"
-									 +"</div>" +"<output style='float: left; width: 30px;'></output>"
-									 	
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Distinct:</label>"
-									 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-									 	+"<input id = 'distinct' type='range' min='0' max=10 value='"+marks.getDistinct() +"' data-rangeslider-sub>"
-									 +"</div>" +"<output style='float: left; width: 30px;'></output>"
-									 	
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Outer Query:</label>"
-										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'outer' type='range' min='0' max=10 value='"+marks.getOuterQuery() +"' data-rangeslider-sub>"
-										 +"</div>"
-										 +"<output style='float: left; width: 30px;'></output>"	 
-									+"</div>"
-									
-									 +"<output style='float: left; width: 30px;'></output>"	 
-								+"</div>");	
-		     	
-		     			
-  		     out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>From Subquery:</label>"
-										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'fromSub' type='range' min='0' max=10 value='"+marks.getFromSubQueries()+"' data-rangeslider-sub>"
-										 +"</div>"
-										 +" <output style='float: left; width: 30px;'></output>"									
-									+"</div>"
-									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Where Subquery:</label>"
-										+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											+"<input id = 'whereSub' type='range' min='0' max=10 value='"+marks.getWhereSubQueries()+"' data-rangeslider-sub>"										 
-										+" </div>"
-										+"<output style='float: left; width: 30px;'></output>");/*
-  		     out.println("</div></div></td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td colspan=\"2\" style=\"text-align: center;\">"
-  		     				+"<input id=\"btnSubmit\" type=\"button\" value=\"Evaluate\" />"
-  		     				+"</td> </tr></table>");*/
-		     	}else{
-	 		     	out.println("<table style=\"width: 70%; border: 0px;\" cellpadding=\"2\" cellspacing=\"0\">"	
+		      if(!requestingPage.equalsIgnoreCase("demo")){ 
+			       out.println("<p><h4>Assignment: <label id='assignId'>"+assignID+"</label></h4></p>"
+			    		   +"<p><h4>Question: <label id='questionId'>"+questionID+"</label></h4></p>"
+			    		   +"<p><h4>Query Id: <label id='queryId'>"+ queryId +"</label></h4></p>");
+		      }else{
+		    	  out.println("<p> <label  'hidden' id='assignId'"+assignID+"</label>"
+		    			  		+"<label 'hidden'  id='questionId'"+questionID+"</label>"
+		    			  		+"<label hidden'  id='queryId' "+ queryId +"</label></p>" );
+		      }
+			       PreparedStatement stmt = conn.prepareStatement("select * from xdata_instructor_query where assignment_id = ? and question_id = ? and query_id=?");
+	  		       stmt.setInt(1, assignID);
+			       stmt.setInt(2, questionID);
+			       stmt.setInt(3,queryId);
+	  		       ResultSet rs = stmt.executeQuery();
+	  		     out.println("<div id=\"output\"></div>");
+		      
+	  		   //out.println("<div class=\"modal fade\" id=\"PartialParamModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"PartialParamModal\" aria-hidden=\"true\">"
+	  				 //  	+"<div class=\"modal-dialog\">"
+	  				   //	+"<div class=\"modal-content\">"
+	  				 // +"<div class=\"modal-header\"></div>"
+	  				//+" <div class=\"modal-body\"></div>    "     
+				 //   +"</div></div>  ");
+	  		     if(rs.next()){
+	  		       out.println("<p><h4>Instructor Query: <pre><code class=\"sql\">"+ rs.getString("sql")+"</code></pre></h4></p>");
+	  		   
+	  		       PartialMarkParameters marksParam = new PartialMarkParameters();
+			     	Gson gson = new Gson();
+			     	PartialMarkParameters marks = gson.fromJson( rs.getString("partialmarkinfo"), PartialMarkParameters.class);
+			     	
+			     	if(marks != null){
+			     	out.println("<table style=\"width: 70%; border: 0px;\" cellpadding=\"2\" cellspacing=\"0\">"	
 			     			+"<tr>"
-			     			+"<td colspan=\"2\" class=\"web_dialog_title\" style=\"text-align: center;\">Partial Marking</td>"
+			     			+"<td colspan=\"2\" class=\"web_dialog_title\" style=\"text-align: center;\">Partial Marking Parameters</td>"
 			     				//+"<td class=\"web_dialog_title\">&nbsp;"
 			     			//+"</td>"
 			     			+"</tr>"
-			     			
+			     			//+"<tr>"
+			     			//	+"<td>&nbsp;</td> <td>&nbsp;</td>"
+			     			//+"</tr>" 
 			     			+"<tr>"
-			     				+"<td colspan=\"2\"  style=\"text-align: center;\">"
-			     				+"<b>Set the partial marking parameters</b>"
+			     				+"<td colspan=\"2\" style=\"text-align: center;\">"
+			     				+"<b>Set weightage for partial marking parameters</b>"
 			     				+"</td>" 
-			     			+"</tr>" 		     				
-				            +"<tr><td>&nbsp;</td><td>&nbsp;</td> </tr>");
+			     			+"</tr>" 	);	     				
+			     				
+				         //   +"<tr><td>&nbsp;</td><td>&nbsp;</td> </tr>");
+			     	
 			     	out.println("  <tr>"
 			     				+"<td colspan=\"2\" style=\"padding-left: 15px;\">"
 			     					+"<div id=\"paremeters\">"
 				                    	+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px; width:100px;'>Predicates:</label>"
 											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id='predicates' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 	+"<input id='predicates' type='range' min='0' max=10 value='"+marks.getPredicate()+"' data-rangeslider-sub>"
 											 +"</div>"
 											  +"<output style='float: left; width: 30px;'></output>"										
 										+"</div>"
 										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Projections:</label>"
 											 +" <div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id = 'projections' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 	+"<input id = 'projections' type='range' min='0' max=10 value='"+marks.getProjection()+"' data-rangeslider-sub>"
 											 +"</div>"
 											 +"<output style='float: left; width: 30px;'></output>"
 											 +"</div>");
 			     	out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Relations:</label>"
 											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id = 'relations' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 	+"<input id = 'relations' type='range' min='0' max=10 value='"+marks.getRelation()+"' data-rangeslider-sub>"
 											 +"</div>"
 											 +"<output style='float: left; width: 30px;'></output>"
 										+"</div>"
 										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Group By:</label>"
 										+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id = 'groupBy' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 	+"<input id = 'groupBy' type='range' min='0' max=10 value='"+marks.getGroupBy() +"' data-rangeslider-sub>"
 											 +"</div>"
 											  +"<output style='float: left; width: 30px;'></output>"										
 										+"</div>");		
 			     	out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Joins:</label>"
 											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id = 'joins' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 	+"<input id = 'joins' type='range' min='0' max=10 value='"+marks.getJoins()+"' data-rangeslider-sub>"
 											 +"</div>"
-											 +"<output style='float: left; width: 30px;'></output>"									
+											 +"<output style='float: left; width: 30px;'></output>"	
+											 
 										+"</div>"
 										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Having Clause:</label>"
-										+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											+"<input id = 'having' type='range' min='0' max=10 value='1' data-rangeslider-sub>"										 
-										+" </div>"
-											
+										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+										 	+"<input id = 'having' type='range' min='0' max=10 value='"+marks.getHavingClause() +"' data-rangeslider-sub>"
+										 +"</div>" +"<output style='float: left; width: 30px;'></output>"	 
+										 	
 										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Subquery Connective:</label>"
 										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'subQconnective' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+										 	+"<input id = 'subQconnective' type='range' min='0' max=10 value='"+marks.getSubQConnective() +"' data-rangeslider-sub>"
 										 +"</div>" +"<output style='float: left; width: 30px;'></output>"	
-																			 	
+		 	
 										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Aggregates:</label>"
 										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'aggregates' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+										 	+"<input id = 'aggregates' type='range' min='0' max=10 value='"+marks.getAggregates() +"' data-rangeslider-sub>"
 										 +"</div>" +"<output style='float: left; width: 30px;'></output>"	
-	 	
+										 	
 										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Set Operators:</label>"
 										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-										 	+"<input id = 'setoperators' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+										 	+"<input id = 'setoperators' type='range' min='0' max=10 value='"+marks.getSetOperators() +"' data-rangeslider-sub>"
 										 +"</div>" +"<output style='float: left; width: 30px;'></output>"
 										 	
-		+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Distinct:</label>"
-		 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-		 	+"<input id = 'distinct' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
-		 +"</div>" +"<output style='float: left; width: 30px;'></output>"
-		 	
-										 +"<output style='float: left; width: 30px;'></output>"	 
+										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Distinct:</label>"
+										 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+										 	+"<input id = 'distinct' type='range' min='0' max=10 value='"+marks.getDistinct() +"' data-rangeslider-sub>"
+										 +"</div>" +"<output style='float: left; width: 30px;'></output>"
+										 	
 										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Outer Query:</label>"
 											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id = 'outer' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 	+"<input id = 'outer' type='range' min='0' max=10 value='"+marks.getOuterQuery() +"' data-rangeslider-sub>"
 											 +"</div>"
 											 +"<output style='float: left; width: 30px;'></output>"	 
 										+"</div>"
-										);	
+										
+										 +"<output style='float: left; width: 30px;'></output>"	 
+									+"</div>");	
 			     	
 			     			
 	  		     out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>From Subquery:</label>"
 											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id = 'fromSub' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 	+"<input id = 'fromSub' type='range' min='0' max=10 value='"+marks.getFromSubQueries()+"' data-rangeslider-sub>"
 											 +"</div>"
 											 +" <output style='float: left; width: 30px;'></output>"									
 										+"</div>"
 										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Where Subquery:</label>"
 											+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-												+"<input id = 'whereSub' type='range' min='0' max=10 value='1' data-rangeslider-sub>"										 
+												+"<input id = 'whereSub' type='range' min='0' max=10 value='"+marks.getWhereSubQueries()+"' data-rangeslider-sub>"										 
 											+" </div>"
-										
 											+"<output style='float: left; width: 30px;'></output>");/*
 	  		     out.println("</div></div></td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td colspan=\"2\" style=\"text-align: center;\">"
 	  		     				+"<input id=\"btnSubmit\" type=\"button\" value=\"Evaluate\" />"
 	  		     				+"</td> </tr></table>");*/
-	  		     }
+			     	}else{
+		 		     	out.println("<table style=\"width: 70%; border: 0px;\" cellpadding=\"2\" cellspacing=\"0\">"	
+				     			+"<tr>"
+				     			+"<td colspan=\"2\" class=\"web_dialog_title\" style=\"text-align: center;\">Partial Marking</td>"
+				     				//+"<td class=\"web_dialog_title\">&nbsp;"
+				     			//+"</td>"
+				     			+"</tr>"
+				     			
+				     			+"<tr>"
+				     				+"<td colspan=\"2\"  style=\"text-align: center;\">"
+				     				+"<b>Set the partial marking parameters</b>"
+				     				+"</td>" 
+				     			+"</tr>" 		     				
+					            +"<tr><td>&nbsp;</td><td>&nbsp;</td> </tr>");
+				     	out.println("  <tr>"
+				     				+"<td colspan=\"2\" style=\"padding-left: 15px;\">"
+				     					+"<div id=\"paremeters\">"
+					                    	+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px; width:100px;'>Predicates:</label>"
+												 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+												 	+"<input id='predicates' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+												 +"</div>"
+												  +"<output style='float: left; width: 30px;'></output>"										
+											+"</div>"
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Projections:</label>"
+												 +" <div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+												 	+"<input id = 'projections' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+												 +"</div>"
+												 +"<output style='float: left; width: 30px;'></output>"
+												 +"</div>");
+				     	out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Relations:</label>"
+												 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+												 	+"<input id = 'relations' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+												 +"</div>"
+												 +"<output style='float: left; width: 30px;'></output>"
+											+"</div>"
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Group By:</label>"
+											+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+												 	+"<input id = 'groupBy' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+												 +"</div>"
+												  +"<output style='float: left; width: 30px;'></output>"										
+											+"</div>");		
+				     	out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Joins:</label>"
+												 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+												 	+"<input id = 'joins' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+												 +"</div>"
+												 +"<output style='float: left; width: 30px;'></output>"									
+											+"</div>"
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Having Clause:</label>"
+											+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+												+"<input id = 'having' type='range' min='0' max=10 value='1' data-rangeslider-sub>"										 
+											+" </div>"
+												
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Subquery Connective:</label>"
+											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+											 	+"<input id = 'subQconnective' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 +"</div>" +"<output style='float: left; width: 30px;'></output>"	
+																				 	
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Aggregates:</label>"
+											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+											 	+"<input id = 'aggregates' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 +"</div>" +"<output style='float: left; width: 30px;'></output>"	
+		 	
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Set Operators:</label>"
+											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+											 	+"<input id = 'setoperators' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+											 +"</div>" +"<output style='float: left; width: 30px;'></output>"
+											 	
+			+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Distinct:</label>"
+			 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+			 	+"<input id = 'distinct' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+			 +"</div>" +"<output style='float: left; width: 30px;'></output>"
+			 	
+											 +"<output style='float: left; width: 30px;'></output>"	 
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Outer Query:</label>"
+												 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+												 	+"<input id = 'outer' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+												 +"</div>"
+												 +"<output style='float: left; width: 30px;'></output>"	 
+											+"</div>"
+											);	
+				     	
+				     			
+		  		     out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>From Subquery:</label>"
+												 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+												 	+"<input id = 'fromSub' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
+												 +"</div>"
+												 +" <output style='float: left; width: 30px;'></output>"									
+											+"</div>"
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Where Subquery:</label>"
+												+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+													+"<input id = 'whereSub' type='range' min='0' max=10 value='1' data-rangeslider-sub>"										 
+												+" </div>"
+											
+												+"<output style='float: left; width: 30px;'></output>");/*
+		  		     out.println("</div></div></td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td colspan=\"2\" style=\"text-align: center;\">"
+		  		     				+"<input id=\"btnSubmit\" type=\"button\" value=\"Evaluate\" />"
+		  		     				+"</td> </tr></table>");*/
+		  		     }
   		     }else{
  		     	out.println("<table style=\"width: 70%; border: 0px;\" cellpadding=\"2\" cellspacing=\"0\">"	
 		     			+"<tr>"
@@ -419,8 +426,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 		     				+"<td colspan=\"2\" style=\"text-align: center;\">"
 		     				+"<b>Set the partial marking parameters</b>"
 		     				+"</td>" 
-		     			+"</tr>" 		     				
-			            +"<tr><td>&nbsp;</td><td>&nbsp;</td> </tr>");
+		     			+"</tr>" );
 		     	out.println("  <tr>"
 		     				+"<td colspan=\"2\" style=\"padding-left: 15px;\">"
 		     					+"<div id=\"paremeters\">"

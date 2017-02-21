@@ -122,9 +122,15 @@ public class PartialMarkerServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
 		
-		int queryId = Integer.parseInt(request.getParameter("queryId"));
-		int assignmentId = Integer.parseInt(request.getParameter("assignmentId"));
-		int questionId = Integer.parseInt(request.getParameter("questionId"));
+		int queryId = 0;
+		int assignmentId = 0;
+		int questionId = 0;
+		
+		if(request.getParameter("queryId") != null && !request.getParameter("queryId").isEmpty()){ queryId = Integer.parseInt(request.getParameter("queryId")); };
+		if(request.getParameter("assignmentId") != null && !request.getParameter("assignmentId").isEmpty()){ assignmentId = Integer.parseInt(request.getParameter("assignmentId")); };
+		if(request.getParameter("questionId") != null && !request.getParameter("questionId").isEmpty()){ questionId = Integer.parseInt(request.getParameter("questionId")); };
+		String requestFrom = request.getParameter("reqFromPage");
+		
 		PartialMarkParameters markInfo = new PartialMarkParameters();
 		try{
 			markInfo.QueryId = queryId;
@@ -146,7 +152,11 @@ public class PartialMarkerServlet extends HttpServlet {
 			
 			Gson gson = new Gson();
 			String info = gson.toJson(markInfo);
-			session.setAttribute(assignmentId+"_"+questionId+"_"+queryId,markInfo);
+			if(requestFrom != null && requestFrom.equalsIgnoreCase("demo")){
+				session.setAttribute("PartialMarkDemo"+questionId,markInfo);
+			}else{
+				session.setAttribute(assignmentId+"_"+questionId+"_"+queryId,markInfo);
+			}
 			
 			 
 		}//try block ends
