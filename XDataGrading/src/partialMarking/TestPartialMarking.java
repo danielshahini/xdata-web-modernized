@@ -222,7 +222,7 @@ public class TestPartialMarking {
 	}
 	public static void processStudentQueryFromKeyboard(TestPartialMarking testObj) throws Exception{
 		BufferedReader reader=new BufferedReader(new InputStreamReader(System.in));
-		String studentQuery="";
+		String studentQuery="", instructorQuery="";
 		String line="";
 		while((line=reader.readLine())!=null){
 			if(line.equals("q"))
@@ -230,8 +230,18 @@ public class TestPartialMarking {
 			else
 				studentQuery+=(line+" ");
 		}
+		while((line=reader.readLine())!=null){
+			if(line.equals("q"))
+				break;
+			else
+				instructorQuery+=(line+" ");
+		}
 		testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
-		SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
+		testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, 1, instructorQuery);
+		Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
+		Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
+		System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
+		//SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
 	}
 	/**
 	 * @param args
@@ -293,17 +303,16 @@ public class TestPartialMarking {
 //				+ "D(stud_id) as  ((select * from B) INTERSECT (select * from C)) "
 //				+ "select id,name from student,D where id=stud_id";
 		
-		
-	String	studentQuery="select	ps_partkey, "
-			+ "sum(ps_supplycost * ps_availqty) as value from 	"
-			+ "partsupp, supplier, nation where ps_suppkey = s_suppkey "
-			+ "and s_nationkey = n_nationkey and n_name = ':1' "
-			+ "group by ps_partkey having sum(ps_supplycost * ps_availqty) > "
-			+ "( select sum(ps_supplycost * ps_availqty)  from "
-			+ "partsupp, supplier, nation where ps_suppkey = s_suppkey "
-			+ "and s_nationkey = n_nationkey and n_name = ':1' ) order by value desc;";
+//		
+//	String	studentQuery="select	ps_partkey, "
+//			+ "sum(ps_supplycost * ps_availqty) as value from 	"
+//			+ "partsupp, supplier, nation where ps_suppkey = s_suppkey "
+//			+ "and s_nationkey = n_nationkey and n_name = ':1' "
+//			+ "group by ps_partkey having sum(ps_supplycost * ps_availqty) > "
+//			+ "( select sum(ps_supplycost * ps_availqty)  from "
+//			+ "partsupp, supplier, nation where ps_suppkey = s_suppkey "
+//			+ "and s_nationkey = n_nationkey and n_name = ':1' ) order by value desc;";
 	
-	studentQuery="select 1 from partsupp where ps_partkey >   ( select sum(ps_supplycost*2)*2 from partsupp)";
 	
 	
 	
@@ -360,8 +369,8 @@ String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER J
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
 			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//readQueriesFromFileParseAndTest();
-			readQueriesFromDBParseAndTest();			
-//			processStudentQueryFromKeyboard(testObj);
+			//readQueriesFromDBParseAndTest();			
+			processStudentQueryFromKeyboard(testObj);
 //			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
@@ -373,9 +382,9 @@ String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER J
 //			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery,1, instructorQuery);
 //			SerializeXML.serializeXML("student.xml", "instructor.xml", testObj.StudentQuery.qStructure, testObj.InstructorQuery.qStructure);
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
-//			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
-//			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
-//			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
+			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
+			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
+			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
 			//testObj.copyData();
 		}
 		catch(Exception e){
