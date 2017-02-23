@@ -917,6 +917,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 			Configuration.Aggregates=params.getAggregates();
 			Configuration.SetOperators=params.getSetOperators();
 			Configuration.Distinct=params.getDistinct();
+			Configuration.OrderBy=1;
 			//Configuration.OrderBy=params.getOrderBy();
 		}
 		
@@ -1012,16 +1013,15 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		float projectionScore = compareProjection(instructorData.getLstProjectedCols(), studentData.getLstProjectedCols());		
 		projectionScore = instructorData.getIsDistinct() == studentData.getIsDistinct() ? projectionScore : projectionScore/2;
 		float projectionScoreTotal=(perProjection==0 && projectionScore!=0)?-projWeightage/2:
-			perProjection*normalizeNegativeValuesToZero(projectionScore);
+			perProjection*normalizeNegativeValuesToZero(projectionScore);				
 		
 		float relationScore = compare(instructorData.getLstRelations(), studentData.getLstRelations());
 		float relationScoreTotal=(perRelation==0 && relationScore!=0)?-relationWeightage/2:
 			perRelation*normalizeNegativeValuesToZero(relationScore);
-		
+				
 		float joinScore = getJoinScore(instructorData, studentData);
 		float joinScoreTotal=(perJoin==0 && joinScore!=0)?-joinWeightage/2:
-			perJoin*normalizeNegativeValuesToZero(joinScore);
-	
+			perJoin*normalizeNegativeValuesToZero(joinScore);	
 		
 		float groupByScore = compareProjection(instructorData.getLstGroupByNodes(), studentData.getLstGroupByNodes());
 		float groupByScoreTotal=(perGroupBy==0 && groupByScore!=0)?-groupByWeightage/2:
@@ -1034,7 +1034,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		float subQConnectiveScore = compare(instructorData.getLstSubQConnectives(),studentData.getLstSubQConnectives());
 		float subQConnectiveScoreTotal=(perSubQConnective==0 && subQConnectiveScore!=0)?-subQConnectiveWeightage/2:
 			perSubQConnective*normalizeNegativeValuesToZero(subQConnectiveScore);
-		
+				
 		float aggregateScore = compareAggregates(instructorData.getLstAggregateList(), studentData.getLstAggregateList());
 		float aggregateScoreTotal=(perAggregate==0 && aggregateScore!=0)?-aggregateWeightage/2:
 			perAggregate*normalizeNegativeValuesToZero(aggregateScore);

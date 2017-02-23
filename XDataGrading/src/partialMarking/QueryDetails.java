@@ -6,10 +6,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import parsing.QueryStructure;
 import testDataGen.GenerateCVC1;
 import testDataGen.preProcessForDataGeneration;
 import util.MyConnection;
-import parsing.QueryStructure;
 
 public class QueryDetails {
 	
