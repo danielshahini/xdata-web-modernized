@@ -93,7 +93,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 				 +"  var queryId = $('#queryId').text();"
 				 +" var assignId = $('#assignId').text();"
 				 +" var quesId = $('#questionId').text();"
-				 +" var reqFromPage = $(#reqFrom).text();"
+				 +" var reqFromPage = $('#reqFrom').text();"
 				 +"var predicate =$('#predicates').val();"
 				 +"var projection=$('#projections').val();"
 				 +"var relation=$('#relations').val();"
@@ -192,10 +192,10 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 			    		   +"<p><h4>Query Id: <label id='queryId'>"+ queryId +"</label></h4></p>"
 			    		   + "<p><label hidden' id='reqFrom' "+ "Partial Mark" +"</label></p>");
 		      }else{
-		    	  out.println("<p> <label 'hidden' id='assignId' "+assignID+"</label>"
-		    			  		+"<label 'hidden'  id='questionId' "+questionID+"</label>"
-		    			  		+"<label hidden'  id='queryId' "+ queryId +"</label>" 
-		    			  		+"<label hidden'  id='reqFrom' "+ requestingPage +"</label></p>" );
+		    	  out.println("<p><label hidden id='assignId' >"+assignID+"</label></p>"
+		    			  		+"<p><label hidden  id='questionId' >"+questionID+"</label></p>"
+		    			  		+"<p><label hidden  id='queryId' >"+ queryId +"</label></p>" 
+		    			  		+"<p><label hidden  id='reqFrom'> "+ requestingPage +"</label></p>" );
 		      }
 			       PreparedStatement stmt = conn.prepareStatement("select * from xdata_instructor_query where assignment_id = ? and question_id = ? and query_id=?");
 	  		       stmt.setInt(1, assignID);
@@ -368,8 +368,10 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 											+"</div>"
 											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Having Clause:</label>"
 											+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-												+"<input id = 'having' type='range' min='0' max=10 value='1' data-rangeslider-sub>"										 
+												+"<input id = 'having' type='range' min='0' max=10 value='1' data-rangeslider-sub>"													
 											+" </div>"
+											 +"<output style='float: left; width: 30px;'></output>"
+											 +"</div>"
 												
 											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Subquery Connective:</label>"
 											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
@@ -467,6 +469,8 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 									 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
 									 	+"<input id = 'having' type='range' min='0' max=10 value='1' data-rangeslider-sub>"
 									 +"</div>"
+									 +"<output style='float: left; width: 30px;'></output>"									
+										+"</div>"
 									 	
 									+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Subquery Connective:</label>"
 									 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"

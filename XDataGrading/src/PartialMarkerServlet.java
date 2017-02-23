@@ -152,7 +152,9 @@ public class PartialMarkerServlet extends HttpServlet {
 			
 			Gson gson = new Gson();
 			String info = gson.toJson(markInfo);
-			if(requestFrom != null && !requestFrom.isEmpty() && requestFrom.equalsIgnoreCase("demo")){
+			if((requestFrom != null && !requestFrom.isEmpty() && requestFrom.trim().equalsIgnoreCase("demo"))
+					//|| (queryId == 0 && assignmentId == 0 && questionId ==0)
+					){
 				session.setAttribute("PartialMarkDemo"+questionId,markInfo);
 			}else{
 				session.setAttribute(assignmentId+"_"+questionId+"_"+queryId,markInfo);
