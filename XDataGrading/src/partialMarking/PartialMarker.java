@@ -904,20 +904,21 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		
 		public static void setConfigurationValues(PartialMarkParameters params){
 			Configuration = new PartialMarkerConfig();
-			Configuration.Relation=params.getRelation();
-			Configuration.Predicate=params.getPredicate();
-			Configuration.Projection=params.getProjection();
-			Configuration.Joins=params.getJoins();
-			Configuration.WhereSubQueries=params.getWhereSubQueries();
-			Configuration.FromSubQueries=params.getFromSubQueries();
-			Configuration.OuterQuery=params.getOuterQuery();
-			Configuration.GroupBy=params.getGroupBy();
-			Configuration.HavingClause=params.getHavingClause();
-			Configuration.SubQConnective=params.getSubQConnective();
-			Configuration.Aggregates=params.getAggregates();
-			Configuration.SetOperators=params.getSetOperators();
-			Configuration.Distinct=params.getDistinct();
-			Configuration.OrderBy=1;
+			if(params != null){
+				Configuration.Relation=params.getRelation();
+				Configuration.Predicate=params.getPredicate();
+				Configuration.Projection=params.getProjection();
+				Configuration.Joins=params.getJoins();
+				Configuration.WhereSubQueries=params.getWhereSubQueries();
+				Configuration.FromSubQueries=params.getFromSubQueries();
+				Configuration.OuterQuery=params.getOuterQuery();
+				Configuration.GroupBy=params.getGroupBy();
+				Configuration.HavingClause=params.getHavingClause();
+				Configuration.SubQConnective=params.getSubQConnective();
+				Configuration.Aggregates=params.getAggregates();
+				Configuration.SetOperators=params.getSetOperators();
+				Configuration.Distinct=params.getDistinct();
+			}
 			//Configuration.OrderBy=params.getOrderBy();
 		}
 		
