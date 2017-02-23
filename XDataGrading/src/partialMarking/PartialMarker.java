@@ -902,6 +902,24 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 			Configuration.OrderBy=1;
 		}
 		
+		public static void setConfigurationValues(PartialMarkParameters params){
+			Configuration = new PartialMarkerConfig();
+			Configuration.Relation=params.getRelation();
+			Configuration.Predicate=params.getPredicate();
+			Configuration.Projection=params.getProjection();
+			Configuration.Joins=params.getJoins();
+			Configuration.WhereSubQueries=params.getWhereSubQueries();
+			Configuration.FromSubQueries=params.getFromSubQueries();
+			Configuration.OuterQuery=params.getOuterQuery();
+			Configuration.GroupBy=params.getGroupBy();
+			Configuration.HavingClause=params.getHavingClause();
+			Configuration.SubQConnective=params.getSubQConnective();
+			Configuration.Aggregates=params.getAggregates();
+			Configuration.SetOperators=params.getSetOperators();
+			Configuration.Distinct=params.getDistinct();
+			//Configuration.OrderBy=params.getOrderBy();
+		}
+		
 		/* @author mathew
 		 *   Compares query structure corresponding to the instructor and student. Depending on whether
 		 *   the student/instructor query is a set operator query or not, calls the respective for 
@@ -921,13 +939,16 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 	public static MarkInfo calculateScoreForPlainSelect( QueryStructure instructorData, QueryStructure studentData,
 			int level) {
 		// TODO Auto-generated method stub
+		
+		if(Configuration==null)
+			PartialMarker.initializeConfiguration();
+
+		
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
 		MarkInfo whereSubQuery = compareListOfQueries(instructorData.getWhereClauseSubqueries(), studentData.getWhereClauseSubqueries(), level + 1);
 		
 		MarkInfo fromSubQuery = compareListOfQueries(instructorData.getFromClauseSubqueries(), studentData.getFromClauseSubqueries(), level + 1);
-		if(Configuration==null)
-			PartialMarker.initializeConfiguration();
 		
 		distinctWeightage = Configuration.Distinct;
 		

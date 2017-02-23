@@ -102,12 +102,12 @@ public class SendEmail extends HttpServlet {
 		try{
 			String emailHost = "smtp.gmail.com";
 			String fromUser = "xdata.sysad";//just the id alone without @gmail.com
-			String fromUserEmailPassword = "xdata@123";
-				 
+
+			String fromUserEmailPassword = "xdata@123";							
 				String emailPort = "465";//gmail's smtp port
-		
-				emailProperties = System.getProperties();
-				
+
+				emailProperties = System.getProperties();				
+
 				Properties props = new Properties();
 				props.put("mail.smtp.host", "smtp.gmail.com");
 				props.put("mail.smtp.socketFactory.port", "465");
@@ -123,7 +123,6 @@ public class SendEmail extends HttpServlet {
 							return new PasswordAuthentication("fromUser","fromUserEmailPassword");
 						}
 					});
-				
 				emailProperties.put("mail.smtp.port", emailPort);
 				emailProperties.put("mail.smtp.auth", "true");
 				emailProperties.put("mail.smtp.starttls.enable", "true");

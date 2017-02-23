@@ -2,13 +2,14 @@ package partialMarking;
 
 public class PartialMarkParameters {
 
-	private int Relation;
 	
 public int AssignmentId;
 
 public int QuestionId;
 
 public int QueryId;
+
+	private int Relation;
 
 	private int Predicate =1;
 	

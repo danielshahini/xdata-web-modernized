@@ -125,10 +125,12 @@ public class PartialMarkingDemo extends HttpServlet {
 								i++;
 								PartialMarkParameters params = (PartialMarkParameters)session.getAttribute("PartialMarkDemo"+i);
 								
-								testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery,params);		
+								partialMarking.PartialMarker.setConfigurationValues(params);
 								
-								Float studMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.StudentQuery.getQueryStructure(), 0,params).Marks;
-								Float instMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.InstructorQuery.getQueryStructure(), 0,params).Marks;
+								testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery);		
+								
+								Float studMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.StudentQuery.getQueryStructure(), 0).Marks;
+								Float instMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.InstructorQuery.getQueryStructure(), 0).Marks;
 								
 								Float newMarks=studMarks*100/instMarks;
 			
@@ -142,11 +144,11 @@ public class PartialMarkingDemo extends HttpServlet {
 					for(String instQuery:instructorQueries){
 						i++;
 						PartialMarkParameters params = (PartialMarkParameters)session.getAttribute("PartialMarkDemo"+i);
+						partialMarking.PartialMarker.setConfigurationValues(params);
+						testObj1.InstructorQuery=testObj1.process(testObj1.InstructorQuery,1, instQuery);
 						
-						testObj1.InstructorQuery=testObj1.process(testObj1.InstructorQuery,1, instQuery,params);
-						
-						Float studMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.StudentQuery.getQueryStructure(), 0,params).Marks;
-						Float instMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.InstructorQuery.getQueryStructure(), 0,params).Marks;
+						Float studMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.StudentQuery.getQueryStructure(), 0).Marks;
+						Float instMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.InstructorQuery.getQueryStructure(), 0).Marks;
 						
 						Float newMarks1=studMarks1*100/instMarks1;
 						
