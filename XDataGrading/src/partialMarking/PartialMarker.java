@@ -342,20 +342,42 @@ public class PartialMarker {
 		
 		return score;
 	}
+
+/** @author bharath, recoded by mathew
+ * 
+ * checks if two nodes that represents selection clauses are syntactically identical or not, 
+ * returns true iff if they are identical 
+ * 	
+ * @param n1
+ * @param n2
+
+ * @return boolean
+ */
 	
 public static Boolean checkSelectionEquality(Node n1, Node n2){
 		
 	if(!n1.getOperator().equals(n2.getOperator()))
-		return false;
+		return false;		
 	
-	if(!n1.getLeft().getTable().getTableName().equals(n2.getLeft().getTable().getTableName()))
-		return false;
-	
-	if(!n1.getLeft().getTableNameNo().equals(n2.getLeft().getTableNameNo()))
-		return false;
+	//if left node of n1 is a column reference
+		if(n1.getLeft().getNodeType().equals(Node.getColRefType())){
+			if(!n2.getLeft().getNodeType().equals(Node.getColRefType()))
+				return  false;
+			if(!n1.getLeft().getTable().getTableName().equals(n2.getLeft().getTable().getTableName()))
+				return false;
 			
-	if(!n1.getLeft().getColumn().getColumnName().equals(n2.getLeft().getColumn().getColumnName()))
-		return false;
+			if(!n1.getLeft().getTableNameNo().equals(n2.getLeft().getTableNameNo()))
+				return false;
+			if(!n1.getLeft().getColumn().getColumnName().equals(n2.getLeft().getColumn().getColumnName()))
+				return false;
+		}
+		//if left node of n1 is a constant value
+		if(n1.getLeft().getNodeType().equals(Node.getValType())){
+			if(!n2.getLeft().getNodeType().equals(Node.getValType()))
+				return  false;
+			if(!n1.getLeft().getStrConst().equals(n2.getLeft().getStrConst()))
+				return false;
+		}
 	
 	if(n1.getRight().getNodeType().equals(Node.getColRefType())){
 		
