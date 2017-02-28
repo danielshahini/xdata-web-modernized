@@ -359,7 +359,7 @@ $("#getPartialMarks").ajaxComplete(function( event,request, settings ){
 });
 
 $(document).ready(function() {
-	$('.nav-tabs > li > a').click(function(event){
+	$('.nav nav-tabs > li > a').click(function(event){
 		//alert("Comes to line 329 - doc ready - nav tabs click functn");
 		event.preventDefault();//stop browser to take action for clicked anchor
 		
@@ -384,8 +384,6 @@ $(document).ready(function() {
 	});
 });
 
-
- 
  
 </script>
 <style>

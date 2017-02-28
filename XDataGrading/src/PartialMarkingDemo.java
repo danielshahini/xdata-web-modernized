@@ -174,6 +174,7 @@ public class PartialMarkingDemo extends HttpServlet {
 					
 					//Upload the details of with canonicalization in first div
 					String output="";
+					//output += "<ul class=\"nav nav-tabs\"><li class=\"active\"><a href=\"#tab1\">Canonicalized Partial Marks: "+marks+"</a></li><li><a href=\"#tab2\">Non-Canonicalized Marks:"+marks1+"</a></li></ul>";
 					output += "<ul class=\"nav nav-tabs\"><li class=\"active\"><a href=\"#tab1\">Canonicalized Partial Marks: "+marks+"</a></li><li><a href=\"#tab2\">Non-Canonicalized Marks:"+marks1+"</a></li></ul>";
 					
 					output += "<section id=\"tab1\" class=\"tab-content active\"><div  style='background-color:#FFF'>";
