@@ -381,8 +381,8 @@ public class TestPartialMarking {
 		try{
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
 			//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
-			String instructorQuery="SELECT INSTRUCTOR.ID FROM  INSTRUCTOR INNER JOIN DEPARTMENT D ON INSTRUCTOR.dept_name>=D.dept_name WHERE D.BUDGET>30000";
-			String studentQuery="SELECT INSTRUCTOR.ID FROM  INSTRUCTOR LEFT OUTER JOIN DEPARTMENT D ON INSTRUCTOR.dept_name>=D.dept_name WHERE D.BUDGET>30000";
+			String instructorQuery="SELECT Distinct  INSTRUCTOR.ID,  D.dept_name FROM  INSTRUCTOR, DEPARTMENT D WHERE INSTRUCTOR.dept_name=D.dept_name";
+			String studentQuery="SELECT  INSTRUCTOR.ID,  INSTRUCTOR.dept_name FROM  INSTRUCTOR, DEPARTMENT D WHERE INSTRUCTOR.dept_name=D.dept_name";
 
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();			

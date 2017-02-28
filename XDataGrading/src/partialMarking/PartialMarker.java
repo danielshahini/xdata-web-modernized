@@ -430,7 +430,7 @@ public static Boolean checkProjectionEquality(Node n1, Node n2){
 	
 	if(n1.getNodeType().equals(Node.getColRefType())){
 		
-		if(!n1.getTable().equals(n2.getTable()))
+		if(!n1.getTable().getTableName().equals(n2.getTable().getTableName()))
 			return false;
 		
 		if(!n1.getTableNameNo().equals(n2.getTableNameNo()))
