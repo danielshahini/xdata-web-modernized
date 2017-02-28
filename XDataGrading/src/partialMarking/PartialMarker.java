@@ -1090,8 +1090,24 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
 			aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal + orderByOperatorScoreTotal);
 		
-		float instructor = perPredicate * uniquePredicates + perRelation * uniqueRelations + perProjection * uniqueProj + perJoin * instructorJoin + perGroupBy * uniqueGroupBy + perHavingClause * uniqueHavingClause + perSubQConnective * uniqueSubQConnective + perAggregate * uniqueAggregates + perSetOperator * uniqueSetOperators + perDistinctOperator * uniqueDistinct +perOrderBy;
+		float instructor = perPredicate * uniquePredicates + perRelation * uniqueRelations + perProjection * uniqueProj + perJoin * instructorJoin + 
+				perGroupBy * uniqueGroupBy + perHavingClause * uniqueHavingClause + perSubQConnective * uniqueSubQConnective + perAggregate * uniqueAggregates + perSetOperator * uniqueSetOperators + perDistinctOperator * uniqueDistinct +perOrderBy;
 		
+		if(level==0){
+			logger.info("                  |     instructor    |    student         ");
+			logger.info("distinct   score  |     "+perDistinctOperator * uniqueDistinct+"    |    "+distinctOperatorScoreTotal);
+			logger.info("projection score  |     "+perProjection * uniqueProj+"    |    "+projectionScoreTotal);
+			logger.info("selection score   |     "+perPredicate*uniquePredicates+"    |    "+predicateScoreTotal);
+			logger.info("relation score    |     "+perRelation * uniqueRelations+"    |    "+relationScoreTotal);
+			logger.info("join score        |     "+perJoin * instructorJoin+"    |    "+joinScoreTotal);
+			logger.info("group by score    |     "+perGroupBy * uniqueGroupBy+"    |    "+groupByScoreTotal);
+			logger.info("having score      |     "+perHavingClause * uniqueHavingClause+"    |    "+havingClauseScoreTotal);
+			logger.info("order by score    |     "+perOrderBy+"    |    "+orderByOperatorScoreTotal);
+			logger.info("subq. conn. score |     "+perSubQConnective * uniqueSubQConnective+"    |    "+subQConnectiveScoreTotal);
+			logger.info("aggregate score   |     "+perAggregate * uniqueAggregates+"    |    "+aggregateScoreTotal);
+			logger.info("set oper. score   |     "+perSetOperator * uniqueSetOperators+"    |    "+setOperatorScoreTotal);
+			logger.info("total score       |     "+instructor+"    |    "+student);
+		}
 		float score = student/instructor * maxMarks;
 		
 		marks.Marks = score;
