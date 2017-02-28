@@ -296,23 +296,27 @@ $(document).on('click','#getPartialMarks',function (event) {
 	        		$('html,body').animate({ scrollTop: $("#showCanonicalizationResult").offset().top-10});	
 				} 
         		catch(err)
-        		{	    	
-        			if(xhr.status ===88){
+        		{	
+        		//	alert("xhr - status : in success function : " + xhr.status);
+        			
+        			if(xhr.status == 88){
     	        		alert("Error: Syntax Error with student Query.");
     	        	}
-    	        	else if(xhr.status ===89){
+    	        	else if(xhr.status == 89){
     	        		alert("Error: Syntax Error with instructor Query.");
     	        	}
     	        	else{
-    	        	alert("Internal Server Error while computing partial mark.");
+    	        		alert("Internal Server Error while computing partial mark.");
     	        	}       			
         		} 	        	
 	        }, 
 	        error : function(xhr, ajaxOptions, thrownError){
-	        	if(xhr.status ===88){
+	        //	alert("xhr - status : in error function  : " + xhr.status );
+	        	
+	        	if(xhr.status == 88){
 	        		alert("Error: Syntax Error with student Query.");
 	        	}
-	        	else if(xhr.status ===89){
+	        	else if(xhr.status == 89){
 	        		alert("Error: Syntax Error with instructor Query.");
 	        	}
 	        	else{

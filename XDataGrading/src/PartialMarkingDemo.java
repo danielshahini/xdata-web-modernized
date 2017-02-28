@@ -82,9 +82,9 @@ public class PartialMarkingDemo extends HttpServlet {
 		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		Exception caughtException=null;
 		int assignId=9;  //Hard code some existing assignment ID here and in TestPartialMarking.java - process and processcanonicalize methods
-				
+		String err= "";
 				graderConn = new util.DatabaseConnection().getGraderConnection(assignId);
-				
+				PrintWriter out = response.getWriter();
 				try{ 
 					p.deleteAllTempTablesFromTestUser(graderConn);
 					p.createTempTables(graderConn, assignId, 1);
@@ -101,7 +101,9 @@ public class PartialMarkingDemo extends HttpServlet {
 					}
 					e.printStackTrace(); 
 					caughtException = e;
-					response. sendError(88,e.getMessage());
+					response.setStatus(88);
+					out.print(e.getMessage());
+					out.flush();
 				}
 				try{
 					for(String instQuery:instructorQueries){
@@ -111,16 +113,16 @@ public class PartialMarkingDemo extends HttpServlet {
 					}
 				}catch(Exception e){
 					try {
-						if(graderConn != null && ! graderConn.isClosed())
+						if(graderConn != null && ! graderConn.isClosed()) 
 							graderConn.close();
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 					}
 					e.printStackTrace();
 					caughtException = e;
-					response.sendError(89,e.getMessage());
-					
-					//throw new ServletException();
+					response.setStatus(89);
+					out.print(e.getMessage());
+					out.flush();
 				}
 		
 				if(caughtException== null ){	
@@ -286,9 +288,9 @@ public class PartialMarkingDemo extends HttpServlet {
 		}
 		
 		
-		output += "</section></div>";
-	response.getWriter().write(output);	
-				}
+			output += "</section></div>";
+			response.getWriter().write(output);	
+		}
 					
 	}
 		/**
