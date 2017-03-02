@@ -588,7 +588,7 @@ public class TestAnswer {
 								&& !(hashValueOfInstructorQueryTableAfterExecution.equals(hashValueOfInstructorQueryTable))){
 							//Student query fails as it has changed some existing table data 
 							resultOnDsetMap.add(studentRollnums.get(l));
-							queryIds.add((String)instrQueryId);
+							queryIds.add(instrQueryId);
 							//Re-Load the data set
 							PopulateTestDataGrading p = new PopulateTestDataGrading();
 							if(! filePath.equals("NoPath")){
@@ -607,8 +607,8 @@ public class TestAnswer {
 						if(s instanceof PSQLException && s.getMessage().trim().equalsIgnoreCase("No results were returned by the query.".trim())){
 							 
 						}else{
-							queryIds.add((String)instrQueryId);
-							columnmismatch.add((String)instrQueryId);
+							queryIds.add(instrQueryId);
+							columnmismatch.add(instrQueryId);
 							resultOnDsetMap.add(studentRollnums.get(l));							
 							logger.log(Level.SEVERE,s.getMessage(), s);
 							//throw s;
@@ -630,22 +630,22 @@ public class TestAnswer {
 								projectedCols.add(orgRsmd.getColumnName(k));
 							}
 							if(orgRsmd.getColumnCount()!=rsmd.getColumnCount()){
-								columnmismatch.add((String)instrQueryId);
+								columnmismatch.add(instrQueryId);
 							}
 							else{
 								for(int k=1;k<=rsmd.getColumnCount();k++){
 									if(!projectedCols.contains(rsmd.getColumnName(k))){
-										columnmismatch.add((String)instrQueryId);
+										columnmismatch.add(instrQueryId);
 										break;
 									}
 								}
 							}
-							queryIds.add((String)instrQueryId);
+							queryIds.add(instrQueryId);
 							resultOnDsetMap.add(studentRollnums.get(l));
 						}catch(Exception e){
 							logger.log(Level.SEVERE,e.getMessage(), e);
 							//e.printStackTrace();
-							queryIds.add((String)instrQueryId);
+							queryIds.add(instrQueryId);
 							resultOnDsetMap.add(studentRollnums.get(l));
 						}
 						finally{
@@ -668,7 +668,7 @@ public class TestAnswer {
 					
 					else if(rs!=null && rs.next()){						
 						//logger.log(Level.INFO,"Adding Query Id = "+(String)Id);
-						queryIds.add((String)instrQueryId);
+						queryIds.add(instrQueryId);
 						resultOnDsetMap.add(studentRollnums.get(l));
 					}else{
 						//logger.log(Level.INFO,"rs is empty");
@@ -701,7 +701,7 @@ public class TestAnswer {
 						outputEqual = false;
 					}
 					if(!outputEqual){
-						queryIds.add((String)instrQueryId);
+						queryIds.add(instrQueryId);
 						resultOnDsetMap.add(studentRollnums.get(l));
 					}
 					
@@ -713,7 +713,7 @@ public class TestAnswer {
 				}//if mutant_query is not null
 				else{
 					//If student_query is null, add it as failed
-					queryIds.add((String)instrQueryId);
+					queryIds.add(instrQueryId);
 					resultOnDsetMap.add(studentRollnums.get(l));
 				}
 				

@@ -342,20 +342,42 @@ public class PartialMarker {
 		
 		return score;
 	}
+
+/** @author bharath, recoded by mathew
+ * 
+ * checks if two nodes that represents selection clauses are syntactically identical or not, 
+ * returns true iff if they are identical 
+ * 	
+ * @param n1
+ * @param n2
+
+ * @return boolean
+ */
 	
 public static Boolean checkSelectionEquality(Node n1, Node n2){
 		
 	if(!n1.getOperator().equals(n2.getOperator()))
-		return false;
+		return false;		
 	
-	if(!n1.getLeft().getTable().getTableName().equals(n2.getLeft().getTable().getTableName()))
-		return false;
-	
-	if(!n1.getLeft().getTableNameNo().equals(n2.getLeft().getTableNameNo()))
-		return false;
+	//if left node of n1 is a column reference
+		if(n1.getLeft().getNodeType().equals(Node.getColRefType())){
+			if(!n2.getLeft().getNodeType().equals(Node.getColRefType()))
+				return  false;
+			if(!n1.getLeft().getTable().getTableName().equals(n2.getLeft().getTable().getTableName()))
+				return false;
 			
-	if(!n1.getLeft().getColumn().getColumnName().equals(n2.getLeft().getColumn().getColumnName()))
-		return false;
+			if(!n1.getLeft().getTableNameNo().equals(n2.getLeft().getTableNameNo()))
+				return false;
+			if(!n1.getLeft().getColumn().getColumnName().equals(n2.getLeft().getColumn().getColumnName()))
+				return false;
+		}
+		//if left node of n1 is a constant value
+		if(n1.getLeft().getNodeType().equals(Node.getValType())){
+			if(!n2.getLeft().getNodeType().equals(Node.getValType()))
+				return  false;
+			if(!n1.getLeft().getStrConst().equals(n2.getLeft().getStrConst()))
+				return false;
+		}
 	
 	if(n1.getRight().getNodeType().equals(Node.getColRefType())){
 		
@@ -408,7 +430,7 @@ public static Boolean checkProjectionEquality(Node n1, Node n2){
 	
 	if(n1.getNodeType().equals(Node.getColRefType())){
 		
-		if(!n1.getTable().equals(n2.getTable()))
+		if(!n1.getTable().getTableName().equals(n2.getTable().getTableName()))
 			return false;
 		
 		if(!n1.getTableNameNo().equals(n2.getTableNameNo()))
@@ -1014,16 +1036,15 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		float projectionScore = compareProjection(instructorData.getLstProjectedCols(), studentData.getLstProjectedCols());		
 		projectionScore = instructorData.getIsDistinct() == studentData.getIsDistinct() ? projectionScore : projectionScore/2;
 		float projectionScoreTotal=(perProjection==0 && projectionScore!=0)?-projWeightage/2:
-			perProjection*normalizeNegativeValuesToZero(projectionScore);
+			perProjection*normalizeNegativeValuesToZero(projectionScore);				
 		
 		float relationScore = compare(instructorData.getLstRelations(), studentData.getLstRelations());
 		float relationScoreTotal=(perRelation==0 && relationScore!=0)?-relationWeightage/2:
 			perRelation*normalizeNegativeValuesToZero(relationScore);
-		
+				
 		float joinScore = getJoinScore(instructorData, studentData);
 		float joinScoreTotal=(perJoin==0 && joinScore!=0)?-joinWeightage/2:
-			perJoin*normalizeNegativeValuesToZero(joinScore);
-	
+			perJoin*normalizeNegativeValuesToZero(joinScore);	
 		
 		float groupByScore = compareProjection(instructorData.getLstGroupByNodes(), studentData.getLstGroupByNodes());
 		float groupByScoreTotal=(perGroupBy==0 && groupByScore!=0)?-groupByWeightage/2:
@@ -1036,7 +1057,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		float subQConnectiveScore = compare(instructorData.getLstSubQConnectives(),studentData.getLstSubQConnectives());
 		float subQConnectiveScoreTotal=(perSubQConnective==0 && subQConnectiveScore!=0)?-subQConnectiveWeightage/2:
 			perSubQConnective*normalizeNegativeValuesToZero(subQConnectiveScore);
-		
+				
 		float aggregateScore = compareAggregates(instructorData.getLstAggregateList(), studentData.getLstAggregateList());
 		float aggregateScoreTotal=(perAggregate==0 && aggregateScore!=0)?-aggregateWeightage/2:
 			perAggregate*normalizeNegativeValuesToZero(aggregateScore);
@@ -1069,8 +1090,24 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
 			aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal + orderByOperatorScoreTotal);
 		
-		float instructor = perPredicate * uniquePredicates + perRelation * uniqueRelations + perProjection * uniqueProj + perJoin * instructorJoin + perGroupBy * uniqueGroupBy + perHavingClause * uniqueHavingClause + perSubQConnective * uniqueSubQConnective + perAggregate * uniqueAggregates + perSetOperator * uniqueSetOperators + perDistinctOperator * uniqueDistinct +perOrderBy;
+		float instructor = perPredicate * uniquePredicates + perRelation * uniqueRelations + perProjection * uniqueProj + perJoin * instructorJoin + 
+				perGroupBy * uniqueGroupBy + perHavingClause * uniqueHavingClause + perSubQConnective * uniqueSubQConnective + perAggregate * uniqueAggregates + perSetOperator * uniqueSetOperators + perDistinctOperator * uniqueDistinct +perOrderBy;
 		
+		if(level==0){
+			logger.info("                  |     instructor    |    student         ");
+			logger.info("distinct   score  |     "+perDistinctOperator * uniqueDistinct+"    |    "+distinctOperatorScoreTotal);
+			logger.info("projection score  |     "+perProjection * uniqueProj+"    |    "+projectionScoreTotal);
+			logger.info("selection score   |     "+perPredicate*uniquePredicates+"    |    "+predicateScoreTotal);
+			logger.info("relation score    |     "+perRelation * uniqueRelations+"    |    "+relationScoreTotal);
+			logger.info("join score        |     "+perJoin * instructorJoin+"    |    "+joinScoreTotal);
+			logger.info("group by score    |     "+perGroupBy * uniqueGroupBy+"    |    "+groupByScoreTotal);
+			logger.info("having score      |     "+perHavingClause * uniqueHavingClause+"    |    "+havingClauseScoreTotal);
+			logger.info("order by score    |     "+perOrderBy+"    |    "+orderByOperatorScoreTotal);
+			logger.info("subq. conn. score |     "+perSubQConnective * uniqueSubQConnective+"    |    "+subQConnectiveScoreTotal);
+			logger.info("aggregate score   |     "+perAggregate * uniqueAggregates+"    |    "+aggregateScoreTotal);
+			logger.info("set oper. score   |     "+perSetOperator * uniqueSetOperators+"    |    "+setOperatorScoreTotal);
+			logger.info("total score       |     "+instructor+"    |    "+student);
+		}
 		float score = student/instructor * maxMarks;
 		
 		marks.Marks = score;

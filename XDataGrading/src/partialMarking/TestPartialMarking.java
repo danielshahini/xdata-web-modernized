@@ -87,10 +87,15 @@ public class TestPartialMarking {
 		queryDetails=new QueryDetails();
 		queryDetails.startProcessing(assignNo, questionId, strQuery);	
 	
-		for(ConjunctQueryStructure c:queryDetails.qStructure.conjuncts){
-			for(Node n :c.getSelectionConds())
-				System.out.println("join Conditions : "+n);
+//		for(ConjunctQueryStructure c:queryDetails.qStructure.conjuncts){
+//			for(Node n :c.getJoinCondsAllOther())
+//				System.out.println("join Conditions : "+n+" jointype "+n.getJoinType());
+//		}
+		
+		for(Node n:queryDetails.qStructure.getLstJoinConditions()){
+			System.out.println(" join conditions"+n+" join type"+n.getJoinType());
 		}
+		
 		return queryDetails;
 				
 	}
@@ -98,10 +103,15 @@ public class TestPartialMarking {
 	public QueryDetails processCanonicalize(QueryDetails queryDetails, int questionId, String strQuery) throws Exception{
 		queryDetails=new QueryDetails();
 		
-		queryDetails.startProcessing(assignNo, questionId, strQuery);		
+		queryDetails.startProcessing(assignNo, questionId, strQuery);
 		CanonicalizeQuery.Canonicalize(queryDetails.qStructure);
-//		for(Node n:queryDetails.getQueryStructure().getLstHavingConditions())
-//			System.out.println(" Having conditions "+n);
+//		for(String n:queryDetails.qStructure.getLstRelationInstances()){
+//			System.out.println(" Relation Instances"+n);
+//		}
+//		for(Node n:queryDetails.qStructure.getLstJoinConditions()){
+//			System.out.println(" join conditions"+n+" join type"+n.getJoinType());
+//		}
+
 		
 		return queryDetails;
 				
@@ -224,18 +234,21 @@ public class TestPartialMarking {
 		BufferedReader reader=new BufferedReader(new InputStreamReader(System.in));
 		String studentQuery="", instructorQuery="";
 		String line="";
-		while((line=reader.readLine())!=null){
-			if(line.equals("q"))
-				break;
-			else
-				studentQuery+=(line+" ");
-		}
+		System.out.println("Enter the instructorQuery followed by letter 'q' in the next line");
 		while((line=reader.readLine())!=null){
 			if(line.equals("q"))
 				break;
 			else
 				instructorQuery+=(line+" ");
 		}
+		System.out.println("Enter the studentQuery followed by letter 'q' in the next line");
+		while((line=reader.readLine())!=null){
+			if(line.equals("q"))
+				break;
+			else
+				studentQuery+=(line+" ");
+		}
+
 		testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 		testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery, 1, instructorQuery);
 		Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
@@ -357,8 +370,8 @@ public class TestPartialMarking {
 //		String studentQuery="SELECT INSTRUCTOR.ID FROM  "
 //		+ TEACHES  WHERE TEACHES.ID > ALL "
 //		+ " (SELECT INSTRUCTOR.ID FROM INSTRUCTOR  WHERE INSTRUCTOR.ID NOT IN ( 1,2,3 ))";
-String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON "
-				+ "(c.dept_name = d.dept_name) GROUP BY c.dept_name  HAVING SUM(c.credits)>10 AND COUNT(c.credits)>1 and COUNT(c.credits)<4";
+//String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER JOIN department d ON "
+//				+ "(c.dept_name = d.dept_name) GROUP BY c.dept_name  HAVING SUM(c.credits)>10 AND COUNT(c.credits)>1 and COUNT(c.credits)<4";
 		
 		
 //		String strQuery= " WITH R AS (SELECT * FROM TEACHES INNER JOIN INSTRUCTOR ON TEACHES.ID=INSTRUCTOR.ID)"
@@ -367,11 +380,14 @@ String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER J
 		TestPartialMarking testObj=new TestPartialMarking();
 		try{
 //			String instructorQuery = "";//"SELECT DISTINCT course_id, title FROM course NATURAL JOIN section WHERE semester = 'Spring' AND year = 2010 AND course_id NOT IN (SELECT course_id FROM prereq)";
-			String studentAnswer = "";//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
+			//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
+			String instructorQuery="SELECT Distinct  INSTRUCTOR.ID,  D.dept_name FROM  INSTRUCTOR, DEPARTMENT D WHERE INSTRUCTOR.dept_name=D.dept_name";
+			String studentQuery="SELECT  INSTRUCTOR.ID,  INSTRUCTOR.dept_name FROM  INSTRUCTOR, DEPARTMENT D WHERE INSTRUCTOR.dept_name=D.dept_name";
+
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();			
-			processStudentQueryFromKeyboard(testObj);
-//			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
+		//	processStudentQueryFromKeyboard(testObj);
+			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
@@ -379,7 +395,7 @@ String instructorQuery="SELECT c.dept_name, SUM(c.credits) FROM course c INNER J
 			
 			
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-//			testObj.InstructorQuery=testObj.process(testObj.InstructorQuery,1, instructorQuery);
+			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instructorQuery);
 //			SerializeXML.serializeXML("student.xml", "instructor.xml", testObj.StudentQuery.qStructure, testObj.InstructorQuery.qStructure);
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
 			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
