@@ -410,6 +410,71 @@ public class PopulateTestDataGrading {
 
 	}
 
+	public void createTempTablesForDemoUI(Connection conn, int assignId, int questionId) throws Exception {
+		//Connection mainConn = MyConnection.getExistingDatabaseConnection();
+		Connection mainConn = conn;	
+			int schemaId = 0, optionalSchemaId=0;			
+
+			try(PreparedStatement stmt = mainConn.prepareStatement("select defaultschemaid from xdata_assignment where assignment_id = ?")){
+				stmt.setInt(1, assignId); 
+
+				try(ResultSet result = stmt.executeQuery()){
+
+					//Get optional Schema Id for this question
+					try(PreparedStatement stmt1 = mainConn.prepareStatement("select optionalschemaid from xdata_qinfo where assignment_id = ? and question_id= ? ")){
+						stmt1.setInt(1, assignId); 
+						stmt1.setInt(2, questionId); 
+
+						try(ResultSet resultSet = stmt1.executeQuery()){
+							if(resultSet.next()){
+								optionalSchemaId = resultSet.getInt("optionalschemaid");
+							}
+						}
+					}
+					if(result.next()){
+						//If optional schema id exists and it is not same as default schema id, then set it as schemaId 
+						if(optionalSchemaId != 0 && optionalSchemaId != result.getInt("defaultschemaid")){	
+							schemaId = optionalSchemaId;
+						} else{
+							schemaId = result.getInt("defaultschemaid");
+						}
+					}
+
+					if(schemaId != 0){				
+						try(PreparedStatement stmt1 = mainConn.prepareStatement("select ddltext from xdata_schemainfo where schema_id = ?")){
+							stmt1.setInt(1, schemaId);			
+							try(ResultSet result1 = stmt1.executeQuery()){
+
+								// Process the result			
+								if(result1.next()){
+									String fileContent= result1.getString("ddltext");
+									byte[] dataBytes = fileContent.getBytes();
+									String tempFile = "/tmp/dummy";
+
+									FileOutputStream fos = new FileOutputStream(tempFile);
+									fos.write(dataBytes);
+									fos.close();
+
+									ArrayList<String> listOfQueries = Utilities.createQueries(tempFile);
+									String[] inst = listOfQueries.toArray(new String[listOfQueries.size()]);
+
+									for (int i = 0; i < inst.length; i++) {
+										// we ensure that there is no spaces before or after the request string  
+										// in order to not execute empty statements  
+										if (!inst[i].trim().equals("") && ! inst[i].trim().contains("drop table")) {
+											String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create temporary table ");
+											try(PreparedStatement stmt2 = conn.prepareStatement(temp)){
+												stmt2.executeUpdate();					
+											}
+										}
+									}	
+								}
+							}//try-with-resource for ressultset result
+						}//try-with-resource for stmt1		
+					}	
+				}//try-with-resource for ResultSet
+			}//Try-with-resource for statement obj
+	}
 
 	public void createTempTablesForTestThread(Connection conn, int assignId, int questionId) throws Exception {
 		//Connection mainConn = MyConnection.getExistingDatabaseConnection();

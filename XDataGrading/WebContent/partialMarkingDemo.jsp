@@ -39,7 +39,8 @@
 <head> 
 
 <link rel="stylesheet" type="text/css" href="css/structure.css"/>
-<script type="text/javascript" src="scripts/jquery-1.7.2.js"></script>
+<!-- <script type="text/javascript" src="scripts/jquery-1.7.2.js"></script>-->
+<script type="text/javascript" src="scripts/jquery-2.1.4.js"></script>
 <link rel="stylesheet" href="scripts/codemirror/lib/codemirror.css" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
  <!--  <script type="text/javascript"  src = "scripts/jquery.js"></script>--> 
@@ -50,6 +51,7 @@
 <script type="text/javascript" src="scripts/codemirror/addon/hint/show-hint.js"></script>
 <script type="text/javascript" src="scripts/codemirror/addon/hint/sql-hint.js"></script>
 <script>
+
 //Holds count of text box created
 var counter =1;
 //holds query box count including existing queries 
@@ -57,6 +59,7 @@ var boxname=0;
 //Holds previous query_id box added
 var prevId = parseInt("0");
 
+/*Following method loads the page with default code mirror text area*/
 window.onload = function() { 
 	   
 	  var mime = 'text/x-mariadb';
@@ -96,21 +99,14 @@ function getParameterByName(name) {
 
 $( document ).ready(function() {
 	
-//Function to add a new query text area for adding new queries
+//Function to add a new query text area - view/delete partial marking params link - for more than one instructor queries
 $(document).on('click', '.queryBox' ,function (event) { 
 	//alert("Onclick Query Box");
 	 var $this = $(this);
 	 
 	 idname = parseInt(this.name);
 	 boxname = boxname+1;
-	/* if(idname == prevId) { 
-		 //alert("in if");
-		 boxname = boxname+1;
-	 }
-	 else{
-		 boxname=idname;
-	 }*/
-	 //alert(name);
+	
 	  counter = counter+1;
 	 var correctId=parseInt(this.id);
 	 var txtBoxId = "query " +correctId +" "+boxname;
@@ -171,7 +167,7 @@ $(document).on('click', '.queryBox' ,function (event) {
 });
 
 
-	  //Func to remove newly added text areas
+//Func to remove newly added text areas
 $(document).on('click', '.remove',function(event) {	 
 	
 		if(counter <= 1 && ($('textarea[name=newQuery]').size())>1){
@@ -191,7 +187,7 @@ $(document).on('click', '.remove',function(event) {
       	
 }); 
 	  
-
+/*Following method displays the contenets of the clicked  tab*/
 $('.nav-tabs > li > a').click(function(event){
 	//alert("Comes to onclick");
 	event.preventDefault();//stop browser to take action for clicked anchor
@@ -216,35 +212,17 @@ $('.nav-tabs > li > a').click(function(event){
 	$(target_tab_selector).addClass('active');
      });
   
+  /*Method to compute the partial marks using ajax call*/
 $(document).on('click','#getPartialMarks',function (event) {
 	
 	event.preventDefault();
-	//var dataString=this.id;
-  /*  $('#label_0').hide();
-    $('#label_1').hide();
-    $('#label_2').hide();
-    $('#label_3').hide();
-    $('#label_4').hide();
-    $('#label_5').hide();
-    $('#label_6').hide();
-    $('#label_7').hide();*/
-    //$('#showCanonicalizationResult').hide();
-    //$('#canonicalizeSteps').hide();
-    
-   // $('#withCanonicalize').hide();
-	//$('#withoutCanonicalize').hide();
-    var isCanonicalized;
+	 var isCanonicalized;
     if ($('#canonicalize').is(":checked")){
     	isCanonicalized = "canonicalize"
     }
     var ed = $('.CodeMirror')[0].CodeMirror;
     var query;
-    //Get all codemirror values, separate with #&# and pass it to servlet for processing. 
-    //This works but gets only student query
-    /*$('.CodeMirror').each(function (i,el){
-    	 var ed = $('.CodeMirror')[1].CodeMirror;
-    	query = el.CodeMirror.getValue() +'#&#';
-    });*/
+	//Get all instructor queries separated by the following delimiter
     query = ed.getValue() + '#@###@#';
     
     var codeMirrorValues = document.getElementsByName("newQuery");
@@ -255,8 +233,7 @@ $(document).on('click','#getPartialMarks',function (event) {
     	query += (edt+'#@###@#');
     	//alert("i = "+edt);
     }
-  	//alert("query ="+ query);
-    var dataString = "instructorQuery="+ query +'&&studentQuery='+document.getElementById("textarea-1").value+
+  	 var dataString = "instructorQuery="+ query +'&&studentQuery='+document.getElementById("textarea-1").value+
     '&&canonicalize='+isCanonicalized;
    //alert("dataString ="+ dataString);
 	var index = this.name;
@@ -265,30 +242,7 @@ $(document).on('click','#getPartialMarks',function (event) {
         type: "POST",  
         url: "PartialMarkingDemo",
         data: dataString,
-        context:this,  
-        /* beforeSend : function() {
-        	//$('#canonicalizeSteps').show();
-        	/*$(function () {
-						var counter = 8,
-        		        divs = $('#label_0, #label_1, #label_2,#label_3,#label_4,#label_5,#label_6,#label_7');
-        		    
-        		    function showDiv () {
-        		    	
-        		        divs. // hide all divs
-        		            filter(function (index) { return index == 8-counter; }) // figure out correct div to show
-        		           .show('fast'); // and show it
-
-        		        counter--;
-        		    }; // function to loop through divs and show correct div
-
-        		    showDiv(); // show first div    
-
-        		    setInterval(function () {
-        		        showDiv(); // show next div
-        		    },100);
-        		});
-        	}, */ 
-         
+        context:this,           
 	        success: function(data) { 
 	        	try{	
 	        		//Get the html content and display it in a div
@@ -297,36 +251,17 @@ $(document).on('click','#getPartialMarks',function (event) {
 				} 
         		catch(err)
         		{	
-        		//	alert("xhr - status : in success function : " + xhr.status);
-        			
-        			if(xhr.status == 88){
-    	        		alert("Error: Syntax Error with student Query.");
-    	        	}
-    	        	else if(xhr.status == 89){
-    	        		alert("Error: Syntax Error with instructor Query.");
-    	        	}
-    	        	else{
-    	        		alert("Internal Server Error while computing partial mark.");
-    	        	}       			
+        			alert(err);         			       			
         		} 	        	
 	        }, 
-	        error : function(xhr, ajaxOptions, thrownError){
-	        //	alert("xhr - status : in error function  : " + xhr.status );
-	        	
-	        	if(xhr.status == 88){
-	        		alert("Error: Syntax Error with student Query.");
-	        	}
-	        	else if(xhr.status == 89){
-	        		alert("Error: Syntax Error with instructor Query.");
-	        	}
-	        	else{
-	        	alert("Internal Server Error while computing partial mark.");
-	        	} 	 
+	        error : function(xhr, thrownError){
+	        		 alert(xhr.responseText ); 
             }
 	      }); 
 	      return false; 
 });
 
+  /*The following code shows the tabbed contents based on which tab is clicked*/
 $("#getPartialMarks").ajaxComplete(function( event,request, settings ){
 	   //alert("ajaxCompleted");
 
@@ -354,14 +289,12 @@ $("#getPartialMarks").ajaxComplete(function( event,request, settings ){
 				$(target_tab_selector).removeClass('hide');
 				$(target_tab_selector).addClass('active');
 				//alert("active _ tab_ name = "+target_tab_selector );
-			}); 
-		    
-
-	   
+			}); 	    
 	});
   
 });
 
+/*This following method is used to show the tab 1 contents on load.*/
 $(document).ready(function() {
 	$('.nav nav-tabs > li > a').click(function(event){
 		//alert("Comes to line 329 - doc ready - nav tabs click functn");
@@ -492,33 +425,26 @@ $(document).ready(function() {
 <div>		<div class="fieldset">	
 			<fieldset>
 			<legend>Partial Marking Analysis</legend>
-			
 			<label><b>Instructor Query:</b></label>
-			<textarea name='query' class="textForSQL"
-								id='query1'>
-			</textarea>
+			<textarea name='query' class="textForSQL" id='query1'></textarea>
 			<br/>
 			<%int questionId = 1; %>
-		<div style="height: 25px; width:100%">
-			<b><a data-toggle="modal" data-target="#PartialParamModal<%=questionId %>"
-				href="PartialMarkingParamsPerInstrQuery?reqFrom=demo&&assignment_id=0&question_id=1&query_id=0">View/Edit partial marking parameters</a></b></td>
-		</div>		
-									
-		
-		<input type="button" class="queryBox" id="1" name="1" value="Add Instructor Query"/>  
+			<div style="height: 25px; width:100%">
+			
+				<b><a data-toggle="modal" data-target="#PartialParamModal<%=questionId %>"
+					href="PartialMarkingParamsPerInstrQuery?reqFrom=demo&&assignment_id=0&question_id=1&query_id=0">View/Edit partial marking parameters</a></b></td>
+			</div>		
+			<input type="button" class="queryBox" id="1" name="1" value="Add Instructor Query"/>  
 			<input type='hidden' name='instructorQuery' id='instructorQuery'  value='javascript:editor.getValue();'/>
-							<br/>
-							<br/>
+			<br/><br/>
 			<div id="dynamicAdd"  class='dynamicAddDiv'></div>
-						<br/>
-				<div id='studentquery' style='position:relative;'>	
-			<label><b>Student Query:</b></label>
-			<textarea name='studentquery' class="textForSQL"
-								id='query'>
-			</textarea>
-			<input type='hidden' name='studentquery' id='studentquery' value='javascript:editor.getValue();'>
-							<br/>		
-				</div>
+			<br/>
+			<div id='studentquery' style='position:relative;'>	
+				<label><b>Student Query:</b></label>
+				<textarea name='studentquery' class="textForSQL" id='query'></textarea>
+				<input type='hidden' name='studentquery' id='studentquery' value='javascript:editor.getValue();'>
+				<br/>		
+			</div>
 			<div id='dSet'>
 			<!-- <input type="checkbox" name="canonicalize"  id="canonicalize" value="canonicalize" checked> 
 			<label>Canonicalize</label> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
@@ -535,21 +461,9 @@ $(document).ready(function() {
 						    </div>
 						<!-- <div class="modal-footer"><br><button type="button" class="btn btn-default" data-dismiss="modal">Set</button></div></br> -->
 					  </div>
-					  </div>
+					 </div>
 		  <!-- Modal to show Partial Marking Parameters End -->
-		  
-<!--<div class="fieldset" id="canonicalizeSteps" style='display:none;'> -->
-<!--<fieldset>-->
-<!--<label id="label_0" style="display: none;">Canonicalizing queries...</label><br/> -->
-<!--<label id="label_1"  style="display: none">Normalizing selection conditions (eg. (3>A.B)=>(A.B &lt 2)) ..</label><br/>-->
-<!--<label id="label_2" style="display: none">Normalizing join conditions (eg. (C.D>A.B)=>(A.B &lt C.D)) ..  </label><br/>-->
-<!--<label id="label_3" style="display: none">Normalizing selection having conditions (eg. (3>A.B)=>(A.B <=2)) ..</label><br/>-->
-<!--<label id="label_4" style="display: none">Normalizing join having conditions (eg. C.D>A.B)=>(A.B &lt C.D))..</label><br/>-->
-<!--<label id="label_5"  style="display: none">Outer join minimization, Canonicalizing order/group by </label><br/>-->
-<!--<label id="label_6"  style="display: none">Removing redundant tables.., Removing redundant distincts..</label><br/>-->
-<!--<label id="label_7"  style="display: none">Canonicalization Completed.</label><br/>-->
 
-<!--</fieldset></div>	-->
 
 
 <div id="showCanonicalizationResult"></div>	
