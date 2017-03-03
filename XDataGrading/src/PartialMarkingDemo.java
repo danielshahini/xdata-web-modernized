@@ -1,5 +1,4 @@
 
-import java.io.File;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,8 +10,6 @@ import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -23,22 +20,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.google.gson.Gson;
-
 import partialMarking.PartialMarkParameters;
 import partialMarking.TestPartialMarking;
 import testDataGen.PopulateTestDataGrading;
 import util.Configuration;
-
-import database.DatabaseConnection;
 /**
  * Servlet implementation class PartialMarkingDemo
  */
 @WebServlet("/PartialMarkingDemo")
 public class PartialMarkingDemo extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
-    /**
+
+	/**
      * @see HttpServlet#HttpServlet()
      */
     public PartialMarkingDemo() {
@@ -132,7 +125,6 @@ public class PartialMarkingDemo extends HttpServlet {
 					Statement graderStatement = graderConn.createStatement();
 					graderStatement.execute(studentQuery);
 				}catch(Exception e){
-					
 					e.printStackTrace();
 					caughtException = e;
 					PrintWriter writer = response.getWriter();
@@ -278,11 +270,14 @@ public class PartialMarkingDemo extends HttpServlet {
 				//Display FromClauseSubQ Structure
 				
 				String op2 = "";
-				QueryStructure instrDataFromSubQ1= new QueryStructure(instrData1.getTableMap());
-				QueryStructure studentDataFromSubQ1 =new QueryStructure(studentData1.getTableMap());
 				
-				if( (instrData1.getFromClauseSubqueries() != null && !instrData1.getFromClauseSubqueries().isEmpty()) 
-						|| (studentData1.getFromClauseSubqueries() != null && !studentData1.getFromClauseSubqueries().isEmpty())){
+				if( instrData1 != null && studentData1 != null && 
+						instrData1.getFromClauseSubqueries()!=null && studentData1.getFromClauseSubqueries()!=null &&	
+						(!instrData1.getFromClauseSubqueries().isEmpty() 
+						||  !studentData1.getFromClauseSubqueries().isEmpty())){
+					QueryStructure instrDataFromSubQ1= new QueryStructure(instrData1.getTableMap());
+					QueryStructure studentDataFromSubQ1 =new QueryStructure(studentData1.getTableMap());
+
 					op2 += "<br/><div style ='width:'80%; align:left; padding-left:20px;'><label><h3>From Clause SubQuery: </h3></label>";
 					if(instrData1.getFromClauseSubqueries() != null && !instrData1.getFromClauseSubqueries().isEmpty()){
 						instrDataFromSubQ1 = instrData1.getFromClauseSubqueries().get(0);
@@ -298,11 +293,12 @@ public class PartialMarkingDemo extends HttpServlet {
 				//Display WHERE CLAUSE SUBQ structure
 				
 				String op3 = "";
-				QueryStructure instrDataWhereSubQ1= new QueryStructure(instrData1.getTableMap());
-				QueryStructure studentDataWhereSubQ1 =new QueryStructure(studentData1.getTableMap());
 				
-				if( (instrData1.getWhereClauseSubqueries() != null && !instrData1.getWhereClauseSubqueries().isEmpty()) 
-						|| (studentData1.getWhereClauseSubqueries() != null && !studentData1.getWhereClauseSubqueries().isEmpty())){
+				if( instrData1 != null && studentData1 != null &&
+						instrData1.getWhereClauseSubqueries()!=null && studentData1.getWhereClauseSubqueries()!=null&&
+						(!instrData1.getWhereClauseSubqueries().isEmpty()  ||  !studentData1.getWhereClauseSubqueries().isEmpty())){
+					QueryStructure instrDataWhereSubQ1= new QueryStructure(instrData1.getTableMap());
+					QueryStructure studentDataWhereSubQ1 =new QueryStructure(studentData1.getTableMap());
 					
 					op3 += "<br/><div style ='width:'80%; align:left; padding-left:20px;'><label><h3>Where Clause SubQuery: </h3></label>";
 					if(instrData1.getWhereClauseSubqueries() != null && !instrData1.getWhereClauseSubqueries().isEmpty()){
@@ -332,6 +328,9 @@ public class PartialMarkingDemo extends HttpServlet {
 		 * @return
 		 */
 		public String listToString(List<String> list1, List<String> list2){
+			if(list1==null||list2==null){
+				return "";
+			}
 			String ret = "<ul>";
 			for(String s:list1){
 				if(list2.contains(s)){
@@ -563,16 +562,20 @@ return output;
 		output+="<table class='queryTable1' width='70%' cellpadding='3' cellspacing='1'><tr>"+
 				"<th width='20%'>&nbsp;</th><th width='20%' align='center'>Student</th><th width='20%' align='center'>Instructor</th></tr>";
 		
-		if( (instrData1 != null && instrData1.getLstRelationInstances().size() > 0)
-			|| (studentData1 != null && studentData1.getLstRelationInstances().size() > 0)){
+		if(instrData1 != null && studentData1 != null && instrData1.getLstRelationInstances()!=null && 
+				studentData1.getLstRelationInstances()!=null &&
+				( instrData1.getLstRelationInstances().size() > 0
+			|| studentData1.getLstRelationInstances().size() > 0)){
 			output += "<tr><td class='emph''>Relations</td>" +
 					"<td width=\"20%\">"+listToString(studentData1.getLstRelationInstances(),instrData1.getLstRelationInstances())+"</td>"+
 					"<td width=\"20%\">"+listToString(instrData1.getLstRelationInstances(), studentData1.getLstRelationInstances())+"</td></tr>";
 		
 		}
 		
-		if( (instrData1 != null && instrData1.getLstProjectedCols().size() > 0)
-	  			|| (studentData1 != null && studentData1.getLstProjectedCols().size() > 0)){
+		if( instrData1 != null && studentData1 != null && instrData1.getLstProjectedCols()!=null&& 
+				studentData1.getLstProjectedCols()!=null &&
+				(instrData1.getLstProjectedCols().size() > 0
+						||  studentData1.getLstProjectedCols().size() > 0)){
 					output += "<tr><td class='emph''>Projections</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstProjectedCols(),instrData1.getLstProjectedCols())+"</td>"+
 							"<td width=\"20%\">"+listToString(instrData1.getLstProjectedCols(), studentData1.getLstProjectedCols())+"</td></tr>";
@@ -606,30 +609,34 @@ return output;
 			}
 		
 		
-		if( (instrData1 != null && instrData1.getLstGroupByNodes().size() > 0)
-	  			|| (studentData1 != null && studentData1.getLstGroupByNodes().size() > 0)){
+		if( instrData1 != null && studentData1 != null && instrData1.getLstGroupByNodes()!=null &&
+				studentData1.getLstGroupByNodes()!=null &&	(instrData1.getLstGroupByNodes().size() > 0
+	  			||  studentData1.getLstGroupByNodes().size() > 0)){
 					output += "<tr><td class='emph''>Group By</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstGroupByNodes(),instrData1.getLstGroupByNodes())+"</td>"+
 							"<td width=\"20%\">"+listToString(instrData1.getLstGroupByNodes(), studentData1.getLstGroupByNodes())+"</td></tr>";
 	  		
 			} 
 			
-			if( (instrData1 != null && instrData1.getLstOrderByNodes().size() > 0)
-	  			|| (studentData1 != null && studentData1.getLstOrderByNodes().size() > 0)){
+			if( instrData1 != null && studentData1 != null && instrData1.getLstOrderByNodes()!=null && 
+					studentData1.getLstOrderByNodes()!=null &&
+					(instrData1.getLstOrderByNodes().size() > 0 ||  studentData1.getLstOrderByNodes().size() > 0)){
 			
 				output += "<tr><td class='emph''>Order By</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstOrderByNodes(),instrData1.getLstOrderByNodes())+"</td>"+
 							"<td width=\"20%\">"+listToString(instrData1.getLstOrderByNodes(), studentData1.getLstOrderByNodes())+"</td></tr>";
 			}
 			
-			if( (instrData1 != null && instrData1.getLstHavingConditions().size() > 0)
-	  			|| (studentData1 != null && studentData1.getLstHavingConditions().size() > 0)){
+			if( instrData1 != null && studentData1 != null &&  instrData1.getLstHavingConditions()!=null && 
+					studentData1.getLstHavingConditions()!=null &&( instrData1.getLstHavingConditions().size() > 0
+	  			||  studentData1.getLstHavingConditions().size() > 0)){
 				output += "<tr><td class='emph''>Having Clause</td>" +
 						  "<td width=\"20%\">"+listToString(studentData1.getLstHavingConditions(),instrData1.getLstHavingConditions())+"</td>"+
 						  "<td width=\"20%\">"+listToString(instrData1.getLstHavingConditions(), studentData1.getLstHavingConditions())+"</td></tr>";
 	}
-		if( (instrData1 != null && instrData1.getLstSubQConnectives().size() > 0)
-	  			|| (studentData1 != null && studentData1.getLstSubQConnectives().size() > 0)){
+		if( instrData1 != null && studentData1 != null && instrData1.getLstSubQConnectives()!=null && 
+				studentData1.getLstSubQConnectives()!=null && (instrData1.getLstSubQConnectives().size() > 0
+	  			||  studentData1.getLstSubQConnectives().size() > 0)){
 	  			
 	  			output += "<tr><td class='emph''>SubQuery Connectives</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstSubQConnectives(),instrData1.getLstSubQConnectives())+"</td>"+
@@ -637,8 +644,10 @@ return output;
 	  			
 	  			}
 	
-	if( (instrData1 != null && instrData1.getLstSetOpetators().size() > 0)
-	  			|| (studentData1 != null && studentData1.getLstSetOpetators().size() > 0)){
+	if( instrData1 != null && studentData1 != null && instrData1.getLstSetOpetators()!=null &&
+			studentData1.getLstSetOpetators()!=null &&
+			(instrData1.getLstSetOpetators().size() > 0
+	  			||  studentData1.getLstSetOpetators().size() > 0)){
 	  			
 	  			output += "<tr><td class='emph''>Set Operators</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstSetOpetators(),instrData1.getLstSetOpetators())+"</td>"+
@@ -646,8 +655,10 @@ return output;
 	  			
 	  			
 	  			}
-	if( (instrData1 != null && instrData1.getLstSelectionConditions().size() > 0)
-	  			|| (studentData1 != null && studentData1.getLstSelectionConditions().size() > 0)){
+	if( instrData1 != null && studentData1 != null &&  instrData1.getLstSelectionConditions()!=null &&
+			instrData1.getLstSelectionConditions()!=null&&
+			(instrData1.getLstSelectionConditions().size() > 0
+	  			||  studentData1.getLstSelectionConditions().size() > 0)){
 	  			
 	  				output += "<tr><td class='emph''>Selection Conditions</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstSelectionConditions(),instrData1.getLstSelectionConditions())+"</td>"+
@@ -656,8 +667,9 @@ return output;
 	  		
 	  			}
 	
-if( (instrData1 != null && instrData1.getLstJoinTables().size() > 0)
-	  			|| (studentData1 != null && studentData1.getLstJoinTables().size() > 0)){
+if( instrData1 != null && studentData1 != null && instrData1.getLstJoinTables()!=null &&
+studentData1.getLstJoinTables()!=null && (instrData1.getLstJoinTables().size() > 0
+	  			||  studentData1.getLstJoinTables().size() > 0)){
 	  			
 	  				output += "<tr><td class='emph''>Join Tables</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstJoinTables(),instrData1.getLstJoinTables())+"</td>"+
@@ -676,8 +688,9 @@ if( (instrData1 != null && instrData1.getLstJoinTables().size() > 0)
 	  		}*/
 
 	
-if( (instrData1 != null && instrData1.getLstJoinConditions().size() > 0)
-	|| (studentData1 != null && studentData1.getLstJoinConditions().size() > 0)){
+if( instrData1 != null && studentData1 != null && instrData1.getLstJoinConditions()!=null &&
+instrData1.getLstJoinConditions()!=null && (studentData1.getLstJoinConditions().size() > 0
+	||  studentData1.getLstJoinConditions().size() > 0)){
 
 ArrayList<Node> instrInnerJoin =new ArrayList<Node>();
 ArrayList<Node> studentInnerJoin =new ArrayList<Node>();
@@ -699,8 +712,9 @@ ArrayList<Node> studentInnerJoin =new ArrayList<Node>();
 }
 
 
-if( (instrData1 != null && instrData1.getLstJoinConditions().size() > 0)
-|| (studentData1 != null && studentData1.getLstJoinConditions().size() > 0)){
+if( instrData1 != null && studentData1 != null && instrData1.getLstJoinConditions()!=null && 
+studentData1.getLstJoinConditions()!=null &&  (instrData1.getLstJoinConditions().size() > 0
+||  studentData1.getLstJoinConditions().size() > 0)){
 
 ArrayList<Node> instrOuterJoin =new ArrayList<Node>();
 ArrayList<Node> studentOuterJoin =new ArrayList<Node>();
@@ -718,7 +732,7 @@ if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.leftOuterJoin)
 	studentOuterJoin.add(n);
 }
 }
-if((instrOuterJoin != null && instrOuterJoin.size() >0) || (studentOuterJoin != null && studentOuterJoin.size() > 0)){
+if(instrOuterJoin != null && studentOuterJoin != null && ( instrOuterJoin.size() >0 ||  studentOuterJoin.size() > 0)){
 output += "<tr><td class='emph'>Outer Join Conditions </td>" ;
 output += "<td width=\"20%\">"+listToString(studentOuterJoin,instrOuterJoin)+"</td>";
 output += "<td width=\"20%\">"+listToString(instrOuterJoin, studentOuterJoin)+"</td></tr>";

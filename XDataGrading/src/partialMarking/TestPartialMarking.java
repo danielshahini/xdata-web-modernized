@@ -13,10 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.Vector;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import parsing.ConjunctQueryStructure;
 import parsing.Node;
 import parsing.Util;
 /**

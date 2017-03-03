@@ -749,7 +749,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 					}
 					else{
 						try {
-							newNode = (Node)n.clone();
+							newNode = n.clone();
 						} catch (CloneNotSupportedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -1109,10 +1109,11 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 			logger.info("total score       |     "+instructor+"    |    "+student);
 		}
 		float score = student/instructor * maxMarks;
-		
+
 		marks.Marks = score;
 		if(fromSubQuery!=null&&whereSubQuery!=null)
 			marks.Marks = Configuration.OuterQuery * score + Configuration.FromSubQueries * fromSubQuery.Marks + Configuration.WhereSubQueries * whereSubQuery.Marks ;				
+		logger.info("partial mark="+marks.Marks);
 		return marks;
 	}
 		
