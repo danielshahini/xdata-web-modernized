@@ -121,7 +121,7 @@ public class QueryDetails {
 				
 		cvc.closeConn();
 
-		qStructure.buildQueryStructure(query);
+		qStructure.buildQueryStructureJSQL("1",query,false);
 		
 		
 	}

@@ -146,7 +146,7 @@ public class EliminateRedundantRelation {
 			 * of referencing table R' and referenced table R are part of the eqivalence
 			 * relation induced by the query
 			 */
-			ArrayList<String> referencedRelations=parsing.Util.getReferencedRelations(baseTables, eliminateRelations, foreignKeys, relationToRelationEqNodes);	
+			ArrayList<String> referencedRelations=parsing.QueryData.getReferencedRelations(baseTables, eliminateRelations, foreignKeys, relationToRelationEqNodes);	
 			logger.info("Referenced Relations:"+referencedRelations);
 			/* any referenced relation is a candidates for 
 			 * a redundant relation if every projected (resp. selected) column c1 from this relation 

@@ -355,7 +355,7 @@ public class CanonicalizeQuery {
 				if(referencedRelations!=null)
 					satisfyingTableNos.addAll(referencedRelations);
 				
-				referencedRelations=parsing.Util.getReferencedRelations(joinTableNameNos, 
+				referencedRelations=parsing.QueryData.getReferencedRelations(joinTableNameNos, 
 						null, foreignKeys, relationToRelationEqNodes);
 				referencedRelations.removeAll(satisfyingTableNos);
 			}
