@@ -85,7 +85,7 @@ public class PartialMarkingDemo extends HttpServlet {
 		Connection graderConn=null;
 		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		Exception caughtException=null;
-		response.setContentType("text/html;charset=UTF-8");
+		
 		int assignId=11;  //Hard code some existing assignment ID here and in TestPartialMarking.java - process and process canonicalize methods
 		String err= "";
 		int index =1;
@@ -136,7 +136,6 @@ public class PartialMarkingDemo extends HttpServlet {
 					e.printStackTrace();
 					caughtException = e;
 					PrintWriter writer = response.getWriter();
-					   
 					response.setStatus(500);
 				    writer.print("Syntax error in Student Query : \n\n"+e.getMessage());
 				    writer.close();
@@ -154,7 +153,8 @@ public class PartialMarkingDemo extends HttpServlet {
 				}
 				}
 				
-			if(caughtException== null ){	
+			if(caughtException== null ){
+				response.setContentType("text/html;charset=UTF-8");
 				try{
 							int i=0;
 							testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
@@ -191,7 +191,7 @@ public class PartialMarkingDemo extends HttpServlet {
 								
 								Float newMarks1=studMarks1*100/instMarks1;
 								
-								if(newMarks1> marks1){
+								if(newMarks1>= marks1){
 									marks1=newMarks1;
 									bestInstructorQueryData1=testObj1.InstructorQuery.getQueryStructure();
 									bestInstructorQueryString1=instQuery;
@@ -201,11 +201,17 @@ public class PartialMarkingDemo extends HttpServlet {
 				}catch(Exception e){
 					errorMessage=e.getMessage();
 					e.printStackTrace();
-					throw new ServletException();
+					//throw new ServletException();
+					PrintWriter writer = response.getWriter();
+					response.setStatus(500);
+				    writer.print("Internal Error. Please check log file for details.");
+				    writer.close();
+				    response.sendError(500,e.getMessage());
+				    return;
 					
 				}
 				/***** CODE TO DISPLAY RESULT IN HTML FORM ****/
-				
+				try{
 							QueryStructure instrData = bestInstructorQueryData;
 							QueryStructure studentData = testObj.StudentQuery.getQueryStructure();
 							
@@ -319,8 +325,18 @@ public class PartialMarkingDemo extends HttpServlet {
 				
 					output += "</section></div>";
 					response.getWriter().write(output);	
+				}catch(Exception e){
+					errorMessage=e.getMessage();
+					e.printStackTrace();
+					//throw new ServletException();
+					PrintWriter writer = response.getWriter();
+					response.setStatus(500);
+				    writer.print("Internal Error. Please check log file for details.");
+				    writer.close();
+				    response.sendError(500,e.getMessage());
+				    return;	
 				}
-					
+			}
 	}
 	
 		/**

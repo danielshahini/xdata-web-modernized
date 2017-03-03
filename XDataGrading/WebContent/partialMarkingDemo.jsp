@@ -255,7 +255,12 @@ $(document).on('click','#getPartialMarks',function (event) {
         		} 	        	
 	        }, 
 	        error : function(xhr, thrownError){
-	        		 alert(xhr.responseText ); 
+	        	
+	        	if(xhr.status == 500){
+	        		 alert(xhr.responseText );
+	        	}else{
+	        		alert("Internal error. Please check the log file for details.");
+	        	}
             }
 	      }); 
 	      return false; 
