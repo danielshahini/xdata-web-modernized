@@ -165,7 +165,7 @@ public class PartialMarkingDemo extends HttpServlet {
 										
 										Float newMarks=studMarks*100/instMarks;
 					
-								if(newMarks> marks){
+								if(newMarks>= marks){
 									marks=newMarks;
 									bestInstructorQueryData=testObj.InstructorQuery.getQueryStructure();
 									bestInstructorQueryString=instQuery;
@@ -578,20 +578,18 @@ return output;
 		output+="<table class='queryTable1' width='70%' cellpadding='3' cellspacing='1'><tr>"+
 				"<th width='20%'>&nbsp;</th><th width='20%' align='center'>Student</th><th width='20%' align='center'>Instructor</th></tr>";
 		
-		if(instrData1 != null && studentData1 != null && instrData1.getLstRelationInstances()!=null && 
-				studentData1.getLstRelationInstances()!=null &&
-				( instrData1.getLstRelationInstances().size() > 0
-			|| studentData1.getLstRelationInstances().size() > 0)){
+		if((instrData1 != null && instrData1.getLstRelationInstances()!=null && instrData1.getLstRelationInstances().size() > 0) ||
+				( studentData1 != null &&  
+						studentData1.getLstRelationInstances()!=null && studentData1.getLstRelationInstances().size() > 0)){
 			output += "<tr><td class='emph''>Relations</td>" +
 					"<td width=\"20%\">"+listToString(studentData1.getLstRelationInstances(),instrData1.getLstRelationInstances())+"</td>"+
 					"<td width=\"20%\">"+listToString(instrData1.getLstRelationInstances(), studentData1.getLstRelationInstances())+"</td></tr>";
 		
 		}
 		
-		if( instrData1 != null && studentData1 != null && instrData1.getLstProjectedCols()!=null&& 
-				studentData1.getLstProjectedCols()!=null &&
-				(instrData1.getLstProjectedCols().size() > 0
-						||  studentData1.getLstProjectedCols().size() > 0)){
+		if( (instrData1 != null && instrData1.getLstProjectedCols()!=null&& instrData1.getLstProjectedCols().size() > 0) ||			
+				(studentData1 != null &&  
+						studentData1.getLstProjectedCols()!=null &&  studentData1.getLstProjectedCols().size() > 0)){
 					output += "<tr><td class='emph''>Projections</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstProjectedCols(),instrData1.getLstProjectedCols())+"</td>"+
 							"<td width=\"20%\">"+listToString(instrData1.getLstProjectedCols(), studentData1.getLstProjectedCols())+"</td></tr>";
@@ -625,34 +623,33 @@ return output;
 			}
 		
 		
-		if( instrData1 != null && studentData1 != null && instrData1.getLstGroupByNodes()!=null &&
-				studentData1.getLstGroupByNodes()!=null &&	(instrData1.getLstGroupByNodes().size() > 0
-	  			||  studentData1.getLstGroupByNodes().size() > 0)){
+		if( (instrData1 != null && instrData1.getLstGroupByNodes()!=null && instrData1.getLstGroupByNodes().size() > 0) ||
+		(studentData1 != null && studentData1.getLstGroupByNodes()!=null && studentData1.getLstGroupByNodes().size() > 0)){
 					output += "<tr><td class='emph''>Group By</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstGroupByNodes(),instrData1.getLstGroupByNodes())+"</td>"+
 							"<td width=\"20%\">"+listToString(instrData1.getLstGroupByNodes(), studentData1.getLstGroupByNodes())+"</td></tr>";
 	  		
 			} 
 			
-			if( instrData1 != null && studentData1 != null && instrData1.getLstOrderByNodes()!=null && 
-					studentData1.getLstOrderByNodes()!=null &&
-					(instrData1.getLstOrderByNodes().size() > 0 ||  studentData1.getLstOrderByNodes().size() > 0)){
+			if( (instrData1 != null &&  instrData1.getLstOrderByNodes()!=null && instrData1.getLstOrderByNodes().size() > 0) ||					
+					( studentData1 != null && 
+							studentData1.getLstOrderByNodes()!=null &&  studentData1.getLstOrderByNodes().size() > 0)){
 			
 				output += "<tr><td class='emph''>Order By</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstOrderByNodes(),instrData1.getLstOrderByNodes())+"</td>"+
 							"<td width=\"20%\">"+listToString(instrData1.getLstOrderByNodes(), studentData1.getLstOrderByNodes())+"</td></tr>";
 			}
 			
-			if( instrData1 != null && studentData1 != null &&  instrData1.getLstHavingConditions()!=null && 
-					studentData1.getLstHavingConditions()!=null &&( instrData1.getLstHavingConditions().size() > 0
-	  			||  studentData1.getLstHavingConditions().size() > 0)){
+			if( (instrData1 != null &&   instrData1.getLstHavingConditions()!=null && instrData1.getLstHavingConditions().size() > 0) ||( 
+					 studentData1 != null && 
+						studentData1.getLstHavingConditions()!=null &&  studentData1.getLstHavingConditions().size() > 0)){
 				output += "<tr><td class='emph''>Having Clause</td>" +
 						  "<td width=\"20%\">"+listToString(studentData1.getLstHavingConditions(),instrData1.getLstHavingConditions())+"</td>"+
 						  "<td width=\"20%\">"+listToString(instrData1.getLstHavingConditions(), studentData1.getLstHavingConditions())+"</td></tr>";
 	}
-		if( instrData1 != null && studentData1 != null && instrData1.getLstSubQConnectives()!=null && 
-				studentData1.getLstSubQConnectives()!=null && (instrData1.getLstSubQConnectives().size() > 0
-	  			||  studentData1.getLstSubQConnectives().size() > 0)){
+		if( (instrData1 != null && instrData1.getLstSubQConnectives()!=null && instrData1.getLstSubQConnectives().size() > 0) ||
+ (				studentData1 != null &&  
+			studentData1.getLstSubQConnectives()!=null &&  studentData1.getLstSubQConnectives().size() > 0)){
 	  			
 	  			output += "<tr><td class='emph''>SubQuery Connectives</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstSubQConnectives(),instrData1.getLstSubQConnectives())+"</td>"+
@@ -660,10 +657,9 @@ return output;
 	  			
 	  			}
 	
-	if( instrData1 != null && studentData1 != null && instrData1.getLstSetOpetators()!=null &&
-			studentData1.getLstSetOpetators()!=null &&
-			(instrData1.getLstSetOpetators().size() > 0
-	  			||  studentData1.getLstSetOpetators().size() > 0)){
+	if( (instrData1 != null &&  instrData1.getLstSetOpetators()!=null && instrData1.getLstSetOpetators().size() > 0) ||			
+			(studentData1 != null &&
+					studentData1.getLstSetOpetators()!=null &&  studentData1.getLstSetOpetators().size() > 0)){
 	  			
 	  			output += "<tr><td class='emph''>Set Operators</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstSetOpetators(),instrData1.getLstSetOpetators())+"</td>"+
@@ -671,10 +667,9 @@ return output;
 	  			
 	  			
 	  			}
-	if( instrData1 != null && studentData1 != null &&  instrData1.getLstSelectionConditions()!=null &&
-			instrData1.getLstSelectionConditions()!=null&&
-			(instrData1.getLstSelectionConditions().size() > 0
-	  			||  studentData1.getLstSelectionConditions().size() > 0)){
+	if( (instrData1 != null && instrData1.getLstSelectionConditions()!=null && instrData1.getLstSelectionConditions().size() > 0) ||
+			(studentData1 != null &&  
+					studentData1.getLstSelectionConditions()!=null &&  studentData1.getLstSelectionConditions().size() > 0)){
 	  			
 	  				output += "<tr><td class='emph''>Selection Conditions</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstSelectionConditions(),instrData1.getLstSelectionConditions())+"</td>"+
@@ -683,9 +678,8 @@ return output;
 	  		
 	  			}
 	
-if( instrData1 != null && studentData1 != null && instrData1.getLstJoinTables()!=null &&
-studentData1.getLstJoinTables()!=null && (instrData1.getLstJoinTables().size() > 0
-	  			||  studentData1.getLstJoinTables().size() > 0)){
+if( (instrData1 != null && instrData1.getLstJoinTables()!=null && instrData1.getLstJoinTables().size() > 0) || (studentData1 != null && 
+studentData1.getLstJoinTables()!=null &&  studentData1.getLstJoinTables().size() > 0)){
 	  			
 	  				output += "<tr><td class='emph''>Join Tables</td>" +
 							"<td width=\"20%\">"+listToString(studentData1.getLstJoinTables(),instrData1.getLstJoinTables())+"</td>"+
@@ -704,9 +698,9 @@ studentData1.getLstJoinTables()!=null && (instrData1.getLstJoinTables().size() >
 	  		}*/
 
 	
-if( instrData1 != null && studentData1 != null && instrData1.getLstJoinConditions()!=null &&
-instrData1.getLstJoinConditions()!=null && (studentData1.getLstJoinConditions().size() > 0
-	||  studentData1.getLstJoinConditions().size() > 0)){
+if( (instrData1 != null && instrData1.getLstJoinConditions()!=null && instrData1.getLstJoinConditions().size() > 0) || 
+		(studentData1 != null &&  
+studentData1.getLstJoinConditions()!=null &&  studentData1.getLstJoinConditions().size() > 0)){
 
 ArrayList<Node> instrInnerJoin =new ArrayList<Node>();
 ArrayList<Node> studentInnerJoin =new ArrayList<Node>();
@@ -728,9 +722,9 @@ ArrayList<Node> studentInnerJoin =new ArrayList<Node>();
 }
 
 
-if( instrData1 != null && studentData1 != null && instrData1.getLstJoinConditions()!=null && 
-studentData1.getLstJoinConditions()!=null &&  (instrData1.getLstJoinConditions().size() > 0
-||  studentData1.getLstJoinConditions().size() > 0)){
+if( (instrData1 != null && instrData1.getLstJoinConditions()!=null && instrData1.getLstJoinConditions().size() > 0) ||
+  (	studentData1 != null &&  
+		  studentData1.getLstJoinConditions()!=null &&  studentData1.getLstJoinConditions().size() > 0)){
 
 ArrayList<Node> instrOuterJoin =new ArrayList<Node>();
 ArrayList<Node> studentOuterJoin =new ArrayList<Node>();
