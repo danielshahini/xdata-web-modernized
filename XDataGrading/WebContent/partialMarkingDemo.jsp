@@ -39,12 +39,15 @@
 <head> 
 
 <link rel="stylesheet" type="text/css" href="css/structure.css"/>
-<!-- <script type="text/javascript" src="scripts/jquery-1.7.2.js"></script>-->
+<link rel="stylesheet" type="text/css" href="css/jquery-ui.css"/>
+
 <script type="text/javascript" src="scripts/jquery-2.1.4.js"></script>
+<script type="text/javascript" src="scripts/jquery-1.11.2.js"></script>
+
 <link rel="stylesheet" href="scripts/codemirror/lib/codemirror.css" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
- <!--  <script type="text/javascript"  src = "scripts/jquery.js"></script>--> 
-<script src="scripts/bootstrap/dist/js/bootstrap.js"></script> 
+
+ <script src="scripts/bootstrap/dist/js/bootstrap.js"></script> 
 <link href="scripts/bootstrap/dist/css/bootstrap.css" rel="stylesheet"/>
 <script type="text/javascript" src="scripts/codemirror/lib/codemirror.js"></script>
 <script type="text/javascript" src="scripts/codemirror/mode/sql/sql.js"></script>
@@ -87,6 +90,12 @@ window.onload = function() {
       editor.on("blur", function() {editor.save();});
    });  
 	 CodeMirror.commands.autocomplete = function(cm) {};
+	 
+	 $('.CodeMirror').resizable({
+		  resize: function() {
+		    editor.setSize($(this).width(), $(this).height());
+		  }
+		});
 };
 
 
@@ -98,6 +107,8 @@ function getParameterByName(name) {
 } 
 
 $( document ).ready(function() {
+
+	
 	
 //Function to add a new query text area - view/delete partial marking params link - for more than one instructor queries
 $(document).on('click', '.queryBox' ,function (event) { 
@@ -163,8 +174,9 @@ $(document).on('click', '.queryBox' ,function (event) {
         }); 
       //CodeMirror.commands.autocomplete = function(cm) {};
       editor.on("blur", function() {editor.save();});         
-      CodeMirror.commands.autocomplete = function(cm) {};
+      CodeMirror.commands.autocomplete = function(cm) {};    
 });
+
 
 
 //Func to remove newly added text areas
@@ -430,8 +442,10 @@ $(document).ready(function() {
 <div>		<div class="fieldset">	
 			<fieldset>
 			<legend>Partial Marking Analysis</legend>
+			<div id='resizable'>
 			<label><b>Instructor Query:</b></label>
 			<textarea name='query' class="textForSQL" id='query1'></textarea>
+			</div>
 			<br/>
 			<%int questionId = 1; %>
 			<div style="height: 25px; width:100%">
