@@ -500,15 +500,6 @@ public class PartialMarkingDemo extends HttpServlet {
 	  		
 	  			}
 	
-if( (instrData != null && instrData.getLstJoinTables().size() > 0)
-	  			|| (studentData != null && studentData.getLstJoinTables().size() > 0)){
-	  			
-	  				output += "<tr><td class='emph''>Join Tables</td>" +
-							"<td width=\"20%\">"+listToString(studentData.getLstJoinTables(),instrData.getLstJoinTables())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData.getLstJoinTables(), studentData.getLstJoinTables())+"</td></tr>";
-	  		
-	  		
-	  			}
 	  			
 if( (instrData != null && instrData.getLstJoinConditions().size() > 0)
 	  			|| (studentData != null && studentData.getLstJoinConditions().size() > 0)){
@@ -678,15 +669,6 @@ return output;
 	  		
 	  			}
 	
-if( (instrData1 != null && instrData1.getLstJoinTables()!=null && instrData1.getLstJoinTables().size() > 0) || (studentData1 != null && 
-studentData1.getLstJoinTables()!=null &&  studentData1.getLstJoinTables().size() > 0)){
-	  			
-	  				output += "<tr><td class='emph''>Join Tables</td>" +
-							"<td width=\"20%\">"+listToString(studentData1.getLstJoinTables(),instrData1.getLstJoinTables())+"</td>"+
-							"<td width=\"20%\">"+listToString(instrData1.getLstJoinTables(), studentData1.getLstJoinTables())+"</td></tr>";
-	  		
-	  		
-	  			}
 	  			
 /*if( (instrData1 != null && instrData1.getLstJoinConditions().size() > 0)
 	  			|| (studentData1 != null && studentData1.getLstJoinConditions().size() > 0)){

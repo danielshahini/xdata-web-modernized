@@ -719,24 +719,6 @@ out_assignment += "<link rel=\"stylesheet\" href=\"../highlight/styles/xcode.css
 	  		
 	  			}
 	
-	if( (instrData != null && instrData.getLstJoinTables().size() > 0)
-			  			|| (studentData != null && studentData.getLstJoinTables().size() > 0)){
-			  			
-		out += "<tr><td class='emph''>Join Tables</td>" +
-									"<td width=\"20%\">"+listToString(studentData.getLstJoinTables(),instrData.getLstJoinTables())+"</td>"+
-									"<td width=\"20%\">"+listToString(instrData.getLstJoinTables(), studentData.getLstJoinTables())+"</td></tr>";
-			  		
-			  		
-			  			}
-			  			
-	if( (instrData != null && instrData.getLstJoinTables().size() > 0)
-			  			|| (studentData != null && studentData.getLstJoinTables().size() > 0)){
-			
-		out += "<tr><td class='emph'>Join Conditions </td>" +
-									"<td width=\"20%\">"+listToString(studentData.getLstJoinTables(),instrData.getLstJoinTables())+"</td>"+
-									"<td width=\"20%\">"+listToString(instrData.getLstJoinTables(), studentData.getLstJoinTables())+"</td></tr>";
-			  		
-			  		}
 	out += "</table></div>";
 	
 	return out;
