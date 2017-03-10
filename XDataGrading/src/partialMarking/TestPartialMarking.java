@@ -14,7 +14,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import parsing.ForeignKey;
 import parsing.Node;
+import parsing.QueryData;
 import parsing.Util;
 /**
  * @author mathew
@@ -89,9 +92,9 @@ public class TestPartialMarking {
 //				System.out.println("join Conditions : "+n+" jointype "+n.getJoinType());
 //		}
 		
-		for(Node n:queryDetails.qStructure.getLstJoinConditions()){
-			System.out.println(" join conditions"+n+" join type"+n.getJoinType());
-		}
+//		for(Node n:queryDetails.qStructure.getLstJoinConditions()){
+//			System.out.println(" join conditions"+n+" join type"+n.getJoinType());
+//		}
 		
 		return queryDetails;
 				
@@ -102,8 +105,9 @@ public class TestPartialMarking {
 		
 		queryDetails.startProcessing(assignNo, questionId, strQuery);
 		CanonicalizeQuery.Canonicalize(queryDetails.qStructure);
-//		for(String n:queryDetails.qStructure.getLstRelationInstances()){
-//			System.out.println(" Relation Instances"+n);
+//		ForeignKey fk=QueryData.getForeignKey("takes", "section", queryDetails.qStructure.getLstForeignKeysModified());
+//		if(fk!=null){
+//			System.out.println(fk.getFKTablename()+ ": "+fk.getFKeyColumns()+" -->"+fk.getReferenceTable()+" :"+fk.getFKeyColumns());
 //		}
 //		for(Node n:queryDetails.qStructure.getLstJoinConditions()){
 //			System.out.println(" join conditions"+n+" join type"+n.getJoinType());
@@ -160,7 +164,7 @@ public class TestPartialMarking {
 			String assignment_id=tableValues.getString(4);
 			String question_id=tableValues.getString(5);
 				try{
-					testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studQuery);
+					testObj.StudentQuery=testObj.process(testObj.StudentQuery,1, studQuery);
 					System.out.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
 							" rollnum:"+ rollnum + "SQL query: "+studQuery);
 					goodWriter.println("serialNum "+count+" course_id: "+ course_id +" question_id: "+ question_id +
@@ -380,11 +384,11 @@ public class TestPartialMarking {
 			//"SELECT course_id, title FROM course NATURAL JOIN takes WHERE semester = 'Spring' AND year = '2010' AND course_id NOT IN (SELECT course_id FROM prereq)";
 			String instructorQuery="SELECT Distinct  INSTRUCTOR.ID,  D.dept_name FROM  INSTRUCTOR, DEPARTMENT D WHERE INSTRUCTOR.dept_name=D.dept_name";
 			String studentQuery="SELECT  INSTRUCTOR.ID,  INSTRUCTOR.dept_name FROM  INSTRUCTOR, DEPARTMENT D WHERE INSTRUCTOR.dept_name=D.dept_name";
-
+			studentQuery="select distinct id from takes, course where takes.course_id=course.course_id";
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();			
-		//	processStudentQueryFromKeyboard(testObj);
-			testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
+			processStudentQueryFromKeyboard(testObj);
+			//testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
 //			System.out.println(testObj.StudentQuery.qStructure.toString());
 		
 //			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
@@ -392,12 +396,12 @@ public class TestPartialMarking {
 			
 			
 //			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instructorQuery);
+//			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instructorQuery);
 //			SerializeXML.serializeXML("student.xml", "instructor.xml", testObj.StudentQuery.qStructure, testObj.InstructorQuery.qStructure);
 //			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
-			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
-			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
-			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
+//			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
+//			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
+//			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
 			//testObj.copyData();
 		}
 		catch(Exception e){

@@ -328,7 +328,7 @@ public class CanonicalizeQuery {
 		 * are present in the project clause, then the distinct qualifier 
 		 * is trivally  redundant
 		 */
-		for(String tableNameNo:qData.getLstJoinTables()){
+		for(String tableNameNo:qData.getLstRelationInstances()){
 			joinTableNameNos.add(tableNameNo);
 			String tableName=tableNameNo.substring(0, tableNameNo.length()-1);
 			//System.out.println("TableName: "+tableName);
