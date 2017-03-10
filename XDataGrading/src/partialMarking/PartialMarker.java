@@ -313,7 +313,7 @@ public class PartialMarker {
 	// Calculates a score based on the relations involved in the join
 	// Number of inner and outer joins are also compared
 	public static float getJoinScore(QueryStructure masterData, QueryStructure slaveData){
-		float score = compare(masterData.getLstRelationInstances(), slaveData.getLstRelationInstances());
+		float score = compareSelection(masterData.getLstJoinConditions(), slaveData.getLstJoinConditions());
 		
 		score = masterData.getNumberOfOuterJoins() == slaveData.getNumberOfOuterJoins() ? score + 1 : score - 0.5f;
 		score = masterData.getNumberOfInnerJoins() == slaveData.getNumberOfInnerJoins() ? score + 1 : score - 0.5f;
@@ -995,7 +995,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		
 		
 		float uniquePredicates = instructorData.getLstSelectionConditions().size();
-		float uniqueRelations = instructorData.getLstRelations().size();
+		float uniqueRelations = instructorData.getLstRelationInstances().size();
 		float uniqueProj = instructorData.getLstProjectedCols().size();
 		float instructorJoin = getJoinScore(instructorData, instructorData);
 		float uniqueGroupBy = instructorData.getLstGroupByNodes().size();
@@ -1038,7 +1038,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		float projectionScoreTotal=(perProjection==0 && projectionScore!=0)?-projWeightage/2:
 			perProjection*normalizeNegativeValuesToZero(projectionScore);				
 		
-		float relationScore = compare(instructorData.getLstRelations(), studentData.getLstRelations());
+		float relationScore = compare(instructorData.getLstRelationInstances(), studentData.getLstRelationInstances());
 		float relationScoreTotal=(perRelation==0 && relationScore!=0)?-relationWeightage/2:
 			perRelation*normalizeNegativeValuesToZero(relationScore);
 				
