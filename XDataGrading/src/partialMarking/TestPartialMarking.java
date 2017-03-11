@@ -86,6 +86,9 @@ public class TestPartialMarking {
 	public QueryDetails process(QueryDetails queryDetails, int questionId, String strQuery) throws Exception{
 		queryDetails=new QueryDetails();
 		queryDetails.startProcessing(assignNo, questionId, strQuery);	
+		queryDetails.getQueryStructure().reAdjustJoins();/*required for separating 
+		join conditions that are by default added to the list of selection conditions
+		after parsing */
 	
 //		for(ConjunctQueryStructure c:queryDetails.qStructure.conjuncts){
 //			for(Node n :c.getJoinCondsAllOther())

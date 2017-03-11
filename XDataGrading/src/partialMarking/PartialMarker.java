@@ -1034,7 +1034,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 			perPredicate*normalizeNegativeValuesToZero(predicateScore);
 		
 		float projectionScore = compareProjection(instructorData.getLstProjectedCols(), studentData.getLstProjectedCols());		
-		projectionScore = instructorData.getIsDistinct() == studentData.getIsDistinct() ? projectionScore : projectionScore/2;
+		projectionScore = instructorData.getIsDistinct() == studentData.getIsDistinct() ? projectionScore : projectionScore*0.9f;
 		float projectionScoreTotal=(perProjection==0 && projectionScore!=0)?-projWeightage/2:
 			perProjection*normalizeNegativeValuesToZero(projectionScore);				
 		
