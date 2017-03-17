@@ -906,23 +906,6 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 			return marks;
 		}
 		
-		public static void initializeConfiguration(){
-			Configuration = new PartialMarkerConfig();
-			Configuration.Relation=1;
-			Configuration.Predicate=1;
-			Configuration.Projection=1;
-			Configuration.Joins=1;
-			Configuration.OuterQuery=2;
-			Configuration.GroupBy=1;
-			Configuration.HavingClause=1;
-			Configuration.SubQConnective=1;
-			Configuration.SetOperators=1;
-			Configuration.Distinct=1;
-			Configuration.Aggregates=1;
-			Configuration.WhereSubQueries=1;
-			Configuration.FromSubQueries=1;
-			Configuration.OrderBy=1;
-		}
 		
 		public static void setConfigurationValues(PartialMarkParameters params){
 			Configuration = new PartialMarkerConfig();
@@ -943,6 +926,511 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 			}
 			//Configuration.OrderBy=params.getOrderBy();
 		}
+		
+		
+		/** @author mathew
+		 * 
+		 *  method to set Configuration parameters as a function of the input query structure
+		 *  
+		 *  For each configuration section S (projections, selection conditions, join conditions etc.), if S
+		 *   in the outer query is not empty, it tries to assign a weight 
+		 *  that is equal to the size of S in the outer query, otherwise it recursively traverses
+		 *  from and where clause subqueries to assign a value that is equal to the maximum possible value of S 
+		 * 
+		 * @param qStruct
+		 */
+		
+		public static void setConfigurationValues(QueryStructure qStruct) {
+			// TODO Auto-generated method stub			
+			Configuration = new PartialMarkerConfig();
+			if(qStruct!=null){
+				
+				if(qStruct.getLstRelationInstances()!=null&&!qStruct.getLstRelationInstances().isEmpty()){
+					Configuration.Relation=qStruct.getLstRelationInstances().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxRelationSize(qStruct))>0){
+						Configuration.Relation=tempMaxSize;
+					}
+				}
+				
+				if(qStruct.getLstSelectionConditions()!=null&&!qStruct.getLstSelectionConditions().isEmpty()){
+					Configuration.Predicate=qStruct.getLstSelectionConditions().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxPredicateSize(qStruct))>0){
+						Configuration.Predicate=tempMaxSize;
+					}
+				}
+
+				if(qStruct.getLstProjectedCols()!=null&&!qStruct.getLstProjectedCols().isEmpty()){
+					Configuration.Projection=qStruct.getLstProjectedCols().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxProjectionSize(qStruct))>0){
+						Configuration.Projection=tempMaxSize;
+					}
+				}
+				
+				if(qStruct.getLstJoinConditions()!=null&&!qStruct.getLstJoinConditions().isEmpty()){
+					Configuration.Joins=qStruct.getLstJoinConditions().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxJoinSize(qStruct))>0){
+						Configuration.Joins=tempMaxSize;
+					}
+				}
+				
+				if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+					Configuration.WhereSubQueries=qStruct.getWhereClauseSubqueries().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxWhereSubQuerySize(qStruct))>0){
+						Configuration.WhereSubQueries=tempMaxSize;
+					}
+				}
+
+				
+				if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+					Configuration.FromSubQueries=qStruct.getFromClauseSubqueries().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxFromSubQuerySize(qStruct))>0){
+						Configuration.FromSubQueries=tempMaxSize;
+					}
+				}
+
+				
+				Configuration.OuterQuery=Configuration.WhereSubQueries+Configuration.FromSubQueries;
+				
+				if(qStruct.getLstGroupByNodes()!=null&&!qStruct.getLstGroupByNodes().isEmpty()){
+					Configuration.GroupBy=qStruct.getLstGroupByNodes().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxGroupBySize(qStruct))>0){
+						Configuration.GroupBy=tempMaxSize;
+					}
+				}
+				if(qStruct.getLstHavingConditions()!=null&&!qStruct.getLstHavingConditions().isEmpty()){
+					Configuration.HavingClause=qStruct.getLstHavingConditions().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxHavingSize(qStruct))>0){
+						Configuration.HavingClause=tempMaxSize;
+					}
+				}
+				
+				if(qStruct.getLstSubQConnectives()!=null&&!qStruct.getLstSubQConnectives().isEmpty()){
+					Configuration.SubQConnective=qStruct.getLstSubQConnectives().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxSubQueryConnectiveSize(qStruct))>0){
+						Configuration.SubQConnective=tempMaxSize;
+					}
+				}
+
+				if(qStruct.getLstAggregateList()!=null&&!qStruct.getLstAggregateList().isEmpty()){
+					Configuration.Aggregates=qStruct.getLstAggregateList().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxAggregateSize(qStruct))>0){
+						Configuration.Aggregates=tempMaxSize;
+					}
+				}
+				if(qStruct.getLstSetOpetators()!=null&&!qStruct.getLstSetOpetators().isEmpty()){
+					Configuration.SetOperators=qStruct.getLstSetOpetators().size();
+				}
+				else{
+					int tempMaxSize;
+					if((tempMaxSize=maxSetOperatorSize(qStruct))>0){
+						Configuration.SetOperators=tempMaxSize;
+					}
+				}
+				
+				Configuration.Distinct=1;
+			}				
+			
+		}
+		
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxPredicateSize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstSelectionConditions()!=null&&!qStruct.getLstSelectionConditions().isEmpty()){
+				maxSize=qStruct.getLstSelectionConditions().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxPredicateSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxPredicateSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxRelationSize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstRelationInstances()!=null&&!qStruct.getLstRelationInstances().isEmpty()){
+				maxSize=qStruct.getLstRelationInstances().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxRelationSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxRelationSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxProjectionSize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstProjectedCols()!=null&&!qStruct.getLstProjectedCols().isEmpty()){
+				maxSize=qStruct.getLstProjectedCols().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxProjectionSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxProjectionSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxJoinSize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstJoinConditions()!=null&&!qStruct.getLstJoinConditions().isEmpty()){
+				maxSize=qStruct.getLstJoinConditions().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxJoinSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxJoinSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxWhereSubQuerySize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				maxSize=qStruct.getWhereClauseSubqueries().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxWhereSubQuerySize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxWhereSubQuerySize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxFromSubQuerySize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				maxSize=qStruct.getFromClauseSubqueries().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxFromSubQuerySize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxFromSubQuerySize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxGroupBySize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstGroupByNodes()!=null&&!qStruct.getLstGroupByNodes().isEmpty()){
+				maxSize=qStruct.getLstGroupByNodes().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxGroupBySize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxGroupBySize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxHavingSize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstHavingConditions()!=null&&!qStruct.getLstHavingConditions().isEmpty()){
+				maxSize=qStruct.getLstHavingConditions().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxHavingSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxHavingSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxSubQueryConnectiveSize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstSubQConnectives()!=null&&!qStruct.getLstSubQConnectives().isEmpty()){
+				maxSize=qStruct.getLstSubQConnectives().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxSubQueryConnectiveSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxSubQueryConnectiveSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxSetOperatorSize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstSetOpetators()!=null&&!qStruct.getLstSubQConnectives().isEmpty()){
+				maxSize=qStruct.getLstSetOpetators().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxSetOperatorSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxSetOperatorSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+		
+		/** @author mathew
+		 * 
+		 * @param qStruct
+		 * @return
+		 */
+		public static int maxAggregateSize(QueryStructure qStruct){
+			int maxSize=0;
+			if(qStruct==null)
+				return 0;
+			
+			if(qStruct.getLstAggregateList()!=null&&!qStruct.getLstAggregateList().isEmpty()){
+				maxSize=qStruct.getLstAggregateList().size();
+			}
+			
+			if(qStruct.getFromClauseSubqueries()!=null&&!qStruct.getFromClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getFromClauseSubqueries()){
+					int tempMaxSize=maxAggregateSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			if(qStruct.getWhereClauseSubqueries()!=null&&!qStruct.getWhereClauseSubqueries().isEmpty()){
+				for(QueryStructure queryStruct:qStruct.getWhereClauseSubqueries()){
+					int tempMaxSize=maxAggregateSize(queryStruct);
+					if(tempMaxSize>maxSize)
+						maxSize=tempMaxSize;
+				}
+			}
+			
+			return maxSize;
+		}
+
 		
 		/* @author mathew
 		 *   Compares query structure corresponding to the instructor and student. Depending on whether
@@ -965,7 +1453,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		// TODO Auto-generated method stub
 		
 		if(Configuration==null)
-			PartialMarker.initializeConfiguration();
+			PartialMarker.setConfigurationValues(instructorData);
 
 		
 		int distinctWeightage = 0;
@@ -1077,7 +1565,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 					//Even if any one query doesnot has Distinct - there is a mismatch
 					distinctOperatorScore=distinctOperatorScore-0.5f;
 				}
-		float distinctOperatorScoreTotal=(perDistinctOperator==0 && distinctOperatorScore!=0)?-distinctWeightage/2:
+		float distinctOperatorScoreTotal=(perDistinctOperator==0 && distinctOperatorScore!=0)?-distinctOpWeightage/2:
 			perDistinctOperator*distinctOperatorScore;
 		
 		float orderByScore = compareOrderBy(instructorData.getLstOrderByNodes(),studentData.getLstOrderByNodes()); ///compute order by score
@@ -1215,4 +1703,5 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 			//ex.printStackTrace();
 		}
 	}
+
 }

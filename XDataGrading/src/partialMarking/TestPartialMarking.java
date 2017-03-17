@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import parsing.ForeignKey;
+import parsing.JoinClauseInfo;
 import parsing.Node;
 import parsing.QueryData;
 import parsing.Util;
@@ -108,9 +109,8 @@ public class TestPartialMarking {
 		
 		queryDetails.startProcessing(assignNo, questionId, strQuery);
 		CanonicalizeQuery.Canonicalize(queryDetails.qStructure);
-//		ForeignKey fk=QueryData.getForeignKey("takes", "section", queryDetails.qStructure.getLstForeignKeysModified());
-//		if(fk!=null){
-//			System.out.println(fk.getFKTablename()+ ": "+fk.getFKeyColumns()+" -->"+fk.getReferenceTable()+" :"+fk.getFKeyColumns());
+//		for(JoinClauseInfo fk:queryDetails.getQueryStructure().getForeignKeyVector()){
+//			System.out.println(fk.getJoinTable1()+ ": "+fk.getJoinAttribute1()+" -->"+fk.getJoinTable2()+" :"+fk.getJoinAttribute2());
 //		}
 //		for(Node n:queryDetails.qStructure.getLstJoinConditions()){
 //			System.out.println(" join conditions"+n+" join type"+n.getJoinType());
