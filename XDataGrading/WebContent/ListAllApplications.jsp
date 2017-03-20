@@ -51,7 +51,7 @@ function onSubmit(id){
 </script>
 </head>
 <body>
-<%
+<% /*This jsp is for listing all assignments for TESTER login. */
 if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;

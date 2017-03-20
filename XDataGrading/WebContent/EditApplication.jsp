@@ -149,6 +149,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
   <br/>
 	<div>
 		<%
+	 /*This JSP is used for TESTER login to show the application - where the user can give a query and test the correctness*/
 	 
 			int assignID = Integer.parseInt(request.getParameter("AssignmentID"));
 			String courseID = (String) request.getSession().getAttribute(

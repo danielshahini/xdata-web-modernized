@@ -16,12 +16,18 @@
 if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;
+}else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
+ 		&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+	response.sendRedirect("index.jsp?NotAuthorised=true");
+	session.invalidate();
+	return;
 }
+
 
 String loginUsr="";
 
 int queryIdStr = Integer.parseInt(request.getParameter("queryIdToDelete")); 
-System.out.println("------queryIdStr-----------" + queryIdStr);
+//System.out.println("------queryIdStr-----------" + queryIdStr);
 int assignID =  Integer.parseInt(request.getParameter("assignment_id"));
 String courseID = (String) request.getSession().getAttribute(
 		"context_label");
@@ -41,20 +47,10 @@ try{
 	stmt.setInt(3, questionId);
 	stmt.setInt(4,queryIdStr);
 	stmt.executeUpdate();
-	 
-	//stmt = dbcon
-	//		.prepareStatement("delete from queryinfo where assignment_id=? and question_id=? and query_id=?");
-	 
-	//stmt.setString(1, courseID);
-	//stmt.setInt(1, assignID);
-	//stmt.setInt(2, questionId);
-	//stmt.setInt(3,queryIdStr);
-	//stmt.executeUpdate();
 	
 	stmt = dbcon
 			.prepareStatement("delete from xdata_qinfo where assignment_id=? and question_id=? and query_id=? and course_id = ?");
-	 
-	//stmt.setString(1, courseID);
+
 	stmt.setInt(1, assignID);
 	stmt.setInt(2, questionId);
 	stmt.setInt(3,queryIdStr);
@@ -62,9 +58,8 @@ try{
 	stmt.executeUpdate();
 	
 	stmt = dbcon 
-			.prepareStatement("delete from xdata_datasetvalue where assignment_id=? and question_id=? and query_id=? and coursE_id = ?");
+			.prepareStatement("delete from xdata_datasetvalue where assignment_id=? and question_id=? and query_id=? and course_id = ?");
 	  
-	//stmt.setString(1, courseID);
 	stmt.setInt(1, assignID);
 	stmt.setInt(2, questionId);
 	stmt.setInt(3,queryIdStr);

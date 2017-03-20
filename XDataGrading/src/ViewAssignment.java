@@ -270,7 +270,7 @@ public class ViewAssignment extends HttpServlet {
 								"<td>"+status+"</td>"+
 								"<td>"+ marksAwarded+"</td>"+	
 								"<td>"+ maxMarks+"</td>"+
-								"<td>"+"<a id=\"testCase\" href=\"StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\" target=\"_blank\" type=\"new_tab\">Test Case</a></td>"+
+								"<td>"+"<a id=\"testCase\" href=\"StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\" target=\"_blank\" type=\"new_tab\">Test Cases</a></td>"+
 								//"<a data-toggle=\"modal\" data-target=\"#errorModal\" href=\"StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\">Test Case</a></td>"+
 								"<td>"+
 								"<a id=\"marks\" href=\"StudentMarkDetails.jsp?user_id="+uname+"&assignment_id="+assignment_id+"&question_id="+rs.getInt("question_id")+"\" target=\"_blank\" type=\"new_tab\">Mark Details</a></td></tr>";
@@ -345,9 +345,8 @@ public class ViewAssignment extends HttpServlet {
 						+"</div>"
 						+"</div>"
 						+"</div>");
-				
-				out_assignment.println("</form>"+
-							"</div></fieldset></div><!-- End Page Content --></body></html>");
+				//</form></div>
+				out_assignment.println("</fieldset></div><!-- End Page Content --></body></html>");
 				out_assignment.close();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE,e.getMessage(),e);

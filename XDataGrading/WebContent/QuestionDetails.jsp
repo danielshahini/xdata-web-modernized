@@ -281,7 +281,7 @@ $(document).on('click', '.queryBox' ,function (event) {
 		+ "	 </div>                                                                                               "
 		+ "</div>" 
 		+"<b><a data-toggle=\"modal\" data-target=\"#PartialParamModal"+boxname+"\" "
-			+	"href=\"PartialMarkingParamsPerInstrQuery?assignment_id=2&question_id="+correctId+"&query_id="+boxname+"\">View/Edit partial marking parameters</a></b></td></div>"
+			+	"href=\"PartialMarkingParamsPerInstrQuery?reqFrom=details&assignment_id=2&question_id="+correctId+"&query_id="+boxname+"\">View/Edit partial marking parameters</a></b></td></div>"
 		
 	  
 	    + '<textarea  style="padding:5px;width:98%; height:200px;" class="textForSQL" name="newQuery" id="'+txtBoxId+'"></textarea>'
@@ -458,6 +458,11 @@ font-style: normal;
 <%
 if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
+	return;
+}else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
+ 		&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+	response.sendRedirect("index.jsp?NotAuthorised=true");
+	session.invalidate();
 	return;
 }
 
@@ -709,7 +714,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								</div>
 
 								<b><a data-toggle="modal" data-target="#PartialParamModal<%=query_id %>"
-		 							href="PartialMarkingParamsPerInstrQuery?assignment_id=<%=assignID%>&question_id=<%=q_id %>&query_id=<%=query_id%>">View/Edit partial marking parameters</a></b></td>
+		 							href="PartialMarkingParamsPerInstrQuery?reqFrom=details&assignment_id=<%=assignID%>&question_id=<%=q_id %>&query_id=<%=query_id%>">View/Edit partial marking parameters</a></b></td>
 									</div>		
 							 
 							<textarea name='query' class="textForSQL"
@@ -838,7 +843,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									 </div>
 								</div>
 								<b><a  data-toggle="modal" data-target="#PartialParamModal<%=newQueryID%>"
-		 							href="PartialMarkingParamsPerInstrQuery?assignment_id=<%=assignID%>&question_id=<%=q_id %>&query_id=<%=query_id%>">View/Edit partial marking parameters</a></b></td>
+		 							href="PartialMarkingParamsPerInstrQuery?reqFrom=details&assignment_id=<%=assignID%>&question_id=<%=q_id %>&query_id=<%=query_id%>">View/Edit partial marking parameters</a></b></td>
 								</div>
 								
 								

@@ -52,10 +52,7 @@
 				//alert("calls show div");
 				 e.preventDefault();
 				$('#showMatchingDatasetDiv').show();
-				//$("#showMatchingDatasetDiv").scrollintoview(true);
-				//window.scroll(0,findPos(document.getElementById("showMatchingDatasetDiv")));
-				//$j('html, body').animate({ scrollTop: $j("#"+showMatchingDatasetDiv).offset().top }, 1500);
-				
+			
 					var offset = $("#showMatchingDatasetDiv").offset();
 					var top = ($("#showMatchingDatasetDiv").offset() || { "top": NaN }).top;
 					if (isNaN(top)) {
@@ -78,11 +75,12 @@
 		</head>
 
 		<body id="public">
-		<%
+		<%/*This JSP is used for TESTER - to check the correctness of a query*/
+		
 			if (session.getAttribute("LOGIN_USER") == null) {
-			response.sendRedirect("index.jsp?TimeOut=true");
-			return;
-				}
+				response.sendRedirect("index.jsp?TimeOut=true");
+				return;
+			}
 				
 		Connection dbCon = null, testcon = null;
 		int assignment_id=Integer.parseInt(request.getParameter("assignment_id"));

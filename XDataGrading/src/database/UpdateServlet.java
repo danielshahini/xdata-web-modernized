@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet implementation class UpdateServlet
  */
 //@WebServlet("/UpdateServlet")
+@Deprecated
 public class UpdateServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        

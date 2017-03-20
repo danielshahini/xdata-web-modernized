@@ -438,6 +438,19 @@ $(document).ready(function() {
 </style>
 </head>
 <body>
+<% //As it is a part of instructor login and web session, check for session expiry
+if (session.getAttribute("LOGIN_USER") == null) {
+	response.sendRedirect("index.jsp?TimeOut=true");
+	return;
+}else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
+ 		&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+	response.sendRedirect("index.jsp?NotAuthorised=true");
+	session.invalidate();
+	return;
+}
+
+%>
+
 <br/>
 <div>		<div class="fieldset">	
 			<fieldset>

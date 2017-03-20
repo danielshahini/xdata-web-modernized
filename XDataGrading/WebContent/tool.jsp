@@ -112,8 +112,10 @@
  		
  		if(roleDetail.contains("instructor")){
  			session.setAttribute("LOGIN_USER", "ADMIN");
+ 			session.setAttribute("role","instructor");
  		} else{
  			session.setAttribute("LOGIN_USER", "student");
+ 			session.setAttribute("role","student");
  		}
  	} 
 

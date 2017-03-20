@@ -69,17 +69,7 @@
 		//fileContent =result.getString("ddltext").replace("\t", "        ");
 		out.println(fileContent); 
 		out.println("</code></pre></div>"); 
-		//style=\"word-wrap:normal\"
-				
-		//byte[] dataBytes = result.getBytes("ddltext");
-		//String fileContents = result.getString("ddltext"); 
-		//ServletOutputStream output = response.getOutputStream();
-		//output.println(dataBytes);
-		//output.write(fileContents);
-		// tempFile = "/tmp/dummy"; 
-		//String c = new String(dataBytes,"UTF-8");
-		//out.write(c.toCharArray()); 
-		//out.close();
+
 		  
 	}  
 %>			 

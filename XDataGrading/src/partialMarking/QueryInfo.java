@@ -2,6 +2,8 @@ package partialMarking;
 
 import java.util.ArrayList;
 
+import parsing.Node;
+
 public class QueryInfo {
 	 
 		
@@ -67,18 +69,22 @@ public class QueryInfo {
 		public float studentSetOperatorMarks;
 		
 		//public ArrayList<Integer> InnerJoins;
-		public int StudentInnerJoins;
-		
-		public int InstructorInnerJoins;
+	//	public int StudentInnerJoins;
+		//public int InstructorInnerJoins;
 		public float studentInnerJoinMarks;
 		public float instructorInnerJoinMarks;
 		
 		//public ArrayList<Integer> OuterJoins;
-		public int StudentOuterJoins;
-		
-		public int InstructorOuterJoins;
+		//public int StudentOuterJoins;
+		//public int InstructorOuterJoins;
 		public float studentOuterJoinMarks;
 		public float instructorOuterJoinMarks;
+		
+		
+		public ArrayList<String> InstructorInnerJoins;
+		public ArrayList<String> StudentInnerJoins;
+		public ArrayList<String> InstructorOuterJoins;
+		public ArrayList<String> StudentOuterJoins;
 		
 		//public ArrayList<Boolean> Distinct;
 		public boolean studentDistinct;

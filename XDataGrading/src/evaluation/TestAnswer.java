@@ -718,7 +718,7 @@ public class TestAnswer {
 				}
 				
 				//Call the methods for storing the failed student_id and table data information in FailedDataSet object and return the list of FailesDSObject
-				
+				TestAnswer ta = new TestAnswer();
 				if(resultOnDsetMap.contains(studentRollnums.get(l))){
 					FailedDataSetValues fdv = new FailedDataSetValues();
 					//Set failed Student details
@@ -733,22 +733,22 @@ public class TestAnswer {
 					
 					fdv.setDataSetId(datasetName);
 					if(filePath.equals("NoPath")){
-						fdv = getStudentOutput(conn, datasetName,  studentQueries.get(l),
-							failedList, fdv, failedStudDataMap, true);
+						fdv =  ta.getStudentOutput(conn, datasetName,  studentQueries.get(l),
+							 fdv, failedStudDataMap, true);
 						
-						fdv = getInstructorOutput(conn, datasetName,
-								fdv.getInstrQuery(), failedList, fdv,
+						fdv = ta.getInstructorOutput(conn, datasetName,
+								fdv.getInstrQuery(), fdv,
 								failedInstrDataMap, true);
 					}
 					else{
-						fdv = getStudentOutput(conn, datasetName,  studentQueries.get(l),
-								failedList, fdv, failedStudDataMap, false);
+						fdv = ta.getStudentOutput(conn, datasetName,  studentQueries.get(l),
+								 fdv, failedStudDataMap, false);
 							
-							fdv = getInstructorOutput(conn, datasetName,
-									fdv.getInstrQuery(), failedList, fdv,
+							fdv = ta.getInstructorOutput(conn, datasetName,
+									fdv.getInstrQuery(), fdv,
 									failedInstrDataMap, false);
 					}
-					fdv.getDsValueMap().put(datasetName, failedList);
+					//fdv.getDsValueMap().put(datasetName, failedList);
 					fdv.setStudentQueryString(mutant_qry);
 					fdValueList.add(fdv);
 				}
@@ -1953,8 +1953,9 @@ public ArrayList<FailedDataSetValues> newTestAnswer(int assignmentId,int questio
 													 if(failedStudentRollNumList.contains(stdRoll)){
 														 processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
 													 }else{
-														 failedStudentRollNumList.add(stdRoll);														 
-														 finalFailedDsList.add(fdvFailedList.get(fl));
+														 failedStudentRollNumList.add(stdRoll);	
+														 fdvFailedList.get(fl).getDataSetIdList().add(fdvFailedList.get(fl).getDataSetId());
+														finalFailedDsList.add(fdvFailedList.get(fl));
 													 }
 												 }
 											 }
@@ -1992,13 +1993,13 @@ public ArrayList<FailedDataSetValues> newTestAnswer(int assignmentId,int questio
 								}
 								fdFailed = getMarkDetails(testConn, fdFailed, false, studRole, assignmentId, questionId, course_id, fdFailed.getStudentQueryString(), fsId, false,maxMarks, 
 										reduceLateSubmissionMarks);
-								finalFailedDsList.add(fdFailed);
+								//finalFailedDsList.add(fdFailed);
 							}
 						}	
 					}
 				}
 				//All other students with roll nums other than the ones in the allFailedIds will have status as Passed
-				//Passed students will have to send the maxmarks for the query in which they have passed. 
+				//Passed students will have to send the maxmarks for the query in which they have passed. - If one instructor question has 2-3 answers each with different max marks, then this applies.
 				Iterator it1 = instrQueryVsPassedStudentList.keySet().iterator();				
 				while(it.hasNext()){
 					int qry_id = (Integer)it.next();
@@ -2045,7 +2046,7 @@ public ArrayList<FailedDataSetValues> newTestAnswer(int assignmentId,int questio
 							if(fdvs.getStudentRollNo().equalsIgnoreCase(fdRoll)){							    
 								fdvs = getMarkDetails(testConn, fdvs, false, studRole, assignmentId, questionId, course_id, fdvs.getStudentQueryString(), fdvs.getStudentRollNo(), false,maxMarks, 
 										reduceLateSubmissionMarks);
-								finalFailedDsList.add(fdvs);
+								//finalFailedDsList.add(fdvs);
 							}
 						}
 					}				
@@ -2074,7 +2075,7 @@ public ArrayList<FailedDataSetValues> newTestAnswer(int assignmentId,int questio
 			}//Match any else stmnt ends
 		}
 	}
-	return finalFailedDsList;	
+	return finalFailedDsList;
 }
 
 /**
@@ -2121,8 +2122,8 @@ public static ArrayList<FailedDataSetValues> processFailedDSList(FailedDataSetVa
  * @return
  * @throws SQLException
  */
-public static FailedDataSetValues  getStudentOutput (Connection testCon, String dataSetId, String OriginalQry,
-		ArrayList<FailedColumnValues> failedList, FailedDataSetValues failedDs,
+public FailedDataSetValues  getStudentOutput (Connection testCon, String dataSetId, String OriginalQry,
+		 FailedDataSetValues failedDs,
 		Map<String, Map<String, ArrayList<String>>> failedStudDataMap, boolean isDefaultDS) {
 	
 	Map<String, ArrayList<String>> failedColMap = new HashMap<String, ArrayList<String>>();
@@ -2135,7 +2136,7 @@ public static FailedDataSetValues  getStudentOutput (Connection testCon, String 
 				int no_of_columns = metadata.getColumnCount();
 				String result = "";
 				String columnName = "";
-				List<String> existingColNames = new ArrayList<String>();  
+				ArrayList<String> existingColNames = new ArrayList<String>();  
 				int index = 1;
 				for(int cl=1;cl<=no_of_columns;cl++)
 				{
@@ -2161,9 +2162,10 @@ public static FailedDataSetValues  getStudentOutput (Connection testCon, String 
 							int type = metadata.getColumnType(cl);
 							values.add(rr1.getString(cl));
 						}												
-						failedColumns.setColumnName(metadata.getColumnName(cl));
+						failedColumns.setColumnName(columnName);
 						failedColumns.setValues(values);						
-						failedList.add(failedColumns);
+						//failedList.add(failedColumns);
+						failedColMap.put(columnName, values);
 					}
 				}
 			} // try block to close rr resultset
@@ -2190,8 +2192,8 @@ public static FailedDataSetValues  getStudentOutput (Connection testCon, String 
  * @return
  * @throws SQLException
  */
-public static FailedDataSetValues  getInstructorOutput (Connection testCon, String dataSetId, String OriginalQry,
-		ArrayList<FailedColumnValues> failedList, FailedDataSetValues failedDs,
+public FailedDataSetValues  getInstructorOutput (Connection testCon, String dataSetId, String OriginalQry,
+		 FailedDataSetValues failedDs,
 		Map<String, Map<String, ArrayList<String>>> failedInstrDataMap, boolean isDefaultDS) {
 
 	Map<String, ArrayList<String>> failedInstrColMap = new HashMap<String, ArrayList<String>>();
@@ -2227,7 +2229,7 @@ public static FailedDataSetValues  getInstructorOutput (Connection testCon, Stri
 							int type = metadata.getColumnType(cl);
 							values.add(rr1.getString(cl));
 						}
-						failedColumns.setInstrColumnName(metadata.getColumnName(cl));
+						failedColumns.setInstrColumnName(columnName);
 						failedColumns.setInstrValues(values);
 						failedInstrColMap.put(columnName, values);
 					}

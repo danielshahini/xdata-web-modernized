@@ -10,6 +10,11 @@
 <html>
 <head> 
  <link rel="stylesheet" href="../css/structure.css" type="text/css"/>
+ <link rel="stylesheet" href="../highlight/styles/xcode.css">  
+<link rel="stylesheet" href="../highlight/styles/default.css">
+<script type="text/javascript" src = "../scripts/jquery.js"></script>
+<script src="../highlight/highlight.pack.js"></script>  
+
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Insert title here</title>
 
@@ -54,7 +59,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
    <a id="bcrumb_no_link" href="#">View Grades</a>
 <%} %> 
   
-	test page<div>
+<div>
 		<br /> <br />
 		<div class="fieldset">
 

@@ -31,7 +31,9 @@
 			if(getParameterByName("TimeOut") != ""){ 
 				alert("The session has expired, Please relogin.");	
 				
-			} 
+			} else if(getParameterByName("NotAuthorised") != ""){
+				alert("You are not authorised to view this page. Please relogin.");					
+			}
 		}    
 		$( document ).ready(function() {
 			

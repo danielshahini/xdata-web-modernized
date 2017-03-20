@@ -22,6 +22,7 @@ import database.DatabaseConnection;
  * Servlet implementation class AssignmentOptions
  */
 // @WebServlet("/AssignmentOptions")
+@Deprecated
 public class AssignmentOptions extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static Logger logger = Logger.getLogger(AssignmentOptions.class.getName());

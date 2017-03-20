@@ -82,6 +82,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;
 }
+/*This jsp lists the assignments as application for TESTER login where the user tests the query for correctness*/
 %>
 <br/>
 	<div>

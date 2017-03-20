@@ -112,7 +112,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 				 + "\"&&relation=\"+$('#relations').val()+\"&&groupBy=\"+$('#groupBy').val()+\"&&outer=\"+" 
 				 + "$('#outer').val()+\"&&joins=\"+$('#joins').val()+\"&&distinct=\"+$('#distinct').val()+\"&&having=\"+$('#having').val()+\"&&setoperators=\"+$('#setoperators').val()"
 				 +"+\"&&subQConnective=\"+$('#subQconnective').val()+\"&&aggregates=\"+$('#aggregates').val()+\"&&from=\"+$('#fromSub').val()+\"&&where=\"+$('#whereSub').val();"
-				// +"alert(dataString);"
+				 //+"alert(dataString);"
 				  +"$.ajax({" 	
 				  +"    type: \"POST\","  
 				  +"    url: 'PartialMarkerServlet'," 

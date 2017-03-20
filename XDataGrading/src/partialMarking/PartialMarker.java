@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.google.gson.Gson;
 import parsing.AggregateFunction;
+import parsing.JoinClauseInfo;
 import parsing.Node;
 import util.MyConnection;
 import parsing.QueryStructure;
@@ -418,13 +419,19 @@ public static Boolean checkProjectionEquality(Node n1, Node n2){
 		if(!agg1.getFunc().equals(agg2.getFunc()))
 			return false;
 		
-		if(!agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
+		if(agg1.getAggExp().getColumn() != null && agg2.getAggExp().getColumn() != null
+				&& agg1.getAggExp().getColumn().getTable() != null && agg2.getAggExp().getColumn().getTable() != null
+				&& agg1.getAggExp().getColumn().getTable().getTableName() != null && agg2.getAggExp().getColumn().getTable().getTableName() != null
+				&& !agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
 			return false;
 		
-		if(!agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
+		if(agg1.getAggExp().getTableNameNo() != null  &&
+				!agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
 			return false;
 		
-		if(!agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
+		if(agg1.getAggExp().getColumn() != null && agg2.getAggExp().getColumn() != null && 
+				agg1.getAggExp().getColumn().getColumnName()!= null && agg2.getAggExp().getColumn().getColumnName()!= null
+				&& !agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
 			return false;
 	}
 	
@@ -481,12 +488,19 @@ public static Boolean checkHavingClauseEquality(Node n1, Node n2){
 		AggregateFunction agg2 = n2.getRight().getAgg();
 		if(!agg1.getFunc().equals(agg2.getFunc()))
 			return false;
-		if(!agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
+		if(agg1.getAggExp().getColumn() != null && agg2.getAggExp().getColumn() != null
+				&& agg1.getAggExp().getColumn().getTable() != null && agg2.getAggExp().getColumn().getTable() != null
+				&& agg1.getAggExp().getColumn().getTable().getTableName() != null && agg2.getAggExp().getColumn().getTable().getTableName() != null
+				&& !agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
 			return false;
 		
-		if(!agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
+		if(agg1.getAggExp().getTableNameNo() != null  &&
+				!agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
 			return false;
-		if(!agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
+		
+		if(agg1.getAggExp().getColumn() != null && agg2.getAggExp().getColumn() != null && 
+				agg1.getAggExp().getColumn().getColumnName()!= null && agg2.getAggExp().getColumn().getColumnName()!= null
+				&& !agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
 			return false;
 	}
 	//check for equivalence of left nodes
@@ -518,12 +532,17 @@ public static Boolean checkHavingClauseEquality(Node n1, Node n2){
 		AggregateFunction agg2 = n2.getLeft().getAgg();
 		if(!agg1.getFunc().equals(agg2.getFunc()))
 			return false;
-		if(!agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
+		if(agg1.getAggExp().getColumn() != null && agg2.getAggExp().getColumn() != null 
+				&& agg1.getAggExp().getColumn().getTable() != null && agg2.getAggExp().getColumn().getTable() != null
+				&& agg1.getAggExp().getColumn().getTable().getTableName() != null && agg2.getAggExp().getColumn().getTable().getTableName() != null 
+				&&!agg1.getAggExp().getColumn().getTable().getTableName().equals(agg2.getAggExp().getColumn().getTable().getTableName()))
 			return false;
 		
-		if(!agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
+		if(agg1.getAggExp().getTableNameNo() != null && !agg1.getAggExp().getTableNameNo().equals(agg2.getAggExp().getTableNameNo()))
 			return false;
-		if(!agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
+		if(agg1.getAggExp().getColumn() != null && agg2.getAggExp().getColumn() != null
+				&& agg1.getAggExp().getColumn().getColumnName() != null && agg2.getAggExp().getColumn().getColumnName() != null
+				&& !agg1.getAggExp().getColumn().getColumnName().equals(agg2.getAggExp().getColumn().getColumnName()))
 			return false;
 	}
 		
@@ -970,9 +989,14 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
+		//Set level 0 query details for display
+		marks.SubqueryData.add(populateQueryInfo(instructorData,studentData,0));
+		
 		MarkInfo whereSubQuery = compareListOfQueries(instructorData.getWhereClauseSubqueries(), studentData.getWhereClauseSubqueries(), level + 1);
+		marks.SubqueryData.addAll(whereSubQuery.SubqueryData);
 		
 		MarkInfo fromSubQuery = compareListOfQueries(instructorData.getFromClauseSubqueries(), studentData.getFromClauseSubqueries(), level + 1);
+		marks.SubqueryData.addAll(fromSubQuery.SubqueryData);
 		
 		distinctWeightage = Configuration.Distinct;
 		
@@ -1117,6 +1141,104 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		return marks;
 	}
 		
+	private static QueryInfo populateQueryInfo(QueryStructure instructorData, QueryStructure studentData, int level){
+		
+		QueryInfo qInfo = new QueryInfo();
+		qInfo.Level = level;
+		
+		for(Node n: instructorData.getSelectionConds()){
+			qInfo.InstructorPredicates.add(n.toString());
+		}
+		
+		for(Node n: studentData.getSelectionConds()){
+			qInfo.StudentPredicates.add(n.toString());
+		}
+		
+		for(Node n: instructorData.getProjectedCols()){
+			qInfo.InstructorProjections.add(n.toString());
+		}
+		
+		for(Node n: studentData.getProjectedCols()){
+			qInfo.StudentProjections.add(n.toString());
+		}
+		
+		for(Node n: instructorData.getGroupByNodes()){
+			qInfo.InstructorGroupBy.add(n.toString());
+		}
+		
+		for(Node n: studentData.getGroupByNodes()){
+			qInfo.StudentGroupBy.add(n.toString());
+		}
+		
+		for(String n: instructorData.getLstRelations()){
+			qInfo.InstructorRelations.add(n);
+		}
+		
+		for(String n: studentData.getLstRelations()){
+			qInfo.StudentRelations.add(n);
+		}
+		
+		for(Node n : instructorData.getlstHavingClauses()){
+			qInfo.InstructorHavingClause.add(n.toString());
+		}
+		
+		for(Node n : studentData.getlstHavingClauses()){
+			qInfo.StudentHavingClause.add(n.toString());
+		}
+		
+		for(String n : instructorData.getLstSubQConnectives()){
+			qInfo.InstructorSubQConnective.add(n);
+		}
+		for(String n : studentData.getLstSubQConnectives()){
+			qInfo.StudentSubQConnective.add(n);
+		}
+		
+		for(AggregateFunction n : instructorData.getLstAggregateList()){
+			qInfo.InstructorAggregates.add(n.toString());
+		}
+		for(AggregateFunction n : studentData.getLstAggregateList()){
+			qInfo.StudentAggregates.add(n.toString());
+		}
+		
+		ArrayList<String> instrInnerJoin =new ArrayList<String>();
+		ArrayList<String> studentInnerJoin =new ArrayList<String>();
+		ArrayList<String> instrOuterJoin =new ArrayList<String>();
+		ArrayList<String> studentOuterJoin =new ArrayList<String>();
+
+		if( (instructorData != null && instructorData.getLstJoinConditions()!=null && instructorData.getLstJoinConditions().size() > 0) || 
+				(studentData != null &&  
+						studentData.getLstJoinConditions()!=null &&  studentData.getLstJoinConditions().size() > 0)){
+
+		
+			for(Node n : instructorData.getLstJoinConditions()){
+				if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.innerJoin)){
+					instrInnerJoin.add(n.toString());
+				}
+				else if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.leftOuterJoin)
+						|| n.getJoinType().equalsIgnoreCase(JoinClauseInfo.rightOuterJoin)
+						||n.getJoinType().equalsIgnoreCase(JoinClauseInfo.fullOuterJoin)){
+					instrOuterJoin.add(n.toString());
+				}
+			}for(Node n : studentData.getLstJoinConditions()){
+				if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.innerJoin)){
+					studentInnerJoin.add(n.toString());
+				}else if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.leftOuterJoin)
+						|| n.getJoinType().equalsIgnoreCase(JoinClauseInfo.rightOuterJoin)
+						||n.getJoinType().equalsIgnoreCase(JoinClauseInfo.fullOuterJoin)){
+					studentOuterJoin.add(n.toString());
+				}
+			}
+
+		}
+		
+		qInfo.InstructorInnerJoins = instrInnerJoin;
+		qInfo.StudentInnerJoins = studentInnerJoin;
+		
+		qInfo.InstructorOuterJoins = instrOuterJoin;
+		qInfo.StudentOuterJoins = studentOuterJoin;
+		
+		return qInfo;
+	}
 	
 	// Compares all permutations of the queries and allocates the maximum mark.
 	public static MarkInfo compareListOfQueries( Vector<QueryStructure> master, Vector<QueryStructure> slave, int level){
@@ -1215,4 +1337,7 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 			//ex.printStackTrace();
 		}
 	}
+	
+	
+	
 }

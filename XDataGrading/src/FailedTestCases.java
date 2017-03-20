@@ -144,15 +144,16 @@ public class FailedTestCases extends HttpServlet {
 		  try{
 		
 			  
-			String failedDataSets = "select result,querystring from xdata_student_queries where rollnum =? and assignment_id= ? and question_id = ?";
+			String failedDataSets = "select result,querystring from xdata_student_queries where course_id = ? and rollnum =? and assignment_id= ? and question_id = ?";
 			//	out_assignment.println("<br/><div style = 'font-weight:bold'>Message: <span style='font-weight:normal'>Your query did not pass the datasets shown below.</span></div>");
 			//out_assignment.println("<br/><hr>");
-			String sel_dataset = "select tag,value from xdata_datasetvalue where datasetid =? and assignment_id= ? and question_id=? and query_id=?";
+			String sel_dataset = "select tag,value from xdata_datasetvalue where course_id = ? and datasetid =? and assignment_id= ? and question_id=? and query_id=?";
 			
 			PreparedStatement stmt1=dbCon.prepareStatement(failedDataSets);
-			stmt1.setString(1, user_id);
-			stmt1.setInt(2,assignment_id); 
-			stmt1.setInt(3,question_id);
+			stmt1.setString(1, course_id);
+			stmt1.setString(2, user_id);
+			stmt1.setInt(3,assignment_id); 
+			stmt1.setInt(4,question_id);
 			
 			ResultSet resultSet = stmt1.executeQuery();	
 			resultSet.next();
@@ -192,7 +193,7 @@ public class FailedTestCases extends HttpServlet {
                   
                 FailedDataSetValues failedDSValues = new Gson().fromJson(ans, listType1);
                // Iterator<String> setIterator = hs.iterator();
-				out_assignment.println("<h3>"+"Student query failed for the following datasets."+"</h3><hr></div>");
+				out_assignment.println("<h3>"+"Student query failed the following datasets."+"</h3><hr></div>");
 				PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 				populateTestData.deleteAllTempTablesFromTestUser(testcon);
 				populateTestData.createTempTables(testcon, assignment_id, question_id);
@@ -203,10 +204,11 @@ public class FailedTestCases extends HttpServlet {
 					ArrayList<FailedColumnValues> dsValueList = failedDSValues.getDsValueMap().get(dataSetId);
 					logger.log(Level.FINE,"Data set IDs = "+dataSetId);
 					PreparedStatement stmt2=dbCon.prepareStatement(sel_dataset);
-					stmt2.setString(1, dataSetId);
-					stmt2.setInt(2,assignment_id); 
-					stmt2.setInt(3,question_id);
-					stmt2.setInt(4,1); 
+					stmt2.setString(1,course_id);
+					stmt2.setString(2, dataSetId);
+					stmt2.setInt(3,assignment_id); 
+					stmt2.setInt(4,question_id);
+					stmt2.setInt(5,1); 
 					ResultSet resultSet1 = stmt2.executeQuery(); 
 					if(dataSetId.startsWith("DS")){
 						if(resultSet1.next()){				 

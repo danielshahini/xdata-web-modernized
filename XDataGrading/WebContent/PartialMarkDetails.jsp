@@ -258,7 +258,13 @@ tr:nth-of-type(odd) {
 if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;
+}else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
+ 		&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+	response.sendRedirect("index.jsp?NotAuthorised=true");
+	session.invalidate();
+	return;
 }
+
 %>
 	<div>
 		<div class="fieldset">
@@ -331,58 +337,14 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	   		    		
 	   		    	   }});
    		    	   }
-   		       %>  
-   		      <!--   <fieldset>
-   		       <h3 align="left"><a id="showSteps"  href = "#"  style="width:20px;height:10px;">Canonicalization Steps</a></h3>
-   		       <div id="canonicalization" style='display:none;'>
-   		        <label id="C1">Subquery Normalization, Outer Join minimization</label ><br/>
-   		        <label  id="C2">Normalizing selection conditions()</label ><br/>
-   		        <label  id="C3" >Normalizing join conditions</label ><br/>
-   		        <label  id="C4" >Normalizing selection having conditions</label ><br/>
-   		        <label  id="C5" >Normalizing join having conditions</label ><br/>
-   		        <label  id="C6" >Removing redundant tables</label ><br/>
-   		       </div>
-   		       </fieldset>-->
-   		    
+   		       %>     		    
    		        <fieldset>
 				<legend>Partial Marking Details</legend> 
 		  		<div align = "left">
 		  		<%
 		  		String result = "";
 		  		for(QueryInfo q: queryInfo)
-		  		{  //CALCULATE the number of items and scale the score accordingly
-		  			//COUNT the number of items available to calculate scaling factor
-		  			int countScale = 0;
-		  			if(q.StudentPredicates!= null && q.StudentPredicates.size() > 0
-			  			|| (q.InstructorPredicates != null && q.InstructorPredicates.size() > 0)){
-		  				countScale++;
-		  			}if(q.StudentProjections!= null && q.StudentProjections.size() > 0
-				  			|| (q.InstructorProjections != null && q.InstructorProjections.size() > 0)){
-		  				countScale++;
-		  			}if(q.StudentRelations!= null && q.StudentRelations.size() > 0
-				  			|| (q.InstructorRelations != null && q.InstructorRelations.size() > 0)){
-		  				countScale++;
-		  			}if(q.StudentGroupBy != null && q.StudentGroupBy.size() > 0
-				  			|| (q.InstructorGroupBy != null && q.InstructorGroupBy.size() > 0)){ 
-		  				countScale++;
-		  			}if(q.StudentHavingClause != null && q.StudentHavingClause.size() > 0
-				  			|| (q.InstructorHavingClause != null && q.InstructorHavingClause.size() > 0)){
-		  				countScale++;
-		  			}if(q.StudentSubQConnective != null && q.StudentSubQConnective.size() > 0
-				  			|| (q.InstructorSubQConnective != null && q.InstructorSubQConnective.size() > 0)){ 
-		  				countScale++;
-		  			}if(q.StudentSetOperators != null && q.StudentSetOperators.size() > 0
-				  			||( q.InstructorSetOperators != null && q.InstructorSetOperators.size() > 0)){
-		  				countScale++;
-		  			}if(q.studentDistinct || q.instructorDistinct){
-		  				countScale++;
-		  			}if(q.StudentInnerJoins  > 0 || q.InstructorInnerJoins > 0){ 
-		  				countScale++;
-		  			}if(q.StudentOuterJoins  > 0 || q.InstructorOuterJoins > 0){
-		  				countScale++;
-		  			}
-		  			//Usually marks are calculated based on 100.
-		  			int scalingFactor = 100/countScale;
+		  		{  
 		  			%>
 
 			  		<div class="querypartialmark" style="margin-left:<%=(q.Level) *30 %>px;">
@@ -394,8 +356,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<th width="20%">&nbsp;</th>
 			  		<th width="20%">Student</th>
 			  		<th width="20%">Instructor</th>
-			  		<th width="5%">Student Marks</th>
-			  		<th width="5%">Total Marks</th>
+			  		
 			  		</tr>  
 			  			<%if(q.StudentPredicates!= null && q.StudentPredicates.size() > 0
 			  			|| (q.InstructorPredicates != null && q.InstructorPredicates.size() > 0)){ %>
@@ -403,9 +364,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<td class="emph">Predicates</td>
 			  		<td width="20%"><%= listToString(q.StudentPredicates,q.InstructorPredicates)%></td>
 			  		<td width="20%"><%= listToString(q.InstructorPredicates,q.StudentPredicates)%></td>
-			  		
-					<td width="20%"><%if(q.studentPredicateMarks != 0.0f && q.instructorPredicateMarks!=0.0f){ %><%=roundToDecimal(q.studentPredicateMarks*(scalingFactor/ q.instructorPredicateMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
-			  		<td width="20%"><%if(q.instructorPredicateMarks != 0.0f){ %><%=roundToDecimal(q.instructorPredicateMarks*( scalingFactor/ q.instructorPredicateMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
 			  		
 			  		</tr>
 			  		<%} %>
@@ -415,15 +373,10 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<td class="emph">Projections</td>
 			  		<td><%= listToString(q.StudentProjections,q.InstructorProjections)%></td>
 			  		<td><%= listToString(q.InstructorProjections,q.StudentProjections)%></td>
-			  		<td width="20%"><%if(q.studentProjectionMarks != 0.0f && q.instructorProjectionMarks!=0.0f){ %><%=roundToDecimal(q.studentProjectionMarks*(scalingFactor/ q.instructorProjectionMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
-			  		<td><%if(q.instructorProjectionMarks != 0.0f){ %><%=roundToDecimal(q.instructorProjectionMarks*( scalingFactor/ q.instructorProjectionMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
+			  		</tr>
 			  		<tr>
-			  		<!-- <td class="emph">Projections</td>
-			  		<td><%= listToString(q.StudentProjections,q.InstructorProjections)%></td>
-			  		<td><%= listToString(q.InstructorProjections,q.StudentProjections)%></td>
-			  		<td rowspan="2" width="20%"><%if(q.studentProjectionMarks != 0.0f && q.instructorProjectionMarks!=0.0f){ %><%=roundToDecimal(q.studentProjectionMarks*(scalingFactor/ q.instructorProjectionMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
-			  		<td rowspan="2"><%if(q.instructorProjectionMarks != 0.0f){ %><%=roundToDecimal(q.instructorProjectionMarks*( scalingFactor/ q.instructorProjectionMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td> -->
-			  		<%if(q.studentDistinct || q.instructorDistinct){ %>
+			  		
+			  		<%}if(q.studentDistinct || q.instructorDistinct){ %>
 			  		<tr>
 			  		<td class="emph">Distinct</td>
 			  		<% if(q.studentDistinct != q.instructorDistinct){%>
@@ -445,16 +398,14 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		
 			  		<%} %> 
 			  		</tr>
-			  		<%} %>
+			  		
 			  		<%if(q.StudentRelations!= null && q.StudentRelations.size() > 0
 			  			|| (q.InstructorRelations != null && q.InstructorRelations.size() > 0)){ %>
 			  		<tr>
 			  		<td class="emph">Relations</td>
 			  		<td><%= listToString(q.StudentRelations,q.InstructorRelations)%></td>
 			  		<td><%= listToString(q.InstructorRelations,q.StudentRelations)%></td>
-			  		<td><% if(q.studentRelationsMarks != 0.0f &&q.instructorRelationMarks != 0.0f){ %><%=roundToDecimal(q.studentRelationsMarks*(scalingFactor/ q.instructorRelationMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
-			  		<td><%if(q.instructorRelationMarks != 0.0f){%><%=roundToDecimal(q.instructorRelationMarks*( scalingFactor/ q.instructorRelationMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
-			  		</tr>
+			  			</tr>
 			  		<%} %>
 			  		<%if(q.StudentGroupBy != null && q.StudentGroupBy.size() > 0
 			  			|| (q.InstructorGroupBy != null && q.InstructorGroupBy.size() > 0)){ %>
@@ -462,8 +413,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<td class="emph">Group By</td>
 			  		<td><%= listToString(q.StudentGroupBy,q.InstructorGroupBy)%></td>
 			  		<td><%= listToString(q.InstructorGroupBy,q.StudentGroupBy)%></td>
-			  		<td><%if(q.studentGroupbyMarks != 0.0f && q.instructorGroupbyMarks!= 0.0f){ %><%= roundToDecimal(q.studentGroupbyMarks*(scalingFactor/ q.instructorGroupbyMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
-			  		<td><%if(q.instructorGroupbyMarks != 0.0f){%><%=roundToDecimal(q.instructorGroupbyMarks*(scalingFactor/ q.instructorGroupbyMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
 			  		</tr>
 			  			<%} %>
 			  		<%if(q.StudentHavingClause != null && q.StudentHavingClause.size() > 0
@@ -472,8 +421,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<td class="emph">Having Clause</td>
 			  		<td><%= listToString(q.StudentHavingClause,q.InstructorHavingClause)%></td>
 			  		<td><%= listToString(q.InstructorHavingClause,q.StudentHavingClause)%></td>
-			  		<td><%if(q.studentHavingMarks != 0.0f && q.instructorHavingMarks!= 0.0f){%><%= roundToDecimal(q.studentHavingMarks*(scalingFactor/ q.instructorHavingMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
-			  		<td><%if(q.instructorHavingMarks != 0.0f){%><%=roundToDecimal(q.instructorHavingMarks*(scalingFactor/ q.instructorHavingMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
 			  		</tr>
 			  		<%} %>
 			  		<%if(q.StudentSubQConnective != null && q.StudentSubQConnective.size() > 0
@@ -482,8 +429,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<td class="emph">SubQuery Connective</td>
 			  		<td><%= listToString(q.StudentSubQConnective,q.InstructorSubQConnective)%></td>
 			  		<td><%= listToString(q.InstructorSubQConnective,q.StudentSubQConnective)%></td>
-			  		<td><%if(q.studentSubqMarks != 0.0f && q.instructorSubqMarks != 0.0f){%><%= roundToDecimal(q.studentSubqMarks*(scalingFactor/ q.instructorSubqMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
-			  		<td><%if(q.instructorSubqMarks != 0.0f){ %><%=roundToDecimal(q.instructorSubqMarks*(scalingFactor/ q.instructorSubqMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
 			  		</tr>
 			  		<%} %>
 			  		<!-- <tr>
@@ -498,8 +443,6 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<td class="emph">Set Operators</td>
 			  		<td ><%= listToString(q.StudentSetOperators,q.InstructorSetOperators)%></td>
 			  		<td ><%= listToString(q.InstructorSetOperators,q.StudentSetOperators)%></td>
-			  		<td><%if(q.studentSetOperatorMarks != 0.0f && q.instructorSetOperatorMarks != 0.0f){ %><%= roundToDecimal(q.studentSetOperatorMarks*(scalingFactor/ q.instructorSetOperatorMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
-			  		<td><%if(q.instructorSetOperatorMarks != 0.0f){%><%=roundToDecimal(q.instructorSetOperatorMarks*(scalingFactor/ q.instructorSetOperatorMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
 			  		</tr>
 			  		<%} %>
 			  		<%if(q.studentDistinct || q.instructorDistinct){ %>
@@ -520,12 +463,11 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  			<%} %>
 			  			
 			  			<%if(q.instructorDistinct) {%>1<%}else {%>0<%} %></td>
-			  			<td><%if(q.studentDistinctMarks != 0.0f && q.instructorDistinctMarks != 0.0f){ %><%= roundToDecimal(q.studentDistinctMarks*(scalingFactor/ q.instructorDistinctMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
-			  			<td><%if(q.instructorDistinctMarks != 0.0f){%><%=roundToDecimal(q.instructorDistinctMarks*(scalingFactor/ q.instructorDistinctMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
-			  		
+			  	
 			  		</tr>
 			  		<%} %> 
-			  		<%if(q.StudentInnerJoins  > 0 || q.InstructorInnerJoins > 0){ %>
+			  		<%if( (q.StudentInnerJoins != null && q.StudentInnerJoins.size() > 0) 
+			  				|| (q.InstructorInnerJoins != null && q.InstructorInnerJoins.size() > 0)){ %>
 			  		<tr>
 			  		<td class="emph">No. of Inner Joins</td>
 			  			<% if(q.StudentInnerJoins !=q.InstructorInnerJoins){%>
@@ -540,13 +482,11 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  			<td >
 			  			<%} %>
 			  			<%=q.InstructorInnerJoins %></td>
-			  			
-			  		<td><%if(q.studentInnerJoinMarks != 0.0f && q.instructorInnerJoinMarks != 0.0f){%><%=roundToDecimal(q.studentInnerJoinMarks*(scalingFactor/ q.instructorInnerJoinMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
-			  		<td><%if(q.instructorInnerJoinMarks != 0.0f){%><%=roundToDecimal(q.instructorInnerJoinMarks*(scalingFactor/ q.instructorInnerJoinMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
-			  		
+			  
 			  		</tr>
 			  		<%} %> 
-			  		<%if(q.StudentOuterJoins  > 0 || q.InstructorOuterJoins > 0){ %>
+			  		<%if( (q.StudentOuterJoins != null && q.StudentOuterJoins.size() > 0) 
+			  				|| (q.InstructorOuterJoins != null && q.InstructorOuterJoins.size() > 0)){ %>%>
 			  		<tr>
 			  		<td class="emph">Outer Joins</td>
 			  		
@@ -563,9 +503,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  			<%} %>
 			  			
 			  			<%=q.InstructorOuterJoins %></td>
-			  			<td><%if(q.studentInnerJoinMarks != 0.0f && q.instructorInnerJoinMarks != 0.0f){%><%=roundToDecimal(q.studentInnerJoinMarks*(scalingFactor/ q.instructorInnerJoinMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%} %></td>
-			  			<td><%if(q.instructorInnerJoinMarks != 0.0f){%><%=roundToDecimal(q.instructorInnerJoinMarks*(scalingFactor/ q.instructorInnerJoinMarks))%><%}else{%><%=roundToDecimal(0.0f)%><%}%></td>
-			  		
+			  	
 			  		</tr>
 			  		<%} %> 
 			  		</table>
@@ -582,12 +520,10 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		  		
    		       <% 
    		    	   }
-   		       } 
-   		       
    		       stmt.close();
    		       rs.close();
    		       conn.close();
-   		       
+   		       }
    		       %>
  	    </div>
  	     <%if(requestingPage != null && !requestingPage.equalsIgnoreCase("popUp")) {%>

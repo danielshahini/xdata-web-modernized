@@ -130,7 +130,9 @@ public class EvaluateQuestion extends HttpServlet {
 					//throw new ServletException(e);
 				}finally{
 					try {
+						if(dbcon != null){
 						dbcon.close();
+						}
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
 						logger.log(Level.SEVERE,e.getMessage(),e);

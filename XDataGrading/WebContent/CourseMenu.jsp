@@ -105,12 +105,10 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		<li></li> 
 		 	<%
 		 	
-			 	String role = (String) session.getAttribute("roles");
+			 	String role = (String) session.getAttribute("role");
 		 		String userId = (String) session.getAttribute("user_id");
-		 		System.out.println("User Id in Course Menu : " + userId);
-		 		
 		 		//New course will be created by admin - remove comments
-			 	//if(){
+			 
 		 	%>
 		<!-- 	<li><a class="header" target="rightPage" href="NewCourse.jsp">Create New</a></li> -->
 			<%//} %>
@@ -126,8 +124,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					dbcon = (new DatabaseConnection()).dbConnection();
 					PreparedStatement stmt;
 					//stmt = dbcon.prepareStatement("SELECT * FROM  xdata_course");
-					stmt = dbcon.prepareStatement("select instructor_course_id, year from xdata_course xc inner join xdata_roles xr on xc.instructor_course_id = xr.course_id where internal_user_id =?");
+					stmt = dbcon.prepareStatement("select instructor_course_id, year from xdata_course xc inner join xdata_roles xr on xc.instructor_course_id = xr.course_id where internal_user_id =? and role = ?");
 					stmt.setString(1,userId);
+					stmt.setString(2,role);
 					ResultSet rs = stmt.executeQuery();
 					Calendar c = Calendar.getInstance();
 					int year = c.get(Calendar.YEAR);

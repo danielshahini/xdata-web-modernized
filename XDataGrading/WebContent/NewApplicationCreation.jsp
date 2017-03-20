@@ -170,7 +170,7 @@ function checkValue(){
 </script>
 </head>
 <body id="public" onload="defaultDate()">
-<%
+<% /*This JSP is used by TESTER mode login to create new assignments*/
 if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;

@@ -46,7 +46,18 @@ font-weight: bold;}
 </style>
 </head>
 <body id="public">
-
+<%
+if (session.getAttribute("LOGIN_USER") == null) {
+	response.sendRedirect("index.jsp?TimeOut=true");
+	return;
+}
+else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
+	&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+response.sendRedirect("index.jsp?NotAuthorised=true");
+session.invalidate();
+return;
+}
+%>
 <br/>
 
 <div id="fieldset">
@@ -54,6 +65,9 @@ font-weight: bold;}
 						<form class="wufoo" action="TestCaseDataset" method="get">
 						
 <%
+/*This JSP evaluates the late submission answers of a particular student - Added for DB LAB SUBMISSIONS during 2016-July. 
+To be deleted after late submissions are handled properly  */
+
 int assignment_id=Integer.parseInt((String)request.getParameter("assignment_id"));
 String course_id=request.getParameter("course_id");
 String rollnum = request.getParameter("rollnum");

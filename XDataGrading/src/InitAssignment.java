@@ -144,11 +144,16 @@ public class InitAssignment extends HttpServlet {
 						.getRequestDispatcher("/CourseHome.jsp");
 				rd.include(request, response);
 			}
-			else {	
+			else{
 				RequestDispatcher rd = request
 						.getRequestDispatcher("/CourseHome.jsp");
 				rd.include(request, response);
 			}
+			/*else if(role != null && role.equalsIgnoreCase("student")){
+				RequestDispatcher rd = request
+						.getRequestDispatcher("Student/StudentHome.jsp");
+				rd.include(request, response);
+			}*/
 				}//try block to close resultset ends
 			}//try block to close statement ends
 				

@@ -48,27 +48,7 @@ $( document ).ready(function() {
 	        	$('#generateData'+index).hide();
 	        	$('#showData'+index).hide();
 				$('#progress'+index).show();
-	         }, /*complete: function(){ 
-        	 try{ 
-        		 //alert("Comes to complete success");
-        		
-        			$(self).parent().parent().find($('.generateData')).show(); 
-	        		$(self).parent().parent().find($('.showData')).show();
-	        		$(self).parent().parent().find($('.progress')).hide();
-        		 
-        	 }catch(err)
-     		{
-        		// alert("Comes to complete error");
-     			$(self).parent().parent().find($('.generateData')).show(); 
- 	        	$(self).parent().parent().find($('.showData')).hide(); 
- 	        	$(self).parent().parent().find($('.progress')).hide();
- 	        	$(self).parent().parent().find($('.dataGenError')).show(); 
-	        	 setTimeout( function(){
-	        		 $(self).parent().parent().find($('.dataGenError')).hide();
-	    			  }, 60000*10); 
-	        }
-        	  
-          },*/
+	         }, 
 	        success: function(data) { 
 	        	try{
 	        		//if(this.success){
@@ -100,8 +80,6 @@ $( document ).ready(function() {
 	        	
 	        }, 
 	        error : function(xhr, ajaxOptions, thrownError){
-	        	//alert("plain error" + $(self).parent().parent().get( 0 ).tagName); 
-	        	//alert("plain error" +thrownError);
 	        	$('#generateData'+index).show();
 	        //	$(self).parent().parent().find($('.generateData')).show(); 
 	        	$('#showData'+index).hide(); 
@@ -183,8 +161,6 @@ $( document ).ready(function() {
 	   	        		 ($('#evError'+ this.name)).hide();
 	   	    				  }, 10000*10); 
 	   	       		 }
-	    	        
-	        	
 	        }, 
 	        error : function(xhr, ajaxOptions, thrownError){
 	          	 ($('#evaluateAssignment')).show();
@@ -199,79 +175,7 @@ $( document ).ready(function() {
 	      }); 
 	      return false; 
 	});
-	/* //Method to evaluate single question
-	$('.evaluateQ').click(function(e){
-		e.preventDefault(); 
-		var destination =this.href;
-		var dataString=this.id;
-		var indexVal = this.name;
-		var self = this;
-		var idVal = this.name;
-		//alert("Name = " + idVal);
-		$.ajax({ 
-	        type: "GET", 
-	        url: "EvaluateQuestion",
-	        data: dataString,
-	        context:this,  
-	        beforeSend : function() {
-	        	//alert("Comes to B4 send");
-	        	($('#evaluate'+ indexVal)).hide();
-	        	($('#eprogress'+ indexVal)).show();
-	        	 ($('#status'+ indexVal)).hide();
-	       }, complete: function(){  
-        	 try{ 
-        		 ($('#evaluate'+ indexVal)).show();
-        		 ($('#eprogress'+ indexVal)).hide();
-        		 ($('#status'+ indexVal)).show();
-        		
-        	 }catch(err)
-     		{
-        		 //alert("Comes to complete error");
- 	        	($('#evaluate'+ indexVal)).show();
- 	        	 ($('#eprogress'+ indexVal)).hide();
- 	        	($('#evError'+ indexVal)).show();
-	        	 setTimeout( function(){
-	        		 ($('#evError'+ indexVal)).hide();
-	    			  }, 10000*10); 
-	        }
-        	  
-          },
-	        success: function(data) { 
-	        	try{
-	        		if(this.success){
-				    	//alert($(self).parent().get( 0 ).tagName);
-				    	// alert("Success : "+($('#evaluate'+ this.name)));
-	        			 ($('#evaluate'+ indexVal)).show();
-	            		 ($('#eprogress'+ indexVal)).hide();
-	            		 ($('#status'+ indexVal)).show();
-	        		}
-	        	}
-	        		catch(err)
-	        		{
-	        			($('#evaluate'+ indexVal)).show();
-	    	        	($('#eprogress'+ indexVal)).hide();
-	    	        	($('#evError'+ indexVal)).show();
-	    	        	 ($('#status'+indexVal)).hide();
-	   	        	 setTimeout( function(){
-	   	        		 ($('#evError'+ indexVal)).hide();
-	   	    				  }, 10000*10); 
-	   	       		 }
-	    	        
-	        	
-	        }, 
-	        error : function(xhr, ajaxOptions, thrownError){
-	        	($('#evaluate'+ indexVal)).show();
-	        	 ($('#eprogress'+ indexVal)).hide();
-	        	 ($('#status'+ indexVal)).hide();
-	        	($('#evError'+ indexVal)).show();
-	        	 setTimeout( function(){
-	        		 ($('#evError'+ indexVal)).hide();
-	    			  }, 10000*10); 
-	        }
-	      }); 
-	      return false; 
-	      
-	}); */
+
 	
 	//Method to evaluate single question
 	$('.evaluateQ').click(function(e){
@@ -380,6 +284,11 @@ $( document ).ready(function() {
 <%
 if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
+	return;
+}else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
+ 		&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+	response.sendRedirect("index.jsp?NotAuthorised=true");
+	session.invalidate();
 	return;
 }
 

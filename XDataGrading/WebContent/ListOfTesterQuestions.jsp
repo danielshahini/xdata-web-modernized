@@ -30,16 +30,7 @@ function getParameterByName(name) {
 } 
 var asId = getParameterByName("AssignmentID");
 $( document ).ready(function() {	
-	 
-	/*if(getParameterByName("eqStatus") != null && getParameterByName("eqStatus") != ""){
-		 ($('#equivalenceFailMessage')).show();
-		 ($('#equivalenceSuccessMessage')).hide();
 
-	}else if(getParameterByName("eqSuccess") != null && getParameterByName("eqSuccess") != ""){
-		($('#equivalenceSuccessMessage')).show();
-		($('#equivalenceFailMessage')).hide();
-		
-	}*/
 	
 	$('.generate').click(function(e){
 		e.preventDefault(); 

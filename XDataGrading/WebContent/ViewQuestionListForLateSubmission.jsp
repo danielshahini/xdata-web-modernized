@@ -19,65 +19,7 @@
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>  
 <script type="text/javascript" src = "scripts/jquery.js"></script>
 <script type="text/javascript" src = "scripts/jquery-2.1.4.js"></script>
-<script  type="text/javascript">
-/*window.onload = function() { 
-	   
-	  var mime = 'text/x-mariadb';
-	  // get mime type
-	  if (window.location.href.indexOf('mime=') > -1) {
-	    mime = window.location.href.substr(window.location.href.indexOf('mime=') + 5);
-	  }
-	  //Initialize code mirro text area
-	 $('.textForSQL').each(function(index) {		
-         $(this).attr('id', 'textarea-' + index);  
-    
-        window.editor =  CodeMirror.fromTextArea(document.getElementById('textarea-' + index), {
-       	mode: mime,
-     	    indentWithTabs: true,
-     	    smartIndent: true,
-     	    matchBrackets : false, 
-     	    lineWrapping: true,
-     	    autofocus: true,
-     	  extraKeys: {"Ctrl-Space": "autocomplete"},
- 	  	  hintOptions: {tables: {
- 	      users: {name: null, score: null, birthDate: null},
- 	      countries: {name: null, population: null, size: null}
- 	    }}
-          } ); 
-        editor.on("blur", function() {editor.save();});
-     });  
-	 CodeMirror.commands.autocomplete = function(cm) {};
-};*/
 
-/*$(document).ready(function(){
-	
-	 var correctId=parseInt(this.id);
- 	 var txtBoxId = "query " +
- 	 
- 	 
- var mime = 'text/x-mariadb';
-  if (window.location.href.indexOf('mime=') > -1) {
-		mime = window.location.href.substr(window.location.href.indexOf('mime=') + 5);
- }
- window.editor = CodeMirror.fromTextArea( document.getElementById(txtBoxId) , {
-	mode: mime,
-	    indentWithTabs: true,
-	    smartIndent: true,
-	    matchBrackets : true, 
-	    lineWrapping: true,
-	    autofocus: true,
-	    extraKeys: {"Ctrl-Space": "autocomplete"},
-hintOptions: {tables: {
-     users: {name: null, score: null, birthDate: null},
-     countries: {name: null, population: null, size: null}
-   }}
- }); 
-CodeMirror.commands.autocomplete = function(cm) {};
-editor.on("blur", function() {editor.save();});         
-
-
-}); */
-</script>
 <style>
 
 .fieldset div input{
@@ -93,6 +35,16 @@ textarea{
 <body>
 
 <%
+if (session.getAttribute("LOGIN_USER") == null) {
+	response.sendRedirect("index.jsp?TimeOut=true");
+	return;
+}else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
+ 		&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+	response.sendRedirect("index.jsp?NotAuthorised=true");
+	session.invalidate();
+	return;
+}
+
 
 //Get assignment_questions from xdata_instructor_queries table
 

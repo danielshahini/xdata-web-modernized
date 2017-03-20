@@ -300,10 +300,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									
 									if(resultrs.next()){
 									%><div>
-									<a class="getFile"  href="showSchemaFile.jsp?schema_id=<%=optionalSchemaID%>" >
+									<a class="getFile"  href="../showSchemaFile.jsp?schema_id=<%=optionalSchemaID%>" >
 									<%=resultrs.getString("schema_name") %></a>&nbsp;&nbsp;&nbsp;&nbsp;
 									<%if(result.next()){%>
-									<a class="getFile"  href="showSampleData.jsp?schema_id=<%=optionalSchemaID%>" >
+									<a class="getFile"  href="../showSampleData.jsp?schema_id=<%=optionalSchemaID%>" >
 									<%=result.getString("sample_data_name") %></a>
 									<%}%>
 									</div>

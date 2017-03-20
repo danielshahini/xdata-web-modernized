@@ -22,7 +22,7 @@
 <body>
 <%
 String courseId = request.getParameter("contextLabel");
-System.out.println("Instructor Home - context label value:"+ courseId);
+//System.out.println("Instructor Home - context label value:"+ courseId);
 if(! ((Boolean)session.getAttribute("ltiIntegration"))){
 	session.setAttribute("context_label",courseId);
 }
