@@ -27,7 +27,7 @@ public class PartialMarkerConfig {
 	
 	public int FromSubQueries=1;
 	
-	public int OuterQuery=1;
+	public int OuterQuery=2;
 	
 	public int GroupBy=1;
 	

@@ -155,10 +155,13 @@ public class PartialMarkingDemo extends HttpServlet {
 							for(String instQuery:instructorQueries){
 										i++;
 										PartialMarkParameters params = (PartialMarkParameters)session.getAttribute("PartialMarkDemo"+i);
-										
-										partialMarking.PartialMarker.setConfigurationValues(params);
-										
+																				
 										testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instQuery);		
+										if(params!=null)
+											partialMarking.PartialMarker.setConfigurationValues(params);
+										else
+											partialMarking.PartialMarker.setConfigurationValues(testObj.InstructorQuery.getQueryStructure());
+
 										
 										Float studMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.StudentQuery.getQueryStructure(), 0).Marks;
 										Float instMarks=partialMarking.PartialMarker.calculateScore(testObj.InstructorQuery.getQueryStructure(), testObj.InstructorQuery.getQueryStructure(), 0).Marks;
@@ -175,8 +178,12 @@ public class PartialMarkingDemo extends HttpServlet {
 							for(String instQuery:instructorQueries){
 								i++;
 								PartialMarkParameters params = (PartialMarkParameters)session.getAttribute("PartialMarkDemo"+i);
-								partialMarking.PartialMarker.setConfigurationValues(params);
 								testObj1.InstructorQuery=testObj1.process(testObj1.InstructorQuery,1, instQuery);
+								if(params!=null)
+									partialMarking.PartialMarker.setConfigurationValues(params);
+								else
+									partialMarking.PartialMarker.setConfigurationValues(testObj1.InstructorQuery.getQueryStructure());
+
 								
 								Float studMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.StudentQuery.getQueryStructure(), 0).Marks;
 								Float instMarks1=partialMarking.PartialMarker.calculateScore(testObj1.InstructorQuery.getQueryStructure(), testObj1.InstructorQuery.getQueryStructure(), 0).Marks;
