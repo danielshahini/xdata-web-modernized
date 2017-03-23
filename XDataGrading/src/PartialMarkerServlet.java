@@ -26,7 +26,7 @@ import util.MyConnection;
 /**
  * Servlet implementation class UploadScore
  */
-@WebServlet("/PartialMarkerServlet")
+//@WebServlet("/PartialMarkerServlet")
 public class PartialMarkerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     private static Logger logger = Logger.getLogger(PartialMarkerServlet.class.getName());

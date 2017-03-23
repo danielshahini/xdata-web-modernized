@@ -1,5 +1,6 @@
 
 
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -50,7 +51,7 @@ public class ViewAssignment extends HttpServlet {
 	{
 		String map[] = new String[100];
 		HttpSession session = request.getSession(false);
-		try {
+		/*try {
 			String submit="select * from xdata_instructor_query where user_id =? and assignment_id =?";
 			try(PreparedStatement stmt=dbCon.prepareStatement(submit)){
 			stmt.setString(1, uname);
@@ -131,7 +132,7 @@ public class ViewAssignment extends HttpServlet {
 		} catch (IOException e1) { 
 			logger.log(Level.SEVERE,e1.getMessage(),e1);
 			throw new ServletException(e1);
-		}
+		}*/
 
 	}
 
@@ -263,6 +264,7 @@ public class ViewAssignment extends HttpServlet {
 					
 					if(status.equalsIgnoreCase("wrong"))
 					{
+						
 						output += "<tr>"+
 								"<td>Question "+rs.getInt("question_id") +"</td>"+
 								"<td>"+rs.getString("querytext").replaceAll("''", "'")+"</td>"+
@@ -270,15 +272,13 @@ public class ViewAssignment extends HttpServlet {
 								"<td>"+status+"</td>"+
 								"<td>"+ marksAwarded+"</td>"+	
 								"<td>"+ maxMarks+"</td>"+
-								"<td>"+"<a id=\"testCase\" href=\"StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\" target=\"_blank\" type=\"new_tab\">Test Cases</a></td>"+
+								"<td>"+"<a id=\"testCase\" href=\" "+request.getContextPath()+"/StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\" target=\"_blank\" type=\"new_tab\">Test Cases</a></td>"+
 								//"<a data-toggle=\"modal\" data-target=\"#errorModal\" href=\"StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\">Test Case</a></td>"+
 								"<td>"+
 								"<a id=\"marks\" href=\"StudentMarkDetails.jsp?user_id="+uname+"&assignment_id="+assignment_id+"&question_id="+rs.getInt("question_id")+"\" target=\"_blank\" type=\"new_tab\">Mark Details</a></td></tr>";
 								//"<a data-toggle=\"modal\" data-target=\"#marksModal\" href=\"StudentMarkDetails.jsp?user_id="+uname+"&assignment_id="+assignment_id+"&question_id="+rs.getInt("question_id")+"\">Mark Details</a></td></tr>";
 								session.setAttribute("displayTestCase", true);
 								session.setAttribute("displayTCForGraded",true);
-								
-								
 					}
 					else if(status.equalsIgnoreCase("Correct"))
 					{

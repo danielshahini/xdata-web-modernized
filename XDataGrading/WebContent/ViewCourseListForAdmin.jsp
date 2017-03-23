@@ -41,7 +41,7 @@ function setSessionParam(id){
 </head>
 <body>
 <%
-if(session.getAttribute("LOGIN_USER") != null){
+if(session.getAttribute("LOGIN_USER") == null){
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;
 }

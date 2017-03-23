@@ -55,6 +55,7 @@ public class FailedTestCases extends HttpServlet {
 	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
 		HttpSession session=request.getSession();
 		Connection dbCon = null, testcon = null;
 		logger.log(Level.FINE,"Request is from Pop-Up Modal : "+request.getParameter("fromPopup"));

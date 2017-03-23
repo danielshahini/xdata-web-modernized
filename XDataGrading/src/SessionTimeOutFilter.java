@@ -56,35 +56,38 @@ public class SessionTimeOutFilter implements Filter {
 		    HttpServletRequest req = (HttpServletRequest) request;
 		    HttpServletResponse res = (HttpServletResponse) response;
 		    //getSession(false) - does not creates new session-if some session exists it returns true
-		    HttpSession session = req.getSession(false); 		 
+		    HttpSession session = req.getSession(false); 
 		   // check if request is not from same login page
-		   if (isSessionControlRequiredForThisResource(req)) {  
+		   if (isSessionControlRequiredForThisResource(req)) {
 			   //If session is not valid
 			   if (isSessionInvalid(req)) { 
-				   //req.getContextPath() +"/"+
-				String timeoutUrl =  "index.jsp?TimeOut=true";      
+				 
+				String timeoutUrl =  "index.jsp?TimeOut=true";  
+				
 				System.out.println("Request ContextPath for redirection : "+req.getContextPath());
 				System.out.println("Local address for redirection : "+request.getLocalAddr());
-				System.out.println("Servlet contet - contect path -  for redirection on timeput :  "+ request.getServletContext().getContextPath());
+				System.out.println("Servlet context path - for redirection on timeout :  "+ request.getServletContext().getContextPath());
 				
 				//Invalidate the session and forward to login page
-			   if(session!= null){   
-				   session.invalidate();
-				   } 
-			   	   res.setHeader("Cache-Control","no-cache"); 
-				   res.setHeader("Cache-Control","no-store"); 
-				   res.setDateHeader("Expires", 0);
-			       response.setContentType("text/html"); 
-				PrintWriter out = response.getWriter();
-				out.write("<script>window.parent.location.href='"+timeoutUrl+"'</script>"); 
-			    out.close();      
-			   }  
-			   else{  
+					   if(session!= null){   
+						   	session.invalidate();
+					   } 
+				   	   res.setHeader("Cache-Control","no-cache"); 
+					   res.setHeader("Cache-Control","no-store"); 
+					   res.setDateHeader("Expires", 0);
+				       response.setContentType("text/html"); 
+						PrintWriter out = response.getWriter();
+						out.write("<script>window.parent.location.href='"+timeoutUrl+"'</script>"); 
+					    out.close();  
+				
+				   }  
+			   else{  	
 				   chain.doFilter(request, response);
 			   }
 			   } 
 		   else{ 
-			   chain.doFilter(request, response);
+			   	
+					chain.doFilter(request, response);			   
 		   } 
 	}    
    
@@ -94,17 +97,19 @@ public class SessionTimeOutFilter implements Filter {
 	  * Since we're redirecting to login page from this filter, 
 	  * if we don't disable session control for it, filter will again redirect to it 
 	  * and this will be result with an infinite loop... */
-	
+	 
 	    private boolean isSessionControlRequiredForThisResource(HttpServletRequest httpServletRequest) { 
 		
 	    boolean controlRequired = false;
 		// If it is a  new session or no session exists, check whether the servlet path contains login page
 		 if(httpServletRequest.getSession(false) == null || httpServletRequest.getSession(false).isNew()){
 			 
-			 controlRequired  = !httpServletRequest.getServletPath() .contains("index.jsp") 
+			 controlRequired  = !httpServletRequest.getServletPath().contains("index.jsp") 
 					 && !httpServletRequest.getServletPath().contains("tool.jsp") 
-					 && !httpServletRequest.getServletPath().contains("LtiLogout.jsp"); 		 
-		 }   
+					 && !httpServletRequest.getServletPath().contains("LtiLogout.jsp")
+					 &&  !httpServletRequest.getServletPath().contains("LoginChecker");
+			 		
+		 } 
 		 //check if the request is from the login page. case on refreshing login page
 		 else{ 
 			 controlRequired = !httpServletRequest.getRequestURI().contains("index.jsp");   
@@ -121,6 +126,8 @@ public class SessionTimeOutFilter implements Filter {
 			return sessionInValid;     
 		 }  
 		      
+		 
+		
 	/** 
 	 * @see Filter#init(FilterConfig)
 	 */ 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
   <display-name>XDataGrading</display-name>
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
@@ -14,16 +14,8 @@
     <url-pattern>/LoginChecker</url-pattern>
   </servlet-mapping>
   <servlet>
-    <servlet-name>Assignment</servlet-name>
-    <servlet-class>Assignment</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>Assignment</servlet-name>
-    <url-pattern>/Assignment</url-pattern>
-  </servlet-mapping>
-  <servlet>
     <servlet-name>AssignmentChecker</servlet-name>
-    <servlet-class>AssignmentChecker</servlet-class>
+    <servlet-class>instructor.AssignmentChecker</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>AssignmentChecker</servlet-name>
@@ -46,14 +38,6 @@
     <url-pattern>/InitAssignment</url-pattern>
   </servlet-mapping>
   <servlet>
-    <servlet-name>QueryStatus</servlet-name>
-    <servlet-class>QueryStatus</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>QueryStatus</servlet-name>
-    <url-pattern>/QueryStatus</url-pattern>
-  </servlet-mapping>
-  <servlet>
     <servlet-name>MatchResult</servlet-name>
     <servlet-class>MatchResult</servlet-class>
   </servlet>
@@ -71,7 +55,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>DeleteLtiSetup</servlet-name>
-    <servlet-class>DeleteLtiSetup</servlet-class>
+    <servlet-class>admin.DeleteLtiSetup</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>DeleteLtiSetup</servlet-name>
@@ -79,15 +63,39 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>GetDefaultDataSets</servlet-name>
-    <servlet-class>GetDefaultDataSets</servlet-class>
+    <servlet-class>instructor.GetDefaultDataSets</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>GetDefaultDataSets</servlet-name>
     <url-pattern>/GetDefaultDataSets</url-pattern>
   </servlet-mapping>
   <servlet>
+    <servlet-name>GetQuestionsForLateSumbission</servlet-name>
+    <servlet-class>instructor.GetQuestionsForLateSumbission</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetQuestionsForLateSumbission</servlet-name>
+    <url-pattern>/GetQuestionsForLateSumbission</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>LateSubmission</servlet-name>
+    <servlet-class>instructor.LateSubmission</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LateSubmission</servlet-name>
+    <url-pattern>/LateSubmission</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>PartialMarkingParamsPerInstrQuery</servlet-name>
+    <servlet-class>instructor.PartialMarkingParamsPerInstrQuery</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PartialMarkingParamsPerInstrQuery</servlet-name>
+    <url-pattern>/PartialMarkingParamsPerInstrQuery</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <servlet-name>ShowDatasets</servlet-name>
-    <servlet-class>ShowDatasets</servlet-class>
+    <servlet-class>instructor.ShowDatasets</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>ShowDatasets</servlet-name>
@@ -95,23 +103,15 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>AssignRole</servlet-name>
-    <servlet-class>AssignRole</servlet-class>
+    <servlet-class>admin.AssignRole</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>AssignRole</servlet-name>
     <url-pattern>/AssignRole</url-pattern>
   </servlet-mapping>
   <servlet>
-    <servlet-name>SQLChecker</servlet-name>
-    <servlet-class>SQLChecker</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>SQLChecker</servlet-name>
-    <url-pattern>/SQLChecker</url-pattern>
-  </servlet-mapping>
-  <servlet>
     <servlet-name>StudentAssignment</servlet-name>
-    <servlet-class>StudentAssignment</servlet-class>
+    <servlet-class>student.StudentAssignment</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>StudentAssignment</servlet-name>
@@ -135,7 +135,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>CreateNewCourse</servlet-name>
-    <servlet-class>CreateNewCourse</servlet-class>
+    <servlet-class>admin.CreateNewCourse</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>CreateNewCourse</servlet-name>
@@ -143,27 +143,43 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>EditCourse</servlet-name>
-    <servlet-class>EditCourse</servlet-class>
+    <servlet-class>admin.EditCourse</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>EditCourse</servlet-name>
     <url-pattern>/EditCourse</url-pattern>
   </servlet-mapping>
   <servlet>
-    <servlet-name>DownloadDefaultFile</servlet-name>
-    <servlet-class>DownloadDefaultFile</servlet-class>
+    <servlet-name>NewLmsCredential</servlet-name>
+    <servlet-class>admin.NewLmsCredential</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>DownloadDefaultFile</servlet-name>
-    <url-pattern>/DownloadDefaultFile</url-pattern>
+    <servlet-name>NewLmsCredential</servlet-name>
+    <url-pattern>/NewLmsCredential</url-pattern>
   </servlet-mapping>
   <servlet>
-    <servlet-name>DownloadOtherSchemas</servlet-name>
-    <servlet-class>DownloadOtherSchemas</servlet-class>
+    <servlet-name>EditLmsCredential</servlet-name>
+    <servlet-class>admin.EditLmsCredential</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>DownloadOtherSchemas</servlet-name>
-    <url-pattern>/DownloadOtherSchemas</url-pattern>
+    <servlet-name>EditLmsCredential</servlet-name>
+    <url-pattern>/EditLmsCredential</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>CreateUser</servlet-name>
+    <servlet-class>admin.CreateUser</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CreateUser</servlet-name>
+    <url-pattern>/CreateUser</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>EditUser</servlet-name>
+    <servlet-class>admin.EditUser</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>EditUser</servlet-name>
+    <url-pattern>/EditUser</url-pattern>
   </servlet-mapping>
   <servlet>
     <servlet-name>DownloadFile</servlet-name>
@@ -198,15 +214,6 @@
     <url-pattern>/SendEmail</url-pattern>
   </servlet-mapping>
   <servlet>
-    <servlet-name>ViewReport</servlet-name>
-    <servlet-class>ViewReport</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>ViewReport</servlet-name>
-    <url-pattern>/ViewReport</url-pattern>
-  </servlet-mapping>
-  
-    <servlet>
     <servlet-name>GuestStudentTestCase</servlet-name>
     <servlet-class>GuestStudentTestCase</servlet-class>
   </servlet>
@@ -214,8 +221,6 @@
     <servlet-name>GuestStudentTestCase</servlet-name>
     <url-pattern>/GuestStudentTestCase</url-pattern>
   </servlet-mapping>
-  
-  
   <servlet>
     <servlet-name>UpdateServlet</servlet-name>
     <servlet-class>database.UpdateServlet</servlet-class>
@@ -226,15 +231,23 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>EvaluateQuestion</servlet-name>
-    <servlet-class>EvaluateQuestion</servlet-class>
+    <servlet-class>instructor.EvaluateQuestion</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>EvaluateQuestion</servlet-name>
     <url-pattern>/EvaluateQuestion</url-pattern>
   </servlet-mapping>
   <servlet>
+    <servlet-name>QueryStatus</servlet-name>
+    <servlet-class>instructor.QueryStatus</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>QueryStatus</servlet-name>
+    <url-pattern>/QueryStatus</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <servlet-name>EvaluateAssignment</servlet-name>
-    <servlet-class>EvaluateAssignment</servlet-class>
+    <servlet-class>instructor.EvaluateAssignment</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>EvaluateAssignment</servlet-name>
@@ -242,7 +255,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>DeleteAssignments</servlet-name>
-    <servlet-class>DeleteAssignments</servlet-class>
+    <servlet-class>instructor.DeleteAssignments</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>DeleteAssignments</servlet-name>
@@ -250,7 +263,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>SchemaUpload</servlet-name>
-    <servlet-class>SchemaUpload</servlet-class>
+    <servlet-class>instructor.SchemaUpload</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>SchemaUpload</servlet-name>
@@ -258,7 +271,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>DeleteSchema</servlet-name>
-    <servlet-class>DeleteSchema</servlet-class>
+    <servlet-class>instructor.DeleteSchema</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>DeleteSchema</servlet-name>
@@ -266,7 +279,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>SampleDataUpload</servlet-name>
-    <servlet-class>SampleDataUpload</servlet-class>
+    <servlet-class>instructor.SampleDataUpload</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>SampleDataUpload</servlet-name>
@@ -274,7 +287,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>DeleteSampleData</servlet-name>
-    <servlet-class>DeleteSampleData</servlet-class>
+    <servlet-class>instructor.DeleteSampleData</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>DeleteSampleData</servlet-name>
@@ -290,7 +303,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>DeleteDatabaseConnection</servlet-name>
-    <servlet-class>DeleteDatabaseConnection</servlet-class>
+    <servlet-class>instructor.DeleteDatabaseConnection</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>DeleteDatabaseConnection</servlet-name>
@@ -298,11 +311,19 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>EditDatabaseConnection</servlet-name>
-    <servlet-class>EditDatabaseConnection</servlet-class>
+    <servlet-class>instructor.EditDatabaseConnection</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>EditDatabaseConnection</servlet-name>
     <url-pattern>/EditDatabaseConnection</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>DeleteQuestionWithQueries</servlet-name>
+    <servlet-class>instructor.DeleteQuestionWithQueries</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DeleteQuestionWithQueries</servlet-name>
+    <url-pattern>/DeleteQuestionWithQueries</url-pattern>
   </servlet-mapping>
   <servlet>
     <servlet-name>ShowSchemaFile</servlet-name>
@@ -314,7 +335,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>UpdateSingleQuery</servlet-name>
-    <servlet-class>UpdateSingleQuery</servlet-class>
+    <servlet-class>instructor.UpdateSingleQuery</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>UpdateSingleQuery</servlet-name>
@@ -322,15 +343,23 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>TestUploadedFile</servlet-name>
-    <servlet-class>TestUploadedFile</servlet-class>
+    <servlet-class>instructor.TestUploadedFile</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>TestUploadedFile</servlet-name>
     <url-pattern>/TestUploadedFile</url-pattern>
   </servlet-mapping>
   <servlet>
+    <servlet-name>UpdateDatabaseConnection</servlet-name>
+    <servlet-class>instructor.UpdateDatabaseConnection</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UpdateDatabaseConnection</servlet-name>
+    <url-pattern>/UpdateDatabaseConnection</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <servlet-name>UploadScore</servlet-name>
-    <servlet-class>UploadScore</servlet-class>
+    <servlet-class>instructor.UploadScore</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>UploadScore</servlet-name>
@@ -338,7 +367,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>UpdateMarks</servlet-name>
-    <servlet-class>UpdateMarks</servlet-class>
+    <servlet-class>instructor.UpdateMarks</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>UpdateMarks</servlet-name>
@@ -354,7 +383,7 @@
   </servlet-mapping>
   <servlet>
     <servlet-name>AssignmentScores</servlet-name>
-    <servlet-class>AssignmentScores</servlet-class>
+    <servlet-class>instructor.AssignmentScores</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>AssignmentScores</servlet-name>
@@ -380,8 +409,8 @@
     <error-code>404</error-code>
     <location>/errorPage.jsp</location>
   </error-page>
-  <session-config>
-    <session-timeout>30</session-timeout>
+  <session-config> 
+    <session-timeout>2</session-timeout>
   </session-config>
   <filter>
     <filter-name>SessionTimeOutFilter</filter-name>
@@ -393,6 +422,17 @@
   </filter-mapping>
   <filter-mapping>
     <filter-name>SessionTimeOutFilter</filter-name>
-    <url-pattern>/</url-pattern>
+    <url-pattern>/*</url-pattern>
   </filter-mapping>
+  
+  <filter>
+    <filter-name>AuthorizationFilter</filter-name>
+    <filter-class>AuthorizationFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>AuthorizationFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+    
+  </filter-mapping> 
+  
 </web-app>

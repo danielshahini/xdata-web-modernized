@@ -199,7 +199,7 @@ public class LoginChecker extends HttpServlet {
 													session.setAttribute("role",role);
 													response.sendRedirect("Empty.html");
 												}else if (role.equalsIgnoreCase("tester")) {
-													session.setAttribute("LOGIN_USER", "Tester");
+													session.setAttribute("LOGIN_USER", "tester");
 													session.setAttribute("role",role);
 													response.sendRedirect("Empty.html");
 												} else if(uname.equalsIgnoreCase("guest")){
@@ -274,7 +274,7 @@ public class LoginChecker extends HttpServlet {
 						pstmt.close();
 					}
 			/* }//For admin user - If login for first time, get password from config file and set in DB - Don't hash the password
-			//If it is consecutive admin login's, even then dont has the password
+			//If it is consecutive admin login's, even then dont hash the password
 			 else{
 				 dbCon = new DatabaseConnection().dbConnection();
 					PreparedStatement pstmt = dbCon
@@ -304,47 +304,6 @@ public class LoginChecker extends HttpServlet {
 					}
 			 }*/
 			
-			/*
-			 * Commented by shree strt
-			 * if((uname.equalsIgnoreCase("instructor")&&
-			 * pwd.equalsIgnoreCase("xdata!@#")) ||
-			 * (uname.equalsIgnoreCase("student")
-			 * &&pwd.equalsIgnoreCase("icde")))
-			 * 
-			 * { response.setContentType("text/html"); PrintWriter out2 =
-			 * response.getWriter();
-			 * 
-			 * if(uname.equalsIgnoreCase("instructor")){
-			 * session.setAttribute("LOGIN_USER", "ADMIN"); } else{
-			 * session.setAttribute("LOGIN_USER", "student"); }
-			 * 
-			 * response.sendRedirect("Empty.html");
-			 * 
-			 * return; commented by Shree end
-			 */
-			/*
-			 * BufferedReader reader = new BufferedReader(new
-			 * FileReader(request.
-			 * getSession().getServletContext().getRealPath("/"
-			 * )+"/instructorOptions.html")); String line = null; while ((line =
-			 * reader.readLine()) != null) { out2.println(line); } out2.close();
-			 * return;
-			 */
-			/*
-			 * commented by shree} else{ session.invalidate();
-			 * response.setContentType("text/html"); Commented by shree ends
-			 */
-			/*
-			 * PrintWriter out2 = response.getWriter(); out2.println("<html>"+
-			 * "<header><title>Error</title></header>"+ "<body>"+
-			 * "Invalid username/password"+ "</body>"+ "</html>"); out2.close();
-			 */
-
-			/*
-			 * commented by shree strt
-			 * response.sendRedirect("index.jsp?Login=false"); return;
-			 * }commented by shree end
-			 */
 
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE,e.getMessage(),e);
@@ -359,90 +318,7 @@ public class LoginChecker extends HttpServlet {
 				throw new ServletException(e);
 			}
 		}
-		/*
-		 * if(!LdapAuthentication(uname,pwd).equalsIgnoreCase("ok")) {
-		 * session.invalidate(); response.setContentType("text/html");
-		 * PrintWriter out2 = response.getWriter(); out2.println("<html>"+
-		 * "<header><title>Error</title></header>"+ "<body>"+
-		 * "Invalid username/password"+ "</body>"+ "</html>"); out2.close();
-		 * return; }
-		 */
-
-		/*
-		 * response.setContentType("text/html"); PrintWriter out_assignment =
-		 * response.getWriter(); out_assignment.println(
-		 * "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""+
-		 * "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
-		 * 
-		 * "<html xmlns=\"http://www.w3.org/1999/xhtml\">"+ "<head>"+
-		 * 
-		 * "<title>"+ "XData &middot; Assignment"+ "</title>"+
-		 * "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />"
-		 * +
-		 * 
-		 * 
-		 * "<script type=\"text/javascript\" src=\"scripts/wufoo.js\"></script>"+
-		 * 
-		 * "<link rel=\"stylesheet\" href=\"css/structure.css\" type=\"text/css\" />"
-		 * +
-		 * "<link rel=\"stylesheet\" href=\"css/form.css\" type=\"text/css\" />"
-		 * +
-		 * "<link rel=\"stylesheet\" href=\"css/theme.css\" type=\"text/css\" />"
-		 * +
-		 * 
-		 * "<link rel=\"canonical\" href=\"http://www.wufoo.com/gallery/designs/template.html\">"
-		 * +
-		 * 
-		 * "</head>"+
-		 * 
-		 * "<body id=\"public\">"+
-		 * 
-		 * "<div id=\"container\">"+
-		 * 
-		 * 
-		 * "<form class=\"wufoo\" action=\"ViewAssignment\" method=\"get\">"+
-		 * 
-		 * "<div class=\"info\">"+ "<h2>Assignments</h2>"+ "</div>");
-		 * 
-		 * String assignments="select * from assignment"; try {
-		 * PreparedStatement pstmt=dbcon.prepareStatement(assignments);
-		 * ResultSet rst=pstmt.executeQuery();
-		 * out_assignment.println("<table border=\"1\">");
-		 * out_assignment.println("<tr>"+ "<td>Assignment Number</td>"+
-		 * "<td> Start time</td>"+ "<td> End time</td>"+ "<td> </td>"+
-		 * "<td> </td>"+ "</tr>"); while(rst.next()) { String edit="";
-		 * java.util.Date date= new java.util.Date(); Timestamp ts=new
-		 * Timestamp(date.getTime()); if(ts.after(rst.getTimestamp("end_time")))
-		 * { edit="";
-		 * 
-		 * } else {
-		 * edit="<input type=\"submit\" name="+rst.getInt("assignment_id"
-		 * )+"E value=\"Solve\" /> "; } out_assignment.println("<tr>"+
-		 * "<td>Assignment "+rst.getInt("assignment_id") +"</td>"+
-		 * "<td>"+rst.getTimestamp("start_time")+"</td>"+
-		 * "<td>"+rst.getTimestamp("end_time")+"</td>"+ "<td> "+edit+"</td>"+
-		 * "<td> <input type=\"submit\" name="
-		 * +rst.getInt("assignment_id")+"V Value=\"Result\" /> </td>"+ "</tr>");
-		 * } rst.close(); out_assignment.println("</table>"); } catch
-		 * (SQLException e3) { // TODO Auto-generated catch block
-		 * e3.printStackTrace(); } if(session.getAttribute("login")==null) {
-		 * session.setAttribute("login", uname);
-		 * System.out.println("login added"); }
-		 * 
-		 * out_assignment.println(
-		 * "<p><p><p><p><p><p><a href=\"index.jsp\">logout</a>");
-		 * out_assignment.println("</form>"+
-		 * 
-		 * "</div>"+
-		 * 
-		 * 
-		 * "<!-- End Page Content -->"+
-		 * 
-		 * "</body>"+
-		 * 
-		 * "</html>"); out_assignment.close(); try{ dbcon.close(); }
-		 * catch(SQLException e){} catch(NullPointerException e){}
-		 */
+		
 
 	}
 

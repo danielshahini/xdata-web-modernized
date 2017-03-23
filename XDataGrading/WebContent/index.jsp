@@ -29,6 +29,11 @@
 		function chkSession(){	
 			
 			if(getParameterByName("TimeOut") != ""){ 
+				//if(self.parent != null && self.parent.document != null && self.parent.document.getElementById('container') != null ) {
+				if(self.location != self.parent.location){
+					self.parent.location = "index.jsp";
+				}
+				//}
 				alert("The session has expired, Please relogin.");	
 				
 			} else if(getParameterByName("NotAuthorised") != ""){

@@ -466,46 +466,23 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  	
 			  		</tr>
 			  		<%} %> 
-			  		<%if( (q.StudentInnerJoins != null && q.StudentInnerJoins.size() > 0) 
-			  				|| (q.InstructorInnerJoins != null && q.InstructorInnerJoins.size() > 0)){ %>
-			  		<tr>
-			  		<td class="emph">No. of Inner Joins</td>
-			  			<% if(q.StudentInnerJoins !=q.InstructorInnerJoins){%>
-			  			<td  style="color: red;">
-			  			<%}else{ %>
-			  			<td >
-			  			<%} %>			  			
-			  		<%=q.StudentInnerJoins %></td>
-			  		<% if(q.StudentInnerJoins !=q.InstructorInnerJoins){%>
-			  			<td  style="color: red;">
-			  			<%}else{ %>
-			  			<td >
-			  			<%} %>
-			  			<%=q.InstructorInnerJoins %></td>
-			  
-			  		</tr>
-			  		<%} %> 
-			  		<%if( (q.StudentOuterJoins != null && q.StudentOuterJoins.size() > 0) 
-			  				|| (q.InstructorOuterJoins != null && q.InstructorOuterJoins.size() > 0)){ %>%>
-			  		<tr>
-			  		<td class="emph">Outer Joins</td>
 			  		
-			  		<% if(q.StudentOuterJoins != q.InstructorOuterJoins){%>
-			  			<td  style="color: red;">
-			  			<%}else{ %>
-			  			<td >
-			  			<%} %><%=q.StudentOuterJoins %></td>
-			  		
-						<% if(q.StudentOuterJoins != q.InstructorOuterJoins){%>
-			  			<td  style="color: red;">
-			  			<%}else{ %>
-			  			<td >
-			  			<%} %>
-			  			
-			  			<%=q.InstructorOuterJoins %></td>
-			  	
+			  		<%if(q.StudentInnerJoins != null && q.StudentInnerJoins.size() > 0
+			  			||( q.InstructorInnerJoins != null && q.InstructorInnerJoins.size() > 0)){ %>
+			  		<tr>
+			  		<td class="emph">Inner Join Conditions</td>
+			  		<td ><%= listToString(q.StudentInnerJoins,q.InstructorInnerJoins)%></td>
+			  		<td ><%= listToString(q.InstructorInnerJoins,q.StudentInnerJoins)%></td>
 			  		</tr>
-			  		<%} %> 
+			  		<%} %>
+			  		<%if(q.StudentOuterJoins != null && q.StudentOuterJoins.size() > 0
+			  			||( q.InstructorOuterJoins != null && q.InstructorOuterJoins.size() > 0)){ %>
+			  		<tr>
+			  		<td class="emph">Outer Join Conditions</td>
+			  		<td ><%= listToString(q.StudentOuterJoins,q.InstructorOuterJoins)%></td>
+			  		<td ><%= listToString(q.InstructorOuterJoins,q.StudentOuterJoins)%></td>
+			  		</tr>
+			  		<%} %>
 			  		</table>
 			  		
 			  		</div>

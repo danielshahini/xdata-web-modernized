@@ -137,7 +137,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	return;
 }
 else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
-	&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+	&& session.getAttribute("role") != null &&  (!session.getAttribute("role").equals("instructor") || !session.getAttribute("role").equals("tester"))){
 response.sendRedirect("index.jsp?NotAuthorised=true");
 session.invalidate();
 return;

@@ -203,7 +203,7 @@ public class StudentTestCase extends HttpServlet {
 			"</div>"   
 			+"<p align=\"left\"> <strong> Your Answer: </strong>"+ "<pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(request.getParameter("query")))+"</code></pre></p>");
 
-		if(status.equals("Error")){
+		if(status.equalsIgnoreCase("Error")){
 			out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:red;'>Error</label></div>");
 			out_assignment.println("<br/><div style = 'font-weight:bold'>Message: <span style='font-weight:normal;'>Sorry, your query could not be executed. Please check the syntax and try again.</span></div>");
 			String message = request.getParameter("Error");
@@ -212,7 +212,7 @@ public class StudentTestCase extends HttpServlet {
 				out_assignment.println("<br/><div style = 'font-weight:bold'> Error Message: <span style='font-weight:normal;'>" + CommonFunctions.decodeURIComponent(message) + "</span></div>");
 			}
 		}
-		if(status.equals("NoDataset")){
+		if(status.equalsIgnoreCase("NoDataset")){
 			out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:red;'>Error</label></div>");
 			out_assignment.println("<br/><div style = 'font-weight:bold'>Message: <span style='font-weight:normal;'>Not answered</span></div>");
 			String message = "Please answer the question.";
@@ -221,19 +221,19 @@ public class StudentTestCase extends HttpServlet {
 				//out_assignment.println("<br/><div style = 'font-weight:bold'> Error Message: <span style='font-weight:normal;'>" + CommonFunctions.decodeURIComponent(message) + "</span></div>");
 			}
 		} 
-		else if(!learningMode && status.equals("Correct")){
+		else if(!learningMode && status.equalsIgnoreCase("Correct")){
 			//out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:green'> Submitted </label><label style='font-weight:normal;'> Your answer is submitted. </label> </div>");
 			out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:green'> Ok </label><label style='font-weight:normal;'> - Your query has passed the basic test case. This does not guarantee the correctness of the answer. Your answer will be graded based on result against all other test cases.</label> </div>");
 		}
-		else if(!learningMode && status.equals("Incorrect")){
+		else if(!learningMode && status.equalsIgnoreCase("Incorrect")){
 			out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:red'>Incorrect  </label><label style='font-weight:normal;'> - Your query has failed the basic test case.</label> </div>");
 			//out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:red'>Incorrect  </label><label style='font-weight:normal;'> Some parsing error occurred. Please check the answer.</label> </div>");
 		}  
-		else if(status.equals("Correct")){
+		else if(status.equalsIgnoreCase("Correct")){
 			//This part of code wont be reached. This can be removed after proper testing
 			out_assignment.println("<div style = 'font-weight: bold'>Status: <label style = 'color:green'> Ok </label><label style='font-weight:normal;'> - Your query has passed the test cases.</label> </div>");
 		}
-		else if(status.equals("Incorrect")){
+		else if(status.equalsIgnoreCase("Incorrect")){
 			out_assignment.println("<br/><div style = 'font-weight: bold'>Status: <label style = 'color:red;'>Incorrect</label></div>");
 		}
 		out_assignment.println("<br/>");
@@ -245,7 +245,7 @@ public class StudentTestCase extends HttpServlet {
 			/**Get correct Query and Student Query **/
 			//If request is from graded assignment to view test cases for incorrect answers
 			if((isViewGradedAssignment && status.equalsIgnoreCase("Incorrect"))
-					|| (learningMode && status.equals("Incorrect"))){
+					|| (learningMode && status.equalsIgnoreCase("Incorrect"))){
 				String failedDataSets = "select result from xdata_student_queries where rollnum =? and assignment_id= ? and question_id = ?";
 				String sel_dataset = "select tag,value from xdata_datasetvalue where datasetid =? and assignment_id= ? and question_id=? and query_id=?";
 				try(PreparedStatement stmt1=dbCon.prepareStatement(failedDataSets)){
@@ -271,7 +271,7 @@ public class StudentTestCase extends HttpServlet {
 								}
 				        }
 					//**************  Show Failed DataSets ***********************//
-					while(resultSet.next() && !status.equals("Error") && !status.equals("Correct")){
+					while(resultSet.next() && !status.equalsIgnoreCase("Error") && !status.equalsIgnoreCase("Correct")){
 						String resultdsf = "";
 						//Get resultSet and divide it into datasets 
 						String ans = resultSet.getString("result");

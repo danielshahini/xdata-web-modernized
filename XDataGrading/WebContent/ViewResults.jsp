@@ -42,14 +42,14 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;
 }else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
- 		&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+ 		&& session.getAttribute("role") != null && (!session.getAttribute("role").equals("instructor") || !session.getAttribute("role").equals("tester"))){
 	response.sendRedirect("index.jsp?NotAuthorised=true");
 	session.invalidate();
 	return;
 }
 
 if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
-		%> 
+		%>
 <div id="breadcrumbs"> 
   <a style='color:#353275;text-decoration: none;' href="CourseHome.jsp" target="_top">Home</a> &nbsp; >> &nbsp;
    <a href="InstructorHome.jsp?contextLabel=<%=(String) request.getSession().getAttribute("context_label")%>" style='color:#353275;text-decoration: none;' target="_top"><%=(String) request.getSession().getAttribute("context_label")%></a>&nbsp; >> &nbsp;

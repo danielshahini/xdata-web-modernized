@@ -1,0 +1,48 @@
+#name of the database to be used
+databaseName=xdata
+
+#database user name- 
+existingDatabaseUser=testing1
+#password
+existingDatabaseUserPasswd=testing1
+
+
+# Address of database server--10....14
+databaseIP=info.cse.iitb.ac.in
+databasePort=5434
+
+#Home directory (not required for parsing)
+
+homeDir=/home/xdata/
+
+#Path to SMT Solver; update it to the location where you will be installing the cvc3 executable
+smtsolver=cvc3
+
+#directory of scripts (not required for parsing)
+scriptsDir=/home/xdata/mtp/scripts
+
+#directory for xml files for appTesting (not required for parsing)
+dataDir=/home/xdata/data
+
+#Consumer Auth Key for LTI integration
+consumerAuthKey=iitb.ac.in
+
+#Secret key for LTI Integration
+secretKey=XdataApp
+
+#Call back URL of the LTI system to upload marks
+callBackURL=moodle.iitb.ac.in
+
+# Xdata URL expected for OAUTH authentication for LMS in the presence of proxy  
+# Ex: Moodle sends url - info.cse.iitb.ac.in:8280/xdata/demo/tool.jsp
+# but XDATA should authenticate the signature against http://www.cse.iitb.ac.in/infolab/xdata/demo/tool.jsp
+# Make sure there is no additional space after the url
+XDataUrlFromLMS = http://www.cse.iitb.ac.in/infolab/xdata/demo/tool.jsp
+
+#Default password for admin login
+adminPassword = XD59
+
+
+#Log files configuration
+logFile=/home/xdata/apache-tomcat-7.0.54/logs/XData.log
+logLevel=INFO

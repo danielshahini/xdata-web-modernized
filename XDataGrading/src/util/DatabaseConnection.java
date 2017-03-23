@@ -189,7 +189,7 @@ public class DatabaseConnection {
 									//testerConn = dbConnection.getConnection(dbDetails);
 									TesterDatasource dataSource = new TesterDatasource();
 									//alternate db access
-									if(course_id.equals("AutomatedTesting")){
+									if(course_id.equalsIgnoreCase("AutomatedTesting")){
 									   testerConn = this.alternateDBAccess(dbDetails);
 									}else{
 										testerConn = dataSource.getConnection(dbDetails);

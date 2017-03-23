@@ -416,7 +416,7 @@ font-size: 14px;
 font-style: normal;
 }
 .fieldset #loadDefaultDataSets{
-	height:80px;
+	height:100px;
 	width:120%;	
 }
 .fieldset  #loadDefaultDataSets input{
@@ -460,7 +460,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;
 }else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOGIN_USER").equals("ADMIN")
- 		&& session.getAttribute("role") != null && !session.getAttribute("role").equals("instructor")){
+ 		&& session.getAttribute("role") != null &&(!session.getAttribute("role").equals("instructor") || !session.getAttribute("role").equals("tester"))){
 	response.sendRedirect("index.jsp?NotAuthorised=true");
 	session.invalidate();
 	return;
