@@ -58,7 +58,7 @@ public class AuthorizationFilter implements Filter {
 				  && (!req.getServletPath().contains(".js") || !req.getServletPath().contains(".jsp") || !req.getServletPath().contains(".css"))
 				){
 				if( !isUserAuthorised(req)){
-				  if(session!= null){   
+				  if(session != null){   
 					   	session.invalidate();
 				   } 
 			   	   res.setHeader("Cache-Control","no-cache"); 
@@ -94,7 +94,9 @@ public class AuthorizationFilter implements Filter {
 		 
 		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role").equals("instructor")){
 			 
-			 if( path.contains(".html") || path.contains(".jsp") ||  path.contains("AssignmentChecker")|| path.contains("AssignmentOptions")|| path.contains("InitAssignment")|| path.contains("FailedTestCases")
+			 if( path.contains(".html") || path.contains(".jsp") ||  path.contains(".swf") ||  path.contains(".js")||  path.contains(".css") ||  path.contains(".jpeg") ||  path.contains(".gif")||  path.contains(".png")||  path.contains(".jpg") ||  path.contains(".pdf")    
+					 || path.contains("AssignmentChecker")|| path.contains("AssignmentOptions")
+					 || path.contains("InitAssignment")|| path.contains("FailedTestCases")
 					 || path.contains("GetDefaultDataSets") || path.contains("GetQuestionsForLateSumbission")|| path.contains("LateSubmission")|| path.contains("PartialMarkingParamsPerInstrQuery") 
 					 || path.contains("ShowDatasets") || path.contains("StudentTestCase")|| path.contains("DownloadFile") || path.contains("TestCaseDataset")|| path.contains("ViewAssignment")
 					 || path.contains("GuestStudentTestCase") || path.contains("UpdateServlet")|| path.contains("EvaluateQuestion") || path.contains("QueryStatus")
@@ -110,7 +112,8 @@ public class AuthorizationFilter implements Filter {
 		 }
 		 if(session.getAttribute("LOGIN_USER") != null && (session.getAttribute("role").equals("student") ||  session.getAttribute("role").equals("guest"))){
 			 
-			 if( path.contains(".html") || path.contains(".jsp") ||  path.contains("AssignmentOptions") || path.contains("InitAssignment")|| path.contains("FailedTestCases") 
+			 if( path.contains(".html") || path.contains(".jsp") ||  path.contains(".swf")  ||  path.contains(".js")||  path.contains(".css") ||  path.contains(".jpeg") ||  path.contains(".gif")||  path.contains(".png")||  path.contains(".jpg") ||  path.contains(".pdf")
+					 ||  path.contains("AssignmentOptions") || path.contains("InitAssignment")|| path.contains("FailedTestCases") 
 					 || path.contains("StudentAssignment")|| path.contains("StudentTestCase") || path.contains("DownloadFile")|| path.contains("TestCaseDataset") || path.contains("ViewAssignment")
 				 || path.contains("GuestStudentTestCase")|| path.contains("UpdateServlet")
 				 ){
@@ -119,7 +122,8 @@ public class AuthorizationFilter implements Filter {
 		 }
 		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role").equals("tester")){
 			 
-			 if( path.contains(".html") || path.contains(".jsp") ||  path.contains("AssignmentOptions")|| path.contains("InitAssignment") 
+			 if( path.contains(".html") || path.contains(".jsp") ||   path.contains(".swf")  ||  path.contains(".js")||  path.contains(".css") ||  path.contains(".jpeg") ||  path.contains(".gif")||  path.contains(".png")||  path.contains(".jpg") ||  path.contains(".pdf")
+					 || path.contains("AssignmentOptions")|| path.contains("InitAssignment") 
 					 || path.contains("FailedTestCases")|| path.contains("MatchResult")|| path.contains("GetDefaultDataSets") || path.contains("ShowDatasets")
 					 || path.contains("CheckQueryEquivalence") || path.contains("DownloadFile")|| path.contains("TestCaseDataset") || path.contains("ViewAssignment")
 					 || path.contains("UpdateServlet")|| path.contains("QueryStatus") || path.contains("DeleteAssignments")
