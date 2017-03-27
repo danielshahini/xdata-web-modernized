@@ -62,7 +62,7 @@ public class SessionTimeOutFilter implements Filter {
 			   //If session is not valid
 			   if (isSessionInvalid(req)) { 
 				 
-				String timeoutUrl =  "index.jsp?TimeOut=true";  
+				   String timeoutUrl =  "index.jsp?TimeOut=true";  
 				
 				System.out.println("Request ContextPath for redirection : "+req.getContextPath());
 				System.out.println("Local address for redirection : "+request.getLocalAddr());
@@ -107,7 +107,17 @@ public class SessionTimeOutFilter implements Filter {
 			 controlRequired  = !httpServletRequest.getServletPath().contains("index.jsp") 
 					 && !httpServletRequest.getServletPath().contains("tool.jsp") 
 					 && !httpServletRequest.getServletPath().contains("LtiLogout.jsp")
-					 &&  !httpServletRequest.getServletPath().contains("LoginChecker");
+					 &&  !httpServletRequest.getServletPath().contains("LoginChecker")
+			 		 && !httpServletRequest.getServletPath().contains(".html") 
+			 		 && !httpServletRequest.getServletPath().contains(".jsp") 
+			 		 && !httpServletRequest.getServletPath().contains(".swf")
+			 		 && !httpServletRequest.getServletPath().contains(".js")
+			 		 && !httpServletRequest.getServletPath().contains(".css") 
+			 		 && !httpServletRequest.getServletPath().contains(".jpeg") 
+			 		 && !httpServletRequest.getServletPath().contains(".gif")
+			 		 && !httpServletRequest.getServletPath().contains(".png")
+			 		 && !httpServletRequest.getServletPath().contains(".jpg") 
+			 		 && !httpServletRequest.getServletPath().contains(".pdf");
 			 		
 		 } 
 		 //check if the request is from the login page. case on refreshing login page

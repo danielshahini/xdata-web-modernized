@@ -10,12 +10,12 @@
     <meta http-equiv="pragma" content="no-cache" /> 
     <meta http-equiv="Cache-control" content="no-store"> 
     <meta http-equiv="Window-Target" content="_top">
-	<link rel="stylesheet" href="css/structure.css"/>  
-	<link rel="stylesheet" href="css/reset.css"/>
-	<link rel="stylesheet" href="css/animate.css"/>
-	<link rel="stylesheet" href="css/styles.css"/> 
-	<script type="text/javascript" src = "scripts/jquery.js"></script>
-	<script type="text/javascript" src = "scripts/jquery.js"></script>
+    	<script type="text/javascript" src = "scripts/jquery.js"></script>
+	<link rel="stylesheet" href="css/structure.css" type="text/css"/>  
+	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
+	<link rel="stylesheet" href="css/animate.css" type="text/css"/>
+	<link rel="stylesheet" href="css/styles.css" type="text/css"/> 
+
 	<script type="text/javascript" src = "scripts/jquery-ui.js"></script>
 	<title>Login</title>  
 	<script type="text/javascript">
@@ -40,7 +40,7 @@
 				alert("You are not authorised to view this page. Please relogin.");					
 			}
 		}    
-		$( document ).ready(function() {
+		$(document ).ready(function() {
 			
 			if(getParameterByName("Login") != ""){
 				$('#loginMessage').show();

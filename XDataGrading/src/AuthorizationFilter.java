@@ -55,7 +55,9 @@ public class AuthorizationFilter implements Filter {
 				 && !req.getServletPath().contains("LoginChecker")
 				  && !req.getServletPath().contains("Logout")
 				 && !req.getRequestURI().contains("index.jsp")
-				  && (!req.getServletPath().contains(".js") || !req.getServletPath().contains(".jsp") || !req.getServletPath().contains(".css"))
+				  && !req.getServletPath().contains(".js") 
+						  && !req.getServletPath().contains(".jsp") 
+						  && !req.getServletPath().contains(".css")
 				){
 				if( !isUserAuthorised(req)){
 				  if(session != null){   
@@ -76,11 +78,11 @@ public class AuthorizationFilter implements Filter {
 		}
 	}
 
-	 private boolean isUserAuthorised(HttpServletRequest req){
+	 private boolean isUserAuthorised(HttpServletRequest req){ 
 		 boolean isAuthorised = false;
 		 HttpSession session = req.getSession(false); 
 		 String path = ((HttpServletRequest) req).getServletPath();
-		 //If user is admin; - ADMIN can have access to all pages - plz clarify
+		 //If user is admin; - ADMIN can have access to all pages - plz clarify 
 		 /*if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role").equals("admin")){
 			 if(path.contains("LoginChecker") || path.contains("AssignmentOptions") || path.contains("InitAssignment")|| path.contains("FailedTestCases") || path.contains("DeleteLtiSetup") 
 					 || path.contains("AssignRole") ||  path.contains("CreateNewCourse")  ||  path.contains("EditCourse") || path.contains("NewLmsCredential") || path.contains("EditLmsCredential")
@@ -92,7 +94,7 @@ public class AuthorizationFilter implements Filter {
 			 
 		 }else*/
 		 
-		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role").equals("instructor")){
+		 if(session.getAttribute("LOGIN_USER") != null &&session.getAttribute("role") != null &&  session.getAttribute("role").equals("instructor")){
 			 
 			 if( path.contains(".html") || path.contains(".jsp") ||  path.contains(".swf") ||  path.contains(".js")||  path.contains(".css") ||  path.contains(".jpeg") ||  path.contains(".gif")||  path.contains(".png")||  path.contains(".jpg") ||  path.contains(".pdf")    
 					 || path.contains("AssignmentChecker")|| path.contains("AssignmentOptions")
@@ -110,7 +112,7 @@ public class AuthorizationFilter implements Filter {
 				 return true;
 			 }
 		 }
-		 if(session.getAttribute("LOGIN_USER") != null && (session.getAttribute("role").equals("student") ||  session.getAttribute("role").equals("guest"))){
+		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role") !=null && (session.getAttribute("role").equals("student") ||  session.getAttribute("role").equals("guest"))){
 			 
 			 if( path.contains(".html") || path.contains(".jsp") ||  path.contains(".swf")  ||  path.contains(".js")||  path.contains(".css") ||  path.contains(".jpeg") ||  path.contains(".gif")||  path.contains(".png")||  path.contains(".jpg") ||  path.contains(".pdf")
 					 ||  path.contains("AssignmentOptions") || path.contains("InitAssignment")|| path.contains("FailedTestCases") 
@@ -120,7 +122,7 @@ public class AuthorizationFilter implements Filter {
 				 return true;
 			 }
 		 }
-		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role").equals("tester")){
+		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role") != null && session.getAttribute("role").equals("tester")){
 			 
 			 if( path.contains(".html") || path.contains(".jsp") ||   path.contains(".swf")  ||  path.contains(".js")||  path.contains(".css") ||  path.contains(".jpeg") ||  path.contains(".gif")||  path.contains(".png")||  path.contains(".jpg") ||  path.contains(".pdf")
 					 || path.contains("AssignmentOptions")|| path.contains("InitAssignment") 

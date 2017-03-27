@@ -16,8 +16,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Assignment List</title>
 <!-- <script type="text/javascript" src="scripts/wufoo.js"></script>-->
-<link rel="stylesheet" href="highlight/styles/xcode.css"/>  
-<link rel="stylesheet" href="highlight/styles/default.css"/>
+<link rel="stylesheet" href="highlight/styles/xcode.css" type="text/css"/>  
+<link rel="stylesheet" href="highlight/styles/default.css" type="text/css"/>
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>
 <script src="highlight/highlight.pack.js"></script>
 <script type="text/javascript" src = "scripts/jquery.js"></script>
