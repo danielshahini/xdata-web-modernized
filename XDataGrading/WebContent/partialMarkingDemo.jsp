@@ -133,7 +133,7 @@ $(document).on('click', '.queryBox' ,function (event) {
 	  	
 	  	+"<div style='height: 25px; width:100%'>"
 	  	+"<b><a data-toggle=\"modal\" data-target=\"#PartialParamModal"+counter+"\" "
-		+	"href=\"PartialMarkingParamsPerInstrQuery?reqFrom=demo&&assignment_id=0&question_id="+counter+"&query_id=0\">View/Edit partial marking parameters</a></b></td></div>"
+		+	"href=\"PartialMarkingParamsPerInstrQuery?reqFrom=demo&&assignment_id=1&question_id="+counter+"&query_id=1\">View/Edit partial marking parameters</a></b></td></div>"
 	
 				
 		+ '<br/><input type="button" class="remove" id="remove" name="" value="Delete">'
@@ -247,7 +247,6 @@ $(document).on('click','#getPartialMarks',function (event) {
     }
   	 var dataString = "instructorQuery="+ query +'&&studentQuery='+document.getElementById("textarea-1").value+
     '&&canonicalize='+isCanonicalized;
-   //alert("dataString ="+ dataString);
 	var index = this.name;
 	var self = this; 
 	$.ajax({ 
@@ -260,6 +259,7 @@ $(document).on('click','#getPartialMarks',function (event) {
 	        		//Get the html content and display it in a div
 	        		$('#showCanonicalizationResult').html( data );
 	        		$('html,body').animate({ scrollTop: $("#showCanonicalizationResult").offset().top-10});	
+	   
 				} 
         		catch(err)
         		{	
@@ -275,6 +275,7 @@ $(document).on('click','#getPartialMarks',function (event) {
 	        	}
             }
 	      }); 
+		
 	      return false; 
 });
 

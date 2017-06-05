@@ -51,7 +51,6 @@ public class PartialMarkingDemo extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	
-		
 		HttpSession session = request.getSession(false);
 		String loginUsr = "";
 		loginUsr = (String) session.getAttribute("LOGIN_USER");
@@ -79,7 +78,7 @@ public class PartialMarkingDemo extends HttpServlet {
 		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		Exception caughtException=null;
 		
-		int assignId=11;  //Hard code some existing assignment ID here and in TestPartialMarking.java - process and process canonicalize methods
+		int assignId=1;  //Hard code some existing assignment ID here and in TestPartialMarking.java - process and process canonicalize methods
 		String err= "";
 		int index =1;
 				PrintWriter out = response.getWriter();

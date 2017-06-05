@@ -82,8 +82,7 @@ public class AuthorizationFilter implements Filter {
 		 boolean isAuthorised = false;
 		 HttpSession session = req.getSession(false); 
 		 String path = ((HttpServletRequest) req).getServletPath();
-		 //If user is admin; - ADMIN can have access to all pages - plz clarify 
-		 /*if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role").equals("admin")){
+		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role").equals("admin")){
 			 if(path.contains("LoginChecker") || path.contains("AssignmentOptions") || path.contains("InitAssignment")|| path.contains("FailedTestCases") || path.contains("DeleteLtiSetup") 
 					 || path.contains("AssignRole") ||  path.contains("CreateNewCourse")  ||  path.contains("EditCourse") || path.contains("NewLmsCredential") || path.contains("EditLmsCredential")
 					 || path.contains("CreateUser") || path.contains("EditUser") 
@@ -92,7 +91,7 @@ public class AuthorizationFilter implements Filter {
 				 
 			 }
 			 
-		 }else*/
+		 }
 		 
 		 if(session.getAttribute("LOGIN_USER") != null &&session.getAttribute("role") != null &&  session.getAttribute("role").equals("instructor")){
 			 
@@ -107,7 +106,7 @@ public class AuthorizationFilter implements Filter {
 					 || path.contains("EditDatabaseConnection")|| path.contains("DeleteQuestionWithQueries")|| path.contains("ShowSchemaFile") 
 					 || path.contains("UpdateSingleQuery") || path.contains("TestUploadedFile")|| path.contains("UpdateDatabaseConnection") || path.contains("UploadScore")
 					 || path.contains("UpdateMarks") || path.contains("PartialMarkerServlet")|| path.contains("AssignmentScores")
-					 					
+					 || path.contains("PartialMarkingDemo")					
 					 ){
 				 return true;
 			 }
