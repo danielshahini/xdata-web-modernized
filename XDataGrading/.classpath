@@ -18,6 +18,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/oauth-1.4.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/unboundid-ldapsdk-se.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xdata.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jsqlparser.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
@@ -37,6 +38,5 @@
 	<classpathentry kind="lib" path="Jars/javax.servlet-3.0.0.v201112011016.jar"/>
 	<classpathentry kind="lib" path="Jars/javax.servlet.jsp-2.2.0.v201112011158.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/XData"/>
-	<classpathentry kind="lib" path="Jars/jsqlparser.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
