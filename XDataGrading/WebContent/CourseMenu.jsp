@@ -124,30 +124,23 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					dbcon = (new DatabaseConnection()).dbConnection();
 					PreparedStatement stmt;
 					//stmt = dbcon.prepareStatement("SELECT * FROM  xdata_course");
-					stmt = dbcon.prepareStatement("select instructor_course_id, year from xdata_course xc inner join xdata_roles xr on xc.instructor_course_id = xr.course_id where internal_user_id =? and role = ?");
+					stmt = dbcon.prepareStatement("select instructor_course_id, year from xdata_course xc inner join xdata_roles xr on xc.instructor_course_id = xr.course_id where internal_user_id =? and role = ? order by year desc");
 					stmt.setString(1,userId);
 					stmt.setString(2,role);
 					ResultSet rs = stmt.executeQuery();
 					Calendar c = Calendar.getInstance();
 					int year = c.get(Calendar.YEAR);
-					while(rs.next()){
+					while(rs.next())
+					{
 							//output +="<input name=\"View\" type=\"button\" id=\""
 								//	+rs.getString("instructor_course_id")+"\" value=\"View\" onclick=\"setSessionParam(this.id)\">";
-								if(year == rs.getInt("year")){
-									//Show course ids for current year assignments
-									%>
-									<li><a href="selectMode.jsp?contextLabel=<%=rs.getString("instructor_course_id")%>" target="_top"><%=rs.getString("instructor_course_id")%></a></li>									
-								<% 
-								} 
-								else{// check if course other than this year's exists
-									isCourseExist = true;
-								}
-					}
-					if(isCourseExist){
-					//Link to show all course id's
+						
+					//Show course ids for all years in reverse order of year
 					%>
-					<li><a class="header" target="rightPage" href="ViewCourseList.jsp?showAll=true;"><b>Show All</b> </a> </li>
-					<%}
+					<li><a href="selectMode.jsp?contextLabel=<%=rs.getString("instructor_course_id")%>" target="_top"><%=rs.getString("instructor_course_id")%> (<%=rs.getInt("year") %>)</a></li>									
+					<% 
+						
+					}
 				}catch (Exception err) {
 	
 					err.printStackTrace();
