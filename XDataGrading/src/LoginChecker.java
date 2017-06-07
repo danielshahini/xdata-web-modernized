@@ -238,17 +238,40 @@ public class LoginChecker extends HttpServlet {
 										}	
 							}else if(uname.equalsIgnoreCase("admin")){		
 								//First login, so insert login credentials in DB
-								PreparedStatement pstmt1 = dbCon
-										.prepareStatement("insert into xdata_users (internal_user_id,user_name,login_user_id,password) values(?,?,?,?)");
-								pstmt1.setString(1,"XD1");
-								pstmt1.setString(2,"Administrator");
-								pstmt1.setString(3, uname);
-								pstmt1.setString(4, Configuration.getProperty("adminPassword"));
+								//checking for first time login by an admin using 'tag' 
+								PreparedStatement pstmt_adminCheck = dbCon
+										.prepareStatement("select * from xdata_users where login_user_id ='admin'");
 								
-								pstmt1.executeQuery(); 
-								session.setAttribute("LOGIN_USER", "ADMIN");
-								session.setAttribute("role",role);
-								response.sendRedirect("adminHome.jsp");
+								ResultSet rs1 = null;
+					
+								rs1 =pstmt_adminCheck.executeQuery(); 
+								boolean tag=false;
+								//logger.log(Level.FINE,pstmt.toString());
+								if(rs1.next()){ 
+									tag=true;
+								}
+								if(tag==false)
+								{
+									//if first time login by admin, insert admin credentials
+									PreparedStatement pstmt1 = dbCon
+											.prepareStatement("insert into xdata_users (internal_user_id,user_name,login_user_id,password) values(?,?,?,?)");
+									pstmt1.setString(1,"XD1");
+									pstmt1.setString(2,"Administrator");
+									pstmt1.setString(3, uname);
+									pstmt1.setString(4, Configuration.getProperty("adminPassword"));
+									
+									pstmt1.executeQuery(); 
+									session.setAttribute("LOGIN_USER", "ADMIN");
+									session.setAttribute("role",role);
+									response.sendRedirect("adminHome.jsp");
+								}
+								else
+								{
+									//admin password incorrect-  not first time login !
+									session.invalidate();
+									response.setContentType("text/html");
+									response.sendRedirect("index.jsp?Login=false");
+								}
 								
 							}else{
 								session.invalidate();
