@@ -227,6 +227,10 @@ $('.nav-tabs > li > a').click(function(event){
   /*Method to compute the partial marks using ajax call*/
 $(document).on('click','#getPartialMarks',function (event) {
 	
+	var sch = document.getElementById("id_schema");
+	var id_schema = sch.options[sch.selectedIndex].value;
+	var db = document.getElementById("id_dbconnection");
+	var id_dbconnection = db.options[db.selectedIndex].value;
 	event.preventDefault();
 	 var isCanonicalized;
     if ($('#canonicalize').is(":checked")){
@@ -246,7 +250,7 @@ $(document).on('click','#getPartialMarks',function (event) {
     	//alert("i = "+edt);
     }
   	 var dataString = "instructorQuery="+ query +'&&studentQuery='+document.getElementById("textarea-1").value+
-    '&&canonicalize='+isCanonicalized;
+    '&&canonicalize='+isCanonicalized+'&&dbConnectionId='+id_dbconnection+'&&schemaId='+id_schema; 
 	var index = this.name;
 	var self = this; 
 	$.ajax({ 
@@ -450,6 +454,65 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	return;
 }
 
+%>
+<%
+	String courseId = (String) request.getSession().getAttribute(
+			"context_label");
+	//get the connection for testing1
+	Connection dbcon = (new DatabaseConnection()).dbConnection();
+	try {
+		//PreparedStatement stmnt = dbcon.prepareStatement("select sampledata_id,sample_data_name from xdata_sampledata where course_id=? and schema_id=?");
+		//stmnt.setString(1, courseId);
+		//stmnt.setString(2,schema_id);
+		//ResultSet rSet = stmnt.executeQuery();
+		
+		PreparedStatement stmt = dbcon
+				.prepareStatement("SELECT connection_id,connection_name FROM xdata_database_connection WHERE course_id = ?");
+		stmt.setString(1, courseId);
+		String output = "";
+		ResultSet rs = stmt.executeQuery();
+		//TODO -  Get DB user and Test user and show it in the drop down
+		// CLARIFY : How it will b shown for various Schema's
+		// On select schema, show the user name options??????
+		while (rs.next()) {
+			output += " <option value = \""
+					+ rs.getInt("connection_id") + "\"> "
+					+ rs.getInt("connection_id") + "-"
+					+ rs.getString("connection_name") + " </option> ";
+		}							 
+		rs.close();%>
+		<div><label>Database Connection</label>  
+		<select id="id_dbconnection" name="dbConnection" style='clear:both;'> 
+				<%=output%> </select>
+				 					
+		<%
+		output = "";			
+		//output +="<option value=\"select\" selected> Select schema</option>";
+		stmt = dbcon
+				.prepareStatement("SELECT schema_id,schema_name FROM xdata_schemainfo WHERE course_id = ?");
+		stmt.setString(1, courseId);
+		rs = stmt.executeQuery();							
+		while (rs.next()) {
+			output += " <option value = \"" + rs.getInt("schema_id")
+					+ "\"> " + rs.getInt("schema_id") + "-"
+					+ rs.getString("schema_name") + " </option> ";
+		}							
+		%>
+		
+		<label>Default Database Schema</label>
+		<select class="schemaId" id="id_schema" name="schemaid" style="clear:both;">
+				<%=output%> </select>
+		</div>
+		<%
+	} catch (Exception err) {
+
+		err.printStackTrace();
+		throw new ServletException(err);
+		
+	}
+	finally{
+		dbcon.close();
+	}
 %>
 
 <br/>

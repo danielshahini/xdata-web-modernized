@@ -36,7 +36,7 @@ public class TestPartialMarking {
 	// Configuration values required for the scoring function
 	public PartialMarkerConfig Configuration;
 	
-	static int assignNo=1;//for University Schema
+	static int assignNo=0;//for University Schema
 //	static int assignNo=4; //for TPCH Schema
 //	static int assignNo=13; //for Amol sirs Schema
 		

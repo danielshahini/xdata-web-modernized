@@ -99,13 +99,12 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 							try {
 								PreparedStatement stmt;
 								stmt = dbcon
-										.prepareStatement("SELECT * FROM xdata_assignment where course_id = ?");
+										.prepareStatement("SELECT * FROM xdata_assignment where course_id = ? AND assignment_id > 0");
 								//	stmt.setString(2, (String)request.getSession().getAttribute("context_label"));
 								stmt.setString(1, courseID);
 								ResultSet rs;
 								rs = stmt.executeQuery();
-								while (rs.next()) {
-
+								while (rs.next()) {	
 									output += "<a class=\"header\" target=\"rightPage\" href=\"ListOfQuestions.jsp?assignmentid="
 											+ rs.getString("assignment_id")
 											+ "&&studentId="

@@ -83,7 +83,7 @@ a:hover {
 							try{
 								PreparedStatement stmt;
 								stmt = dbcon
-										.prepareStatement("SELECT * FROM xdata_assignment where course_id = ?");
+										.prepareStatement("SELECT * FROM xdata_assignment where course_id = ? AND assignment_id > 0");
 								//	stmt.setString(2, (String)request.getSession().getAttribute("context_label"));
 								stmt.setString(1, courseID);
 								ResultSet rs;
@@ -106,14 +106,15 @@ a:hover {
 
 									
 									//now check whether current time is more than end time.Then only assignment can be graded
-									if (oldDate.compareTo(current) < 0) {
-
+									if (oldDate.compareTo(current) < 0) 
+									{		
 										output += "<a href="+request.getContextPath() +"/ViewAssignment?assignmentid="
 												+ rs.getString("assignment_id").trim()
 												+ "V"
 												+ "\" target = \"rightPage\">"
 												+ "<li> Assignment "
 												+ rs.getString("assignment_id") + "</li></a>";
+												
 									} 
 									/* 			
 										output += "<a class=\"header\" target=\"rightPage\" href=\"asgnmentList.jsp?assignmentId="

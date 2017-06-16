@@ -20,10 +20,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import database.DatabaseConnection;
 import partialMarking.PartialMarkParameters;
 import partialMarking.TestPartialMarking;
 import testDataGen.PopulateTestDataGrading;
 import util.Configuration;
+import java.sql.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.lang.reflect.Type;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import util.*;
+
 /**
  * Servlet implementation class PartialMarkingDemo
  */
@@ -54,11 +65,13 @@ public class PartialMarkingDemo extends HttpServlet {
 		HttpSession session = request.getSession(false);
 		String loginUsr = "";
 		loginUsr = (String) session.getAttribute("LOGIN_USER");
+		String courseId = (String) request.getSession().getAttribute("context_label");
 		String instructorQuery = request.getParameter("instructorQuery");
 		
 		String studentQuery = request.getParameter("studentQuery");
 		String isProcessCanonicalize = request.getParameter("canonicalize");
-		
+		int dbConnectionId=Integer.parseInt(request.getParameter("dbConnectionId"));
+		int schemaId=Integer.parseInt(request.getParameter("schemaId"));
 		String instructorQueries[]=instructorQuery.split("#@###@#");
 		float marks=0.0f;		
 		float marks1=0.0f;	
@@ -78,12 +91,44 @@ public class PartialMarkingDemo extends HttpServlet {
 		PopulateTestDataGrading p = new PopulateTestDataGrading();
 		Exception caughtException=null;
 		
-		int assignId=1;  //Hard code some existing assignment ID here and in TestPartialMarking.java - process and process canonicalize methods
+		int assignId=0;  //Hard code some existing assignment ID here and in TestPartialMarking.java - process and process canonicalize methods
 		String err= "";
 		int index =1;
 				PrintWriter out = response.getWriter();
 				try{ 
 					graderConn = this.getConnection();
+					PreparedStatement stmt = graderConn
+							.prepareStatement("SELECT * from xdata_assignment where assignment_id = ?");
+					stmt.setInt(1, assignId); 
+					ResultSet rs = stmt.executeQuery();
+					int tag=0;
+					if(rs.next()){
+						tag=1;
+					}
+					if(tag==0)   // insert for the first time when assignId=0
+					{
+						PreparedStatement stmt1 = graderConn
+							.prepareStatement("insert into xdata_assignment(course_id,assignment_id,connection_id,defaultschemaid) values(?,?,?,?)");
+						stmt1.setString(1, courseId);
+						stmt1.setInt(2, assignId);
+						stmt1.setInt(3, dbConnectionId);
+						stmt1.setInt(4, schemaId);
+						System.out.println(stmt1.toString());
+						stmt1.executeUpdate();
+					}
+					else 	//update schema, database connection and course_id for assignId=0 
+					{
+						PreparedStatement stmt2 = graderConn.prepareStatement
+								("UPDATE xdata_assignment SET connection_id = ?, defaultschemaid = ?, course_id = ? WHERE assignment_id=?");
+						stmt2.setInt(1, dbConnectionId);
+						stmt2.setInt(2, schemaId);
+						stmt2.setString(3, courseId); 
+						stmt2.setInt(4, assignId); 
+						stmt2.executeUpdate();
+					}
+					
+					
+					
 					p.deleteAllTempTablesFromTestUser(graderConn);
 					p.createTempTablesForDemoUI(graderConn, assignId, 1);
 				

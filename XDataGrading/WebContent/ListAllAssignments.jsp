@@ -85,7 +85,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						try {
 							PreparedStatement stmt;
 							stmt = dbcon
-									.prepareStatement("SELECT * FROM xdata_assignment where course_id = ? ORDER By endtime, assignment_id");
+									.prepareStatement("SELECT * FROM xdata_assignment where course_id = ? AND assignment_id >0 ORDER By endtime, assignment_id");
 							//	stmt.setString(2, (String)request.getSession().getAttribute("context_label"));
 							stmt.setString(1, courseID);
 							ResultSet rs;
