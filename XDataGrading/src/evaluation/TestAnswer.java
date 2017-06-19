@@ -1827,7 +1827,7 @@ public ArrayList<FailedDataSetValues> newTestAnswer(int assignmentId,int questio
 							for(int i = 0 ; i < studentRollNums.size(); i++){
 								String rollnum = studentRollNums.get(i);
 								String query = studentQueries.get(i);
-								if(query!= null || !query.isEmpty()){
+								if(query!= null && !query.isEmpty()){
 									query=checkForViews(query,rollnum);
 								}//set updated query to student query
 								studentQueries.set(i,query);
