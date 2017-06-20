@@ -162,17 +162,15 @@ public class LoginChecker extends HttpServlet {
 					try{
 						pstmt.setString(1, uname); 
 						//pstmt.setString(2,pwd); 
-						if(uname.equalsIgnoreCase("admin")){
-							pstmt.setString(2, pwd);
-						}else{
+						
 							pstmt.setString(2, DigestUtils.md5Hex(pwd));
-						}
+						
 						//logger.log(Level.FINE,"PWD to test = DigestUtils.md5Hex(pwd) =="+DigestUtils.md5Hex(pwd));
 						ResultSet rs = null;
 							try{
 									rs =pstmt.executeQuery(); 
 									logger.log(Level.FINE,pstmt.toString());
-									if(rs.next()){ 
+									if(rs.next() && !uname.equals("admin")){ 
 									  
 									PreparedStatement pstmt1 = dbCon
 											.prepareStatement("select * from xdata_roles where internal_user_id=?");
@@ -236,10 +234,12 @@ public class LoginChecker extends HttpServlet {
 											if(pstmt1 != null)
 												pstmt1.close();
 										}	
-							}else if(uname.equalsIgnoreCase("admin")){		
+							}else if(uname.equals("admin")){		
+							
+								
 								//First login, so insert login credentials in DB
 								//checking for first time login by an admin using 'tag' 
-								PreparedStatement pstmt_adminCheck = dbCon
+								/*PreparedStatement pstmt_adminCheck = dbCon
 										.prepareStatement("select * from xdata_users where login_user_id ='admin'");
 								
 								ResultSet rs1 = null;
@@ -249,18 +249,46 @@ public class LoginChecker extends HttpServlet {
 								//logger.log(Level.FINE,pstmt.toString());
 								if(rs1.next()){ 
 									tag=true;
-								}
-								if(tag==false)
+								}*/
+								String Ad_password=Configuration.getProperty("adminPassword");
+								//checking password from config files
+								if(Ad_password.equals(pwd))
 								{
+									PreparedStatement pstmt_adminCheck = dbCon
+											.prepareStatement("select * from xdata_users where login_user_id ='admin'");
+									
+									ResultSet rs1 = null;
+						
+									rs1 =pstmt_adminCheck.executeQuery(); 
 									//if first time login by admin, insert admin credentials
-									PreparedStatement pstmt1 = dbCon
+									/*PreparedStatement pstmt1 = dbCon
 											.prepareStatement("insert into xdata_users (internal_user_id,user_name,login_user_id,password) values(?,?,?,?)");
 									pstmt1.setString(1,"XD1");
 									pstmt1.setString(2,"Administrator");
 									pstmt1.setString(3, uname);
 									pstmt1.setString(4, Configuration.getProperty("adminPassword"));
 									
-									pstmt1.executeQuery(); 
+									pstmt1.executeQuery(); */
+									if(rs1.next())
+									{
+										//pulling admin info from database
+									role = rs1.getString("role");
+									response.setContentType("text/html");
+									PrintWriter out2 = response.getWriter();
+									session.setAttribute("user_id",rs1.getString("internal_user_id"));
+									session.setAttribute("login_user_id",rs1.getString("login_user_id"));
+									session.setAttribute("context_label", rs1.getString("course_id"));
+									session.setAttribute("resource_link_id", "");
+									session.setAttribute("lis_person_name_full",
+											rs1.getString("user_name"));
+									session.setAttribute("lis_person_contact_email_primary",
+											rs1.getString("email"));
+									}
+									//session.setAttribute("roles", role);
+									session.setAttribute("ltiIntegration", false);
+									
+									
+									
 									session.setAttribute("LOGIN_USER", "ADMIN");
 									session.setAttribute("role",role);
 									response.sendRedirect("adminHome.jsp");
