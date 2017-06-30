@@ -166,7 +166,7 @@ public class PartialMarker {
 		}
 		else
 			result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
-		System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
+		//System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
 		return result;
 	}
 	
@@ -1724,10 +1724,15 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 	
 private static QueryInfo populateQueryInfo(QueryStructure instructorData, QueryStructure studentData, int level){
 		
-		System.out.println("Under populateQueryInfo");
+		//System.out.println("Under populateQueryInfo");
 		QueryInfo qInfo = new QueryInfo();
 		qInfo.Level = level;
-
+		if(instructorData.getIsDistinct())
+			qInfo.instructorDistinct=true;
+		if(studentData.getIsDistinct())
+			qInfo.studentDistinct=true;
+		
+		
 		for(Node n: instructorData.getLstSelectionConditions()){
 			qInfo.InstructorPredicates.add(n.toString());
 		}
