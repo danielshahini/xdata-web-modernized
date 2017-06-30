@@ -150,6 +150,7 @@ public class PartialMarker {
 		float maxMainQueryScore = PartialMarker.calculateScore(this.InstructorQuery.getQueryStructure(), this.InstructorQuery.getQueryStructure(), 0).Marks;
 		
 		MarkInfo result = calculateScore(this.InstructorQuery.getQueryStructure(), this.StudentQuery.getQueryStructure(), 0);
+		
 		float studentQueryScore=result.Marks;
 	
 		result.Configuration = Configuration;
@@ -1470,13 +1471,14 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 		int distinctWeightage = 0;
 		MarkInfo marks = new MarkInfo();
 		//Set level 0 query details for display
-				marks.SubqueryData.add(populateQueryInfo(instructorData,studentData,0));
+				marks.SubqueryData.add(populateQueryInfo(instructorData,studentData,level));
 				
 				MarkInfo whereSubQuery = compareListOfQueries(instructorData.getWhereClauseSubqueries(), studentData.getWhereClauseSubqueries(), level + 1);
 				marks.SubqueryData.addAll(whereSubQuery.SubqueryData);
 				
 				MarkInfo fromSubQuery = compareListOfQueries(instructorData.getFromClauseSubqueries(), studentData.getFromClauseSubqueries(), level + 1);
 				marks.SubqueryData.addAll(fromSubQuery.SubqueryData);
+			
 				
 				distinctWeightage = Configuration.Distinct;
 				
@@ -1722,30 +1724,31 @@ public static float compareAggregates(ArrayList<AggregateFunction> master, Array
 	
 private static QueryInfo populateQueryInfo(QueryStructure instructorData, QueryStructure studentData, int level){
 		
+		System.out.println("Under populateQueryInfo");
 		QueryInfo qInfo = new QueryInfo();
 		qInfo.Level = level;
-		
-		for(Node n: instructorData.getSelectionConds()){
+
+		for(Node n: instructorData.getLstSelectionConditions()){
 			qInfo.InstructorPredicates.add(n.toString());
 		}
-		
-		for(Node n: studentData.getSelectionConds()){
+		//getLstSelectionConditions
+		for(Node n: studentData.getLstSelectionConditions()){
 			qInfo.StudentPredicates.add(n.toString());
 		}
 		
-		for(Node n: instructorData.getProjectedCols()){
+		for(Node n: instructorData.getLstProjectedCols()){
 			qInfo.InstructorProjections.add(n.toString());
 		}
 		
-		for(Node n: studentData.getProjectedCols()){
+		for(Node n: studentData.getLstProjectedCols()){
 			qInfo.StudentProjections.add(n.toString());
 		}
 		
-		for(Node n: instructorData.getGroupByNodes()){
+		for(Node n: instructorData.getLstGroupByNodes()){
 			qInfo.InstructorGroupBy.add(n.toString());
 		}
 		
-		for(Node n: studentData.getGroupByNodes()){
+		for(Node n: studentData.getLstGroupByNodes()){
 			qInfo.StudentGroupBy.add(n.toString());
 		}
 		
@@ -1757,11 +1760,11 @@ private static QueryInfo populateQueryInfo(QueryStructure instructorData, QueryS
 			qInfo.StudentRelations.add(n);
 		}
 		
-		for(Node n : instructorData.getlstHavingClauses()){
+		for(Node n : instructorData.getLstHavingConditions()){
 			qInfo.InstructorHavingClause.add(n.toString());
 		}
 		
-		for(Node n : studentData.getlstHavingClauses()){
+		for(Node n : studentData.getLstHavingConditions()){
 			qInfo.StudentHavingClause.add(n.toString());
 		}
 		
