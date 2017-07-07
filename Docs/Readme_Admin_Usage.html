@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+
+	<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="XData - Test Data Generation for SQL Queries" />
+    <meta name="keywords" content="MutationTesting,TestDataGeneration,Grading" />
+    <meta name="author" content="XData team" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" media="screen,projection" />
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+   <!--  <link rel="stylesheet" type="text/css" href="css/default.css"  />
+    <link rel="stylesheet" type="text/css" href="css/print.css" /> -->
+    <title>XData</title>
+  </head>
+
+  <body>
+  <div id="wrap">
+  <div id="header">
+	<label style="font-size: 25px;font-family:helvetica;color:#fff;font-weight: bold; padding-left: 	40px;padding-top:20px;">XData</label>
+      </div>
+
+      <div id="leftside">
+     	<li><a href="index.html"> Home</a> <br /> </li>
+	<li><a href="Readme_Inst_Setup.html">Installation</a><br />
+	<li><a href="Readme_Admin_Usage.html"> Administrator Usage</a> <br /></li>
+	<li><a href="Readme_Inst_Basics.html" > Instructor Mode</a><br /></li>
+	
+	<ul style="list-style-type:square">
+	<li><a href="Readme_Inst_Basics.html">Basic setup</a><br />
+	<!--<li><a href="Readme_Inst_Usage.html" > Instructor Usage</a><br />-->
+	<li><a href="Readme_Inst_Assignment.html">Assignment creation</a><br />
+	<li><a href="Readme_Inst_Evaluation.html">Evaluation</a><br />	
+	<li><a href="Readme_Inst_PartialMarks.html" >Grades and partial marking</a><br />
+	<li><a href="Readme_LT_Integration.html" > Learning Tool Integration</a> <br /></li>
+	<!--<li><a href="Readme_Inst_Usage.html"> Instructor Usage</a> <br /></li>-->
+	</ul>		
+	<li><a href="Readme_Student.html" > Student Usage</a> <br /></li>
+	<li><a href="Readme_Dev.html" > Developer Setup</a> <br /></li>
+      </div>
+ 
+ <div id="content">
+        <h2 id="testing">Administrator Usage</h2>
+<ol style="list-style-type:disc">
+<li>The admin mode should be used when the XData grading tool is intended to be used with direct  login of users without interfacing with a Learning Management System (LMS). 
+ The admin mode allows creation of courses and users. It also allows assigning roles(instructor or student) to users for one or more courses. 
+ If you are using XData through an LMS, the admin set-up is not required as courses are created and users are created automatically when interfacing with LMS.</li>  
+
+<li>Connect to the XData server using the URL http://&lt;host-url&gt;/XDataWeb, and login with the username as <i>admin</i> and the password set during installation.  </li>
+
+  <li>The admin will be redirected to the welcome screen with administrator menu. The Admin should follow the following steps. </li>
+<!--<li>For users logging in from External learning system such as Moodle or blackboard, admin can skip the following steps and use the UI's for managing the users (like reset password,etc.,).</li> -->
+<br>
+<ol style="list-style-type:circle">
+  <li>Create a course in XData grading tool.</li>
+<!-- <img src='Images/Admin_createCourse.png'  alt="Create Course" align="center" border="0" height ="100%" width ="95%" ></img><br>-->
+  <li> Create the users with login information and emails using <i>Create user</i> link.</li>
+<li> Assign roles for a user providing user's login id using the <i>Assign Roles</i> link. 
+For this provide the login id of the user and click the <i>Submit</i> button. Then select a course and
+ a role for that user and assign the role by clicking the <i>Assign</i> button. <br/>
+</li></ol><br/>
+ <!--<img src='Images/Admin_assignrole.png'  alt="Assign Role" align="center" border="0" height ="100%" width ="100%" ></img><br> -->
+
+  <li>The admin can edit the details of an existing course or delete courses using the  <i>View Courses</i> link.</li>
+  <li>Similarly, the admin can edit user information or delete the user using <i>View Users</i> link.<br/>
+<!-- <img src='Images/Admin_ViewUsers.png'  alt="View Users" align="center" border="0" height ="100%" width ="100%" ></img><br> -->
+	</li>
+<li>The admin has to set-up the following Leraning Management System (LMS) details:
+   Instance URL of LMS accessing Xdata, 
+   Consumer Key and 
+   Secret Key
+
+       These information will be used for authenticating the LMS request when instructor uses LMS.</li>
+</ol>
+    </div>
+
+      <div id="footer">
+        Copyright &copy; 2015 <a href="http://www.cse.iitb.ac.in/infolab/xdata">XData</a>
+      </div>
+    
+  </body>
+</html>

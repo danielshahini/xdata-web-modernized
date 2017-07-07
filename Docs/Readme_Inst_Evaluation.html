@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="XData - Test Data Generation for SQL Queries" />
+    <meta name="keywords" content="MutationTesting,TestDataGeneration,Grading" />
+    <meta name="author" content="XData team" />
+    <meta name="generator" content="webgen - http://webgen.rubyforge.org" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" media="screen,projection" />
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+    <title>XData</title>
+  </head>
+
+  <body>
+  <div id="wrap">
+  <div id="header">
+	<label style="font-size: 25px;font-family:helvetica;color:#fff;font-weight: bold; padding-left: 	40px;padding-top:20px;">XData</label>
+      </div>
+
+      <div id="leftside">
+     	<li><a href="index.html"> Home</a> <br /> </li>
+	<li><a href="Readme_Inst_Setup.html">Installation</a><br />
+	<li><a href="Readme_Admin_Usage.html"> Administrator Usage</a> <br /></li>
+	<li><a href="Readme_Inst_Basics.html" > Instructor Mode</a><br /></li>
+	
+	<ul style="list-style-type:square">
+	<li><a href="Readme_Inst_Basics.html">Basic setup</a><br />
+	<!--<li><a href="Readme_Inst_Usage.html" > Instructor Usage</a><br />-->
+	<li><a href="Readme_Inst_Assignment.html">Assignment creation</a><br />
+	<li><a href="Readme_Inst_Evaluation.html">Evaluation</a><br />	
+	<li><a href="Readme_Inst_PartialMarks.html" >Grades and partial marking</a><br />
+	<li><a href="Readme_LT_Integration.html" > Learning Tool Integration</a> <br /></li>
+	<!--<li><a href="Readme_Inst_Usage.html"> Instructor Usage</a> <br /></li>-->
+	</ul>		
+	<li><a href="Readme_Student.html" > Student Usage</a> <br /></li>
+	<li><a href="Readme_Dev.html" > Developer Setup</a> <br /></li>
+      </div>
+        <div id="content" align="justify">
+        <h2 id="testing">Instructor Usage</h2> 
+
+<ol style="list-style-type:disc">
+<h3><b>Evaluation</b></h3>
+
+Once the deadline for the assignment is over, the instructor can graded the student queries if the assignment was not set to interactive mode.
+	The instructor can follow the steps given below to grade student queries.
+
+<li>In the instructor menu go to <i>View Assignments</i> link  and select the assignment to be evaluated. 
+In the assignment details page use the <i>Grade Questions</i> link to view the list of questions.
+With each question, answers for the question and links for <i>Status of Question</i> and  <i>Evaluate Question</i>.</li>
+ <!--<img src='Images/grade_question.png'  alt="Grading Home page" align="center" border="0" height ="100%" width ="95%" ></img><br> -->
+
+<br>
+<li>
+The <i>Evaluate Question</i> link evaluates students queries for the question against the instructor queries. 
+For evaluation, each student query is compared with the instructor query on the generated datasets.
+The student is awarded full marks if the student query passes all datasets .
+If the student query fails one or more datasets, partial marks are awarded based on a heuristic that determines how close the student query is to the instructor query.
+<br/>
+In case the instructor has provided multiple answers, the student query must pass datasets for all queries or any one query as set by the instructor.
+If the student query does not pass the test cases, partial marks are evaluated with each instructor query and the highest marks are awarded.
+</li>
+
+ <!--<img src='Images/Evaluate.png'  alt="Evaluation" align="center" border="0" height ="100%" width ="95%" ></img><br>--><br>
+<li>When the evaluation starts, <i>Evaluating student answers</i> status is shown for the question. This goes away once the evaluation is over. 
+and the status of evaluation can be viewed by the instructor.</li>
+<li>  
+This <i>Status of Question</i> link allows the instructor to see whether the student queries were marked correct or not and the marks obtained by the students. 
+If a student query is incorrect, the instructor can view details to check how marks were allocated to the student query using  <a href="Readme_Inst_PartialMarks.html">Partial Marker</a>. 
+If the student has not attempted the question, <i>Not Answered</i> status is shown.</li> 
+
+ <!--<img src='Images/GradeStatus.png'  alt="Status of Evaluation" align="center" border="0" height ="100%" width ="95%" ></img>-->
+<br>
+</ol>
+
+<ol><h3><b>View Results</b></h3>
+<li>After the evaluation, the instructor can go back to the assignment menu in the <i>Assignment Details</i> page. 
+This <i>View Results</i> link gives the result of evaluation per question. 
+It gives status on how many students answered the questions correctly and how many answered incorrectly and the correct answer for each assignment question.</li>
+ <!--<img src='Images/viewResult.png'  alt="Result of Assignment evaluation" align="center" border="0" height ="100%" width ="95%" ></img>-->
+<br>
+</ol>
+<ol><h3><b>View Scores</b></h3>
+<li>After evaluation of all questions in the assignment, the <i>View Scores<i> link can be used to see the total score of each student for that assignment across all questions. 
+</li>
+</ol> 
+ <!--<img src='Images/scores.png'  alt="Mark details" align="center" border="0" height ="100%" width ="95%" ></img>-->
+<br>
+</ol>
+
+</div>
+
+   <div id="footer">
+        Copyright &copy; 2015 <a href="http://www.cse.iitb.ac.in/infolab/xdata">XData</a>
+      </div>
+    
+  </body>
+</html>

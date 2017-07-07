@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="XData - Test Data Generation for SQL Queries" />
+    <meta name="keywords" content="MutationTesting,TestDataGeneration,Grading" />
+    <meta name="author" content="XData team" />
+    <meta name="generator" content="webgen - http://webgen.rubyforge.org" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" media="screen,projection" />
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+    <title>XData</title>
+  </head>
+  <body>
+  <div id="wrap">
+  <div id="header">
+	<label style="font-size: 25px;font-family:helvetica;color:#fff;font-weight: bold; padding-left: 	40px;padding-top:20px;">XData</label>
+      </div>
+
+      <div id="leftside">
+     	<li><a href="index.html"> Home</a> <br /> </li>
+	<li><a href="Readme_Inst_Setup.html">Installation</a><br />
+	<li><a href="Readme_Admin_Usage.html"> Administrator Usage</a> <br /></li>
+	<li><a href="Readme_Inst_Basics.html" > Instructor Mode</a><br /></li>
+	
+	<ul style="list-style-type:square">
+	<li><a href="Readme_Inst_Basics.html">Basic setup</a><br />
+	<!--<li><a href="Readme_Inst_Usage.html" > Instructor Usage</a><br />-->
+	<li><a href="Readme_Inst_Assignment.html">Assignment creation</a><br />
+	<li><a href="Readme_Inst_Evaluation.html">Evaluation</a><br />	
+	<li><a href="Readme_Inst_PartialMarks.html" >Grades and partial marking</a><br />
+	<li><a href="Readme_LT_Integration.html" > Learning Tool Integration</a> <br /></li>
+	<!--<li><a href="Readme_Inst_Usage.html"> Instructor Usage</a> <br /></li>-->
+	</ul>		
+	<li><a href="Readme_Student.html" > Student Usage</a> <br /></li>
+	<li><a href="Readme_Dev.html" > Developer Setup</a> <br /></li>
+      </div>
+      <div id="content" align="justify">
+  <h2 id="testing">Instructor Usage</h2> 
+<ol><h3><b><li>Learning Tool Integration</b></h3>
+
+
+<p>The instructions provided below are specific to setting up the tool in Moodle system.
+ However, they can be easily extended to other learning management 
+ systems as well (provided the learning management system supports 
+ the Learning Tool Integration (LTI) standard).</p>
+
+<ol style="list-style-type:disc">
+<li>The admin should add the instance url of the LMS from where XDATA may receive requests from and the consumer and secret key that has to be used for authentication using Admin mode login. </li>
+
+<li>During installation, the instructor should have given a proxy URL for local host url in case proxy server exists. This is updated in <i>XData.properties file</i> and is required for OAUTH authentication.</li><br/>
+<li>The XData grading tool can be added in the Learning Management System as an external tool.
+	In Moodle, the instructor can use the <i>Turn Editing On</i> button to add an 
+	activity or resource and select <i>External Tool</i> from the list of options 
+	displayed. </li>
+
+<li>The instructor needs to provide a name for the external tool. This name will be displayed on 
+the moodle course page. set the Launch URL as <i>http://&lt;host-url&gt;/XDataWeb/tool.jsp</i><br/></li>
+ <!--<img src='Images/Moodle_EditAssignment.png'  alt="Moodle Add" align="center" border="0" height 
+ ="100%" width ="95%" ></img><br/> <br/>
+ <img src='Images/Moodle_basicURL.png'  alt="Moodle URL" align="center" border="0" height ="100%" width ="95%" ></img><br>-->
+
+<li>
+After adding the URL, the instructor needs to use the  <i>Show More...</i> link and add the 
+<i>Consumer Auth Key</i> and <i>Secret Key</i> for using XData. These keys are setup by admin and are used for the purpose of OAuth authorization.<br/>
+</li>
+  
+ <!--<img src='Images/Moodle_ConsumerKey.png'  alt="Moodle Keys" align="center" border="0" height ="100%" width ="95%" ></img><br>-->
+<br>
+
+	
+<li>
+	The instructor can connect to XData and create an assignment using this link. 
+Once the assignment is created, the instructor can get an assignment URL using <i>Copy External Tool</i> link given in 
+the <i>Assignment Details</i>. The instructor can now edit the assignment and set the external 
+tool link to this URL. The assignment link from the learning management system will take the student directly to the 
+assignment set by the instructor.</li>
+ <!--<img src='Images/asgnDetails.png'  alt="Assignment Details" align="center" border="0" height ="100%" width ="95%" ></img><br> -->
+
+<li>Once the assignment evaluation is over, the instructor can go to <i>View Assignment 
+-&gt; View Scores</i> page on the grading tool, check the marks of each student and click the upload button. This will upload the  student marks to the learning management system.
+ 
+</li>
+</ol>
+ </div>
+
+      <div id="footer">
+        Copyright &copy; 2015 <a href="http://www.cse.iitb.ac.in/infolab/xdata">XData</a>
+      </div>
+  </body>
+</html>

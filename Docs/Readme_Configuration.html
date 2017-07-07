@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="XData - Test Data Generation for SQL Queries" />
+    <meta name="keywords" content="MutationTesting,TestDataGeneration,Grading" />
+    <meta name="author" content="Bikash Chandra" />
+    <meta name="generator" content="webgen - http://webgen.rubyforge.org" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" media="screen,projection" />
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+    <title>XData</title>
+  </head>
+
+  <body>
+     <div id="wrap">
+  <div id="header">
+	<label style="font-size: 25px;font-family:helvetica;color:#fff;font-weight: bold; padding-left: 	40px;padding-top:20px;">XData</label>
+      </div>
+
+      <div id="leftside">
+     	<li><a href="index.html"> Documentation Home</a> <br /> </li>
+	<li><a href="Readme_Inst_Setup.html">Installation</a><br />
+	<li><a href="Readme_Admin_Usage.html"> Administrator Usage</a> <br /></li>
+	<li><a href="Readme_Inst_Basics.html" > Instructor Mode</a><br /></li>
+	
+	<ul style="list-style-type:square">
+	<li><a href="Readme_Inst_Basics.html">Basic setup</a><br />
+	<li><a href="Readme_Inst_Usage.html" > Instructor Usage</a><br />
+	<li><a href="Readme_Inst_Assignment.html">Assignment creation</a><br />
+	<li><a href="Readme_Inst_Evaluation.html">Evaluation</a><br />	
+	<li><a href="Readme_Inst_PartialMarks.html" >Grades and partial marking</a><br />
+	<li><a href="Readme_LT_Integration.html" > Learning Tool Integration</a> <br /></li>
+	<!--<li><a href="Readme_Inst_Usage.html"> Instructor Usage</a> <br /></li>-->
+	</ul>	
+	<li><a href="Readme_Student.html" > Student Usage</a> <br /></li>
+	<!--<li><a href="Readme_Dev.html" > Developer Setup</a> <br /></li>-->
+      </div>
+
+
+      <div id="content" align="justify">
+        <h2 id="testing">Developer Setup</h2>
+<h3>This specifies the system setup required for developer.</h3>
+<ol>
+<li>Install the CVC3 and Apache tomcat server.</li>
+  <li>Install PostgreSQL (version > 9.1). </li>
+ <li>Create the database user specified in the installer file. To use the default settings create user 'testing1' with password 'testing1' and skip steps 4 and 5 .</li>
+	<li>Modify the Install.sh file to change the database settings for the required database.</li>
+	<li>Modify the file XData.properties file in xdata/util to change the database settings</li>
+	<li>Run the Install.sh as a sudo user</li>
+  <li>Install Eclipse EE Edition (Luna) and JDK 1.6/1.7. Set up the appropriate environment variables and try running SimpleTest.java
+<pre> 
+public class SimpleTest {
+    public static void main(String[] args) {
+	System.out.println("This works!");
+    }
+}</pre></li>
+  <!--<li>Open Eclipse and click on Window->Preferences->Java->Installed JREs. Make sure JDK 1.6 or more is there. If it not there, click on Add to add it and then mark it as the default JRE.</li>-->
+  <li>Click on File->Import and under Java->Existing Projects into workspace. Browse to the root of XData directory and click Add.</li>
+  <li>Go to Window->Show View->Others and select Servers. Click on add a new server. Select Tomcat 7.0 and set it up. In the end, add XData to the Tomcat Server projects and close the window.</li>
+  <li>In tool.jsp set the debug flag to 1, i.e. debug = 1, to run the project without the need of integrating with Moodle.</li>
+  <li>Build your project, correct the build errors if any, start the server and open the following URL in the browser
+  <pre>
+localhost:8080/XDataWeb/index.html</pre></li>
+</ol>
+
+
+       <div id="footer">
+        Copyright &copy; 2015 <a href="http://www.cse.iitb.ac.in/infolab/xdata">XData</a>
+      </div>
+
+    </div>
+  </body>
+</html>

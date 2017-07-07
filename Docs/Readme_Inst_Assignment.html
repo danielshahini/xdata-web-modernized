@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="XData - Test Data Generation for SQL Queries" />
+    <meta name="keywords" content="MutationTesting,TestDataGeneration,Grading" />
+    <meta name="author" content="XData team" />
+    <meta name="generator" content="webgen - http://webgen.rubyforge.org" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" media="screen,projection" />
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+    <title>XData</title>
+  </head>
+ 
+  <body>
+  <div id="wrap">
+  <div id="header">
+	<label style="font-size: 25px;font-family:helvetica;color:#fff;font-weight: bold; padding-left: 	40px;padding-top:20px;">XData</label>
+  </div>
+
+  <div id="leftside">
+  	<li><a href="index.html"> Home</a> <br /> </li>
+	<li><a href="Readme_Inst_Setup.html">Installation</a><br />
+	<li><a href="Readme_Admin_Usage.html"> Administrator Usage</a> <br /></li>
+	<li><a href="Readme_Inst_Basics.html" > Instructor Mode</a><br /></li>
+	
+	<ul style="list-style-type:square">
+	<li><a href="Readme_Inst_Basics.html">Basic setup</a><br />
+	<!--<li><a href="Readme_Inst_Usage.html" > Instructor Usage</a><br />-->
+	<li><a href="Readme_Inst_Assignment.html">Assignment creation</a><br />
+	<li><a href="Readme_Inst_Evaluation.html">Evaluation</a><br />	
+	<li><a href="Readme_Inst_PartialMarks.html" >Grades and partial marking</a><br />
+	<li><a href="Readme_LT_Integration.html" > Learning Tool Integration</a> <br /></li>
+	<!--<li><a href="Readme_Inst_Usage.html"> Instructor Usage</a> <br /></li>-->
+	</ul>		
+	<li><a href="Readme_Student.html" > Student Usage</a> <br /></li>
+	<li><a href="Readme_Dev.html" > Developer Setup</a> <br /></li>
+  </div>
+  <div id="content">
+        <h2 id="testing">Instructor Usage</h2> 
+
+ <!--<br/>The Assignment link allows instructors to create a new assignment or view existing assignments. <br/>-->
+	<ol><h3><b><li>New Assignment:</b></h3>
+	<ol style="list-style-type:square">
+	<li>The <i>Create Assignment'</i> link allows the instructor to setup a new assignment for the students. </li>
+	<li>The instructor needs to provide the name and description of the assignment, along with the default schema to be used for this assignment. </li>
+	<li>The <i>Interactive</i> check box allows instructors to set whether the assignment is an interactive assignment or not. If assignment is marked interactive, the student query will be evaluated against the instructor's query when  the students submit their answer. 
+	Students will be able to see the datasets for which their query failed (if the query is incorrect) along with the expect result and the result of the their query. Students can resubmit their queries and will thus be able to  learn from their mistakes. 
+	A link to view instructor's answer is also provided and students can see the correct answer if they wish to do so.</li>
+	<li>If <i>Interactive</i> option is not checked, the assignment is a graded assignment. When students submit their query it is be checked against a basic test case and saved. The instructor can evaluate the queries once the deadline of the assignment is over. </li>
+	<li>The instructor also needs to select the database connection for the assignment. This connection will be used for testing the student query. We use the test database and test password provided during "New database connection". </li>
+	<li>The instructor selects the <i>Default schema</i> to be used for this assignment. On selection, if the schema has more than one data file, then the UI shows all existing data files for selection.<br/>
+	 Instructor can select the <i>Default datasets</i> for evaluation of assignment (Additional datasets provided by instructor using “upload sample data” UI on which student queries will be tested.)</li>
+	<li>The Starts at and Ends at can be used to specify the start and end time for the assignment. Students can submit their queries only within this time-frame.</li></ol>
+	 <!--<img src='Images/new_Assignment.png'  alt="New Assignment" align="center" border="0" height ="100%" width ="95%" ></img><br>-->
+	</li>
+
+	<br/> 	
+	<li>
+	<ol style="list-style-type:square"><h3><b>View Assignments:</b></h3>
+	  <li>The <i>View Assignment</i> link allows instructors to view a list of assignments created by the them for the course. Once the assignment is  selected the instructor  can edit questions, grade questions, view results and scores once the questions are  evaluated.</li>
+	<li>The assignment details also provides option to edit the assignment details like start date, end date, name, description, etc., The assignment can be deleted (which internally deletes all questions, student answers, marks details and anything related to that assignment) using Edit assignment UI</li>
+	<li>The <i>Copy Link to Clipboard</i> button  can be used to copy the url to clipboard 
+	(This feature uses Adobe Flash. Please enable Flash if it is not enabled in your browser. You can also manually copy the URL manually by selecting the text shown). This URL can be used to connect to that assignment in XData  directly from any Learning Management System. <br> 
+	The consumer key and secret key set by the admin for that LMS instance url will be required by instructor for connecting to  XData from Learning Management System.</li>
+	 <!--<img src='Images/asgnDetails.png'  alt="Assignment Details" align="center" border="0" height ="100%" width ="95%" ></img><br>-->
+	<li>The options given to the instructor are as follows :
+	<ol style="list-style-type:circle">
+		<li><a href="#viewDetails"><b>View/Edit question</b></a></li>
+		<li><a href="#ResultSummary"><b>Result summary by Question</b></a></li>
+		<li><a href="#viewScores"><b>View Scores</b></a></li>
+	</ol>
+	</li>
+	</ol>
+	</li>
+	</ol>
+	<b><h4>View/Edit Questions </h4></b>
+	<ul style="list-style-type:square">
+	<li>This allows the instructor to  add / view / modify the questions that are existing for the assignment with options for editing each question,evaluating each question, generation of dataset, see evaluation results, delete question,etc,.
+
+	 On click of Edit link, the question can be edited – partial mark parameters, marks allotted for the question, default datasets for evaluation for that particular question, question text, SQL answer,etc., can be edited and changes can be saved.
+ 
+	<!--<img src='Images/NewAssignment.png'  alt="Add Question" align="center" border="0" height ="100%" width ="95%" ></img><br>--></li>
+
+	<!--<br>XData provides some additional features for you that helps in grading the assignments better. They are as follows.</li>-->
+	<li><!--<b>Multiple SQL answers:</b> -->
+	The instructor can provide more than one query, including some that may be partially correct,  for a question by using the <i>Add Another Query</i> button.
+	The instructor needs to choose, using radio buttons,  whether the students answer will be evaluated on 
+	datasets for all correct queries (for more rigorous correction) or against dataset generated for any 
+	correct query (if the question was ambiguous).</li>
+
+	<!--<img src='Images/EditQuestion_addNEw.png'  alt="Edit Question" align="center" border="0" height ="100%" width ="95%" ></img><br> -->
+
+<li><b><i>Marks:</i></b>The maximum marks to be awarded for the question can be  specified a <i>Marks</i> scroll bar just above question text.</br>
+If there are multiple queries to one question, the maximum marks awarded for each question  may be chosen for partially correct queries using the mark sliders given above each answer box.</li>
+<li><b><i>Partial Marking Parameters:</i></b>
+There is a <i>View / Set Partial Marking Parameters</i> link above each answer box. This is used for setting weightage for partial marks. <br/> The partial marking feature in the grading tool assigns marks to student queries based on a heuristic of how close the student is to to the instructor's query. It ensures to ensure a standard and consistent evaluation scheme across all students.<br/>
+Partial marking is done only if the student query fails one or more datasets during evaluation. For these student submissions the instructor can click on the 'Details' link in <i>Evaluation Status</i> page to see how the weightage of partial marks were awarded. Based on this, the student query is evaluated and partial marks are awarded if the parameters match.
+</li>
+<li>
+If a question uses a schema other than the default schema specified during assignment creation, the instructor can set the schema for the question using a dropdown select. 
+
+ </li>
+<li>If the schema holds more than one data set, all the datasets for the schema will be listed. The instructor can select the default data sets for evaluation for that question alone.</li> <!--<img src='Images/newAddedQ.png'  alt="Questions" align="center" border="0" height ="100%" width ="95%" ></img><br/> -->
+<li>
+Once the question and queries  are added, the instructor can click the  <i>Update Query</i> button to update the question. 
+The assignment page will now show the list of questions and the SQL query answers set by the instructor along with options for editing, deleting and generating data for questions.</li>
+</ul></li>
+
+<br/>
+
+<li><b>Data Generation</b>
+<ul style="list-style-type:square">
+<li>The instructor can generate datasets for each query using <i>Generate Data</i> link. 
+Data generation starts as a background process. 
+</li>
+
+<!-- <img src='Images/GenData.png'  alt="Data Generation" align="center" border="0" height ="100%" width ="95%" ></img><br>-->
+<li>If data generation fails because of any error an appropriate message is displayed. 
+Logs can be  checked in  the tomcat server log file (<tomcat-dir>/logs/catalina.out) for details. 
+The instructor may edit the query and try generating datasets again. If datasets are not generated the sample dataset 
+provided with the assignment will be used to grade the student query.
+</li>
+<li>If  the dataset  is successfully generated, a  <i>Show Dataset</i> link is displayed for the SQL query.
+
+ <!--<img src='Images/questionList.png'  alt="List of questions" align="center" border="0" height ="100%" width ="95%" ></img><br>-->
+The link displays the generated datasets as shown in the figure below. Each dataset has a tag that shows the type of error the dataset is meant to catch. <br/>
+The data generated for satisfying the primary and foreign key references are shown on click of "View reference tables" link.
+</li>
+
+<!--It will have the headers that are descriptive about the datasets generated.-->
+
+<!-- <img src='Images/showGenData.png'  alt="Generated Data" align="center" border="0" height ="100%" width ="95%" ></img>-->
+<br>
+</ul>
+</li>
+<li><b>Evaluation</b>
+<ul style="list-style-type:square">
+<li>
+Once the deadline for the assignment is over, the instructor can grade the student queries if the assignment was not set to interactive mode.
+	The instructor can follow the steps given below to grade student queries.
+<li>The instructor can use <i>Evaluate assignment</i> link above all questions to evaluate all questions in the assignment.</li>
+<li>The instructor can also evaluate each question one by one using <i>Evaluate Question</i>link.</li>
+
+<li>
+The <i>Evaluate Question</i> link evaluates students queries for the question against the instructor queries. 
+For evaluation, each student query result is compared with the instructor query result on the generated datasets and default data sets.<br/>
+The student is awarded full marks if the student query passes all datasets .<br/>
+If the student query fails one or more datasets, partial marks are awarded based on a heuristic that determines how close the student query is to the instructor query.</li>
+<li>
+In case the instructor has provided multiple answers, the student query must pass datasets for all queries or any one query as set by the instructor.
+If the student query does not pass the test cases, partial marks are evaluated with each instructor query and the highest marks are awarded.
+</li>
+<li>When the evaluation starts, <i>Evaluating student answers</i> status is shown for the question. This goes away once the evaluation is over. 
+and the status of evaluation can be viewed by the instructor using <i>Evaluation status</i>.</li>
+<li>  
+This <i>Evaluation status</i> link allows the instructor to see whether the student queries were marked correct or not and the marks obtained by the students. If student query is incorrect, instructor can view the failed test cases and student result and expected result on those test case datasets using <i>Test Cases</i> link.<br/>
+If a student query is incorrect, the instructor can view details to check the weightage of partial marking parameters. The instructor can also change the total marks obtained by the student from the <i>Mark Detail</i> UI. 
+If the student has not attempted the question, <i>Not Answered</i> status is shown.</li> 
+
+</ol>
+</li></ul>
+<a name="ResultSummary"></a>
+<ol><h4><b>Result summary by Question</b></h4>
+<li> 
+This <i>Result summary by Question</i> link gives the result of evaluation per question. 
+It gives status on how many students answered the questions correctly and how many answered incorrectly and the correct answer for each assignment question.</li>
+
+</ol>
+<a name="viewScores"></a>
+<ol><h4><b>View Scores</b></h4>
+<li>After evaluation of all questions in the assignment, the <i>View Scores</i> link can be used to see the total score of each student for that assignment across all questions. <br/>
+<li>The table shows all student's name, mail id, marks obtained and a <i>Details</i> link. This link opens a modal to show the answers given by student for each assignment question, marks obtained for each question, status, if incorrect - it shows link for viewing mark details (partial mark details) and failed test cases.
+</li>
+</li>
+</ol> 
+
+</ol>
+
+
+
+</ol>
+
+    </div>
+
+    <div id="footer">
+        Copyright &copy; 2015 <a href="http://www.cse.iitb.ac.in/infolab/xdata">XData</a>
+      </div>
+
+  </body>
+</html>

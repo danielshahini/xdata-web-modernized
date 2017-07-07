@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="XData - Test Data Generation for SQL Queries" />
+    <meta name="keywords" content="MutationTesting,TestDataGeneration,Grading" />
+    <meta name="author" content="Bikash Chandra" />
+    <meta name="generator" content="webgen - http://webgen.rubyforge.org" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" media="screen,projection" />
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+    <title>XData</title>
+<style>
+	h1{
+		float: left;
+		color:#fff;
+		font-size: 25px;
+		padding:0; margin:0;
+		padding-left:100px;
+		padding-top:20px;
+	}
+	h2{
+		font-size: 25px;
+		padding:0; margin:0;
+		padding-left:5px;
+		padding-top:5px;
+		color:#3B5998;
+	}
+	div #header{
+		background-color:#3B5998;
+	}
+
+
+</style>
+  </head>
+
+  <body>
+  <div id="wrap">
+  <div id="header">
+	<label style="font-size: 25px;font-family:helvetica;color:#fff;font-weight: bold; padding-left: 	40px;padding-top:20px;">XData</label>
+      </div>
+
+      <div id="leftside">
+     	<li><a href="index.html"> Home</a> <br /> </li>
+	<li><a href="Readme_Inst_Setup.html">Installation</a><br />
+	<li><a href="Readme_Admin_Usage.html"> Administrator Usage</a> <br /></li>
+	<li><a href="Readme_Inst_Basics.html" > Instructor Mode</a><br /></li>
+	
+	<ul style="list-style-type:square">
+	<li><a href="Readme_Inst_Basics.html">Basic setup</a><br />
+	<!--<li><a href="Readme_Inst_Usage.html" > Instructor Usage</a><br />-->
+	<li><a href="Readme_Inst_Assignment.html">Assignment creation</a><br />
+	<li><a href="Readme_Inst_Evaluation.html">Evaluation</a><br />	
+	<li><a href="Readme_Inst_PartialMarks.html" >Grades and partial marking</a><br />
+	<li><a href="Readme_LT_Integration.html" > Learning Tool Integration</a> <br /></li>
+	<!--<li><a href="Readme_Inst_Usage.html"> Instructor Usage</a> <br /></li>-->
+	</ul>		
+	<li><a href="Readme_Student.html" > Student Usage</a> <br /></li>
+	<li><a href="Readme_Dev.html" > Developer Setup</a> <br /></li>
+      </div>
+
+      <div id="content" align="justify">
+        <h2 id="testing"> Instructor Setup</h2>
+<ol>
+<li>The XData grading tool server can be installed on any machine running a 64 bit Linux. Please ensure the following before starting the installation:</il>
+	<ul>
+		<li>A PostgreSQL server (version 9.3 or above) is running on your machine and it is accessible.</li>
+	<!--	<li>psql client to connect to the postgresql server</li>-->
+		<li>Apache tomcat (version 7 or above) is present.</li>
+	</ul>
+</li>
+<li>To install the XData grading tool run the file  Install.sh (provided with the installer) as root.
+You will be prompted to provide your tomcat directory, database information and some more authentication 
+information. Once this is done the grading tool will be deployed in your tomcat directory, database tables 
+required for running XData will be created and tomcat will be restarted. </li>
+<li>There are two modes in which  the XData grading tool can be used
+<ul>
+	<li><i>With a Learning Management Systems (LMS) like Moodle or Blackboard as front-end  </i>
+	This makes use of the Learning Tools Interface  (<a  href="Readme_LT_Integration.html">Interfacing using LTI</a>). 
+	If you plan to use the grading tool by only interfacing with learning management systems, you need not 
+	use the admin login and create courses or users.   Users log into the LMS and then follow a link to
+         XData; XData accepts user-ids as well as course and role information directly from the LMS. 
+        During installation, you will need to provide LMS related information when prompted.
+</li>
+
+	<li><i>Direct login.</i> Using the admin login, you can create courses and users and assign roles as student and 
+	instructor for direct login. The documentation for this is in <a href="Readme_Admin_Usage.html">Administrator Mode</a> 
+	documentation page. 
+	</li>
+</ul>
+</li>
+
+</li>
+</ol>
+ </div>
+  <div id="footer">
+        Copyright &copy; 2015 <a href="http://www.cse.iitb.ac.in/infolab/xdata">XData</a>
+      </div>
+    
+  </body>
+</html>

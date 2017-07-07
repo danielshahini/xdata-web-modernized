@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="XData - Test Data Generation for SQL Queries" />
+    <meta name="keywords" content="MutationTesting,TestDataGeneration,Grading" />
+    <meta name="author" content="Bikash Chandra" />
+    <meta name="generator" content="webgen - http://webgen.rubyforge.org" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" media="screen,projection" />
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+    <title>XData</title>
+  </head>
+
+  <body>
+  <div id="wrap">
+  <div id="header">
+	<label style="font-size: 25px;font-family:helvetica;color:#fff;font-weight: bold; padding-left: 	40px;padding-top:20px;">XData</label>
+      </div>
+
+      <div id="leftside">
+     	<li><a href="index.html"> Home</a> <br /> </li>
+	<li><a href="Readme_Inst_Setup.html">Installation</a><br />
+	<li><a href="Readme_Admin_Usage.html"> Administrator Usage</a> <br /></li>
+	<li><a href="Readme_Inst_Basics.html" > Instructor Mode</a><br /></li>
+	
+	<ul style="list-style-type:square">
+	<li><a href="Readme_Inst_Basics.html">Basic setup</a><br />
+	<!--<li><a href="Readme_Inst_Usage.html" > Instructor Usage</a><br />-->
+	<li><a href="Readme_Inst_Assignment.html">Assignment creation</a><br />
+	<li><a href="Readme_Inst_Evaluation.html">Evaluation</a><br />	
+	<li><a href="Readme_Inst_PartialMarks.html" >Grades and partial marking</a><br />
+	<li><a href="Readme_LT_Integration.html" > Learning Tool Integration</a> <br /></li>
+	<!--<li><a href="Readme_Inst_Usage.html"> Instructor Usage</a> <br /></li>-->
+	</ul>		
+	<li><a href="Readme_Student.html" > Student Usage</a> <br /></li>
+	<li><a href="Readme_Dev.html" > Developer Setup</a> <br /></li>
+      </div>
+      <div id="content" align="justify">
+        <h2 id="testing">Instructor Usage</h2> 
+
+<ol>
+  <li>Connect to XData from course management system; if course management system is not used, and XData is connected directly, open http://*root-url*/XDataWeb, and login with the instructor username and password given by the XData system admin. Please check <a href="Readme_Admin_Usage.html"> Administrator Usage</a>Administrator Usage</a> for details.</li>
+<li>You will be forwarded to Course Home page if you login directly to XData system. It will show you the list of courses for which you are registered.  Click on the view button to view the course details. If you are instructor to the course and it is a new course, please proceed with the following steps to create assignment. </li>
+<ol>
+<b>New Database Connection:</b>
+<li> This feature allows you to create a connection to any database for executing student queries [We are working on providing support to multiple databases like Oracle, MySQL,etc.,]. The default database used is postgreSQL. </li>
+<li>The database user name and password will be the the user name and password for the schema which the instructor will use for generating datasets for the questions in the assignment. </li>
+<li>The test user name and password will be the user name and password for the schema in which the student queries will run against the correct query</li>
+</ol>
+<ol>
+<b>Upload Schema:</b>
+  <li>This feature allows you to specify a SQL script containing the schema. Click on Choose File, browse to the file and click on Upload button. Sample schema can be found <a href="sample_schema.sql" target="_blank"> here </a></li>
+<li>The uploaded file can be tested for correctness when "Test and Upload" button is clicked.</li>
+<li>If the file is uploaded without testing, it can be tested later by using "Test" button in the existing schema list.</li>
+<li>For testing the schema file, database connection needs to be selected. This testing will use the database username and database password that was provided when new database connection was created.</li>
+</ol>
+<ol>
+<b>Upload Sample Data:</b>
+  <li>This feature allows you to specify a SQL script containing the initial test data. Choose an appropriate Schema Name from the drop down list, it will show option to upload a new schema file and show a list of data files existing for that schema.</li>
+<li>
+click on Choose File and browse to it, and finally click on the Upload button to submit it. Sample Data can be found <a href="sample_data_small.sql" target="_blank">here</a>.
+</li>
+<li>The uploaded file can be tested for correctness when "Test and Upload" button is clicked.</li>
+<li>If the file is uploaded without testing, it can be tested later by using "Test" button in the existing schema list.</li>
+<li>For testing the schema file, database connection needs to be selected. This testing will use the database username and database password that was provided when new database connection was created.</li>
+</ol>
+<ol><b>Assignment</b> Assignment allows you to create new one or view existing one. <br/>
+<li><ol><b>New Assignment:</b>
+<li>This feature that allows you to setup a new assignment for the students. </li>
+<li>You can enter the name and description of the assignment, along with the default schema to be used for this assignment. You can specify the start and end time for the assignment for imposing a deadline. </li>
+<li>You have to select the database connection for the assignment. This connection will be used for testing the student query. We use the test database and test password provided during "New database connection". After supplying all settings click on Submit button.</li>
+</ol>
+</li><li>
+<ol><b>View Assignments:</b>
+  <li>This feature allows you to view all the assignments created by the you. On click of the desired assignment id link, you can Edit Questions, Grade Questions, View the status of question, View Results and scores after evaluation of questions</li>
+<li>The assignment details also provides option to edit the assignment details like start date, end date, name, description, etc.,</li>
+<li>There is a button "Copy Link to Clipboard" which onclick copies the url into clipboard. This URL can be used to connect to that assignment in XData system directly from any external learning tool like Moodle.</li>
+<li>The options given to the instructor are as follows :
+<ol><b>View/Edit question:</b>
+<li>You can view the questions that are existing for the assignment. If it is a new assignment, you can add the new question text and SQL answers.</li>
+<li><b>Multiple SQL answers:</b>
+If more than one answer is to be given for a question, you can click "Add Another Query" and enter the other answer. In case of multiple answers, can also specify whether the student's answer must be evaluated against all answers or any one answer.</li>
+
+<li><b>Marks scroller:</b>The scores to be awarded for the question is specified using this scroll bar.</br>
+If there are multiple answers to one question, the instructor may choose to award different marks for each answer.</li>
+
+<li><b>Multiple Schema:</b>
+If a question belongs to different schema other than the default schema specified during assignment creation, the drop box with list of schema can be used to select a different schema. </li>
+<li>Once all these are done, click on update and the assignment will be updated with the queries.</li>
+<li><b>Generate Data:</b>
+Once the question and appropriate answers are added, you can generate the data sets for each answer by using "Generate Data" link</li>
+<li>Wait till "show generated data" link appears and click on the link to view the data sets generated for the SQL answer.</li>
+<li>If any error occurs in data generation, please check the log files for details. Use "Edit" link to edit the question text or SQL answer. Once the SQL query is edited, the generated data will be lost and repeat step 6 again.</li>
+</ol>
+
+<ol>
+<b>Grade Question:</b>
+<li>The student answers are graded using this link</li>
+<li><b>Evaluate Question:</b>
+Onclick of evaluate question link, the system gets all students answers for that question and evaluates it against the instructor answer and marks are assigned to the students answer accordingly.</li>
+<li><b>Status Of Question:</b> This link is used after evaluation of a question to see the students who had answered correctly, their scores, if student had answered incorrectly, it shows link to see the mark  details provided by the Partial Marker.</li> 
+
+<li><b>Partial Marking:</b> XData system provides partial marks to the student answer if the student query validation fails against the instructor query. <br>The tool gives you the ability to override the marks allotted through the automatic assessment. The student query and the instructor query is displayed in the partial marking details page. This helps you to verify and correct the marks. If you wish to award more / less marks than the generated mark, this page provides a text box to override the marks assigned.</li>
+</ol>
+
+<ol><b>View Results:</b>
+<li>After the evaluation, this link gives the result per question like how many answered correctly and how many answered incorrectly and the correct answer.</li>
+</ol>
+<ol><b>View Scores:</b>
+<li>After evaluation of all questions in the assignment, View Scores gives the total score of each student for that assignment. The upgrade link helps in upgrading the student marks to the External Learning Tool.</li>
+</ol>
+</li>
+</ol>
+
+
+      <div id="footer">
+        Copyright &copy; 2015 <a href="http://www.cse.iitb.ac.in/infolab/xdata">XData</a>
+      </div>
+
+    </div>
+  </body>
+</html>

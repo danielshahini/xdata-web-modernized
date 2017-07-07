@@ -1,0 +1,606 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="LibreOffice 4.1.3.2 (Linux)">
+	<META NAME="AUTHOR" CONTENT="shree ">
+	<META NAME="CREATED" CONTENT="20151126;155516834">
+	<META NAME="CHANGEDBY" CONTENT="shree ">
+	<META NAME="CHANGED" CONTENT="20151204;102121910409819">
+	<META NAME="CHANGEDBY" CONTENT="shree ">
+	<STYLE TYPE="text/css">
+	<!--
+		P { margin-left: 0.7cm; margin-bottom: 0.2cm; color: #111111; page-break-before: auto }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-IN" DIR="LTR">
+<P ALIGN=CENTER><B>XDATA SYSTEMS AND USERS</B></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">The
+XData grading tool which can be used by instructors and TAs for
+grading SQL query assignments automatically. Provided with one or
+more correct queries for an SQL assignment, the tool uses the XData
+system to automatically generate datasets that are designed
+specifically to catch common errors. The grading is then done by
+comparing the result of student queries with that of the correct
+queries against these generated datasets as well as additional
+datasets optionally provided by the graders.</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="font-weight: normal"><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal">The
+users of the system will be the TA's and instructors of the database
+courses and students who want to learn SQL</SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=CENTER STYLE="font-weight: normal"><B>PROCESS FLOW FOR ADMIN</B></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Xdata
+systems has an administrator mode that helps in creating the users,
+courses, etc., One can connect to the XData server using the URL
+http://&lt;host-url&gt;/XDataWeb, and try to login with the username
+as '<I>admin' </I>and the password set during installation. The user
+will see the welcome screen with administrator menu. </FONT></FONT></FONT>
+</P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">The
+administrator should follow the steps given below:</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">1.
+Create course for Xdata systems</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">2.Create
+the users with login information and emails using 'Create user' link.</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">3.Assign
+roles for a user providing user's login id using the '<I>Assign
+Roles' </I>link. First admin will enter login id of the user and then
+select a course and a role for that user.</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">4.The
+admin can edit the details of an existing course or delete courses
+using the '<I>View Courses' </I>link. Similarly, the admin can edit
+user information or delete the user using 'V<I>iew Users' </I>link.</FONT></FONT></FONT></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">5.
+The admin has to set-up LMS details – the instance URL of LMS
+accessing Xdata, Consumer Key and Secret Key. Please see the LMS set
+up to know about these.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=CENTER STYLE="font-variant: normal; font-style: normal"><FONT COLOR="#303030"><FONT FACE="Times New Roman, serif"><FONT SIZE=3><B>PROCESS
+FLOW FOR INSTRUCTOR</B></FONT></FONT></FONT></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">If
+the instructor's course is integrated with a Learning Management
+System, the instructor should add the URL :
+'http://&lt;host-url&gt;/XdataWeb/tool.jsp' as external URL in LMS
+assignment. First an assignment needs to be created in Learning
+Management System and this URL needs to be used. Read the
+instructions at </SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>PROCESS FLOW FOR LMS</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">for
+instruction on how to set up an assignment link.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Instructor
+should login to XData server using the URL
+http://&lt;host-url&gt;/XdataWeb. Instructor can get the login
+details from the administrator. </FONT></FONT></FONT>
+</P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">On
+login,course list page will show the list of courses for which the
+user is</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">registered.
+On click of</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">'</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">View'</SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">,
+it will show the list of assignments available for that course.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Once
+the instructor menu is shown, the following steps needs to be
+followed:</FONT></FONT></FONT></P>
+<P ALIGN=CENTER STYLE="font-variant: normal; font-style: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>DATABASE
+CONNECTION</B></FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">This
+link is used for maintaining connections to databases. details to run
+the instructor query on data sets and to evaluate student query.. The
+details to be given are :</FONT></FONT></FONT></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">a.
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Database
+Connection Name:</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">A
+user-defined connection name for identifying the connection.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">b.
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Database
+Name:</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">The
+database name created for the assignment.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">c.
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Database
+Type:</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">The
+type of database . (We currently support only PostgreSQL but are
+working on support for multiple databases like Oracle, MySQL and
+Microsoft SQL server.)</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">d.
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>JDBC
+URL:</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">The
+jdbc URL for the database in the format &lt;hostname:port&gt;.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">e.
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Database
+User name and Password:</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">A
+database username and password which will be used for generating
+datasets for the SQL queries in the assignments.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">f.
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Test
+User name and Password:</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">A
+test username and password which will be used to evaluate student
+queries. </SPAN></SPAN></FONT></FONT></FONT></SPAN>
+</P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">After
+all connection details are entered, the connection is tested for
+correctness of data and database. The details are added in Xdata
+system.</FONT></FONT></FONT></P>
+<P ALIGN=CENTER><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>U</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>PLOAD
+SCHEMA</B></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">This
+link is used to upload an SQL script containing DDL statements to
+create database tables. The SQL queries for the assignment will be
+based on the tables given in the schema. First the '</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">Choose
+File' </SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">button
+is used and file is selected. Name of the schema </SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">can
+be given for identification in Xdata Systems</SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">.
+If Name is not given, filename will be used as the schema name. </SPAN></SPAN></FONT></FONT></FONT></SPAN>
+</P>
+<OL>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>'</B><I><B>Test
+	and Upload' </B></I>button is used to test the SQL file on a
+	database connection for syntax errors and if no errors are there,
+	file is uploaded.</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><B>'Upload'
+	</B></I>button uploads the file without testing it.</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Any
+	schema can be tested against various connection later by using
+	'<I>Test' </I>button in the schema list.</FONT></FONT></FONT></P>
+</OL>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="font-variant: normal; font-style: normal"><FONT COLOR="#303030">
+   <FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>UPLOAD
+SAMPLE DATA</B></FONT></FONT></FONT></P>
+<OL>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">The
+	'<I>Sample Data' </I>link is used to upload SQL script that contains
+	sample data. First the schema needs to be selected for which the
+	data is to be uploaded. If already data file exists, they are listed
+	for testing, viewing and deletion. </FONT></FONT></FONT>
+	</P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">If
+	no file exists, the Sample data file which is to be used for data
+	generation is uploaded first. Then the Sample datasets for
+	evaluating the student query can be uploaded.</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+	<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>'</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><B>Test
+	and Upload' </B></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">button
+	is used</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+	</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">to
+	test the SQL file on a database connection for syntax errors and if
+	no errors are there, file is uploaded.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><B>'Upload'
+	</B></I>button uploads the file without testing it.</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+	<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">Any
+	data file can be tested against various connection later by using
+	'</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">Test'
+	</SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">button
+	in the schema list.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+</OL>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>				</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>CREATE
+ASSIGNMENT</B></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">Assignment
+part has two links. One to create a new one and other to view
+existing one. For new assignment, user inputs the following:</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Assignment
+Name,</FONT></FONT></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Assignment
+Description, </FONT></FONT></FONT>
+</P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Assignment
+Mode,</FONT></FONT></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Default
+schema to be used for this assignment. </FONT></FONT></FONT>
+</P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Default
+datasets for evaluation of assignment (Additional datasets provided
+by instructor using “upload sample data” UI on which student
+queries will be tested.)</FONT></FONT></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Start
+date and time and </FONT></FONT></FONT>
+</P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">End
+date and time for the assignment for imposing a deadline. </FONT></FONT></FONT>
+</P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<BR>
+</P>
+<OL>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>Assignment</B>
+	<B>Modes</B></FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>Interactive:
+	</B>“Interative” check box, if selected, creates interactive
+	assignments that the students use for learning. If assignment is
+	marked interactive, then the student query will be evaluated against
+	instructor's answer as soon as the student submits the answer. The
+	student will be able to see the correct answer given by the
+	instructor and the datasets in which his query failed if its
+	incorrect and thus interactively learn from his mistakes.</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>Grading</B>:
+	If &quot;Interactive&quot; is not checked, then when student submits
+	the query it will be checked against basic test case and student
+	answers will be saved. The instructor has to manually start the
+	evaluation after the due date of assignment or after all students
+	submit their answers.</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">The
+	instructor has to select the database connection for the assignment.
+	This connection will be used for testing the student query. Xdata
+	systems uses the test database and test password provided during
+	&quot;New database connection&quot; for running evaluation. After
+	all settings are given, the assignment creation is triggered.</FONT></FONT></FONT></P>
+</OL>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>						</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>VIEW
+ASSIGNMENTS</B></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">This
+is an important and most used UI to view all assignment created by
+the instructor for that course. On click of the desired assignment
+name or id, Assignment Details is shown in which the following
+information are there.</FONT></FONT></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<BR>
+</P>
+<OL>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">The
+	assignment details also provides option to edit the assignment
+	details like start date, end date, name, description, etc.,</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">The
+	assignment can be deleted (which internally deletes all questions,
+	student answers, marks details and anything related to that
+	assignment) using Edit assignment UI</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">There
+	is a button &quot;Copy Link to Clipboard&quot; which on click copies
+	the url into clipboard(This feature works in Chrome and Safari
+	browser. For firefox browser please enable Flash support. If you are
+	not interested in enabling flash, Please copy paste the URL). This
+	URL can be used to connect to that assignment in XData system
+	directly from any external learning tool like Moodle.<BR>Also note
+	the consumer key and secret key values in the message were given
+	during installation. These values will be used when connecting to
+	Xdata from Course management system.</FONT></FONT></FONT></P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+	<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">Links
+	for Add/View Questions, Result summary by Question and View scores </SPAN></SPAN></FONT></FONT></FONT></SPAN>
+	</P>
+</OL>
+<OL>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; line-height: 0.5cm; orphans: 1">
+	</P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>Add/View
+	Questions</B></FONT></FONT></FONT></P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">On
+	click of Add/View Questions, list of questions in the exiting
+	assignment are listed below the assignment description box. The
+	“Evaluate Assignment” link is used to evaluate all questions in
+	the assignment. </FONT></FONT></FONT>
+	</P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">If
+	it is a new assignment “<B>Add Question”</B> button is displayed
+	which will take the user to the “Add Questions” screen. The
+	instructor has to type in the <I><B>question text</B></I> and the
+	<I><B>SQL answer</B></I> for the question text. Each question in the
+	assignment has the following links.</FONT></FONT></FONT></P>
+	<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>View/Edit
+	question :</B></FONT></FONT></FONT></P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">This
+	link shows the questions that are existing for the assignment with
+	options for editing each question,evaluating each question,
+	generation of dataset, evaluation result, delete question,etc,.</FONT></FONT></FONT></P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">1.
+	On click of <B>Edit</B> link, the question can be edited – partial
+	mark parameters, marks allotted for the question, default datasets
+	for evaluation of that particular question, question text, SQL
+	answer, etc., can be edited and changes can be saved. XData provides
+	some additional features that helps in grading the assignment
+	better. They are as follows.</FONT></FONT></FONT></P>
+	<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>Multiple
+	SQL answers: </B></FONT></FONT></FONT>
+	</P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+	<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">While
+	adding a question and an answer to the assignment, if more than one
+	SQL answer is to be given for a question, &quot;Add Another Query&quot;
+	button can be used and other answer can be added and saved. In case
+	of multiple answers, a radio button appears below the text area
+	where instructor can specify whether the student's answer must be
+	evaluated against all answers or any one answer. </SPAN></SPAN></FONT></FONT></FONT></SPAN>
+	</P>
+</OL>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>	Marks:</B></FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">	The
+instructor can use the mark slider above the question to set the
+maximum marks awarded 		for the question. There is another mark
+slider above each and every SQL answer box, this is 			used to set
+the maximum marks for every answer. For one exactly correct answer,
+instructor can 		award 100 marks and for another answer instructor
+can award 75 or 50 marks for other answer.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>	Partial
+Marking Parameters:</B></FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">         
+<FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">There
+is a “View / Set Partial Marking Parameters” link above each
+answer box. This is used for setting 	weightage for partial marks.
+The partial marking feature in the grading tool assigns marks to
+student 	queries based on a heuristic of how close the student is to
+to the instructor's query. It ensures to ensure 	a standard and
+consistent evaluation scheme across all students.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">	Partial
+marking is done only if the student query fails one or more datasets
+during evaluation. For these 	student submissions the instructor can
+click on the 'Details' link in “Evaluation Status” page to see
+how 	the weightage of partial marks were awarded. Based on this, the
+student query is evaluated and partial 	marks are awarded if the
+parameters match.</FONT></FONT></FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>	Match
+All / Any:</B></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">1.
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">Once
+“Add another Query” button is clicked and second query is added,
+the radio box for “Match</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">
+</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">All/Any”
+is shown. If “Match All” is selected, while evaluation – output
+of the query on all the datasets	    needs to be matching the
+instructor output. If ”Match Any” is selected, while evaluation –
+output of	    the query on any one answer's datasets needs to be
+matching the instructor output.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">2.</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">
+On click of “</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Evaluate
+Question” </B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">link,
+all the student answers for that question will be evaluated and the
+“Evaluation result” link is shown.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">3.</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">
+“</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Generate
+Dataset”</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">
+link is used to generate the datasets for given SQL answer. The SQL
+answer is parsed and datasets are generated for each part of the
+query. Evaluation is done based on the student and instructor query
+output on these datasets.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">4.</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">
+“</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Show
+Dataset” </B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">link
+is used to show the datasets generated. This UI shows the data
+generated for the tables used in the SQL answer as well as data
+generated for the reerence tables and the instructor output on that
+dataset.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">5.</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">
+“</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>Delete”
+</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">link
+is used to delete the question along with the SQL answers and
+generated datasets.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>2.
+Result Summary by Question</B></FONT></FONT></FONT></P>
+<OL>
+	<OL>
+		<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+		<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">This
+		link shows the results summary. It shows a table that contains list
+		of SQL queries in the assigment along with question text, number of
+		students who have answered it correctly and number of students who
+		have answered in wrongly.</FONT></FONT></FONT></P>
+	</OL>
+</OL>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>3.
+View scores </B></FONT></FONT></FONT>
+</P>
+<OL START=0>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">This
+	link shows the UI with a table that holds all the student names,
+	their e-mail id, total assignment score, and a “Details” link.
+	If the login is from Learning management system like moodle,
+	blackboard, etc., there will be an “Upload” link above the table
+	as well as in each row of the table. </FONT></FONT></FONT>
+	</P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">The
+	“Upload” link above the table is used to upload all the students
+	marks to the LMS system.</FONT></FONT></FONT></P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; line-height: 0.5cm; orphans: 1">
+	<FONT COLOR="#303030">“<FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">Upload”
+	link in each row is used to upload the selected student mark to the
+	LMS system.</SPAN></SPAN></FONT></FONT></FONT></P>
+	<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+	<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">On
+	click of the “Details” link, that shows a table that has
+	“Student Answer” , “Status” ,”Marks” , “Mark details”
+	and “Error Details” link. If the student answer is correct, then
+	these links will not be shown.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+</OL>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; line-height: 0.5cm; orphans: 1">
+<FONT COLOR="#303030">         <FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><B>Mark
+Details</B> <SPAN STYLE="font-weight: normal">shows the weightage of
+the marks awarded, an option to change the obtained marks, 	         
+          	                     student answer and instructor answer
+for the query.</SPAN></FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><B>	Error
+Details</B></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">shows
+the datasets in which the student query failed, student output on
+that dataset and 	                     expected output on that
+dataset. It also shows the datasets on click of a link.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<B>PROCESS FLOW FOR LMS</B></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; orphans: 1">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">The
+instructions provided below are specific to setting up the tool in
+Moodle system. However, they can be easily extended to other learning
+management systems as well (provided the learning management system
+supports the LTI standard).</FONT></FONT></FONT></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">The
+XData grading tool can be added in the Learning Management System as
+an external tool. In Moodle, the instructor can use the '</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">Turn
+Editing On' </SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">button
+to add an activity or resource and select '</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">External
+Tool' </SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">from
+the list of options displayed.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">The
+instructor needs to provide a name for the external tool. This name
+will be displayed on the course page as shown below. set the Launch
+URL as '</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">http://&lt;host-url&gt;/XdataWeb/tool.jsp'</SPAN></I></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">After
+adding the URL, the instructor needs to use the '</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">Show
+More...' </SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">link
+and add the</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">'Consumer
+Auth Key' </SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">and
+'</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">Secret
+Key' </SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">for
+using XData. These keys are setup during installation and are used
+for the purpose of OAuth authorization.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">The
+instructor can connect to XData and create an assignment using this
+link. Once the assignment is created, the instructor can get an
+assignment URL using </SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">'Copy
+External Tool</SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">link'</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030">
+</FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">given
+in the '</SPAN></SPAN></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><I><SPAN STYLE="font-weight: normal">Assignment
+Details'</SPAN></I></FONT></FONT></FONT></SPAN><SPAN STYLE="font-variant: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal">.
+The instructor can now edit the assignment and set the external tool
+link to this URL. The assignment link from the learning management
+system will take the student directly to the assignment set by the
+instructor.</SPAN></SPAN></FONT></FONT></FONT></SPAN></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-weight: normal"><FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN STYLE="font-style: normal">Once
+the assignment evaluation is over, the instructor can go to '</SPAN><I>View
+Assignment -&gt; View Scores' </I><SPAN STYLE="font-style: normal">page
+on the grading tool, check the marks of each student and click the
+upload button. This will upload the student marks to the learning
+management system.</SPAN></FONT></FONT></FONT></P>
+<P ALIGN=LEFT><BR><BR>
+</P>
+<OL>
+	<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; widows: 1; orphans: 1">
+	<B>LIMITATIONS</B></P>
+</OL>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">Although
+Xdata systems is tested to work on many test case queries, few cases
+are not handled.</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">1.
+Queries with Case statements</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">2.
+Queries with lateral subqueries</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">3.
+Subqueries within subquery (Nested subqueries)</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">4.
+Set queries with aggregations</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">5.
+With As within With As queries</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">6.
+Queries with Extract expression for column name that holds date value
+are approximated.</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">7.
+Queries with Extract expression for time and timestamp values on
+column name are not handled.</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">7.
+EXISTS / NOT EXISTS without any subquery conditions</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; line-height: 0.5cm; widows: 1; orphans: 1">
+<B>GLOSSARY</B></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">LMS:
+Learning Management System like black board, moodle, etc.,</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">LTI:
+Learning Tool Integration </FONT></FONT></FONT>
+</P>
+<P ALIGN=LEFT STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">TA:
+Teaching Associate</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<FONT COLOR="#303030"><FONT FACE="Verdana, Tahoma, Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">UI:
+User Interface</FONT></FONT></FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm; border: none; padding: 0cm; font-variant: normal; font-style: normal; font-weight: normal; line-height: 0.5cm; widows: 1; orphans: 1">
+<BR>
+</P>
+<P ALIGN=CENTER STYLE="font-variant: normal; font-style: normal; font-weight: normal">
+<BR><BR>
+</P>
+</BODY>
+</HTML>
