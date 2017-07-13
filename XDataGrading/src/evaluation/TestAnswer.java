@@ -290,11 +290,11 @@ public class TestAnswer {
 					mutant_qry=convertUpdateQueryToSelect(mutant_qry);
 				}
 				
-				//Parse the instructor query to get number of projected columns
-				CCJSqlParserManager pm = new CCJSqlParserManager();
-				Statement stmnt = pm.parse(new StringReader(queryString));
-				PlainSelect plainSelect =  (PlainSelect)((Select) stmnt).getSelectBody();
-				List<SelectItem> rcList = plainSelect.getSelectItems();
+				//TODO:Parse the instructor query to get number of projected columns
+				//CCJSqlParserManager pm = new CCJSqlParserManager();
+				//Statement stmnt = pm.parse(new StringReader(queryString));
+				//PlainSelect plainSelect =  (PlainSelect)((Select) stmnt).getSelectBody();
+				//List<SelectItem> rcList = plainSelect.getSelectItems();
 				
 				
 				PreparedStatement pstmt11 = conn.prepareStatement(queryString);
@@ -2327,6 +2327,7 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 				isDataSetVerified = new ArrayList<Boolean>();
 				
 				String sqlQuery=rs.getString("sql");
+				//sqlQuery is the instructor query
 				queryId = rs.getInt("query_id");
 				query=checkForViews(query,user);
 				maxMarks = rs.getInt("totalmarks");
@@ -2607,11 +2608,7 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 						int queryId = rs.getInt("query_id");
 						try{
 							PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,course_id,user,failedDataSets.getStudentQueryString());
-							if(!studRole.equals("guest")){
-								
-							}else{
-								
-							}
+						
 							MarkInfo result = marker.getMarksForQueryStructures();
 							if(result.Marks > markInfo.Marks)
 								markInfo = result;
