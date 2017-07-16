@@ -110,6 +110,8 @@
  		session.setAttribute("roles", request.getParameter("roles"));
  		String roleDetail = (String)request.getSession().getAttribute("roles");
  		
+ 		roleDetail=roleDetail.toLowerCase();
+ 		
  		if(roleDetail.contains("instructor")){
  			session.setAttribute("LOGIN_USER", "ADMIN");
  			session.setAttribute("role","instructor");
