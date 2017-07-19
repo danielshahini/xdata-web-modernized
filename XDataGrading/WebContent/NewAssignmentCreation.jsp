@@ -87,6 +87,7 @@
 	function defaultDate() {
 		jQuery("#startdatetimepicker").datetimepicker();		
 		jQuery('#enddatetimepicker').datetimepicker();
+		jQuery("#softdatetimepicker").datetimepicker();	
 	}	
 	function getParameterByName(name) { 		
 	    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -98,11 +99,22 @@
 	function toggleDiv(id){
 		$(id).toggle();		
 	}
+	function enabletext(){
+		var x = document.getElementById("penaltyid").disabled;
+		if(x==false){
+			$('#penaltyid').prop("disabled", true);
+			$('#softdatetimepicker').prop("disabled", true);
+		}
+		else{
+			$('#penaltyid').prop("disabled", false);
+			$('#softdatetimepicker').prop("disabled", false);
+		}
+	}
 	
 $( document ).ready(function() { 
 	$('#showHelp').hide();
-	
-	
+	$('#penaltyid').prop("disabled", true);
+	$('#softdatetimepicker').prop("disabled", true);
 	$('#helpInteractive').on('click',function(e){
 		$('#showHelp').show();
 	});
@@ -160,6 +172,11 @@ function checkValue(){
 		return false;
 	}else if($('#assignmentName').val() === ''){
 		alert("Please enter name of the assignment");
+		return false;
+	}
+	else if($('#softdeadlineselectid').is(':checked') && $('#softdatetimepicker').val() === '')
+	{
+		alert("Select soft deadline date");
 		return false;
 	}
 	else{
@@ -277,6 +294,14 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					<div>
 						<label>Starts at: </label>
 						<input name = "start" id="startdatetimepicker" type="text" >
+					</div>
+					<br/><br/><br/><br/>
+					<div>
+						 <input style="width:30px;height:0px;" type="checkbox" title="Click to set a soft dateline and penalty" name="softdeadlineselectname" id="softdeadlineselectid"  onclick="enabletext()"/>
+						 <label style="margin-top: 0px;">Soft Deadline at:</label>
+						 <input name = "soft" id="softdatetimepicker" type="text" >
+						 <label style="margin-left: 15px;">With Penalty</label>
+						 <input name = "penalty" id ="penaltyid" type="text" value=10>%
 					</div>
 					<br/>
 					

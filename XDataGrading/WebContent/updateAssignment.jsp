@@ -8,8 +8,8 @@
 <%@page import="database.DatabaseConnection"%>
 <%@page import="database.DatabaseProperties"%>
 <%@page import="database.UpdateServlet"%>
-<head> 
- <link rel="stylesheet" href="css/structure.css" type="text/css"/>
+<head>
+<link rel="stylesheet" href="css/structure.css" type="text/css" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Create Assignment</title>
 <script type="text/javascript" src="scripts/newrow.js"></script>
@@ -17,10 +17,7 @@
 <script type="text/javascript" src="scripts/ManageQuery.js"></script>
 
 <style>
-
-
-
-textarea,select {
+textarea, select {
 	font: 12px/12px Arial, Helvetica, sans-serif;
 	padding: 0;
 }
@@ -36,14 +33,13 @@ fieldset.action {
 	margin-top: -20px;
 }
 
-
 label {
 	font-size: 15px;
 	font-weight: bold;
 	color: #666;
 }
 
-label span,.required {
+label span, .required {
 	color: red;
 	font-weight: bold;
 }
@@ -58,8 +54,6 @@ nav ul li:hover {
 	background: -moz-linear-gradient(top, #4f5964 0%, #5f6975 40%);
 	background: -webkit-linear-gradient(top, #4f5964 0%, #5f6975 40%);
 }
-
-
 </style>
 
 <%
@@ -79,11 +73,17 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	String courseId = (String) request.getSession().getAttribute(
 	"context_label");
 	boolean interactive = false;
-	 
+	boolean softdateselected = false;
 	if(request.getParameter("interactive") != null){
 		interactive = true;	
 	}
-
+	String softdate = "";
+	String penalty = "";
+	if(request.getParameter("softdeadlineselectname") != null){
+		softdateselected = true;
+		softdate=request.getParameter("soft");
+		penalty=request.getParameter("penalty");
+	}
 	String assignID = (String) request.getSession().getAttribute(
 	"resource_link_id");
 	
@@ -126,25 +126,49 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	    Timestamp startTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
 	    
 	    parsedDate = dateFormat.parse(endDate);
-	    Timestamp endTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
-		
+	    Timestamp endTimeStamp = new java.sql.Timestamp(parsedDate.getTime()); 
+	  
 		//insert into assignment
-		stmt = dbcon
-		.prepareStatement("INSERT INTO xdata_assignment VALUES (?,?,?, ?, ?, ?, ?, ?, ?,?)");
-
-		stmt.setString(1, courseId); 
-		stmt.setInt(2, newAssignmentId);
-		stmt.setString(3, description);
-		stmt.setTimestamp(4, startTimeStamp);
-		stmt.setTimestamp(5, endTimeStamp);
-		stmt.setBoolean(6, interactive);
-		stmt.setInt(7, connectionId);
-		stmt.setInt(8, schemaId); 
-		stmt.setString(9,name);
- 		stmt.setString(10,json);
-		System.out.println(stmt.toString());
-
-		stmt.executeUpdate();
+		if(softdateselected == true)
+		{
+			parsedDate = dateFormat.parse(softdate);
+		    Timestamp softTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
+			stmt = dbcon
+			.prepareStatement("INSERT INTO xdata_assignment VALUES (?,?,?, ?, ?, ?, ?, ?, ?,?,?,?,?)");
+	
+			stmt.setString(1, courseId); 
+			stmt.setInt(2, newAssignmentId);
+			stmt.setString(3, description);
+			stmt.setTimestamp(4, startTimeStamp);
+			stmt.setTimestamp(5, endTimeStamp);
+			stmt.setBoolean(6, interactive);
+			stmt.setInt(7, connectionId);
+			stmt.setInt(8, schemaId); 
+			stmt.setString(9,name);
+	 		stmt.setString(10,json);
+	 		stmt.setBoolean(11,false);
+	 		stmt.setTimestamp(12,softTimeStamp);
+	 		stmt.setString(13,penalty);
+			stmt.executeUpdate();
+			stmt.close();
+		}
+		else
+		{
+			stmt = dbcon.prepareStatement("INSERT INTO xdata_assignment VALUES (?,?,?, ?, ?, ?, ?, ?, ?,?)");
+			
+					stmt.setString(1, courseId); 
+					stmt.setInt(2, newAssignmentId);
+					stmt.setString(3, description);
+					stmt.setTimestamp(4, startTimeStamp);
+					stmt.setTimestamp(5, endTimeStamp);
+					stmt.setBoolean(6, interactive);
+					stmt.setInt(7, connectionId);
+					stmt.setInt(8, schemaId); 
+					stmt.setString(9,name);
+			 		stmt.setString(10,json);
+					stmt.executeUpdate();
+					stmt.close();
+		}
 		rs.close();
 
 	}

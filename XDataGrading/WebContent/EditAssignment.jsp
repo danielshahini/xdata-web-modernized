@@ -88,6 +88,8 @@
 		jQuery("#startdatetimepicker").datetimepicker();
 		
 		jQuery('#enddatetimepicker').datetimepicker();
+		
+		jQuery('#softdatetimepicker').datetimepicker();
 		$('#loadDefaultDataSets').show();
 	}
 
@@ -107,10 +109,44 @@
 	}function toggleDiv(id){
 		$(id).toggle();		
 	}
+	function enabletext(){
+		var x = document.getElementById("penaltyid").disabled;
+		if(x==false){
+			$('#penaltyid').prop("disabled", true);
+			$('#softdatetimepicker').prop("disabled", true);
+		}
+		else{
+			$('#penaltyid').prop("disabled", false);
+			$('#softdatetimepicker').prop("disabled", false);
+		}
+	}
+	
+	function validate(){
+		if($('select[name=schemaid]').val()==='select'){
+			alert("Select schema");
+			return false;
+		}else if($('#startdatetimepicker').val() === ''){
+			alert("Select start date");
+			return false;
+		}else if($('#enddatetimepicker').val() === ''){
+			alert("Select start date");
+			return false;
+		}else if($('#assignmentName').val() === ''){
+			alert("Please enter name of the assignment");
+			return false;
+		}
+		else if($('#softdeadlineselectid').is(':checked') && $('#softdatetimepicker').val() === '')
+		{
+			alert("Select soft deadline date");
+			return false;
+		}
+		else{
+			return true;
+			}
+		}
 	
 	$( document ).ready(function() { 
 		$('#showHelp').hide();
-		
 		
 		$('#helpInteractive').on('click',function(e){
 			$('#showHelp').show();
@@ -198,7 +234,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			/**get time stamp details*/
 			Timestamp start = null;
 			Timestamp end = null;
+			Timestamp soft = null;
 			String chk = null;
+			String penalty="";
 			String dsSet="<div><div id=\"loadDefaultDataSets\" style='display:none;'>";
 			
 			try {
@@ -234,6 +272,8 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 	 				
 						start = rs1.getTimestamp("starttime"); 
 						end = rs1.getTimestamp("endtime"); 
+						soft = rs1.getTimestamp("softtime"); 
+						penalty = rs1.getString("penalty");
 						//start=rs.getString("end_date");
 						PreparedStatement stmt2 = dbcon
 						.prepareStatement("SELECT * from xdata_sampledata where course_id=? and schema_id=?");
@@ -329,8 +369,33 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			 
 			String formattedStart = new SimpleDateFormat("yyyy/MM/dd HH:mm").format(start);
 			String formattedEnd = new SimpleDateFormat("yyyy/MM/dd HH:mm").format(end);
+			String formattedSoft="";
+			if(soft!=null)
+				formattedSoft = new SimpleDateFormat("yyyy/MM/dd HH:mm").format(soft);
 
 			output += "<div><label class='field'>Starts at:</label><input name = 'start' value ='" + formattedStart + "' id='startdatetimepicker' type='text'/></div><br/>";
+			
+			output +="</br></br></br>";
+			if(formattedSoft=="")
+			{
+				output+="<div>";
+				output+="<input style=\"width:30px;height:0px;\" type=\"checkbox\" title=\"Click to set a soft dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\"  onclick=\"enabletext()\"/>";
+				output+="<label style=\"margin-top: 0px;\">Soft Deadline at:</label>";
+				output+="<input name = \"soft\" id=\"softdatetimepicker\" type=\"text\" disabled=\"disabled\">";
+				output+="<label style=\"margin-left: 15px;\">With Penalty</label>";
+				output+= "<input name = \"penalty\" id =\"penaltyid\" type=\"text\" value=10 disabled=\"disabled\">%";
+				output+="</div>";
+			}
+			else
+			{
+				output+="<div>";
+				output+="<input style=\"width:30px;height:0px;\" type=\"checkbox\" title=\"Click to set a soft dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\" checked=\"checked\"  onclick=\"enabletext()\"/>";
+				output+="<label style=\"margin-top: 0px;\">Soft Deadline at:</label>";
+				output+="<input name = \"soft\" id=\"softdatetimepicker\" type=\"text\" value='"+formattedSoft+"'>";
+				output+="<label style=\"margin-left: 15px;\">With Penalty</label>";
+				output+= "<input name = \"penalty\" id =\"penaltyid\" type=\"text\" value='"+penalty+"'>%";
+				output+="</div>";
+			}
 			
 			output += "<div><label class='field'>Ends at:</label><input name = 'end' value ='" + formattedEnd + "' id='enddatetimepicker' type='text'/></div>";
 			output += "</br></br></br></br>";
@@ -340,6 +405,8 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			output += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 			
 			output += "&nbsp;&nbsp;<input name=\"Delete\" type=\"button\" value=\"Delete Assignment\" id=\""+assignID+"\" onclick=\"onSubmit(this.id);\" </div>";
+			
+			
 			
 			out.println(output); 
 			dbcon.close();

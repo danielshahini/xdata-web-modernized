@@ -89,8 +89,23 @@ a:hover {
 		if(request.getParameter("interactive") != null){
 			interactive = true;	
 		}
-
-		
+		Boolean softdateselected = false;
+		String softdate = "";
+		String penalty = "";
+		Timestamp softTimeStamp;
+		if(request.getParameter("softdeadlineselectname") != null){
+			softdateselected = true;
+			softdate=request.getParameter("soft");
+			penalty=request.getParameter("penalty");
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
+		    java.util.Date parsedDate = dateFormat.parse(softdate);
+		    softTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
+		}
+		else
+		{
+			penalty="10";
+			softTimeStamp=null;
+		}
 		//get connection
 		Connection dbcon = (new DatabaseConnection()).dbConnection();
 
@@ -104,9 +119,11 @@ a:hover {
 	    
 	    parsedDate = dateFormat.parse(endDate);
 	    Timestamp endTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
- 
+ 		
+	    
+	    
 		stmt = dbcon.prepareStatement
-				("UPDATE xdata_assignment SET starttime=? ,endtime=?, connection_id = ?, defaultschemaid = ?, description=?, assignmentName=?, learning_mode=?, defaultDSetId =? WHERE assignment_id=? and course_id = ?");
+				("UPDATE xdata_assignment SET starttime=? ,endtime=?, connection_id = ?, defaultschemaid = ?, description=?, assignmentName=?, learning_mode=?, defaultDSetId =?, penalty =? , softtime =? WHERE assignment_id=? and course_id = ?");
 
 		stmt.setTimestamp(1, startTimeStamp); 
 		stmt.setTimestamp(2, endTimeStamp);
@@ -116,11 +133,12 @@ a:hover {
 		stmt.setString(6,name);
 		stmt.setBoolean(7, interactive); 
 		stmt.setString(8,json);
-		stmt.setInt(9, asgnmentID);
-		stmt.setString(10, courseID); 
+		stmt.setString(9, penalty);
+		stmt.setTimestamp(10, softTimeStamp); 
+		stmt.setInt(11, asgnmentID);
+		stmt.setString(12, courseID); 
 		
 		stmt.executeUpdate();
-		
 		String url="";
 		
 		if(!((String)request.getSession().getAttribute("LOGIN_USER")).equalsIgnoreCase("tester")){

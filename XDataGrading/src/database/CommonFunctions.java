@@ -188,10 +188,12 @@ public class CommonFunctions {
 			throws Exception {
 		// get connection
 		Timestamp end = null;
+		Timestamp soft = null;
 		int defaultSchemaId = 0;
 		String assignmentType = "";
 		String assignmentName = null;
 		String instructions = "";
+		String penalty="";
 		if(user.equals("guest")){ 
 			instructions += "<table border='0'><tr><td width='15%' style='padding: 0px;border:0px solid black;'>";
 		}
@@ -210,6 +212,8 @@ public class CommonFunctions {
 			try(ResultSet rs = stmt.executeQuery()){
 			if (rs.next()) {
 				end = rs.getTimestamp("endtime");
+				soft = rs.getTimestamp("softtime");
+				penalty = rs.getString("penalty");
 				if(  rs.getBoolean("learning_mode")){
 					assignmentType="Learning Mode";
 				}
@@ -315,6 +319,9 @@ public class CommonFunctions {
 							"yyyy-MM-dd HH:mm:ss");
 					formatter.setLenient(false);
 					String ending = formatter.format(end);
+					String softdate="";
+					if(soft!=null)
+						softdate = formatter.format(soft);
 					java.util.Date oldDate = formatter.parse(ending);
 					// get current date
 					Calendar c = Calendar.getInstance();
@@ -329,8 +336,17 @@ public class CommonFunctions {
 						instructions += "<p><label><b> Assignment is over due by </b></label> <b><label style='color:#353275'>"
 								+ dueTime + "</b></label></p>";					
 					} else {
-						instructions += "<p><label> <b>Assignment is due on </b></label> <b><label style='color:#353275'>" + end
-								+ " </b></label></p>";
+						if(soft!=null)
+						{
+							instructions += "<p><label> <b>Soft deadline on </b></label> <b><label style='color:#353275'>" + soft
+									+ " </b></label></p>";
+							instructions += "<p><label> <b>Hard deadline on </b></label> <b><label style='color:#353275'>" + end+ "</b></label>"
+									+ " <label><b>with penalty </b></label> <b><label style='color:#353275'>"+penalty+"% </b></label></p>";
+						}
+						else{
+							instructions += "<p><label> <b>Hard deadline on </b></label> <b><label style='color:#353275'>" + end
+									+ " </b></label></p>";
+						}
 					}
 				}
 			
