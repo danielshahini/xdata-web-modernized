@@ -11,8 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
-
-
+import java.util.*;
+import java.text.*;
+import java.sql.*;
+import database.CommonFunctions;
+import database.DatabaseProperties;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -250,6 +253,7 @@ public class TestAnswer {
 		boolean next1 = true;
 		boolean next2 = true;
 		Vector<String> queryIds = new Vector<String>();		
+		System.out.println(">>>>>>>>>>>>>>>>QUERY STRING:::"+queryString);
 		try{
 			
 			try{
@@ -295,6 +299,11 @@ public class TestAnswer {
 				//Statement stmnt = pm.parse(new StringReader(queryString));
 				//PlainSelect plainSelect =  (PlainSelect)((Select) stmnt).getSelectBody();
 				//List<SelectItem> rcList = plainSelect.getSelectItems();
+				//Parse the instructor query to get number of projected columns
+				/*CCJSqlParserManager pm = new CCJSqlParserManager();
+				Statement stmnt = pm.parse(new StringReader(queryString));
+				PlainSelect plainSelect =  (PlainSelect)((Select) stmnt).getSelectBody();
+				List<SelectItem> rcList = plainSelect.getSelectItems();*/
 				
 				
 				PreparedStatement pstmt11 = conn.prepareStatement(queryString);
@@ -349,6 +358,7 @@ public class TestAnswer {
 							for(int k=1;k<=orgRsmd.getColumnCount();k++){
 								projectedCols.add(orgRsmd.getColumnName(k));
 							}
+							System.out.println(">>>>>>>>>>>>>>>>Col count:::"+orgRsmd.getColumnCount()+"::AND::"+rsmd.getColumnCount());
 							if(orgRsmd.getColumnCount()!=rsmd.getColumnCount()){
 								columnmismatch.add((String)Id);
 							}
@@ -444,7 +454,7 @@ public class TestAnswer {
 			//e.printStackTrace();
 		}
 		
-
+		
 			return queryIds;
     }
     
@@ -2262,7 +2272,7 @@ public FailedDataSetValues  getInstructorOutput (Connection testCon, String data
 //public String testAnswer(int assignmentId,int questionId, String query, String user, String filePath) throws Exception{
 public FailedDataSetValues testAnswer(int assignmentId,int questionId, String course_id,
 	String query, String user, String filePath, boolean isLateSubmission, String studRole) throws Exception{
-	
+	System.out.println(">>>>>>>>>>>>>>STUDROLE#2"+studRole);
 	FailedDataSetValues failedDataSets = new FailedDataSetValues();
 	int queryId = 1;
 	String qId = "A"+assignmentId +"Q"+questionId+"S"+queryId;
@@ -2280,6 +2290,7 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 	//First instructor answer will be considered to show failed datasets
 	String instrQuery = "";
 	Map <Integer,Boolean> resultOfDatasetMatchForEachQuery  = new HashMap<Integer, Boolean>();
+	System.out.println(">>>>>status1: "+failedDataSets.getStatus());
 	try(Connection conn = MyConnection.getDatabaseConnection()){
 		try(Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){
 			
@@ -2340,7 +2351,7 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 				HashMap<String,String> mutants = new HashMap<String,String>();
 				mutants.put(qId, query);
 				index++;
-				
+				System.out.println(">>>>>status2: "+failedDataSets.getStatus());
 				try{
 					 p.deleteAllTempTablesFromTestUser(testConn);
 					}catch(Exception e){
@@ -2375,6 +2386,7 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 							}						
 					}
 					p.deleteAllTempTablesFromTestUser(testConn);
+					System.out.println(">>>>>status3: "+failedDataSets.getStatus());
 				}
 				}catch(Exception e){
 					logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
@@ -2387,15 +2399,17 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 								&&  defaultDSIdsAssignment != null){
 							
 							for(int dId= 0; dId < defaultDSIdsAssignment.length;dId++){
-								Vector<String> cmismatch = new Vector<String>();
 								logger.log(Level.INFO,"******************");
+								Vector<String> cmismatch = new Vector<String>();
 								logger.log(Level.INFO,"Default dataset "+defaultDSIdsAssignment[dId]+" Loaded : ");
 								logger.log(Level.INFO,"******************");
 								
 								 String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id,defaultDSIdsAssignment[dId].toString());
+								 System.out.println("CALLED ???????????????????????");
 								 Vector<String> killedMutants = checkAgainstOriginalQuery(mutants,defaultDSIdsAssignment[dId].toString(), sqlQuery,"NoPath", orderIndependent, cmismatch, testConn);
 								 
 								 resultOfDatasetMatchForEachQuery = this.processResult(failedDataSets,killedMutants, mutants, incorrect, instrQuery,queryId,resultOfDatasetMatchForEachQuery,defaultDSIdsAssignment[dId].toString());
+								 System.out.println(">>>>>status31: "+failedDataSets.getStatus());
 								 if(!(resultOfDatasetMatchForEachQuery.containsKey(queryId))){
 										resultOfDatasetMatchForEachQuery.put(queryId,true);
 									}
@@ -2410,7 +2424,7 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 				try{
 						Map <Integer,Vector<String>>  datasetForQueryMap =	downloadDatasets(assignmentId,questionId,queryId,course_id,conn,filePath, false);
 						//Even if no default data sets are there and no datasets are available for the query, , check against the sample Data file that the assignment uses.
-						
+						 System.out.println(">>>>>status311: "+failedDataSets.getStatus());
 								for(Integer id : datasetForQueryMap.keySet()){
 									
 									Vector<String> datasets = datasetForQueryMap.get(id);
@@ -2436,8 +2450,10 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 					
 										p.populateTestDataForTesting(vs, filePath+"/"+datasets.get(i), tm, testConn, assignmentId, questionId);
 										Vector<String> cmismatch=new Vector<String>();
-										Vector<String> killedMutants = checkAgainstOriginalQuery(mutants,datasets.get(i), sqlQuery, filePath,orderIndependent,cmismatch,testConn);			
+										Vector<String> killedMutants = checkAgainstOriginalQuery(mutants,datasets.get(i), sqlQuery, filePath,orderIndependent,cmismatch,testConn);	
+										// System.out.println(">>>>>status312: "+failedDataSets.getStatus());
 										resultOfDatasetMatchForEachQuery = this.processResult(failedDataSets,killedMutants, mutants, incorrect, instrQuery,queryId,resultOfDatasetMatchForEachQuery,datasets.get(i));
+										 System.out.println(">>>>>status32: "+failedDataSets.getStatus());
 										 }		   
 								  }
 									//If there are no items in resultOfDatasetMatchForEachQuery for given queryId
@@ -2459,9 +2475,10 @@ public FailedDataSetValues testAnswer(int assignmentId,int questionId, String co
 			
 		/*******Check for Match all or match One Option Start******/
 		isQueryPass = this.getMatchForAllQueries(resultOfDatasetMatchForEachQuery,isQueryPass,isMatchAll);
-		
+		 System.out.println(">>>>>status33: "+failedDataSets.getStatus());
 		//Set Marks for the failedStudentQuery
 		failedDataSets = this.getMarkDetails(conn,failedDataSets, isQueryPass,studRole,assignmentId,questionId,course_id,query,user,isLateSubmission,maxMarks,reduceLateSubmissionMarks);
+		System.out.println(">>>>>status4: "+failedDataSets.getStatus());
 		return failedDataSets;
 			
 		}// try block for TestConn ends
@@ -2542,6 +2559,94 @@ public Map<Integer,Boolean> processResult(FailedDataSetValues failedDataSets,Vec
 		
 		return resultOfDatasetMatchForEachQuery;
 }
+/**
+ * This method calculates the percentage of penalty for late submission
+ * @author Ananyo
+ * @param assignmentId
+ * @param questionId
+ * @param course_id
+ * @param user
+ * @return penalty factor
+ * @throws Exception
+ */
+
+private float lateSubmission_penalizer(Connection conn,int assignmentId, int questionId,String course_id,String user) throws Exception
+{
+	float penalty=0;
+	try{
+	
+		String qry1 = "select * from xdata_student_queries where assignment_id = ? and question_id = ? and course_id= ? and rollnum = ?";
+		PreparedStatement pstmt1 = conn.prepareStatement(qry1);
+			pstmt1.setInt(1,assignmentId);
+			pstmt1.setInt(2,questionId);
+			pstmt1.setString(3,course_id);
+			pstmt1.setString(4,user);
+			ResultSet rs1 = pstmt1.executeQuery();
+			Timestamp sub_time=null;
+			while(rs1.next()) sub_time = rs1.getTimestamp("submissiontime"); 
+			
+			
+			
+			
+		String qry2="select * from xdata_assignment where assignment_id = ? and course_id= ?";
+		PreparedStatement pstmt2 = conn.prepareStatement(qry2);
+		pstmt2.setInt(1,assignmentId);
+		pstmt2.setString(2,course_id);	
+		ResultSet rs2 = pstmt2.executeQuery();
+		Timestamp start=null,end=null,soft=null;
+		float p=0;
+		while(rs2.next()){ 
+			start = rs2.getTimestamp("starttime");
+			end = rs2.getTimestamp("endtime");
+			soft = rs2.getTimestamp("softtime");
+			if(rs2.getString("penalty").compareTo("")==0)
+			{
+				//System.out.println("under if>>>>>>>"+rs2.getString("penalty"));
+				p=10;
+			}
+			else
+				p=Float.parseFloat(rs2.getString("penalty"));
+			p=p/100;
+			
+		}
+		//System.out.println("p: "+p);
+		if(soft==null)
+			return 1;
+		SimpleDateFormat formatter = new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm:ss");
+				formatter.setLenient(false);
+				String ending = formatter.format(end);
+				String starting = formatter.format(start);
+				String softing = formatter.format(soft);
+				String submitting = formatter.format(sub_time);
+				
+
+				java.util.Date endDate = formatter.parse(ending);
+				java.util.Date startDate = formatter.parse(starting);
+				java.util.Date softDate = formatter.parse(softing);
+				java.util.Date subDate = formatter.parse(submitting);
+				
+				//System.out.println("enddate: "+endDate.toString());
+				//System.out.println("startdate: "+startDate.toString());
+				//System.out.println("softdate: "+softDate.toString());
+				//System.out.println("subdate: "+subDate.toString());
+				
+				if(startDate.compareTo(subDate)<0 && softDate.compareTo(subDate) >0)
+					penalty=0;
+				else if(softDate.compareTo(subDate) <0 && endDate.compareTo(subDate) >0)
+					penalty=p;
+				else
+					penalty=1;
+		
+	
+	}
+	catch(Exception ex){
+		logger.log(Level.SEVERE,ex.getMessage(), ex);
+		ex.printStackTrace();
+	}	
+	
+	return 1-penalty;
+}
 
 /**
  * This method calls the partial marking part to calculate partial marks for failed queries. 
@@ -2570,9 +2675,11 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 
 	MarkInfo markInfo = new MarkInfo();
 	try{
+		float lateSub_factor=lateSubmission_penalizer(conn,assignmentId,questionId,course_id,user);
+		//System.out.println("fraction>>> "+ lateSub_factor);
 		if(isQueryPass){
 			logger.log(Level.INFO,"Question passed the datasets expected");
-			if(!studRole.equals("guest")){
+			if(studRole==null || !studRole.equals("guest")){
 				String qryUpdate = "update xdata_student_queries set verifiedcorrect = true where assignment_id ='"+assignmentId+"' and question_id = '"+questionId+"' and rollnum = '"+user+"' and course_id='"+course_id+"'";
 				try(PreparedStatement pstmt3 = conn.prepareStatement(qryUpdate)){
 					pstmt3.executeUpdate();
@@ -2590,7 +2697,8 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 			failedDataSets.setMarks(markInfo.Marks);
 		}
 		else{
-			if(!studRole.equals("guest")){
+			
+			if(studRole==null || !studRole.equals("guest")){
 				String qryUpdate = "update xdata_student_queries set verifiedcorrect = false where assignment_id ='"+ assignmentId+"' and question_id = '"+questionId+"' and rollnum = '"+user+"' and course_id='"+course_id+"'";		
 				try(PreparedStatement pstmt2 = conn.prepareStatement(qryUpdate)){
 				//pstmt2.setString(1,out.trim());
@@ -2608,7 +2716,11 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 						int queryId = rs.getInt("query_id");
 						try{
 							PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,course_id,user,failedDataSets.getStudentQueryString());
-						
+							if(studRole==null || !studRole.equals("guest")){
+								
+							}else{
+								
+							}
 							MarkInfo result = marker.getMarksForQueryStructures();
 							if(result.Marks > markInfo.Marks)
 								markInfo = result;
@@ -2626,7 +2738,10 @@ public FailedDataSetValues getMarkDetails(Connection conn, FailedDataSetValues f
 			Gson gson = new Gson();
 			String info = gson.toJson(markInfo);
 			if(!studRole.equals("guest")){
-				DatabaseHelper.InsertIntoScores(conn, assignmentId, questionId, 1, course_id, maxMarks, user, info, markInfo.Marks);
+				float raw_marks=markInfo.Marks;
+				markInfo.Marks= raw_marks * lateSub_factor;
+				//TODO URGENT : SCHEMA CHANGE !!!!!
+				DatabaseHelper.InsertIntoScores(conn, assignmentId, questionId, 1, course_id, maxMarks, user, info, markInfo.Marks,raw_marks);
 			}
 			failedDataSets.setMaxMarks(maxMarks);
 			failedDataSets.setMarks(markInfo.Marks);

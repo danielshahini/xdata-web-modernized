@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 public class DatabaseHelper {
 	
 	private static Logger logger = Logger.getLogger(DatabaseHelper.class.getName());
-	public static void InsertIntoScores(Connection conn, int assignmentId, int questionId, int queryId, String course_id, int maxMarks, String userId, String info, Float marks) throws SQLException{
+	public static void InsertIntoScores(Connection conn, int assignmentId, int questionId, int queryId, String course_id, int maxMarks, String userId, String info, Float marks, Float raw_marks) throws SQLException{
 		//String insertquery="INSERT INTO score VALUES (?,?,?,?,?,?,?,?,?)";
 		 
 		try{
@@ -27,15 +27,16 @@ public class DatabaseHelper {
 				smt.close();
 			}*/
 			
-			String updateScoreQuery = "update xdata_student_queries set score = ?,markinfo=?,max_marks=? where assignment_id=? and question_id=? and rollnum=?";
+			String updateScoreQuery = "update xdata_student_queries set score = ?,markinfo=?,max_marks=?,raw_score=? where assignment_id=? and question_id=? and rollnum=?";
 			try(PreparedStatement ps = conn.prepareStatement(updateScoreQuery)){
 			ps.setFloat(1, marks);
 			ps.setString(2, info);
 			ps.setInt(3, maxMarks);
-
-			ps.setFloat(4, assignmentId);
-			ps.setInt(5, questionId);
-			ps.setString(6, userId);
+			ps.setFloat(4, raw_marks);
+			ps.setFloat(5, assignmentId);
+			ps.setInt(6, questionId);
+			ps.setString(7, userId);
+			
 			ps.executeUpdate();
 			}
 			
@@ -47,6 +48,7 @@ public class DatabaseHelper {
 				smt.setFloat(1, marks);
 				smt.setString(2, info);
 				smt.setInt(3, assignmentId);
+				
 				smt.setInt(4, questionId);
 				smt.setString(5, userId);	
 				smt.setString(6,course_id);

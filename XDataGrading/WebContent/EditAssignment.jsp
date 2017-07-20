@@ -376,7 +376,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			output += "<div><label class='field'>Starts at:</label><input name = 'start' value ='" + formattedStart + "' id='startdatetimepicker' type='text'/></div><br/>";
 			
 			output +="</br></br></br>";
-			if(formattedSoft=="")
+			if(formattedSoft.compareTo("")==0)
 			{
 				output+="<div>";
 				output+="<input style=\"width:30px;height:0px;\" type=\"checkbox\" title=\"Click to set a soft dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\"  onclick=\"enabletext()\"/>";

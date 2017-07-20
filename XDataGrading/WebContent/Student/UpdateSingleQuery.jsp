@@ -13,6 +13,7 @@
 <%@ page import="java.util.*"%>
 <%@ page import="java.io.*"%>
 <%@ page import="java.text.*"%>
+<%@page import="java.util.Date"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -179,7 +180,7 @@
 			}
 			
 		}else{
-				
+			//student	
 			if(expired){
 		
 				String remoteLink = request.getContextPath()+ "/ListOfQuestions.jsp?AssignmentID=" + asID + "&&studentId=" + studentID
@@ -191,18 +192,23 @@
 				try {
 					
 				//String questionId = "A"+asID+"Q"+queryID.trim()+"S1";			
-				
+				System.out.println("questionId:::::"+questionID);
 				stmt = dbcon.prepareStatement("select * from xdata_student_queries where assignment_id=? and question_id = ? and rollnum = ? and course_id=?");
 				stmt.setInt(1, asID);
 				stmt.setInt(2,Integer.parseInt(questionID));
 				stmt.setString(3, studentID);
 				stmt.setString(4,courseID);
 				System.out.println(stmt.toString());
-				rs = stmt.executeQuery();
 				
+			//	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
+				//Date parsedDate = dateFormat.parse(currentDate);
+				Timestamp subTimeStamp = new java.sql.Timestamp(current.getTime());
+				System.out.println("timestamp>>>>> "+subTimeStamp.toString());
+				
+				rs = stmt.executeQuery();
 				if(!rs.next()){
 				
-					stmt = dbcon.prepareStatement("INSERT INTO xdata_student_queries (dbid, queryid, rollnum, querystring, tajudgement,verifiedcorrect, assignment_id, question_id,course_id) VALUES(?,?,?,?,?,?,?,?,?)");
+					stmt = dbcon.prepareStatement("INSERT INTO xdata_student_queries (dbid, queryid, rollnum, querystring, tajudgement,verifiedcorrect, assignment_id, question_id,course_id,submissiontime) VALUES(?,?,?,?,?,?,?,?,?,?)");
 					stmt.setString(1, "dbid");/**FIXME: */
 					stmt.setString(2, query_id);
 					stmt.setString(3, studentID);
@@ -212,15 +218,17 @@
 					stmt.setInt(7,asID);
 					stmt.setInt(8,Integer.parseInt(questionID));
 					stmt.setString(9,courseID);
+					stmt.setTimestamp(10, subTimeStamp);
 				}
 				else{
-					stmt = dbcon.prepareStatement("UPDATE xdata_student_queries SET querystring=? WHERE assignment_id=? and question_id = ? AND rollnum=? and course_id =?");
+					stmt = dbcon.prepareStatement("UPDATE xdata_student_queries SET querystring=?,submissiontime=? WHERE assignment_id=? and question_id = ? AND rollnum=? and course_id =?");
 					
 					stmt.setString(1, correctquery);
-					stmt.setInt(2,asID);
-					stmt.setInt(3, Integer.parseInt(questionID));
-					stmt.setString(4, studentID);
-					stmt.setString(5, courseID);
+					stmt.setTimestamp(2, subTimeStamp);
+					stmt.setInt(3,asID);
+					stmt.setInt(4, Integer.parseInt(questionID));
+					stmt.setString(5, studentID);
+					stmt.setString(6, courseID);
 				} 
 				
 				stmt.executeUpdate();
@@ -232,14 +240,16 @@
 				
 				QueryStatusData status;
 				if(interactiveMode){
+					System.out.println(args[0]+"  "+args[1]+"   "+args[2]);
 					 status = ta.evaluateQuestion(dbcon, testConn, args);
+					 System.out.println("InteractiveStatus:" + status.Status.toString());
 				}
 				else{ 
 					status = ta.testQuery(args);
 				} 
 				
 				//System.out.println("Student Mode - UpdateSingleQuery - "+ro.kifs.diagnostic.Connection.getStillOpenedConnsStackTraces());
-				System.out.println("TestQueryOuput" + status.Status.toString());
+				//System.out.println("TestQueryOuput" + status.Status.toString());
 				String remoteLink = "";
 				if(interactiveMode){ 
 					session.setAttribute("dbConn", dbcon);
