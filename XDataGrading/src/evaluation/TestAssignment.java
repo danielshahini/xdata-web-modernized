@@ -607,6 +607,7 @@ public class TestAssignment {
 									String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 									FailedDataSetValues failedDs = test.testAnswer(assignment_id, question_id, courseId,
 											OriginalQry, rollNum, "4/" + courseId + "/" + queryId, false,null);
+									System.out.println(">>>>>status: "+failedDs.getStatus());
 									GenerateCVC1 cvc = new GenerateCVC1();											
 									preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
 									
@@ -618,7 +619,7 @@ public class TestAssignment {
 								 	
 									TableMap tm = cvc.getTableMap();
 									if (failedDs.getStatus().equalsIgnoreCase("Failed")) {
-										
+										System.out.println(">>>>>>>>>>>>>>Failed");
 										// Get DS0
 										Map<String, Map<String, ArrayList<String>>> failedStudDataMap = new HashMap<String, Map<String, ArrayList<String>>>();
 										Map<String, Map<String, ArrayList<String>>> failedInstrDataMap = new HashMap<String, Map<String, ArrayList<String>>>();
@@ -1164,7 +1165,7 @@ public class TestAssignment {
 									// upstmt.setString(3,course_Id);
 									if (flag == 1) {
 										DatabaseHelper.InsertIntoScores(dbcon, assignment_id, question_id, 1, course_Id,
-												100, StudQueries.getString("rollnum"), "", 0F);
+												100, StudQueries.getString("rollnum"), "", 0F,0F);
 									}
 									upstmt.setInt(3, assignment_id);
 									upstmt.setInt(4, question_id);
@@ -1174,7 +1175,7 @@ public class TestAssignment {
 									upstmt.executeUpdate();
 								} else {
 									DatabaseHelper.InsertIntoScores(dbcon, assignment_id, question_id, 1, course_Id,
-											100, StudQueries.getString("rollnum"), "", 0F);
+											100, StudQueries.getString("rollnum"), "", 0F,0F);
 									upstmt.setBoolean(1, false);
 									upstmt.setString(2, null);
 									upstmt.setInt(3, assignment_id);
