@@ -135,8 +135,10 @@ a:hover {
 										throw new ServletException(err);
 									}
 							finally{
-								dbcon.close();
+								if(dbcon != null)
+									dbcon.close();
 							}
+							
 				%>
 			</fieldset>
 		</div>

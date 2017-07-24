@@ -39,6 +39,7 @@ breadcrumbs();
 	PrintWriter output = response.getWriter();
 	int i=Integer.parseInt(schemaID);
 	Connection conn= (new DatabaseConnection()).dbConnection();
+	try{
 	PreparedStatement stmt = conn.prepareStatement("select schema_name,ddltext from xdata_schemainfo where schema_id = ?");
 	stmt.setInt(1, i);
 	ResultSet result = stmt.executeQuery();
@@ -69,7 +70,16 @@ breadcrumbs();
 	}  
 	result.close();
 	stmt.close();
+	}
+	catch (Exception err) {
+
+		err.printStackTrace();
+		throw new ServletException(err);
+	}
+finally{
+if(conn != null)
 	conn.close();
+}
 %>			 
 <input type="button" onclick="javascript:history.go(-1)" value="Back"> </div></fieldset></div>
 </div> 

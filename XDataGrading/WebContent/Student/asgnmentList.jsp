@@ -89,12 +89,13 @@ label span,.required {
 						<legend> Assignment Details</legend>
 						<%
 						
+						try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 							String studentId = (String) request.getParameter("studentId");
 											if (studentId == null)
 												studentId = (String) request.getSession().getAttribute("user_id");
 
 											//get connection
-											Connection dbcon = (new DatabaseConnection()).dbConnection();
+											//Connection dbcon = (new DatabaseConnection()).dbConnection();
 											String output = "";
 											//int assignID;
 											boolean start = true;
@@ -214,6 +215,12 @@ label span,.required {
 											}
 										
 											dbcon.close();
+						} catch (Exception err) {
+							//out.println("<p style=\"font-family:arial;color:red;font-size:20px;background-color:white;\">"+err+" </p>");
+							
+							err.printStackTrace();
+							throw new ServletException(err);
+						}
 						%>
 					</fieldset>
 				</div>

@@ -30,7 +30,10 @@
 <body>
 
 
-	<%if (session.getAttribute("LOGIN_USER") == null) {
+	<%
+	
+	
+	if (session.getAttribute("LOGIN_USER") == null) {
 		response.sendRedirect("index.jsp?TimeOut=true");
 		return;
 	}
@@ -53,6 +56,7 @@
 			
 			Connection testConn = ((new util.DatabaseConnection()).getTesterConnection(asID)).getTesterConn();
 			
+	try{
 			PreparedStatement stmt;
 			ResultSet rs = null;
 			
@@ -277,10 +281,18 @@
 				}finally{
 					rs.close();
 					stmt.close();
+					
 					 
 				}
 						
 			}
+		}
+		}
+		finally{
+			if(dbcon != null)
+				dbcon.close();
+			if(testConn != null)
+				testConn.close();
 		}
 	%>
 </body>

@@ -31,8 +31,8 @@ String downloadFileName = "";
 int schemaId = Integer.parseInt(request.getParameter("schemaId"));
 int BUFSIZE = 4096;
 InputStream inputStream = null;
-Connection dbcon = (new DatabaseConnection()).dbConnection();
-try {
+//Connection dbcon = (new DatabaseConnection()).dbConnection();
+try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 
 	PreparedStatement stmt1;
 	stmt1= dbcon.prepareStatement("SELECT schema_name,ddltext from xdata_schemainfo where course_id=? and schema_id =?");
@@ -83,10 +83,7 @@ outStream.close();
 }catch(Exception e){
 	throw new ServletException(e);
 }
-finally{
-	
-	dbcon.close();
-}
+
 %>
 
 

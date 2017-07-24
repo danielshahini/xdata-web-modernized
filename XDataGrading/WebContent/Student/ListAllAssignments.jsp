@@ -128,6 +128,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								throw new ServletException(err);
 							}
 							finally{
+								if(dbcon != null)
 								dbcon.close();
 							}
 				%>

@@ -126,7 +126,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 								err.printStackTrace();
 								throw new ServletException(err);
 							}
-							dbcon.close();
+							finally{
+								if(dbcon !=null)
+									dbcon.close();
+							}
 				%>
 			</fieldset>
 		</div>
