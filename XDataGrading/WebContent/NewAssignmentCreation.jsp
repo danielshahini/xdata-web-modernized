@@ -304,8 +304,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					</div>
 					<br/><br/><br/>
 					<div>
-						 <input style="width:30px;height:0px;" type="checkbox" title="Click to set a hard dateline and penalty" name="softdeadlineselectname" id="softdeadlineselectid"  onclick="enabletext()"/>
-						 <label style="margin-top: 10px;"> Hard Deadline at:</label>
+						 <input style="width:30px;height:10px;" type="checkbox" title="Click to set a hard dateline and penalty" name="softdeadlineselectname" id="softdeadlineselectid"  onclick="enabletext()"/>
+						 <label style="margin-top: 0px;"> Hard Deadline at:</label>
 						 <input name = "soft" id="softdatetimepicker" type="text" >
 						 <label style="margin-left: 15px;">With Penalty</label>
 						 <input name = "penalty" id ="penaltyid" type="text" value=10>%

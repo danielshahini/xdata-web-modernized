@@ -382,7 +382,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			if(formattedSoft.compareTo("")==0)
 			{
 				output+="<div>";
-				output+="<input style=\"width:30px;height:0px;\" type=\"checkbox\" title=\"Click to set a soft dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\"  onclick=\"enabletext()\"/>";
+				output+="<input style=\"width:30px;height:10px;\" type=\"checkbox\" title=\"Click to set a soft dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\"  onclick=\"enabletext()\"/>";
 				output+="<label style=\"margin-top: 0px;\">Hard Deadline at:</label>";
 				output+="<input name = \"soft\" id=\"softdatetimepicker\" type=\"text\" disabled=\"disabled\">";
 				output+="<label style=\"margin-left: 15px;\">With Penalty</label>";
@@ -392,7 +392,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			else
 			{
 				output+="<div>";
-				output+="<input style=\"width:30px;height:0px;\" type=\"checkbox\" title=\"Click to set a hard dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\" checked=\"checked\"  onclick=\"enabletext()\"/>";
+				output+="<input style=\"width:30px;height:10px;\" type=\"checkbox\" title=\"Click to set a hard dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\" checked=\"checked\"  onclick=\"enabletext()\"/>";
 				output+="<label style=\"margin-top: 0px;\">Hard Deadline at:</label>";
 				output+="<input name = \"soft\" id=\"softdatetimepicker\" type=\"text\" value='"+formattedSoft+"'>";
 				output+="<label style=\"margin-left: 15px;\">With Penalty</label>";
