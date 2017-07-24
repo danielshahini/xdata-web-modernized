@@ -295,21 +295,21 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						<label>Starts at: </label>
 						<input name = "start" id="startdatetimepicker" type="text" >
 					</div>
+					
 					<br/><br/><br/><br/>
-					<div>
-						 <input style="width:30px;height:0px;" type="checkbox" title="Click to set a soft dateline and penalty" name="softdeadlineselectname" id="softdeadlineselectid"  onclick="enabletext()"/>
-						 <label style="margin-top: 0px;">Soft Deadline at:</label>
-						 <input name = "soft" id="softdatetimepicker" type="text" >
-						 <label style="margin-left: 15px;">With Penalty</label>
-						 <input name = "penalty" id ="penaltyid" type="text" value=10>%
-					</div>
-					<br/>
 					
 					<div>
 					<label>Ends at </label>
 					<input name="end" id="enddatetimepicker" type="text" >
 					</div>
 					<br/><br/><br/>
+					<div>
+						 <input style="width:30px;height:0px;" type="checkbox" title="Click to set a hard dateline and penalty" name="softdeadlineselectname" id="softdeadlineselectid"  onclick="enabletext()"/>
+						 <label style="margin-top: 10px;"> Hard Deadline at:</label>
+						 <input name = "soft" id="softdatetimepicker" type="text" >
+						 <label style="margin-left: 15px;">With Penalty</label>
+						 <input name = "penalty" id ="penaltyid" type="text" value=10>%
+					</div>
 					<input type="button" onclick="checkValue()" value="Submit">
 				</fieldset>
 			</div>

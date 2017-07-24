@@ -376,11 +376,14 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			output += "<div><label class='field'>Starts at:</label><input name = 'start' value ='" + formattedStart + "' id='startdatetimepicker' type='text'/></div><br/>";
 			
 			output +="</br></br></br>";
+			
+			output += "<div><label class='field'>Ends at:</label><input name = 'end' value ='" + formattedEnd + "' id='enddatetimepicker' type='text'/></div>";
+			output +="</br>";
 			if(formattedSoft.compareTo("")==0)
 			{
 				output+="<div>";
 				output+="<input style=\"width:30px;height:0px;\" type=\"checkbox\" title=\"Click to set a soft dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\"  onclick=\"enabletext()\"/>";
-				output+="<label style=\"margin-top: 0px;\">Soft Deadline at:</label>";
+				output+="<label style=\"margin-top: 0px;\">Hard Deadline at:</label>";
 				output+="<input name = \"soft\" id=\"softdatetimepicker\" type=\"text\" disabled=\"disabled\">";
 				output+="<label style=\"margin-left: 15px;\">With Penalty</label>";
 				output+= "<input name = \"penalty\" id =\"penaltyid\" type=\"text\" value=10 disabled=\"disabled\">%";
@@ -389,15 +392,13 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			else
 			{
 				output+="<div>";
-				output+="<input style=\"width:30px;height:0px;\" type=\"checkbox\" title=\"Click to set a soft dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\" checked=\"checked\"  onclick=\"enabletext()\"/>";
-				output+="<label style=\"margin-top: 0px;\">Soft Deadline at:</label>";
+				output+="<input style=\"width:30px;height:0px;\" type=\"checkbox\" title=\"Click to set a hard dateline and penalty\" name=\"softdeadlineselectname\" id=\"softdeadlineselectid\" checked=\"checked\"  onclick=\"enabletext()\"/>";
+				output+="<label style=\"margin-top: 0px;\">Hard Deadline at:</label>";
 				output+="<input name = \"soft\" id=\"softdatetimepicker\" type=\"text\" value='"+formattedSoft+"'>";
 				output+="<label style=\"margin-left: 15px;\">With Penalty</label>";
 				output+= "<input name = \"penalty\" id =\"penaltyid\" type=\"text\" value='"+penalty+"'>%";
 				output+="</div>";
 			}
-			
-			output += "<div><label class='field'>Ends at:</label><input name = 'end' value ='" + formattedEnd + "' id='enddatetimepicker' type='text'/></div>";
 			output += "</br></br></br></br>";
 			output += "<input  type=\"submit\" id=\"sub\" value=\"Update\">";
 			output += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";

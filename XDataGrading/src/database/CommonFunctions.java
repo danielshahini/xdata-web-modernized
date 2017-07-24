@@ -338,13 +338,13 @@ public class CommonFunctions {
 					} else {
 						if(soft!=null)
 						{
-							instructions += "<p><label> <b>Soft deadline on </b></label> <b><label style='color:#353275'>" + soft
+							instructions += "<p><label> <b>Hard deadline on </b></label> <b><label style='color:#353275'>" + soft
 									+ " </b></label></p>";
-							instructions += "<p><label> <b>Hard deadline on </b></label> <b><label style='color:#353275'>" + end+ "</b></label>"
+							instructions += "<p><label> <b>Ends on </b></label> <b><label style='color:#353275'>" + end+ "</b></label>"
 									+ " <label><b>with penalty </b></label> <b><label style='color:#353275'>"+penalty+"% </b></label></p>";
 						}
 						else{
-							instructions += "<p><label> <b>Hard deadline on </b></label> <b><label style='color:#353275'>" + end
+							instructions += "<p><label> <b>Ends on </b></label> <b><label style='color:#353275'>" + end
 									+ " </b></label></p>";
 						}
 					}
