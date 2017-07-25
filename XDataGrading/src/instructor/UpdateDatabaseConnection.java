@@ -117,10 +117,8 @@ public class UpdateDatabaseConnection extends HttpServlet {
 				
 		DatabaseConnection db = new DatabaseConnection();
 		String jdbcUrlToSave = db.getJDBCUrl(dbData);
-		Connection dbcon = null;
-  
-		try {
-			dbcon = (new DatabaseConnection()).dbConnection();
+		
+		try( Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 			try(PreparedStatement stmt  = dbcon
 					.prepareStatement("INSERT INTO xdata_database_connection VALUES (?,DEFAULT,?,?,?,?,?,?,?,?,?)")){
 		 

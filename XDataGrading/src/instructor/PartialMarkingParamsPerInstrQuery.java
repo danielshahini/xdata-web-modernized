@@ -42,7 +42,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
 		response.setContentType("text/html");
-		try{
+		try(Connection conn = (new DatabaseConnection()).dbConnection()){
 		PrintWriter out = response.getWriter();
 		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""+
 		"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
@@ -185,7 +185,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 		       int questionID = Integer.parseInt(request.getParameter("question_id"));
 		       String requestingPage = request.getParameter("reqFrom");
 		       int queryId = Integer.parseInt(request.getParameter("query_id"));
-		       Connection conn = (new DatabaseConnection()).dbConnection();
+		       
 		       
 		      if(!requestingPage.equalsIgnoreCase("demo")){ 
 			       out.println("<p><h4>Assignment: <label id='assignId'>"+assignID+"</label></h4></p>"

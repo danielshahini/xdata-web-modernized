@@ -29,11 +29,11 @@ public class LoginChecker extends HttpServlet {
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	private Connection dbcon;
+
 
 	public LoginChecker() {
 		super();
-		dbcon = null;
+		// dbcon = null;
 		// TODO Auto-generated constructor stub
 	}
 
@@ -43,61 +43,7 @@ public class LoginChecker extends HttpServlet {
 
 	}
 
-	/*public String LdapAuthentication(String uname, String pwd)
-			throws ServletException {
-		String qry = "", mesg = " ", dn = " ";
-		boolean checkFlag = false;
-		String empcode = null;
-		try {
-			LDAPConnection ldapHandle = null;
-			LDAPEntry findEntry = null;
-			ldapHandle = new LDAPConnection();
-			String My_Host = "ldap.iitb.ac.in";
-			int My_Port = 389;
-			String ENTRYDN = "dc=iitb,dc=ac,dc=in";
-			ldapHandle.connect(My_Host, My_Port, "", "");
-			LDAPSearchResults ldapResult = ldapHandle.search(ENTRYDN,
-					LDAPConnection.SCOPE_SUB, "(uid=" + uname + ")", null,
-					false);
-			while (ldapResult.hasMoreElements()) {
-				findEntry = null;
-				findEntry = ldapResult.next();
-				LDAPAttributeSet entries = findEntry.getAttributeSet();
-				LDAPAttribute mms = entries.getAttribute("mailMessageStore");
-
-				String[] myValue = mms.getStringValueArray();
-				int myValueArraySize = myValue.length;
-				StringTokenizer strtok = new StringTokenizer(myValue[0], "/");
-				if (strtok.hasMoreTokens()) {
-					String position = strtok.nextToken();
-					String dept = strtok.nextToken();
-					empcode = strtok.nextToken();
-					position = position.substring(0, position.indexOf("."));
-					position = position.toLowerCase();
-				}
-				dn = findEntry.getDN();
-				ldapHandle.disconnect();
-				ldapHandle.connect(My_Host, My_Port, dn, pwd);
-
-			}
-			if ((ldapHandle != null) && ldapHandle.isConnected()
-					&& empcode != null && !empcode.equals(" ")) {
-				mesg = "OK";
-			} else {
-				mesg = "NotOK";
-			}
-		} catch (LDAPReferralException e) {
-			logger.log(Level.SEVERE,"Error :" + e.getMessage(),e);
-			throw new ServletException(e);
-		} catch (LDAPException e) {
-			logger.log(Level.SEVERE,"Error :" + e.getMessage(),e);
-			throw new ServletException(e);
-		} catch (Exception gexp) {
-			logger.log(Level.SEVERE,gexp.getMessage(),gexp);
-			throw new ServletException(gexp);
-		}
-		return mesg;
-	}*/
+	
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
@@ -110,15 +56,6 @@ public class LoginChecker extends HttpServlet {
 
 	}
 
-	@Override
-	public void destroy() {
-		// Close the connection here
-		try {
-			dbcon.close();
-		} catch (SQLException e) {
-			logger.log(Level.SEVERE,e.getMessage(),e);
-		}
-	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
@@ -132,13 +69,6 @@ public class LoginChecker extends HttpServlet {
 		String uname = ""; 
 		String pwd = "";
 		Configuration config = new Configuration();
-		try {
-			dbcon = (new DatabaseConnection()).dbConnection();
-			
-		} catch (Exception ex) {
-			logger.log(Level.SEVERE,"SQLException: " + ex.getMessage(),ex);
-			throw new ServletException(ex);
-		}
 		
 		if (request.getParameter("name") != null) {
 			session.invalidate();
@@ -152,20 +82,16 @@ public class LoginChecker extends HttpServlet {
 			pwd = (String) session.getAttribute("pwd");
 		}
 		// Get login details from DB and compare
-		Connection dbCon = null;
 		String role = "";
-		try { 
+		try(Connection dbCon = new DatabaseConnection().dbConnection()) {
 			
-					dbCon = new DatabaseConnection().dbConnection();
 					PreparedStatement pstmt = dbCon
 							.prepareStatement("select * from xdata_users where login_user_id =?  and password=?");
 					try{
 						pstmt.setString(1, uname); 
-						//pstmt.setString(2,pwd); 
 						
 							pstmt.setString(2, DigestUtils.md5Hex(pwd));
 						
-						//logger.log(Level.FINE,"PWD to test = DigestUtils.md5Hex(pwd) =="+DigestUtils.md5Hex(pwd));
 						ResultSet rs = null;
 							try{
 									rs =pstmt.executeQuery(); 
@@ -214,12 +140,7 @@ public class LoginChecker extends HttpServlet {
 													response.sendRedirect("adminHome.jsp");
 												}
 												
-												try {
-													dbcon.close();
-												} catch (SQLException e) {
-													logger.log(Level.SEVERE,e.getMessage(),e);
-													throw new ServletException(e); 
-												}
+
 												
 												return;
 								
@@ -237,19 +158,6 @@ public class LoginChecker extends HttpServlet {
 							}else if(uname.equals("admin")){		
 							
 								
-								//First login, so insert login credentials in DB
-								//checking for first time login by an admin using 'tag' 
-								/*PreparedStatement pstmt_adminCheck = dbCon
-										.prepareStatement("select * from xdata_users where login_user_id ='admin'");
-								
-								ResultSet rs1 = null;
-					
-								rs1 =pstmt_adminCheck.executeQuery(); 
-								boolean tag=false;
-								//logger.log(Level.FINE,pstmt.toString());
-								if(rs1.next()){ 
-									tag=true;
-								}*/
 								String Ad_password=Configuration.getProperty("adminPassword");
 								//checking password from config files
 								if(Ad_password.equals(pwd))
@@ -306,12 +214,7 @@ public class LoginChecker extends HttpServlet {
 								response.setContentType("text/html");
 								response.sendRedirect("index.jsp?Login=false");
 								 
-							try {
-								dbcon.close();
-							} catch (SQLException e) {
-								logger.log(Level.SEVERE,e.getMessage(),e);
-								throw new ServletException(e);
-							}
+
 							
 							return;
 							}
@@ -358,17 +261,10 @@ public class LoginChecker extends HttpServlet {
 
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE,e.getMessage(),e);
-			throw new ServletException(e);
-		}finally{
-			try {
-				if(dbcon != null){
-					dbcon.close();
-				}
-			} catch (SQLException e) {
-				logger.log(Level.SEVERE,e.getMessage(),e);
-				throw new ServletException(e);
+			throw new ServletException(e);		
 			}
-		}
+		
+
 		
 
 	}
