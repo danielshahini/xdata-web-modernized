@@ -445,27 +445,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<td ><%= listToString(q.InstructorSetOperators,q.StudentSetOperators)%></td>
 			  		</tr>
 			  		<%} %>
-			  		<%if(q.studentDistinct || q.instructorDistinct){ %>
-			  		<tr>
-			  		<td class="emph">Distinct</td>
-			  		<% if(q.studentDistinct != q.instructorDistinct){%>
-			  			<td  style="color: red;">
-			  			<%}else{ %>
-			  			<td >
-			  			<%} %>
-			  			<% if(q.studentDistinct){%>1<%}else { %>0<%} %> </td>
-			  		
-			  		
-			  		<%if(q.studentDistinct != q.instructorDistinct){%>
-			  			<td  style="color: red;">
-			  			<%}else{ %>
-			  			<td >
-			  			<%} %>
-			  			
-			  			<%if(q.instructorDistinct) {%>1<%}else {%>0<%} %></td>
-			  	
-			  		</tr>
-			  		<%} %> 
+			 
+			 
 			  		
 			  		<%if(q.StudentInnerJoins != null && q.StudentInnerJoins.size() > 0
 			  			||( q.InstructorInnerJoins != null && q.InstructorInnerJoins.size() > 0)){ %>
