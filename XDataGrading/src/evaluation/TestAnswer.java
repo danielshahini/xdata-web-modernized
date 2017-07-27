@@ -1229,9 +1229,12 @@ public class TestAnswer {
 										String copyFiles[] = ds.list();
 
 										Vector<String> vs = new Vector<String>();
-										for(int m=0;m<copyFiles.length;m++){
-											vs.add(copyFiles[m]);		    
+										if(copyFiles!=null){
+											for(int m=0;m<copyFiles.length;m++){
+												vs.add(copyFiles[m]);		    
+											}
 										}
+										
 
 										// query output handling
 										GenerateCVC1 cvc = new GenerateCVC1();
