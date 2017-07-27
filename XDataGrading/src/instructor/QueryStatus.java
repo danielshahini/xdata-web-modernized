@@ -161,7 +161,7 @@ public class QueryStatus extends HttpServlet {
 							+ "<td> <pre><code class=\"sql\">"
 							+ rs.getString("querystring")
 							+ "</code></pre></td>" + "<td>" + "Wrong" + "</td>"
-							+ "<td>" + Math.round(rs.getFloat("score")) + "</td>"
+							+ "<td>" + rs.getFloat("score") + "</td>"
 							
 							/*<a class="text-warning" data-toggle="modal" data-target="#errorModal"
 		 				href="FailedTestCases?assignment_id=<%=assignment_id %>" +

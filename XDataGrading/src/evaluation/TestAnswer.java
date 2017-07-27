@@ -2010,9 +2010,9 @@ public class TestAnswer {
 					//All other students with roll nums other than the ones in the allFailedIds will have status as Passed
 					//Passed students will have to send the maxmarks for the query in which they have passed. - If one instructor question has 2-3 answers each with different max marks, then this applies.
 					Iterator<Integer> it1 = instrQueryVsPassedStudentList.keySet().iterator();				
-					while(it.hasNext()){
-						int qry_id = (Integer)it.next();
-						ArrayList<String> passedIds = new ArrayList<String>();
+					while(it1.hasNext()){
+						int qry_id = (Integer)it1.next();
+						ArrayList<String> passedIds = instrQueryVsPassedStudentList.get(qry_id);
 						for(String psId : passedIds){
 							if(! allFailedIds.contains(psId)){
 								FailedDataSetValues passedDataSetObject = new FailedDataSetValues();
