@@ -827,6 +827,177 @@ public class PartialMarker {
 	 *  query
 	 *  
 	 */
+	public static MarkInfo  newcalculateScoreForSetOperatorQueries( QueryStructure instructorData, QueryStructure studentData,
+			int level) {
+		MarkInfo marks = new MarkInfo();
+		ArrayList<QueryInfo> currentInfo = null;
+		ArrayList<QueryInfo> maxInfo;
+		float result=0;
+		// case when instructor query is a set operator query	
+		
+		if(instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty()){
+			// case when student query is also a set operator query
+			if(studentData.setOperator!=null&&!studentData.setOperator.isEmpty()){
+				float score = 0;
+				currentInfo = new ArrayList<QueryInfo>();
+				QueryInfo qInfo = new QueryInfo();
+				if(instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty())
+				{
+					qInfo.InstructorSetOperators.add(instructorData.setOperator);
+				}
+				if(studentData.setOperator!=null&&!studentData.setOperator.isEmpty())
+				{
+					qInfo.StudentSetOperators.add(studentData.setOperator);
+				}
+				qInfo.Level =  level;
+				currentInfo.add(qInfo);
+				//case 1, compare left operand with left operand of the set operator and right operand with right
+				
+				Vector<QueryStructure> leftPart = new Vector<QueryStructure> ();
+				leftPart.add(instructorData.leftQuery);
+				float NoOfNodesLeft= weightOfSubquery(leftPart);
+				MarkInfo lefte = calculateScore(instructorData.leftQuery,studentData.leftQuery, level+1);
+				currentInfo.addAll(lefte.SubqueryData);
+				
+				
+				Vector<QueryStructure> rightPart = new Vector<QueryStructure> ();
+				rightPart.add(instructorData.rightQuery);
+				float NoOfNodesright= weightOfSubquery(rightPart);
+				MarkInfo righte = calculateScore(instructorData.rightQuery,studentData.rightQuery, level+1);
+				currentInfo.addAll(righte.SubqueryData);
+				
+				
+				float WEIGHT = 100/(NoOfNodesLeft + NoOfNodesright);
+				float lmarks= lefte.Marks;
+				float rmarks = righte.Marks;
+				score = (lefte.Marks * NoOfNodesLeft + righte.Marks * NoOfNodesright)/100;
+				score *= WEIGHT;
+				result = score;
+				maxInfo=currentInfo;
+
+				//case 2, compare left operand of the instructor query with right operand of the student query  
+				//and right operand of the instructor query  with left operand of the student query
+				// Cross matching should not be used for EXCEPT operator
+				if(instructorData.setOperator.toString().equalsIgnoreCase("EXCEPT")==false)
+				{
+					score = 0;
+					currentInfo = new ArrayList<QueryInfo>();
+					qInfo = new QueryInfo();
+					if(instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty())
+					{
+						qInfo.InstructorSetOperators.add(instructorData.setOperator);
+					}
+					if(studentData.setOperator!=null&&!studentData.setOperator.isEmpty())
+					{
+						qInfo.StudentSetOperators.add(studentData.setOperator);
+					}
+					qInfo.Level =  level;
+					currentInfo.add(qInfo);
+					//case 1, compare left operand with left operand of the set operator and right operand with right
+					
+					leftPart = new Vector<QueryStructure> ();
+					leftPart.add(instructorData.leftQuery);
+					NoOfNodesLeft= weightOfSubquery(leftPart);
+					lefte = calculateScore(instructorData.leftQuery,studentData.leftQuery, level + 1);
+					currentInfo.addAll(lefte.SubqueryData);
+					
+					
+					rightPart = new Vector<QueryStructure> ();
+					rightPart.add(instructorData.rightQuery);
+					NoOfNodesright= weightOfSubquery(rightPart);
+					righte = calculateScore(instructorData.rightQuery,studentData.rightQuery, level + 1);
+					currentInfo.addAll(righte.SubqueryData);
+					
+					
+					WEIGHT = 100/(NoOfNodesLeft + NoOfNodesright);
+					score = (lefte.Marks * NoOfNodesLeft + righte.Marks * NoOfNodesright) /100;
+					score *= WEIGHT;
+
+					if(score > result){
+						result = score;
+						maxInfo=currentInfo;
+					}
+				}
+				if(!instructorData.setOperator.equalsIgnoreCase(studentData.setOperator))
+					result-=(result/3);
+
+				marks.Marks=result;
+				marks.SubqueryData=maxInfo;
+			}
+			else // student query is not a set operator query
+			{
+				currentInfo = new ArrayList<QueryInfo>();
+				QueryInfo qInfo = new QueryInfo();
+				if(instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty())
+				{
+					qInfo.InstructorSetOperators.add(instructorData.setOperator);
+				}
+				if(studentData.setOperator!=null&&!studentData.setOperator.isEmpty())
+				{
+					qInfo.StudentSetOperators.add(studentData.setOperator);
+				}
+				qInfo.Level =  level;
+				currentInfo.add(qInfo);
+				//case 1, compare left operand of the instructor Query with the student query
+				
+				MarkInfo e = calculateScore(instructorData.leftQuery,studentData, level);
+				currentInfo.addAll(e.SubqueryData);
+				result = e.Marks;;
+				maxInfo = currentInfo;
+
+				//case 2, compare right operand of the instructor Query with the student query
+				currentInfo = new ArrayList<QueryInfo>();
+				currentInfo.add(qInfo);
+				e = calculateScore(instructorData.rightQuery,studentData, level);					
+				currentInfo.addAll(e.SubqueryData);
+				if(e.Marks > result){
+					result = e.Marks;
+					maxInfo=currentInfo;
+				}
+
+				marks.Marks=result/3;
+				marks.SubqueryData=maxInfo;
+			}
+		}
+		// instructor query is not a set operator query, where as student query is a set operator query
+		else if(studentData.setOperator!=null&& !studentData.setOperator.isEmpty())
+		{
+			currentInfo = new ArrayList<QueryInfo>();
+			QueryInfo qInfo = new QueryInfo();
+			if(instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty())
+			{
+				qInfo.InstructorSetOperators.add(instructorData.setOperator);
+			}
+			if(studentData.setOperator!=null&&!studentData.setOperator.isEmpty())
+			{
+				qInfo.StudentSetOperators.add(studentData.setOperator);
+			}
+			qInfo.Level =  level;
+			currentInfo.add(qInfo);
+			//case 1, compare  the instructor Query with left operand of the student query
+			
+			MarkInfo e = calculateScore(instructorData,studentData.leftQuery, level);
+			currentInfo.addAll(e.SubqueryData);
+			result = e.Marks;;
+			maxInfo = currentInfo;
+
+			//case 2, compare right operand of the instructor Query with the student query
+			currentInfo = new ArrayList<QueryInfo>();
+			currentInfo.add(qInfo);
+			e = calculateScore(instructorData,studentData.rightQuery, level);					
+			currentInfo.addAll(e.SubqueryData);
+			if(e.Marks > result){
+				result = e.Marks;
+				maxInfo=currentInfo;
+			}
+
+			marks.Marks=result/3;
+			marks.SubqueryData=maxInfo;
+		}
+
+
+		return marks;
+	}
 
 	public static MarkInfo  calculateScoreForSetOperatorQueries( QueryStructure instructorData, QueryStructure studentData,
 			int level) {
@@ -845,34 +1016,40 @@ public class PartialMarker {
 
 				MarkInfo e = calculateScore(instructorData.leftQuery,studentData.leftQuery, level);
 				currentInfo.addAll(e.SubqueryData);
+				
+				
 				score += e.Marks;
 
 				e=calculateScore(instructorData.rightQuery,studentData.rightQuery, level);
 				currentInfo.addAll(e.SubqueryData);
-				score += e.Marks/2;
+				score += e.Marks;
+				score/=2;
 
 				result = score;
 				maxInfo=currentInfo;
 
 				//case 2, compare left operand of the instructor query with right operand of the student query  
 				//and right operand of the instructor query  with left operand of the student query
+				// Cross matching should not be used for EXCEPT operator
+				if(instructorData.setOperator.toString().equalsIgnoreCase("EXCEPT")==false)
+				{
+					currentInfo = new ArrayList<QueryInfo>();
+					score = 0;
 
-				currentInfo = new ArrayList<QueryInfo>();
-				score = 0;
+					e = calculateScore(instructorData.leftQuery,studentData.rightQuery, level);
+					currentInfo.addAll(e.SubqueryData);
+					score += e.Marks;
 
-				e = calculateScore(instructorData.leftQuery,studentData.rightQuery, level);
-				currentInfo.addAll(e.SubqueryData);
-				score += e.Marks;
+					e=calculateScore(instructorData.rightQuery,studentData.leftQuery, level);
+					currentInfo.addAll(e.SubqueryData);
+					score += e.Marks;
+					score/=2;
 
-				e=calculateScore(instructorData.rightQuery,studentData.leftQuery, level);
-				currentInfo.addAll(e.SubqueryData);
-				score += e.Marks/2;
-
-				if(score > result){
-					result = score;
-					maxInfo=currentInfo;
+					if(score > result){
+						result = score;
+						maxInfo=currentInfo;
+					}
 				}
-
 				if(!instructorData.setOperator.equalsIgnoreCase(studentData.setOperator))
 					result-=result/3;
 
@@ -886,8 +1063,8 @@ public class PartialMarker {
 
 				MarkInfo e = calculateScore(instructorData.leftQuery,studentData, level);
 
-				result =  e.Marks;;
-				maxInfo=e.SubqueryData;
+				result = e.Marks;;
+				maxInfo = e.SubqueryData;
 
 				//case 2, compare right operand of the instructor Query with the student query
 
@@ -910,7 +1087,7 @@ public class PartialMarker {
 			MarkInfo e = calculateScore(instructorData,studentData.leftQuery, level);
 
 			result =  e.Marks;;
-			maxInfo=e.SubqueryData;
+			maxInfo = e.SubqueryData;
 
 			//case 2, compare right operand of the instructor Query with the student query
 
@@ -1459,7 +1636,7 @@ public class PartialMarker {
 	public static MarkInfo calculateScore( QueryStructure instructorData, QueryStructure studentData,
 			int level) {
 		if((instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty())||(studentData.setOperator!=null&&!studentData.setOperator.isEmpty()))
-			return calculateScoreForSetOperatorQueries(instructorData, studentData, level);
+			return newcalculateScoreForSetOperatorQueries(instructorData, studentData, level);
 		else
 			return newcalculateScoreForPlainSelect(instructorData, studentData, level);
 	}
@@ -1864,6 +2041,8 @@ public class PartialMarker {
 		//System.out.println("Under populateQueryInfo");
 		QueryInfo qInfo = new QueryInfo();
 		qInfo.Level = level;
+		
+		
 		if(instructorData.getIsDistinct())
 			qInfo.instructorDistinct=true;
 		else qInfo.instructorDistinct=false;
