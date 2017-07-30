@@ -313,8 +313,9 @@ public class PartialMarker {
 	}
 
 	public static float getJoinCount(QueryStructure masterData){
-		
-		float score = masterData.getLstJoinConditions().size() + masterData.getNumberOfOuterJoins();
+		float score=0;
+		if(masterData.getLstJoinConditions()!=null)
+			score = masterData.getLstJoinConditions().size() + masterData.getNumberOfOuterJoins();
 		return score;
 	}
 	// Calculates a score based on the relations involved in the join
@@ -867,10 +868,12 @@ public class PartialMarker {
 				currentInfo.addAll(righte.SubqueryData);
 				
 				
-				float WEIGHT = 100/(NoOfNodesLeft + NoOfNodesright);
-				float lmarks= lefte.Marks;
-				float rmarks = righte.Marks;
+				float WEIGHT = 100/(NoOfNodesLeft + NoOfNodesright + 1);
+				float setOpNodeMatch = 0;
+				if(instructorData.setOperator.equalsIgnoreCase(studentData.setOperator))
+					setOpNodeMatch = 1;
 				score = (lefte.Marks * NoOfNodesLeft + righte.Marks * NoOfNodesright)/100;
+				score += setOpNodeMatch;
 				score *= WEIGHT;
 				result = score;
 				maxInfo=currentInfo;
@@ -908,9 +911,12 @@ public class PartialMarker {
 					righte = calculateScore(instructorData.rightQuery,studentData.rightQuery, level + 1);
 					currentInfo.addAll(righte.SubqueryData);
 					
-					
-					WEIGHT = 100/(NoOfNodesLeft + NoOfNodesright);
+					setOpNodeMatch = 0;
+					if(instructorData.setOperator.equalsIgnoreCase(studentData.setOperator))
+						setOpNodeMatch = 1;
+					WEIGHT = 100/(NoOfNodesLeft + NoOfNodesright + 1);
 					score = (lefte.Marks * NoOfNodesLeft + righte.Marks * NoOfNodesright) /100;
+					score += setOpNodeMatch;
 					score *= WEIGHT;
 
 					if(score > result){
@@ -918,14 +924,13 @@ public class PartialMarker {
 						maxInfo=currentInfo;
 					}
 				}
-				if(!instructorData.setOperator.equalsIgnoreCase(studentData.setOperator))
-					result-=(result/3);
 
 				marks.Marks=result;
 				marks.SubqueryData=maxInfo;
 			}
 			else // student query is not a set operator query
 			{
+				float score = 0;
 				currentInfo = new ArrayList<QueryInfo>();
 				QueryInfo qInfo = new QueryInfo();
 				if(instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty())
@@ -939,23 +944,39 @@ public class PartialMarker {
 				qInfo.Level =  level;
 				currentInfo.add(qInfo);
 				//case 1, compare left operand of the instructor Query with the student query
-				
+				Vector<QueryStructure> leftPart = new Vector<QueryStructure> ();
+				leftPart.add(instructorData.leftQuery);
+				float NoOfNodesLeft= weightOfSubquery(leftPart);
 				MarkInfo e = calculateScore(instructorData.leftQuery,studentData, level);
 				currentInfo.addAll(e.SubqueryData);
-				result = e.Marks;;
+				
+				float WEIGHT = 100/(NoOfNodesLeft + 1);
+				score = (e.Marks * NoOfNodesLeft) /100;
+				score *= WEIGHT;
+				
+				
+				result = score;;
 				maxInfo = currentInfo;
 
 				//case 2, compare right operand of the instructor Query with the student query
 				currentInfo = new ArrayList<QueryInfo>();
 				currentInfo.add(qInfo);
+				Vector<QueryStructure> rightPart = new Vector<QueryStructure> ();
+				rightPart.add(instructorData.rightQuery);
+				float NoOfNodesRight= weightOfSubquery(rightPart);
+				
 				e = calculateScore(instructorData.rightQuery,studentData, level);					
 				currentInfo.addAll(e.SubqueryData);
-				if(e.Marks > result){
-					result = e.Marks;
+				
+				WEIGHT = 100/(NoOfNodesRight + 1);
+				score = (e.Marks * NoOfNodesRight) /100;
+				score *= WEIGHT;
+				if(score > result){
+					result = score;
 					maxInfo=currentInfo;
 				}
 
-				marks.Marks=result/3;
+				marks.Marks=result;
 				marks.SubqueryData=maxInfo;
 			}
 		}
@@ -991,7 +1012,7 @@ public class PartialMarker {
 				maxInfo=currentInfo;
 			}
 
-			marks.Marks=result/3;
+			marks.Marks=result;
 			marks.SubqueryData=maxInfo;
 		}
 
@@ -1653,15 +1674,14 @@ public class PartialMarker {
 		//Set level 0 query details for display
 		marks.SubqueryData.add(populateQueryInfo(instructorData,studentData,level));
 
-		float whereSubQueryPredicate = weightOfSubquery(instructorData.getWhereClauseSubqueries());
-		float fromSubQueryPredicate = weightOfSubquery(instructorData.getFromClauseSubqueries());
-
 		MarkInfo whereSubQuery = compareListOfQueries(instructorData.getWhereClauseSubqueries(), studentData.getWhereClauseSubqueries(), level + 1);
 		marks.SubqueryData.addAll(whereSubQuery.SubqueryData);
 
 		MarkInfo fromSubQuery = compareListOfQueries(instructorData.getFromClauseSubqueries(), studentData.getFromClauseSubqueries(), level + 1);
 		marks.SubqueryData.addAll(fromSubQuery.SubqueryData);
 
+		float whereSubQueryPredicate = weightOfSubquery(instructorData.getWhereClauseSubqueries());
+		float fromSubQueryPredicate = weightOfSubquery(instructorData.getFromClauseSubqueries());
 
 		float uniquePredicates = instructorData.getLstSelectionConditions().size();
 		float uniqueRelations = instructorData.getLstRelationInstances().size();
@@ -1675,45 +1695,42 @@ public class PartialMarker {
 		float uniqueDistinct = 0;
 		if(instructorData.getIsDistinct()) uniqueDistinct = 1;
 		float orderByColumns = instructorData.getOrderByNodes().size();
-		float uniqueWhereSubquery = instructorData.getWhereClauseSubqueries().size();
-		float uniqueFromSubquery = instructorData.getFromClauseSubqueries().size();
-
-
-		//float totalWeightage = Configuration.Predicate + Configuration.Relation + Configuration.Projection + Configuration.Joins + Configuration.GroupBy + Configuration.HavingClause + Configuration.SubQConnective + Configuration.Aggregates + Configuration.SetOperators + distinctWeightage +Configuration.OrderBy;
+		//float uniqueWhereSubquery = instructorData.getWhereClauseSubqueries().size();
+		//float uniqueFromSubquery = instructorData.getFromClauseSubqueries().size();
 
 		float totalWeightage = uniquePredicates + uniqueRelations + uniqueProj + instructorJoin + uniqueGroupBy + uniqueHavingClause + uniqueSubQConnective;
-		totalWeightage += uniqueAggregates + uniqueSetOperators + uniqueDistinct + orderByColumns + whereSubQueryPredicate + uniqueWhereSubquery + fromSubQueryPredicate + uniqueFromSubquery;
+		totalWeightage += uniqueAggregates + uniqueSetOperators + uniqueDistinct + orderByColumns + whereSubQueryPredicate + fromSubQueryPredicate;
 
 		float WEIGHT = 100/ totalWeightage;
 
 
 		float predicateScore = compareSelection(instructorData.getLstSelectionConditions(), studentData.getLstSelectionConditions());
 
-		float predicateScoreTotal = normalizeNegativeValuesToZero(predicateScore * WEIGHT);
+		float predicateScoreTotal = predicateScore * WEIGHT;
 
 		float projectionScore = compareProjection(instructorData.getLstProjectedCols(), studentData.getLstProjectedCols());		
 		//projectionScore = instructorData.getIsDistinct() == studentData.getIsDistinct() ? projectionScore : projectionScore*0.9f;
-		float projectionScoreTotal = normalizeNegativeValuesToZero(projectionScore * WEIGHT);				
+		float projectionScoreTotal = projectionScore * WEIGHT;				
 
 		float relationScore = compare(instructorData.getLstRelationInstances(), studentData.getLstRelationInstances());
-		float relationScoreTotal=normalizeNegativeValuesToZero(relationScore * WEIGHT);
+		float relationScoreTotal=relationScore * WEIGHT;
 
 		float joinScore = getJoinScore(instructorData, studentData);
-		float joinScoreTotal=normalizeNegativeValuesToZero(joinScore * WEIGHT);	
+		float joinScoreTotal=joinScore * WEIGHT;	
 
 		float groupByScore = compareProjection(instructorData.getLstGroupByNodes(), studentData.getLstGroupByNodes());
-		float groupByScoreTotal=normalizeNegativeValuesToZero(groupByScore * WEIGHT);
+		float groupByScoreTotal=groupByScore * WEIGHT;
 
 		float havingClauseScore = compareHavingClause(instructorData.getLstHavingConditions(), studentData.getLstHavingConditions());
-		float havingClauseScoreTotal=normalizeNegativeValuesToZero(havingClauseScore * WEIGHT);
+		float havingClauseScoreTotal=havingClauseScore * WEIGHT;
 
 		float subQConnectiveScore = compare(instructorData.getLstSubQConnectives(),studentData.getLstSubQConnectives());
-		float subQConnectiveScoreTotal=normalizeNegativeValuesToZero(subQConnectiveScore * WEIGHT);
+		float subQConnectiveScoreTotal=subQConnectiveScore * WEIGHT;
 
 		float aggregateScore = compareAggregates(instructorData.getLstAggregateList(), studentData.getLstAggregateList());
-		float aggregateScoreTotal=normalizeNegativeValuesToZero(aggregateScore * WEIGHT);
+		float aggregateScoreTotal=aggregateScore * WEIGHT;
 		float setOperatorScore = compare(instructorData.getLstSetOpetators(),studentData.getLstSetOpetators());
-		float setOperatorScoreTotal=normalizeNegativeValuesToZero(setOperatorScore * WEIGHT);
+		float setOperatorScoreTotal=setOperatorScore * WEIGHT;
 
 		float distinctOperatorScore = 0;
 
@@ -1729,16 +1746,16 @@ public class PartialMarker {
 
 		float orderByScore = compareOrderBy(instructorData.getLstOrderByNodes(),studentData.getLstOrderByNodes()); ///compute order by score
 
-		float orderByOperatorScoreTotal=normalizeNegativeValuesToZero(orderByScore * WEIGHT);
+		float orderByOperatorScoreTotal=orderByScore * WEIGHT;
 		
-		float NoOfwhereSubQuryScoreTotal = uniqueWhereSubquery * WEIGHT;
-		float NoOfFromSubQuryScoreTotal = uniqueFromSubquery * WEIGHT;
+		//float NoOfwhereSubQuryScoreTotal = uniqueWhereSubquery * WEIGHT;
+		//float NoOfFromSubQuryScoreTotal = uniqueFromSubquery * WEIGHT;
 		
 		float wheresubQueryScoreTotal = ((whereSubQuery.Marks * whereSubQueryPredicate)/100) * WEIGHT ;
 		float fromsubQueryScoreTotal = ((fromSubQuery.Marks * fromSubQueryPredicate)/100) * WEIGHT ;
 		float student =  normalizeNegativeValuesToZero(predicateScoreTotal + relationScoreTotal + projectionScoreTotal 
 				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
-				aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal + orderByOperatorScoreTotal + wheresubQueryScoreTotal + fromsubQueryScoreTotal + NoOfwhereSubQuryScoreTotal + NoOfFromSubQuryScoreTotal);
+				aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal + orderByOperatorScoreTotal + wheresubQueryScoreTotal + fromsubQueryScoreTotal);
 		
 
 		float score = student;
@@ -1919,18 +1936,29 @@ public class PartialMarker {
 		if(instructor == null || instructor.isEmpty()) return 0;
 		float nodeCount = 0;
 		for(QueryStructure instructorData:instructor){
-			nodeCount += instructorData.getLstSelectionConditions().size();
+			if(instructorData.getLstSelectionConditions()!=null)
+				nodeCount += instructorData.getLstSelectionConditions().size();
+			if(instructorData.getLstRelationInstances()!=null)
 			nodeCount += instructorData.getLstRelationInstances().size();
+			if(instructorData.getLstProjectedCols()!=null)
 			nodeCount += instructorData.getLstProjectedCols().size();
 			nodeCount += getJoinCount(instructorData);
+			if(instructorData.getLstGroupByNodes() != null)
 			nodeCount += instructorData.getLstGroupByNodes().size();
+			if(instructorData.getLstHavingConditions()!=null)
 			nodeCount += instructorData.getLstHavingConditions().size();
+			if(instructorData.getLstSubQConnectives()!=null)
 			nodeCount += instructorData.getLstSubQConnectives().size();
+			if(instructorData.getLstAggregateList()!=null)
 			nodeCount += instructorData.getLstAggregateList().size(); 
+			if(instructorData.getLstSetOpetators()!=null)
 			nodeCount += instructorData.getLstSetOpetators().size();
 			if(instructorData.getIsDistinct()) nodeCount += 1;
+			if(instructorData.getOrderByNodes()!=null)
 			nodeCount += instructorData.getOrderByNodes().size();
+			if(instructorData.getWhereClauseSubqueries()!=null)
 			nodeCount += instructorData.getWhereClauseSubqueries().size();
+			if(instructorData.getFromClauseSubqueries()!=null)
 			nodeCount += instructorData.getFromClauseSubqueries().size();
 			nodeCount += weightOfSubquery(instructorData.getWhereClauseSubqueries());
 			nodeCount += weightOfSubquery(instructorData.getFromClauseSubqueries());

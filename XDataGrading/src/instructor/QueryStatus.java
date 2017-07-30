@@ -162,12 +162,6 @@ public class QueryStatus extends HttpServlet {
 							+ rs.getString("querystring")
 							+ "</code></pre></td>" + "<td>" + "Wrong" + "</td>"
 							+ "<td>" + rs.getFloat("score") + "</td>"
-							
-							/*<a class="text-warning" data-toggle="modal" data-target="#errorModal"
-		 				href="FailedTestCases?assignment_id=<%=assignment_id %>" +
-		 						"&question_id=<%=rset.getInt("question_id") %>" +
-		 								"&user_id=<%= rs.getString("rollnum")%>">Test Cases</a></td>
-												<td>*/
 												
 							+"<td>"
 							//+"<a data-toggle=\"modal\" data-target=\"#errorModal\" " +
@@ -202,7 +196,12 @@ public class QueryStatus extends HttpServlet {
 							+ "</td>" + "<td>" + Math.round(rs.getFloat("score"))
 							+ "</td>" +
 							"<td>No error</td>"+
-							"<td>Full marks</td>" + "</tr>");
+							"<td>"
+							+"<a id=\"marks\" href=\"PartialMarkDetails.jsp?user_id="
+							+ rs.getString("rollnum") + "&reqFrom=popUp&assignment_id="
+							+ assignment_id + "&question_id=" + question_id
+							+ "\" target=\"_blank\" type=\"new_tab\"> Mark Details</a>"
+							+ "</td>" + "</tr>");
 				}
 				else{
 					out_assignment.println("<tr>" + "<td>"
@@ -228,6 +227,7 @@ public class QueryStatus extends HttpServlet {
 							+"<td> </td>"+ 
 							"<td></td>" + "</tr>");
 				}
+				
 			}
 			if (present)
 				out_assignment.println("</table>");

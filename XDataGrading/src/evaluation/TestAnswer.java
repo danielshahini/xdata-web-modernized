@@ -308,11 +308,11 @@ public class TestAnswer {
 
 				PreparedStatement pstmt11 = conn.prepareStatement(queryString);
 				PreparedStatement pstmt22 = conn.prepareStatement(mutant_qry);
-				logger.log(Level.INFO,"****************************************");
-				logger.log(Level.INFO,"Instructor query ----" +queryString.toString());
-				logger.log(Level.INFO,"****************************************");
-				logger.log(Level.INFO,"Mutant query ----" + mutant_qry.toString());
-				logger.log(Level.INFO,"*****************************************");
+				logger.log(Level.FINE,"****************************************");
+				logger.log(Level.FINE,"Instructor query ----" +queryString.toString());
+				logger.log(Level.FINE,"****************************************");
+				logger.log(Level.FINE,"Mutant query ----" + mutant_qry.toString());
+				logger.log(Level.FINE,"*****************************************");
 				if(orderIndependent){
 					try{				
 						//Run both the queries against the temporary data set that is generated.
@@ -322,7 +322,7 @@ public class TestAnswer {
 								+ " was killed by ' as const,dataset.name from dataset " +
 								"where exists ((select * from x1) except all (select * from x2)) " +
 								"or exists ((select * from x2) except all (select * from x1))");
-						logger.log(Level.INFO,"Comparing Query *** " +pstmt.toString());		
+						logger.log(Level.FINE,"Comparing Query *** " +pstmt.toString());		
 						rs = pstmt.executeQuery();
 						ResultSet rs11 = pstmt22.executeQuery();
 						while(rs11.next()){
@@ -342,7 +342,7 @@ public class TestAnswer {
 							logger.log(Level.SEVERE,s.getMessage(), s);
 							//throw s;
 						}
-						logger.log(Level.INFO," SQL EXCEPTION"+s.getMessage(),s);
+						logger.log(Level.FINE," SQL EXCEPTION"+s.getMessage(),s);
 					}
 					catch(Exception ex){
 						logger.log(Level.SEVERE,ex.getMessage(), ex);
@@ -511,12 +511,9 @@ public class TestAnswer {
 			if(hashResult.next()){
 				hashValueOfInstructorQueryTable = hashResult.getString(1);
 			}
-			logger.log(Level.INFO, "Hash of xdata_temp1 : "+hashValueOfInstructorQueryTable);
-			logger.log(Level.INFO,"****************************************");
-			logger.log(Level.INFO,"DATASET ID : "+ datasetName);
-			logger.log(Level.INFO,"****************************************");
-			logger.log(Level.INFO,"Instructor query -" +queryString.toString());
-			logger.log(Level.INFO,"****************************************");
+			logger.log(Level.FINE, "Hash of xdata_temp1 : "+hashValueOfInstructorQueryTable);
+			logger.log(Level.FINE,"DATASET ID : "+ datasetName);
+			logger.log(Level.FINE,"Instructor query -" +queryString.toString());
 
 			for(int l = 0 ; l < studentQueries.size() ; l++){
 				String mutant_qry = studentQueries.get(l);
@@ -533,46 +530,21 @@ public class TestAnswer {
 
 					PreparedStatement pstmt11 = testConn.prepareStatement(queryString);
 					PreparedStatement pstmt22 = testConn.prepareStatement(mutant_qry);
-					logger.log(Level.INFO,"*****************************************");
+					
 					logger.log(Level.INFO,"Mutant query -" + mutant_qry.toString());
-					logger.log(Level.INFO,"*****************************************");
+					
 					if(orderIndependent){
 						try{				
-							//Run both the queries against the temporary data set that is generated.
-
-							/*pstmt = conn.prepareStatement("with x1 as (" + queryString + ")," +
-								" x2 as (" + mutant_qry + ") select 'Q" + i 
-								+ " was killed by ' as const,dataset.name from dataset " +
-								"where exists ((select * from x1) except all (select * from x2)) " +
-								"or exists ((select * from x2) except all (select * from x1))");
-							 */
-
-							/*try{
-							PreparedStatement pstm2 = conn.prepareStatement("create temporary table xdata_temp2  as ("+mutant_qry+");");
-							pstm2.execute();
-							}catch(SQLException e){
-								logger.log(Level.SEVERE,"Error in student Query :" +e.getMessage(),e);	
-								queryIds.add((String)instrQueryId);
-								columnmismatch.add((String)instrQueryId);
-								logger.log(Level.SEVERE,e.getMessage(), e);
-								resultOnDsetMap.add(studentRollnums.get(l));
-								//throw e;
-							}*/
-
-							/*pstmt = conn.prepareStatement("select 'Q" + i 
-									+ " was killed by ' as const,dataset.name from dataset " +
-									"where exists ((select * from xdata_temp1) except all (select * from xdata_temp2)) " +
-									"or exists ((select * from xdata_temp2) except all (select * from xdata_temp1))");
-							 */
+			
 							pstmt = testConn.prepareStatement("with x1 as (" + queryString + ")," +
 									" x2 as (" + mutant_qry + ") select 'Q" + i 
 									+ " was killed by ' as const "+//,dataset.name from dataset " +
 									"where exists ((select * from x1) except all (select * from x2)) " +
 									"or exists ((select * from x2) except all (select * from x1))");
 
-							logger.log(Level.INFO,"******************");
+							
 							logger.log(Level.INFO,"Student Id : "+studentRollnums.get(l)+" evaluated");
-							logger.log(Level.INFO,"******************");
+							
 
 							rs = pstmt.executeQuery();
 							ResultSet rs11 = pstmt22.executeQuery(); 
@@ -680,6 +652,7 @@ public class TestAnswer {
 							//logger.log(Level.INFO,"Adding Query Id = "+(String)Id);
 							queryIds.add(instrQueryId);
 							resultOnDsetMap.add(studentRollnums.get(l));
+							logger.log(Level.INFO, rs.getMetaData().toString()+" "+ rs.getString(1));
 						}else{
 							//logger.log(Level.INFO,"rs is empty");
 						}
@@ -1234,7 +1207,7 @@ public class TestAnswer {
 												vs.add(copyFiles[m]);		    
 											}
 										}
-										
+
 
 										// query output handling
 										GenerateCVC1 cvc = new GenerateCVC1();
@@ -1863,15 +1836,16 @@ public class TestAnswer {
 							Vector <String> resultOnDataSet = new Vector<String>();
 							Vector<String> dataSetIdListFailed = new Vector<String>(); 
 							//Get default dataset for question - run all stud queries on that.
+
 							try{								
 								if(defaultDSIdsPerQuestion != null){
 									for(int dId= 0; dId < defaultDSIdsPerQuestion.length;dId++){
 										Vector<String> cmismatch = new Vector<String>();
-										logger.log(Level.INFO,"******************");
-										logger.log(Level.INFO,"Default dataset "+defaultDSIdsPerQuestion[dId]+" Loaded : ");
-										logger.log(Level.INFO,"******************");
+										
+										logger.log(Level.FINE,"Default dataset "+defaultDSIdsPerQuestion[dId]+" Loaded : ");
+										
 
-										//String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id, defaultDSIdsPerQuestion[dId].toString());
+										String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id, defaultDSIdsPerQuestion[dId].toString());
 										ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery
 												(studentRollNums, studentQueries, instrQueryId, defaultDSIdsPerQuestion[dId].toString(), instrQuery, 
 														"NoPath", orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,null);
@@ -1884,6 +1858,7 @@ public class TestAnswer {
 												processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
 											}else{
 												failedStudentRollNumList.add(stdRoll);
+												fdvFailedList.get(fl).getDataSetIdList().add("DefaultDataSet Name: "+dsName );
 												finalFailedDsList.add(fdvFailedList.get(fl));
 											}
 										}
@@ -1902,9 +1877,9 @@ public class TestAnswer {
 
 									for(int dId= 0; dId < defaultDSIdsAssignment.length;dId++){
 										Vector<String> cmismatch = new Vector<String>();
-										logger.log(Level.INFO,"******************");
-										logger.log(Level.INFO,"Default dataset "+defaultDSIdsAssignment[dId]+" Loaded : ");
-										logger.log(Level.INFO,"******************");
+										
+										logger.log(Level.FINE,"Default dataset "+defaultDSIdsAssignment[dId]+" Loaded : ");
+										
 
 										String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id,
 												defaultDSIdsAssignment[dId].toString());
@@ -1919,6 +1894,7 @@ public class TestAnswer {
 												processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
 											}else{
 												failedStudentRollNumList.add(stdRoll);
+												fdvFailedList.get(fl).getDataSetIdList().add(fdvFailedList.get(fl).getDataSetId());
 												finalFailedDsList.add(fdvFailedList.get(fl));
 											}
 										}

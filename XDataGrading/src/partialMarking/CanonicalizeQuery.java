@@ -363,7 +363,7 @@ public class CanonicalizeQuery {
 			//System.out.println("Satisfying tables after augmentation"+satisfyingTableNos);
 			if(satisfyingTableNos.containsAll(joinTableNameNos)){
 				qData.setIsDistinct(false);
-				System.out.println("join tables are contained in satisfying tables");
+				//System.out.println("join tables are contained in satisfying tables");
 			}	
 	}
 	
