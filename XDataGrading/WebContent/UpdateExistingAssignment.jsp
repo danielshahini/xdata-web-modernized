@@ -75,7 +75,7 @@ a:hover {
 		//getting parameters
 		String name = request.getParameter("assignment_name");
 		String startDate = request.getParameter("start");
-		String endDate = request.getParameter("end");
+		String endDate = "";
 		String description = request.getParameter("description");
 		String[] defaultDS = request.getParameterValues("defaultDSId");
 		
@@ -92,10 +92,12 @@ a:hover {
 		Boolean softdateselected = false;
 		String softdate = "";
 		String penalty = "";
-		Timestamp softTimeStamp;
-		if(request.getParameter("softdeadlineselectname") != null){
+		Timestamp softTimeStamp = null;
+		if(request.getParameter("softdeadlineselectname") != null)   // selected
+		{
 			softdateselected = true;
-			softdate=request.getParameter("soft");
+			softdate=request.getParameter("end");
+			endDate=request.getParameter("soft");
 			penalty=request.getParameter("penalty");
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
 		    java.util.Date parsedDate = dateFormat.parse(softdate);
@@ -103,8 +105,9 @@ a:hover {
 		}
 		else
 		{
+			softdateselected = false;
+			endDate=request.getParameter("end");
 			penalty="10";
-			softTimeStamp=null;
 		}
 		//get connection
 		Connection dbcon = (new DatabaseConnection()).dbConnection();

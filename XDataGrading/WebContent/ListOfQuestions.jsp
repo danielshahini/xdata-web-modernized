@@ -278,6 +278,9 @@ $( document ).ready(function() {
   background-color: #f0f0f0; 
   font-weight: bold;
 }
+pre {
+   font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+}
 </style>		  
 </head>
 <body>
@@ -445,7 +448,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 											 
 				%>   <!-- RENDER THE PAGE FOR ALL EXISTING QUESTIONS -->
 					<div class="questionelement"> 						
-					<div class="question" id="Question"><span>Q<%= qIndexDisplay %>. </span><%= desc %><br/>
+					<div class="question" id="Question"><span>Q<%= qIndexDisplay %>. </span><pre class="question"><%= desc %></pre> <br/>
 					<span>Marks Allotted : </span><%= marksAllotted %>
 					</div>
 						 			 

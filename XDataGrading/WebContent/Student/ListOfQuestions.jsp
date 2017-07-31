@@ -38,7 +38,9 @@ textarea,select {
 	width:1px;
 	margin-left: 2px;
 }
-
+pre {
+   font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+}
 input {
 	font: 15px/15px Arial, Helvetica, sans-serif;
 	padding: 0;
@@ -124,7 +126,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			</fieldset> 
 			<br/>
 			<fieldset>
-				<legend> List of Questions</legend>
+				<legend> List of Questions </legend>
 				<%
 						List <Integer> schemaIdList = new ArrayList();
 						int defaultSchemaID=0;
@@ -282,7 +284,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									%>
 								
 							<div class="questionelement">
-								<div class="question"><span>Q<%= q_index %>. </span><%= desc %>
+								<div class="question"><span>Q<%= q_index %>. </span><pre class="question"><%= desc %></pre>
 								<!-- Test optionalSchema = <%//=optionalSchemaID %> --> 
 								<%if(optionalSchemaID != defaultSchemaID && !schemaIdList.contains(optionalSchemaID)){
 									//Add schema id to the list if it is encountered first time and show link to download

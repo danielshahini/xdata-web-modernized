@@ -168,7 +168,7 @@ function checkValue(){
 		alert("Select start date");
 		return false;
 	}else if($('#enddatetimepicker').val() === ''){
-		alert("Select start date");
+		alert("Select deadline date");
 		return false;
 	}else if($('#assignmentName').val() === ''){
 		alert("Please enter name of the assignment");
@@ -176,7 +176,7 @@ function checkValue(){
 	}
 	else if($('#softdeadlineselectid').is(':checked') && $('#softdatetimepicker').val() === '')
 	{
-		alert("Select soft deadline date");
+		alert("Select hard deadline date");
 		return false;
 	}
 	else{
@@ -299,12 +299,13 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					<br/><br/><br/><br/>
 					
 					<div>
-					<label>Ends at </label>
+					<label>Deadline at: </label>
 					<input name="end" id="enddatetimepicker" type="text" >
+					 <input style="width:30px;height:10px;" type="checkbox" title="Click to set a hard dateline and penalty" name="softdeadlineselectname" id="softdeadlineselectid"  onclick="enabletext()"/>
+					  <label style="margin-top: 0px;"> Is softdeadline?</label>
 					</div>
 					<br/><br/><br/>
 					<div>
-						 <input style="width:30px;height:10px;" type="checkbox" title="Click to set a hard dateline and penalty" name="softdeadlineselectname" id="softdeadlineselectid"  onclick="enabletext()"/>
 						 <label style="margin-top: 0px;"> Hard Deadline at:</label>
 						 <input name = "soft" id="softdatetimepicker" type="text" >
 						 <label style="margin-left: 15px;">With Penalty</label>

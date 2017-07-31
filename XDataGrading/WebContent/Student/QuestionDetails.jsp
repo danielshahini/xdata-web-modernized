@@ -77,7 +77,9 @@ label span,.required {
 	font-size: 17px;
 }
 
-
+pre {
+   font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+}
 .stop-scrolling {
 	height: 100%;
 	/*overflow: hidden;*/
@@ -249,7 +251,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 			</fieldset>
 			<br/>
 			<fieldset>
-				<legend> Question Details</legend>
+				<legend> Question Details </legend>
 <input type="hidden" id="refresh" value="no">
 				<%
 				
@@ -336,7 +338,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 										if (readOnly) {
 				%>
 									<div class="questionelement">
-										<div class="question"><span>Q<%= qID %>. </span><%= description %></div>
+										<div class="question"><span>Q<%= qID %>. </span><pre class="question"><%= description %></pre></div>
 										<div class="answer"><label name='query' id='query<%=qID %>'><%=studentAnswer %></label></div>
 										<div class="editbutton">
 										<input type="button" onClick="report(this,2)"  value="View Grades" name="button <%=studentId+" "+assignID+" "+qID%>"/>
@@ -344,7 +346,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 									</div>
 								<% } else {%>
 									<div class="questionelement">
-										<div class="question"><span>Q<%= qID %>. </span><%= description %></div>
+										<div class="question"><span>Q<%= qID %>. </span><pre class="question"><%= description %></pre></div>
 										<div class="answer"><textarea name='query' id='query<%=qID %>'><%=studentAnswer %></textarea></div>
 										<div class="editbutton">
 										<br/>

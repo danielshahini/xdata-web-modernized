@@ -70,6 +70,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	//getting parameters 
 	String name = request.getParameter("assignmentName");
 	String description = request.getParameter("description");
+	String startDate = request.getParameter("start");
+	String endDate = "";
 	String courseId = (String) request.getSession().getAttribute(
 	"context_label");
 	boolean interactive = false;
@@ -81,14 +83,19 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	String penalty = "";
 	if(request.getParameter("softdeadlineselectname") != null){
 		softdateselected = true;
-		softdate=request.getParameter("soft");
+		softdate=request.getParameter("end");
+		endDate=request.getParameter("soft");
 		penalty=request.getParameter("penalty");
+	}
+	else  //Not selected
+	{
+		softdateselected = false;
+		endDate=request.getParameter("end");
 	}
 	String assignID = (String) request.getSession().getAttribute(
 	"resource_link_id");
 	
-	String startDate = request.getParameter("start");
-	String endDate = request.getParameter("end");
+	
 	String[] defaultDSId = request.getParameterValues("defaultDSId");
 	//System.out.println("chk values : " + defaultDSId.length + "--"+defaultDSId[0]);
 	int schemaId = 0;
@@ -117,7 +124,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		Gson gson = new Gson();
 		String json = "";
 		if(defaultDSId != null){
-			gson.toJson(defaultDSId);
+			json = gson.toJson(defaultDSId);
 		}
 		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
