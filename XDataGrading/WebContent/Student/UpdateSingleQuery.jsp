@@ -29,7 +29,21 @@
 </head>
 <body>
 
+<%!
+//Storing in student log
+public void logStore(Connection dbcon,String courseID,int assignmentID,String questionID,String studentID,Timestamp subTimeStamp,String stdquery) throws Exception
+{
+	PreparedStatement stmt = dbcon.prepareStatement("INSERT INTO xdata_student_log (course_id, assignment_id, question_id, rollnum, eventtime, querytext) VALUES(?,?,?,?,?,?)");
+	stmt.setString(1,courseID);
+	stmt.setInt(2,assignmentID);
+	stmt.setInt(3, Integer.parseInt(questionID));
+	stmt.setString(4, studentID);
+	stmt.setTimestamp(5, subTimeStamp);
+	stmt.setString(6, stdquery);
+	stmt.executeUpdate();
+}
 
+%>
 	<%
 	
 	
@@ -207,8 +221,8 @@
 			//	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
 				//Date parsedDate = dateFormat.parse(currentDate);
 				Timestamp subTimeStamp = new java.sql.Timestamp(current.getTime());
-				System.out.println("timestamp>>>>> "+subTimeStamp.toString());
 				
+				logStore(dbcon,courseID,asID,questionID,studentID,subTimeStamp,correctquery);
 				rs = stmt.executeQuery();
 				if(!rs.next()){
 				

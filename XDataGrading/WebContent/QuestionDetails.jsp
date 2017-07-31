@@ -870,10 +870,30 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						</div>
 						
 						<div  style='float:center' id="matchAll" class="matchAll" style='display:none;'> 
+						<%
+						PreparedStatement stmt3 = dbcon.prepareStatement("select * from xdata_qinfo where assignment_id=? and course_id=? and question_id=?");
+						stmt3.setInt(1,assignID);
+						stmt3.setString(2,courseID);
+						stmt3.setInt(3,q_id);
+						ResultSet rset=stmt3.executeQuery();
+						boolean isMatchAll=false; 
+						if(rset.next()){
+						isMatchAll=rset.getBoolean("matchallqueries");
+						}
+						if(isMatchAll == false){	
+						%>
 							<input type="radio" name="matchAll" value="matchOne" checked>Match results of any one
 							<input type="radio" name="matchAll" value="matchAll">Match results of all 
-							</div><br/>
 							
+							<% }
+							else { %>
+							<input type="radio" name="matchAll" value="matchOne">Match results of any one
+							<input type="radio" name="matchAll" value="matchAll" checked>Match results of all 
+								<% } %>	
+								
+								
+								
+							</div><br/>
 						<input type="button" class="queryBox" id="<%=q_id%>" name="<%=newQueryID%>" value="Add Another Query" >	
 					  </div>  
 					</div>
@@ -894,7 +914,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 				%>		
 				<div class="editbutton"> 
 						<input type="button" onclick="onSubmit(this)"  value="Update Query" name="update" id="button <%= qID + " "+ assignID%>"/>
-						<input type="button" onclick="window.location.href = 'asgnmentList.jsp?assignmentId=<%=assignID %>&showQuestions=true'" value="Cancel" name="cancel" id="cancelButton"/>
+						<input type="button" onclick="window.location.href = 'asgnmentList.jsp?assignmentId=<%=assignID%>&showQuestions=true'" value="Cancel" name="cancel" id="cancelButton"/> 
 				</div>
 				 </div>
 				</div> 
