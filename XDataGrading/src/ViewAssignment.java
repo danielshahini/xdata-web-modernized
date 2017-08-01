@@ -245,7 +245,7 @@ public class ViewAssignment extends HttpServlet {
 					stmt1.setInt(3,rs.getInt("question_id"));
 					ResultSet rs1=stmt1.executeQuery();
 					if(rs1.next()){
-						marksAwarded = Math.round(rs1.getFloat("score"));
+						marksAwarded = rs1.getFloat("score");
 					}
 					
 					if(rs.getString("verifiedcorrect") != null){
@@ -272,7 +272,8 @@ public class ViewAssignment extends HttpServlet {
 								"<td>"+status+"</td>"+
 								"<td>"+ marksAwarded+"</td>"+	
 								"<td>"+ maxMarks+"</td>"+
-								"<td>"+"<a id=\"testCase\" href=\" "+request.getContextPath()+"/StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\" target=\"_blank\" type=\"new_tab\">Test Cases</a></td>"+
+								//"<td>"+"<a id=\"testCase\" href=\" "+request.getContextPath()+"/StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\" target=\"_blank\" type=\"new_tab\">Test Cases</a></td>"+
+								"<td>"+"<a id=\"testCase\" href=\"StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\" target=\"_blank\" type=\"new_tab\">Test Cases</a></td>"+
 								//"<a data-toggle=\"modal\" data-target=\"#errorModal\" href=\"StudentTestCase?user_id="+uname+"&assignment_id="+assignment_id+"&status=incorrect&question_id="+rs.getInt("question_id")+"&query="+CommonFunctions.encodeURIComponent(rs.getString("querystring"))+"\">Test Case</a></td>"+
 								"<td>"+
 								"<a id=\"marks\" href=\"StudentMarkDetails.jsp?user_id="+uname+"&assignment_id="+assignment_id+"&question_id="+rs.getInt("question_id")+"\" target=\"_blank\" type=\"new_tab\">Mark Details</a></td></tr>";

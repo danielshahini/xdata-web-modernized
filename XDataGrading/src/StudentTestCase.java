@@ -124,10 +124,25 @@ public class StudentTestCase extends HttpServlet {
 				if(resultSet.next()){
 					learningMode = resultSet.getBoolean("learning_mode");
 					//If evaluation status of the assignment is true, then the assignment is evaluated, set this label to true.
+				}  
+			}
+		} 
+		catch (SQLException ex) {
+			logger.log(Level.SEVERE,"SQLException: " + ex.getMessage(),ex);
+	       throw new ServletException(ex);
+		}
+		try (PreparedStatement statement = dbCon.prepareStatement("select * from xdata_instructor_query where course_id = ? and assignment_id=? and question_id = ?")){
+			
+			statement.setString(1, course_id);
+			statement.setInt(2, assignment_id);
+			statement.setInt(3, question_id);
+			try(ResultSet resultSet = statement.executeQuery()){
+				if(resultSet.next()){
 					isViewGradedAssignment = resultSet.getBoolean("evaluationstatus");
 				}  
 			}
 		} 
+		
 		catch (SQLException ex) {
 			logger.log(Level.SEVERE,"SQLException: " + ex.getMessage(),ex);
 	       throw new ServletException(ex);
@@ -521,7 +536,7 @@ public class StudentTestCase extends HttpServlet {
 						            ResultSet r = meta.getTables(dbCon.getCatalog(), null, "%", tableFilter);
 						            while (r.next()) {                          
 						               String tableName = r.getString("TABLE_NAME").toUpperCase();
-						               System.out.println("Table : "+ tableName);
+						             //  System.out.println("Table : "+ tableName);
 						               PreparedStatement p = testcon.prepareStatement("select * from "+tableName);
 						              
 						               ResultSetMetaData columnDetail = p.executeQuery().getMetaData();
