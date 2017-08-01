@@ -289,10 +289,9 @@ public class ViewAssignment extends HttpServlet {
 								"<td>"+rs.getString("querystring").replaceAll("''", "'")+"</td>"+
 								"<td>"+status+"</td>"+
 								"<td>"+ marksAwarded +"</td>"+	
-								"<td>"+ maxMarks+"</td>"+
-								
+								"<td>"+ maxMarks+"</td>"+	
 								"<td></td>"+
-								"<td></td>"+
+								"<td><a id=\"marks\" href=\"StudentMarkDetails.jsp?user_id="+uname+"&assignment_id="+assignment_id+"&question_id="+rs.getInt("question_id")+"\" target=\"_blank\" type=\"new_tab\">Mark Details</a></td>"+
 								"</tr>";
 					} 
 					else{
