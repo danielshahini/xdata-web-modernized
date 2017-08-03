@@ -43,6 +43,8 @@ public class PartialMarkerConfig {
 	
 	public int OrderBy=1;
 	
+	public int maxPartialMarks=90;
+	
 	public void setConfigurationValues(int assignment_id,int question_id, int query_id) throws Exception {
 		 
 		/*Properties properties=new Properties();
@@ -79,6 +81,7 @@ public class PartialMarkerConfig {
 							SubQConnective = partialMarks.getSubQConnective();
 							Aggregates = partialMarks.getAggregates();
 							Distinct = partialMarks.getDistinct();
+							maxPartialMarks = partialMarks.getMaxPartialMarks();
 						}
 						else{
 							Relation=1;
@@ -95,7 +98,7 @@ public class PartialMarkerConfig {
 							Distinct=1;
 							SetOperators=1;
 							OrderBy=1;
-
+							maxPartialMarks=90;
 						}
 					}
 				}

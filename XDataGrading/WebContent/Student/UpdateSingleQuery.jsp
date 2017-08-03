@@ -62,7 +62,7 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 			String query_id= "A"+asID+"Q"+questionID+"S1";
 			//correctquery = correctquery;
 			//.replaceAll("[ ;]+$", "");
-			
+			System.out.println("Student Query" + correctquery);
 			Connection dbcon = null;
 
 			dbcon = (new DatabaseConnection()).dbConnection();

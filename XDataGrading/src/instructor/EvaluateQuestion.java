@@ -122,9 +122,13 @@ public class EvaluateQuestion extends HttpServlet {
 			PreparedStatement updatestmt=dbcon.prepareStatement("update xdata_instructor_query set evaluationstatus = true where assignment_id=? and question_id=? and course_id=?");
 			updatestmt.setInt(1, Integer.parseInt(assignment_id));
 			updatestmt.setInt(2,Integer.parseInt(question_id));
-
 			updatestmt.setString(3,courseID);
-			updatestmt.execute();			
+			updatestmt.execute();	
+			
+//			updatestmt=dbcon.prepareStatement("update xdata_assignment set evaluationstatus = true where assignment_id=? and course_id=?");
+//			updatestmt.setInt(1, Integer.parseInt(assignment_id));
+//			updatestmt.setString(2,courseID);
+//			updatestmt.execute();
 
 		}catch(Exception e){
 			logger.log(Level.SEVERE,e.getMessage(),e);

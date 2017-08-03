@@ -92,6 +92,8 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 				//+"alert(\"Comest to onclick\");"
 				 +" e.preventDefault();"
 				 +"  var queryId = $('#queryId').text();"
+				 +"var maxPartialMarks=$('#maxPMarks').val();"
+				// +"alert(\"$('hey: \"+$('#maxPMarks').val());"
 				 +" var assignId = $('#assignId').text();"
 				 +" var quesId = $('#questionId').text();"
 				 +" var reqFromPage = $('#reqFrom').text();"
@@ -112,7 +114,7 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 				 + "+\"&&predicate=\"+$('#predicates').val()+\"&&projection=\"+$('#projections').val()+" 
 				 + "\"&&relation=\"+$('#relations').val()+\"&&groupBy=\"+$('#groupBy').val()+\"&&outer=\"+" 
 				 + "$('#outer').val()+\"&&joins=\"+$('#joins').val()+\"&&distinct=\"+$('#distinct').val()+\"&&having=\"+$('#having').val()+\"&&setoperators=\"+$('#setoperators').val()"
-				 +"+\"&&subQConnective=\"+$('#subQconnective').val()+\"&&aggregates=\"+$('#aggregates').val()+\"&&from=\"+$('#fromSub').val()+\"&&where=\"+$('#whereSub').val();"
+				 +"+\"&&subQConnective=\"+$('#subQconnective').val()+\"&&aggregates=\"+$('#aggregates').val()+\"&&from=\"+$('#fromSub').val()+\"&&where=\"+$('#whereSub').val()+\"&&maxPartialMarks=\"+$('#maxPMarks').val();"
 				 //+"alert(dataString);"
 				  +"$.ajax({" 	
 				  +"    type: \"POST\","  
@@ -236,20 +238,20 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 			     				
 				         //   +"<tr><td>&nbsp;</td><td>&nbsp;</td> </tr>");
 			     	
-			     	out.println("  <tr>"
+			     	out.println(" <tr>"
 			     				+"<td colspan=\"2\" style=\"padding-left: 15px;\">"
 			     					+"<div id=\"paremeters\">"
-				                    	+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px; width:100px;'>Predicates:</label>"
+				                    	+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px; width:100px; display:none'>Predicates:</label>"
 											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id='predicates' type='range' min='0' max=10 value='"+marks.getPredicate()+"' data-rangeslider-sub>"
+											 	+"<input type=\"hidden\" id='predicates' type='range' min='0' max=10 value='"+marks.getPredicate()+"'>"
 											 +"</div>"
-											  +"<output style='float: left; width: 30px;'></output>"										
+											  +"<output style='float: left; width: 30px; display:none'></output>"										
 										+"</div>"
-										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Projections:</label>"
+										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;display:none'>Projections:</label>"
 											 +" <div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
-											 	+"<input id = 'projections' type='range' min='0' max=10 value='"+marks.getProjection()+"' data-rangeslider-sub>"
+											 	+"<input type=\"hidden\" id = 'projections' type='range' min='0' max=10 value='"+marks.getProjection()+"'>"
 											 +"</div>"
-											 +"<output style='float: left; width: 30px;'></output>"
+											 +"<output style='float: left; width: 30px;display:none'></output>"
 											 +"</div>");
 			     	out.println("<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Relations:</label>"
 											 +"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
@@ -312,14 +314,18 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 											 +"</div>"
 											 +" <output style='float: left; width: 30px;'></output>"									
 										+"</div>"
-										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Where Subquery:</label>"
+										+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Where SubqueryHAHA1:</label>"
 											+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
 												+"<input id = 'whereSub' type='range' min='0' max=10 value='"+marks.getWhereSubQueries()+"' data-rangeslider-sub>"										 
 											+" </div>"
-											+"<output style='float: left; width: 30px;'></output>");/*
-	  		     out.println("</div></div></td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td colspan=\"2\" style=\"text-align: center;\">"
-	  		     				+"<input id=\"btnSubmit\" type=\"button\" value=\"Evaluate\" />"
-	  		     				+"</td> </tr></table>");*/
+											+"<output style='float: left; width: 30px;'></output>"
+	  		     
+	  		     					+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Max Partial Marks:</label>"
+											+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+											+"<input id = 'maxPMarks' type='range' min='0' max='100' value='"+marks.getMaxPartialMarks()+"' data-rangeslider-sub>"										 
+										+" </div>"
+										+"<output style='float: left; width: 30px;'></output>")
+	  		     ;
 			     	}else{
 		 		     	out.println("<table style=\"width: 70%; border: 0px;\" cellpadding=\"2\" cellspacing=\"0\">"	
 				     			+"<tr>"
@@ -410,15 +416,19 @@ public class PartialMarkingParamsPerInstrQuery extends HttpServlet {
 												 +"</div>"
 												 +" <output style='float: left; width: 30px;'></output>"									
 											+"</div>"
-											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Where Subquery:</label>"
+											+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Where Subqueryhaha2:</label>"
 												+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
 													+"<input id = 'whereSub' type='range' min='0' max=10 value='1' data-rangeslider-sub>"										 
 												+" </div>"
 											
-												+"<output style='float: left; width: 30px;'></output>");/*
-		  		     out.println("</div></div></td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td colspan=\"2\" style=\"text-align: center;\">"
-		  		     				+"<input id=\"btnSubmit\" type=\"button\" value=\"Evaluate\" />"
-		  		     				+"</td> </tr></table>");*/
+												+"<output style='float: left; width: 30px;'></output>"
+		  		     
+		  		     							+"<div class=\"topDiv\"><label style='float:left; margin-left: 10px;width:100px;'>Max Partial Marks:</label>"
+											+"<div style='float: left; width: 250px; margin-left: 10px;  padding-top: 3px;'>"
+											+"<input id = 'maxPMarks' type='range' min='0' max='100' value='90' data-rangeslider-sub>"										 
+										+" </div>"
+										+"<output style='float: left; width: 30px;'></output>");
+		  		    
 		  		     }
   		     }else{
  		     	out.println("<table style=\"width: 70%; border: 0px;\" cellpadding=\"2\" cellspacing=\"0\">"	

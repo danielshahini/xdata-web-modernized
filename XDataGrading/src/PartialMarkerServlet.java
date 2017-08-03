@@ -91,7 +91,7 @@ public class PartialMarkerServlet extends HttpServlet {
 							Gson gson = new Gson();
 							String info = gson.toJson(markInfo);
 							//try(PreparedStatement stmt1 = conn.prepareStatement("update score set result = ?, markinfo = ? where rollnum = ? and assignment_id = ? and question_id = ?")){
-							try(PreparedStatement stmt1 = conn.prepareStatement("update xdata_student_queries set score = ?, markinfo = ? where rollnum = ? and assignment_id = ? and question_id = ?")){
+							try(PreparedStatement stmt1 = conn.prepareStatement("update xdata_instructor_queries set score = ?, markinfo = ? where rollnum = ? and assignment_id = ? and question_id = ?")){
 								stmt1.setFloat(1, markInfo.Marks);
 								stmt1.setString(2, info);
 								stmt1.setString(3, userId);
@@ -149,9 +149,29 @@ public class PartialMarkerServlet extends HttpServlet {
 			markInfo.setAggregates(Integer.parseInt(request.getParameter("aggregates")));
 			markInfo.setSetOperators(Integer.parseInt(request.getParameter("setoperators")));
 			markInfo.setDistinct(Integer.parseInt(request.getParameter("distinct")));
-			
+			markInfo.setMaxPartialMarks(Integer.parseInt(request.getParameter("maxPartialMarks")));
 			Gson gson = new Gson();
 			String info = gson.toJson(markInfo);
+			try(Connection conn = MyConnection.getDatabaseConnection())
+			{
+				try(PreparedStatement stmt1 = conn.prepareStatement("update xdata_instructor_query set partialmarkinfo = ? where assignment_id = ? and question_id = ? and query_id = ?"))
+				{
+					stmt1.setString(1, info);
+					stmt1.setInt(2, assignmentId);
+					stmt1.setInt(3, questionId);
+					stmt1.setInt(4, queryId);		
+					stmt1.executeUpdate();
+					//try block for statement stmt ends
+				} catch (SQLException sqlEx){
+					logger.log(Level.SEVERE,sqlEx.getMessage(),sqlEx);
+				}
+			}
+			catch (Exception e) {
+				logger.log(Level.SEVERE,e.getMessage(),e);
+			throw new ServletException(e);
+		}
+		
+			
 			if((requestFrom != null && !requestFrom.isEmpty() && requestFrom.trim().equalsIgnoreCase("demo"))
 					//|| (queryId == 0 && assignmentId == 0 && questionId ==0)
 					){

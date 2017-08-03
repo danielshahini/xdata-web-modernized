@@ -34,6 +34,8 @@ public int QueryId;
 	private int SetOperators=1;
 	
 	private int Distinct=1;
+	
+	private int maxPartialMarks = 90;
 	/**
 	 * @return the predicate
 	 */
@@ -222,6 +224,14 @@ public int QueryId;
 		return (this.Projection+this.Joins+this.WhereSubQueries+this.FromSubQueries+this.OuterQuery+this.HavingClause
 				+this.SubQConnective+this.Aggregates+this.SetOperators+this.Distinct);
 		
+	}
+
+	public int getMaxPartialMarks() {
+		return maxPartialMarks;
+	}
+
+	public void setMaxPartialMarks(int maxPartialMarks) {
+		this.maxPartialMarks = maxPartialMarks;
 	}
 	
 }

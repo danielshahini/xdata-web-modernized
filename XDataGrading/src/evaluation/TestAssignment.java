@@ -1254,6 +1254,7 @@ public class TestAssignment {
 					try (ResultSet studentQuery = studQueryStmt.executeQuery()) {
 						if (studentQuery.next()) {
 							String qry = studentQuery.getString("querystring");
+							//System.out.println("Control here" + qry);
 							String testQuery = qry;
 							int flag = 0;
 							// SQLParser sqlParser = new SQLParser();
@@ -1270,9 +1271,9 @@ public class TestAssignment {
 								logger.log(Level.INFO, "Cleansed Query is " + qry);
 								try {
 									logger.log(Level.INFO, "queryString" + testQuery);
-									testQuery = testQuery.trim().replaceAll("\n+", " ");
+									//testQuery = testQuery.trim().replaceAll("\n+", " ");
 									testQuery = testQuery.trim().replaceAll(" +", " ");
-
+									
 									populateTestData.deleteAllTempTablesFromTestUser(testCon);
 									populateTestData.createTempTables(testCon, assignment_id, question_id);
 									try (PreparedStatement testStatement = testCon.prepareStatement(testQuery)) {

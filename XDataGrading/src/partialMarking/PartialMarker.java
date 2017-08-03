@@ -166,6 +166,7 @@ public class PartialMarker {
 		}
 		else
 			result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
+			result.Marks = result.Marks<result.Configuration.maxPartialMarks?result.Marks:result.Configuration.maxPartialMarks;
 		//System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
 		return result;
 	}
@@ -1669,7 +1670,7 @@ public class PartialMarker {
 
 		if(Configuration==null)
 			PartialMarker.setConfigurationValues(instructorData);
-
+		
 		MarkInfo marks = new MarkInfo();
 		//Set level 0 query details for display
 		marks.SubqueryData.add(populateQueryInfo(instructorData,studentData,level));

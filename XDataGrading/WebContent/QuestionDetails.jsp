@@ -585,9 +585,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 							if (rs.next()) {
 								String query = rs.getString("correctquery");
 								String description = rs.getString("querytext");
-								int maxMarks = rs.getInt("totalmarks");
-								instr += "<div style='float: left; width: 400px'><label style='float:left; margin-left: 10px;'>Marks:</label><output style='float: left; width: 20px;'>"
-										 +"</output><div style='float: left; width: 300px; margin-left: 10px;  '><input name='maxMarks' type='range' min='0' max='100' value='" + maxMarks + "' data-rangeslider-main>"
+								int maxMarks1 = rs.getInt("totalmarks");
+								instr += "<div style='float: left; width: 400px'><label style='float:left; margin-left: 10px;'>Markshey:</label><output style='float: left; width: 20px;'>"
+										 +"</output><div style='float: left; width: 300px; margin-left: 10px;  '><input name='maxMarks' type='range' min='0' max='100' value='" + maxMarks1 + "' data-rangeslider-main>"
 											+"</div></div></div>";
 		
 								out.println(instr); 
@@ -709,7 +709,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								<div style='float: left; width: 400px'><label style='float:left; margin-left: 10px;'>Marks:</label>
 									 <output style='float: left; width: 20px;'></output>
 									 <div style='float: left; width: 300px; margin-left: 10px;'>
-									 	<input name = 'existingMarks' type='range' min='0' max='<%=maxMarks%>' value='<%=marks%>' data-rangeslider-sub1>	 	
+									 	<input name = 'existingMarks' type='range' min='0' max='<%=maxMarks1%>' value='<%=marks%>' data-rangeslider-sub1>	 	
 									 </div>
 								</div>
 
