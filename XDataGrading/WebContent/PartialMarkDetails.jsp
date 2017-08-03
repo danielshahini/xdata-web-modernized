@@ -72,15 +72,18 @@ $().ready(function(){
 		});
 	  
 	$('#update').click(function(event) {  
+		//alert("update clicked");
+		 var feedback = $('#idcom').val();
         var username=$('#userId').text();
         var assignId = $('#assignId').text();
         var quesId = $('#questionId').text();
         var updatedMarks = $('#marks').val();
-     	$.get('UpdateMarks', {userId:username, assignmentId:assignId, questionId:quesId, marks:updatedMarks},function(responseText) { 
+     	$.get('UpdateMarks', {userId:username, assignmentId:assignId, questionId:quesId, marks:updatedMarks, feedbackTxt:feedback},function(responseText) { 
      		if (responseText.trim()) {
      			alert("Update Failed:" + responseText);    
      		} else {
      			$('#queryMarks').text(updatedMarks);
+     			$('#queryFeedback').text(feedback);
      		}     		
         });
     }); 
@@ -308,10 +311,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		    		   <input type='hidden' id='hdnStudentQuery' value='<%= rs.getString("querystring")%>'/>
    		    		  <p><label>Do you want to change the marks?</label>
    		    		  <input class="updateMarks" type="checkbox" name="updateMarks" value="10" />
-   		       			<div id = 'newMarks'><input id = 'marks' type="text" placeholder="Enter the marks"/><input type="button" value="Update" id = "update"/></div>
+   		       			<div id = 'newMarks'><input id = 'marks' type="text" placeholder="Enter Marks"/><br><textarea style="padding:5px;width:40%; height:80px;" id = 'idcom' placeholder="Enter Feedback"></textarea><input type="button" value="Update" id = "update"/></div>
    		       		</p>	
    		      <% }
-   		       
    		      // stmt = conn.prepareStatement("select * from score where rollnum = ? and assignment_id = ? and question_id = ?");
    		       stmt = conn.prepareStatement("select * from xdata_student_queries where rollnum = ? and assignment_id = ? and question_id = ?");
    		       stmt.setString(1, userId);
@@ -321,7 +323,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       if(rs.next()){
    		    	   String data = rs.getString("markinfo");
    		    	   %>
-   		    	   <p> <h4>Marks: <label id = 'queryMarks'><%= rs.getFloat("score")%></label></h4> </p>  
+   		    	   <p> <h4>Marks: <label id = 'queryMarks'><%= rs.getFloat("score")%></label></h4> </p> 
+   		    	    <h4>Feedback:</h4> <label id = 'queryFeedback'> <%= rs.getString("feedback")%></label>  
    		    	   <%
    		    	   if(data!= null && !data.isEmpty()){
    		    	   

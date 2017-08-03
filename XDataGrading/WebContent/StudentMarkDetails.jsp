@@ -164,9 +164,26 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       rs = stmt.executeQuery();
    		       if(rs.next()){
    		    	   String data = rs.getString("markinfo");
-   		    	   %>
-   		    	   <p><h4>Marks: <label id = 'queryMarks'><%= Math.round(rs.getFloat("score")) %></label></h4></p>  
-   		    	   <%
+   		    	if(rs.getString("feedback").isEmpty()==false){
+   		    		%>
+					<p>
+					
+					<h4>
+						Marks: <label id='queryMarks'><%= rs.getFloat("score") %></label>
+					</h4>
+					</p>
+						<h4>Feedback:</h4> <label id='queryFeedback'><pre><%= rs.getString("feedback") %></pre> </label>
+					<%
+   		    	}
+   		    	else
+   		    	{
+   		    	 %>
+					<p>
+					<h4>Marks: <label id='queryMarks'><%= rs.getFloat("score") %></label>
+					</h4>	
+					</p> <%
+   		    	}
+  
    		    	   if(!data.isEmpty()){
    		    	   
    		    	   Gson gson = new Gson();
