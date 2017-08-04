@@ -345,7 +345,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				//score=score-0.5f;
 			}
 		}
 
@@ -625,7 +625,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				//score=score-0.5f;
 			}
 		}
 
@@ -662,7 +662,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				//score=score-0.5f;
 			}
 		}
 
@@ -682,7 +682,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				//score=score-0.5f;
 			}
 		}		
 		return score;
@@ -703,7 +703,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				//score=score-0.5f;
 			}
 		}		
 		return score;
@@ -1740,7 +1740,7 @@ public class PartialMarker {
 		}
 		else if(!instructorData.getIsDistinct() && studentData.getIsDistinct())
 		{
-			distinctOperatorScore=distinctOperatorScore-0.5f;
+			//distinctOperatorScore=distinctOperatorScore-0.5f;
 		}
 		
 		float distinctOperatorScoreTotal=distinctOperatorScore * WEIGHT;
@@ -1891,7 +1891,7 @@ public class PartialMarker {
 		}
 		else{
 			//Even if any one query doesnot has Distinct - there is a mismatch
-			distinctOperatorScore=distinctOperatorScore-0.5f;
+			//distinctOperatorScore=distinctOperatorScore-0.5f;
 		}
 		float distinctOperatorScoreTotal=(perDistinctOperator==0 && distinctOperatorScore!=0)?-distinctOpWeightage/2:
 			perDistinctOperator*distinctOperatorScore;
