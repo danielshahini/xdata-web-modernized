@@ -164,7 +164,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       rs = stmt.executeQuery();
    		       if(rs.next()){
    		    	   String data = rs.getString("markinfo");
-   		    	if(rs.getString("feedback").isEmpty()==false){
+   		    	if(rs.getString("feedback") != null && rs.getString("feedback").isEmpty()==false){
    		    		%>
 					<p>
 					
