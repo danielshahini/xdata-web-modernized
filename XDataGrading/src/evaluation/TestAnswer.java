@@ -3109,7 +3109,9 @@ public class TestAnswer {
 				String ins = "INSERT INTO xdata_views VALUES ("+vname+",'"+user+"',"+vquery+");";			
 				try(PreparedStatement smt = conn.prepareStatement(ins)){
 					smt.executeUpdate();
-				}
+				}catch(SQLException ex){
+					logger.log(Level.SEVERE,"SQL Exception: "+ex.getMessage(),ex);
+				} 
 				conn.close();
 				return out;			
 			}
