@@ -134,6 +134,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						int optionalSchemaID =0;
 						boolean isShowQuestions = false;
 						boolean isInteractiveAssignment = false;
+						boolean showmarks = false;
 						String schemaFileName = "";
 						String dataFileName="";
 						String studentId = (String) request.getParameter("studentId");							
@@ -159,6 +160,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									end = rs.getTimestamp("endtime");
 									defaultSchemaID = rs.getInt("defaultschemaid");
 									isInteractiveAssignment = rs.getBoolean("learning_mode");
+									showmarks = rs.getBoolean("showmarks");
 									//start=rs.getString("end_date");
 								}
 								schemaIdList.add(defaultSchemaID);
@@ -189,7 +191,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 							java.util.Date current = formatter.parse(currentDate);
 
 							//compare times
-							if (current.compareTo(oldDate) > 0) {
+							if (current.compareTo(oldDate) > 0 && showmarks == true) {
 								yes = true;
 							}
 							//Is current time is less than assignment strt time, dont show the questions.

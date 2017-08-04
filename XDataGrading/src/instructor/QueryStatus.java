@@ -168,7 +168,7 @@ public class QueryStatus extends HttpServlet {
 								//	"href='FailedTestCases?user_id="
 							+"<a id=\"testCase\" href=\'FailedTestCases?user_id="
 							+ rs.getString("rollnum") + "&assignment_id="
-							+ assignment_id + "&question_id=" + question_id+ "' target=\"_blank\" type=\"new_tab\">Test Cases</a></td>"
+							+ assignment_id + "&question_id=" + question_id+ "' target=\"_blank\" type=\"new_tab\"><u>Test Cases</u></a></td>"
 							
 							/*data-toggle="modal" data-target="#marksModal"
 		 					data-remote="PartialMarkDetails.jsp?reqFrom=popUp&assignment_id=" +
@@ -184,7 +184,7 @@ public class QueryStatus extends HttpServlet {
 							+"<a id=\"marks\" href=\"PartialMarkDetails.jsp?user_id="
 							+ rs.getString("rollnum") + "&reqFrom=popUp&assignment_id="
 							+ assignment_id + "&question_id=" + question_id
-							+ "\" target=\"_blank\" type=\"new_tab\"> Mark Details</a>"
+							+ "\" target=\"_blank\" type=\"new_tab\"> <u>Mark Details</u></a>"
 							+"</td>" + "</tr>");
 				} else if(rs.getString("verifiedcorrect") != null && rs.getBoolean("verifiedcorrect")){
 					out_assignment.println("<tr>" + "<td>"

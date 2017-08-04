@@ -238,7 +238,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			String chk = null;
 			String penalty="";
 			String dsSet="<div><div id=\"loadDefaultDataSets\" style='display:none;'>";
-			
+			Boolean showmarks = false;
 			try {
 				PreparedStatement stmt1 = dbcon
 						.prepareStatement("SELECT * FROM xdata_assignment where assignment_id=? and course_id=?");
@@ -253,6 +253,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						
 						if(rs1.getBoolean("learning_mode")){
 							output += "checked=\"checked\"";
+					 	}
+						if(rs1.getBoolean("showmarks")){
+							showmarks = true;
 					 	}
 						connection_id = rs1.getInt("connection_id");
 	 					schema_id = rs1.getInt("defaultschemaid");	
@@ -402,6 +405,12 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 				output+= "<input name = \"penalty\" id =\"penaltyid\" type=\"text\" value='"+penalty+"'>%";
 				output+="</div>";
 			}
+			output+="<input style=\"width:50px;height:10px;\" type=\"checkbox\" title=\"Click to show grades for this assignment\" name=\"showmarks\" ";
+			if(showmarks){
+				output += "checked=\"checked\"/>";
+		 	}
+			output +="<label style=\"margin-top: 0px;\"> Is showmarks? </label></div>";
+				
 			output += "</br></br></br></br>";
 			output += "<input  type=\"submit\" id=\"sub\" value=\"Update\">";
 			output += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";

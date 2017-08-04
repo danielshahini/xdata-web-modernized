@@ -85,9 +85,12 @@ a:hover {
 		int schemaId = Integer.parseInt(request.getParameter("schemaid"));
 		int connectionId = Integer.parseInt(request.getParameter("dbConnection"));
 		boolean interactive = false;
-		
+		boolean showmarks = false;
 		if(request.getParameter("interactive") != null){
 			interactive = true;	
+		}
+		if(request.getParameter("showmarks") != null){
+			showmarks = true;	
 		}
 		Boolean softdateselected = false;
 		String softdate = "";
@@ -126,20 +129,20 @@ a:hover {
 	    
 	    
 		stmt = dbcon.prepareStatement
-				("UPDATE xdata_assignment SET starttime=? ,endtime=?, connection_id = ?, defaultschemaid = ?, description=?, assignmentName=?, learning_mode=?, defaultDSetId =?, penalty =? , softtime =? WHERE assignment_id=? and course_id = ?");
-
-		stmt.setTimestamp(1, startTimeStamp); 
-		stmt.setTimestamp(2, endTimeStamp);
-		stmt.setInt(3, connectionId);
-		stmt.setInt(4, schemaId);
-		stmt.setString(5,description);
-		stmt.setString(6,name);
-		stmt.setBoolean(7, interactive); 
-		stmt.setString(8,json);
-		stmt.setString(9, penalty);
-		stmt.setTimestamp(10, softTimeStamp); 
-		stmt.setInt(11, asgnmentID);
-		stmt.setString(12, courseID); 
+				("UPDATE xdata_assignment SET showmarks=?, starttime=? ,endtime=?, connection_id = ?, defaultschemaid = ?, description=?, assignmentName=?, learning_mode=?, defaultDSetId =?, penalty =? , softtime =? WHERE assignment_id=? and course_id = ?");
+		stmt.setBoolean(1, showmarks);
+		stmt.setTimestamp(2, startTimeStamp); 
+		stmt.setTimestamp(3, endTimeStamp);
+		stmt.setInt(4, connectionId);
+		stmt.setInt(5, schemaId);
+		stmt.setString(6,description);
+		stmt.setString(7,name);
+		stmt.setBoolean(8, interactive); 
+		stmt.setString(9,json);
+		stmt.setString(10, penalty);
+		stmt.setTimestamp(11, softTimeStamp); 
+		stmt.setInt(12, asgnmentID);
+		stmt.setString(13, courseID); 
 		
 		stmt.executeUpdate();
 		String url="";
