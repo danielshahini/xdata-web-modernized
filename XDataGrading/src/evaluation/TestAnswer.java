@@ -3115,6 +3115,8 @@ public class TestAnswer {
 				conn.close();
 				return out;			
 			}
+			
+			try{
 
 			String q="Select * from xdata_views where rollnum = ?";
 
@@ -3178,6 +3180,10 @@ public class TestAnswer {
 			while(st.hasMoreTokens()){
 				token=st.nextToken();
 				newquery+=token+ " ";
+			}
+			}
+			catch(Exception e){
+				e.printStackTrace();
 			}
 			return out;
 		}//try block for connection ends
