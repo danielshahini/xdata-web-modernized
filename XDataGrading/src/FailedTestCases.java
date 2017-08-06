@@ -140,10 +140,24 @@ public class FailedTestCases extends HttpServlet {
 		+"<p><h4>Question: <label id='questionId'>"+question_id+"</label></h4></p>"
 		+"<p><h4>Roll Number: <label id='userId'>"+user_id+"</label></h4></p>"
 				);
-		//+"<form class=\"wufoo\" action=\"LoginChecker\" method=\"post\">"); 
+		
 
 		try{
-
+		 PreparedStatement stmt = dbCon.prepareStatement("select * from xdata_users where internal_user_id = ?");
+	       stmt.setString(1, user_id);
+	       ResultSet rs = stmt.executeQuery();
+	  	  if(rs.next())
+	       {
+	  		  String user_name = rs.getString("user_name");
+	  		  String emailId = rs.getString("email");
+		  		out_assignment.println(
+		       
+		   		"<p><h4>Name: <label id='userName'>"+user_name+"</label></h4></p>"
+		   		+
+		        "<p><h4>E-mail Id: <label id='userEmail'>"+emailId+"</label></h4></p>"
+		        );
+		       
+	       }
 
 			String failedDataSets = "select result,querystring from xdata_student_queries where course_id = ? and rollnum =? and assignment_id= ? and question_id = ?";
 			//	out_assignment.println("<br/><div style = 'font-weight:bold'>Message: <span style='font-weight:normal'>Your query did not pass the datasets shown below.</span></div>");
@@ -203,7 +217,7 @@ public class FailedTestCases extends HttpServlet {
 
 					String dataSetId = failedDSValues.getDataSetIdList().get(ds);
 					ArrayList<FailedColumnValues> dsValueList = failedDSValues.getDsValueMap().get(dataSetId);
-					logger.log(Level.FINE,"Data set IDs = "+dataSetId);
+					logger.log(Level.INFO,"Data set IDs = "+dataSetId);
 					PreparedStatement stmt2=dbCon.prepareStatement(sel_dataset);
 					stmt2.setString(1,course_id);
 					stmt2.setString(2, dataSetId);

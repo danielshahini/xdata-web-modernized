@@ -75,8 +75,8 @@ public class StudentTestCase extends HttpServlet {
 		//If evaluation status of the assignment is true, then the assignment is evaluated, set this label to true.
 		
 		if(session.getAttribute("displayTestCase") != null && Boolean.valueOf(session.getAttribute("displayTestCase").toString()) == true){
-			dbCon = (Connection) session.getAttribute("dbConn");
-			testcon = (Connection) session.getAttribute("testConn");
+			//dbCon = (Connection) session.getAttribute("dbConn");
+			//testcon = (Connection) session.getAttribute("testConn");
 			session.setAttribute("displayTestCase", false);
 		}
 		 
@@ -98,9 +98,9 @@ public class StudentTestCase extends HttpServlet {
   		logger.log(Level.FINE,"Question_id :"+question_id);
   		logger.log(Level.FINE,"User id : "+user_id);
 
-		if(dbCon == null){ 
+		/*if(dbCon == null){ 
 			dbCon=(Connection) session.getAttribute("dbConnection");
-		}
+		}*/
 		if(dbCon==null)
 		{
 			try {

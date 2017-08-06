@@ -284,12 +284,24 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       	<p><h4>Assignment: <label id='assignId'><%= assignID %></label></h4></p>
    		        <p><h4>Question: <label id='questionId'><%= questionID %></label></h4></p>
    		        <p><h4>Roll Number: <label id='userId'><%= userId %></label></h4></p>
-   		        	    		    	
+   		        
+   		        
+   		        <%
+   		       PreparedStatement stmt = conn.prepareStatement("select * from xdata_users where internal_user_id = ?");
+   		       stmt.setString(1, userId);
+   		       ResultSet rs = stmt.executeQuery();
+   		  	  if(rs.next())
+		       {
+   		       %>
+   		       
+   		   		<p><h4>Name: <label id='userName'><%= rs.getString("user_name") %></label></h4></p>
+   		        <p><h4>E-mail Id: <label id='userEmail'><%= rs.getString("email") %></label></h4></p>	    	
    		       <%
-  		       PreparedStatement stmt = conn.prepareStatement("select * from xdata_instructor_query where assignment_id = ? and question_id = ?");
+		       }
+  		       stmt = conn.prepareStatement("select * from xdata_instructor_query where assignment_id = ? and question_id = ?");
   		       stmt.setInt(1, assignID);
 		       stmt.setInt(2, questionID);
-  		       ResultSet rs = stmt.executeQuery();
+  		       rs = stmt.executeQuery();
   		       
   		       while(rs.next()){
   		    	  %>
