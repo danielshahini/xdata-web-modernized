@@ -545,7 +545,7 @@ public class TestAnswer {
 							
 							logger.log(Level.INFO,"Student Id : "+studentRollnums.get(l)+" evaluated");
 							
-
+							//pstmt.setQueryTimeout(60);
 							rs = pstmt.executeQuery();
 							ResultSet rs11 = pstmt22.executeQuery(); 
 							while(rs11.next()){ 
@@ -1809,14 +1809,21 @@ public class TestAnswer {
 						preProcess.initializeConnectionDetails(cvc);
 						TableMap tm = cvc.getTableMap();
 						cvc.closeConn();	
-						// Check for views in student query
-						for(int i = 0 ; i < studentRollNums.size(); i++){
-							String rollnum = studentRollNums.get(i);
-							String query = studentQueries.get(i);
-							if(query!= null && !query.isEmpty()){
-								query=checkForViews(query,rollnum);
-							}//set updated query to student query
-							studentQueries.set(i,query);
+						try{
+							// Check for views in student query
+							for(int i = 0 ; i < studentRollNums.size(); i++){
+								String rollnum = studentRollNums.get(i);
+								String query = studentQueries.get(i);
+								if(query!= null && !query.isEmpty()){
+									query=checkForViews(query,rollnum);
+								}//set updated query to student query
+								studentQueries.set(i,query);
+							}
+						}
+						catch(Exception e)
+						{
+							e.printStackTrace();
+							
 						}
 						//For each instructor answer loop to compare datasets
 						while(rs.next()){

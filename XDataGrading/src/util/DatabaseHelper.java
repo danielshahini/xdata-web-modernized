@@ -12,7 +12,7 @@ public class DatabaseHelper {
 	private static Logger logger = Logger.getLogger(DatabaseHelper.class.getName());
 	
 	
-	private static float calculate_score(Connection conn, int assignmentId,String course_id, int questionId, String userId)
+	private static float calculate_score(Connection conn, int assignmentId,String course_id, int questionId, String userId, float marks)
 	{
 		float ans=0;
 		String select_Stmt="select * from xdata_student_queries where course_id=? and assignment_id=? and question_id=? and rollnum=?";
@@ -28,9 +28,13 @@ public class DatabaseHelper {
 					float manual_grade=rs.getFloat("manual_score");
 					if(rs.getObject("manual_score") != null && ! rs.wasNull())
 						 ans=manual_grade;
-					else
+					else{
+						if(rs.getObject("xdata_score") != null && ! rs.wasNull())
 						ans=auto_grade;
+						else
+							ans=marks;
 					
+					}
 				}
 			}
 			
@@ -106,7 +110,7 @@ public class DatabaseHelper {
 		 
 		try{
 			
-			float newmarks= calculate_score(conn,assignmentId,course_id,questionId, userId);
+			float newmarks= calculate_score(conn,assignmentId,course_id,questionId, userId,marks);
 			float scaled_marks= calculate_scaledMarks(conn,assignmentId,course_id,questionId, userId,newmarks);
 			String updateScoreQuery = "update xdata_student_queries set score = ?,markinfo=?,max_marks=?,raw_score=?, xdata_score=?, scaled_score=? where assignment_id=? and question_id=? and rollnum=?";
 			try(PreparedStatement ps = conn.prepareStatement(updateScoreQuery)){

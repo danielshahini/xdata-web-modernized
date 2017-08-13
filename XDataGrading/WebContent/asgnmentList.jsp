@@ -127,6 +127,7 @@ if(session.getAttribute("ltiIntegration")!= null && ! Boolean.parseBoolean(sessi
 						String instructions = (new CommonFunctions()).getAssignmentInstructions(courseID, assignID, url);						
 						
 						instructions += "<input name=\"Edit\" type=\"button\" value=\"Edit Details\" onclick=\"window.location.href='EditAssignment.jsp?AssignmentID="+assignID+"'\">&nbsp;&nbsp;";
+						instructions += "<input name=\"Edit\" type=\"button\" value=\"Edit Scaling Factor\" onclick=\"window.location.href='EditScale.jsp?AssignmentID="+assignID+"'\">&nbsp;&nbsp;";
 						
 						instructions += "<button id='my-button' onclick='alert(\" The following url is copied to the clipboard. \\n\\n "+url+ " \\n\\nPlease note the details below for connecting to XData from external learning system. \\n\\n \\t\\t Consumer Key : "+consumerKey+" \\n \\t\\t Secret Key : "+secretKey+"  \\n \");'  data-clipboard-text='"+ url+ "' title='Click to copy to clipboard.'>Copy external tool link</button>"; 
 						out.println(instructions);

@@ -194,11 +194,13 @@ public class PopulateTestDataGrading {
 
 
 	
-	public void populateTestDataForTesting(Vector<String> listOfCopyFiles, String filePath, TableMap tableMap, Connection conn, int assignmentId, int questionId){
+	public void populateTestDataForTesting(Vector<String> listOfCopyFiles, String filePath, TableMap tableMap, Connection testConn, int assignmentId, int questionId){
 		try{						
-			deleteAllTempTablesFromTestUser(conn);
-			//deleteAllTablesFromTestUser(conn);
-			this.createTempTables(conn, assignmentId, questionId);
+			deleteAllTempTablesFromTestUser(testConn);
+			
+			//deleteAllTablesFromTestUser(conn1);
+			
+			this.createTempTables(testConn, assignmentId, questionId);
 			BufferedReader br = null;
 
 			for(int i=0;i<tableMap.foreignKeyGraph.topSort().size();i++){
@@ -215,7 +217,7 @@ public class PopulateTestDataGrading {
 							data+=str+"@@";
 						}
 
-						uploadTestDataToTempTables(copyFile.substring(0, copyFile.indexOf(".copy")), data, filePath, conn);
+						uploadTestDataToTempTables(copyFile.substring(0, copyFile.indexOf(".copy")), data, filePath, testConn);
 					}else if(listOfCopyFiles.contains(tableName+".ref.copy")){
 						listOfCopyFiles.remove(tableName+".ref.copy");
 						String copyFile = tableName+".ref.copy";
@@ -226,7 +228,7 @@ public class PopulateTestDataGrading {
 							data+=str+"@@";
 						}
 
-						uploadTestDataToTempTables(copyFile.substring(0, copyFile.indexOf(".ref.copy")), data, filePath, conn);
+						uploadTestDataToTempTables(copyFile.substring(0, copyFile.indexOf(".ref.copy")), data, filePath, testConn);
 					}
 				}catch(Exception e){
 					logger.log(Level.SEVERE,"PopulateTestData.populateTestDataForTesting(): "+e.getStackTrace(),e);
@@ -247,7 +249,7 @@ public class PopulateTestDataGrading {
 						data+=str+"@@";
 					}
 
-					uploadTestDataToTempTables(copyFile.substring(0,copyFile.indexOf(".copy")), data, filePath, conn);
+					uploadTestDataToTempTables(copyFile.substring(0,copyFile.indexOf(".copy")), data, filePath, testConn);
 				}catch(Exception e){
 					logger.log(Level.SEVERE,"PopulateTestData.populateTestDataForTesting(): "+e.getStackTrace(),e);
 				}
@@ -391,6 +393,8 @@ public class PopulateTestDataGrading {
 											String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create temporary table ");
 											try(PreparedStatement stmt2 = conn.prepareStatement(temp)){
 												stmt2.executeUpdate();					
+											} catch (SQLException sqle){
+												logger.log(Level.SEVERE, sqle.getMessage());
 											}
 										}
 									}	
@@ -686,6 +690,7 @@ test student and instructor query options */
 		ArrayList<String> listOfQueries = null;
 		String[] inst = null;
 		this.deleteAllTablesFromTestUser(testConn);
+		createTempTables(testConn, assignmentId, questionId);
 		try(PreparedStatement stmt = mainCon.prepareStatement("select sample_data_name,sample_data from xdata_sampledata where sampledata_id = ?")){
 			stmt.setInt(1, Integer.parseInt(sampledata_id));			
 			try(ResultSet result = stmt.executeQuery()){
@@ -712,6 +717,8 @@ test student and instructor query options */
 							//System.out.println(inst[i]);
 							try(PreparedStatement stmt2 = testConn.prepareStatement(inst[i])){
 								stmt2.executeUpdate();		
+							} catch (SQLException sqle){
+								logger.log(Level.SEVERE, sqle.getMessage());
 							}
 						}
 					}
