@@ -70,12 +70,13 @@ public class UpdateMarks extends HttpServlet {
 								
 								if(status.isEmpty()){
 									
-									try(PreparedStatement stmt1 = conn.prepareStatement("update xdata_student_queries set score = ?, feedback =? where rollnum = ? and assignment_id = ? and question_id = ?")){
+									try(PreparedStatement stmt1 = conn.prepareStatement("update xdata_student_queries set score = ?, feedback =?, manual_score=? where rollnum = ? and assignment_id = ? and question_id = ?")){
 										stmt1.setFloat(1, updatedMarks);
 										stmt1.setString(2, comment);
-										stmt1.setString(3, userId);
-										stmt1.setInt(4, assignmentId);
-										stmt1.setInt(5, questionId);				
+										stmt1.setFloat(3, updatedMarks);
+										stmt1.setString(4, userId);
+										stmt1.setInt(5, assignmentId);
+										stmt1.setInt(6, questionId);				
 										stmt1.executeUpdate();
 									} catch (SQLException sqlEx){
 										logger.log(Level.SEVERE,sqlEx.getMessage(),sqlEx);
