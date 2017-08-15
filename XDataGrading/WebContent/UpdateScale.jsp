@@ -6,6 +6,8 @@
 <%@page import="java.sql.*"%>
 <%@page import="database.DatabaseConnection"%>
 <%@page import="database.DatabaseProperties"%>
+<%@page import="util.DatabaseHelper"%>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head> 
@@ -98,8 +100,36 @@ a:hover {
 			stmt1.executeUpdate();
 			stmt1.close();
 		}
+		
+		
+		// Updating marks of all students for all questions according to the new scaling factor
+		stmt = dbcon.prepareStatement
+				("select * from xdata_student_queries where course_id = ? and assignment_id = ?");
+		stmt.setString(1, courseID);
+		stmt.setInt(2, assignmentID);
+		rs = stmt.executeQuery();
+		int question_id;
+		int max_marks;
+		String rollnum;
+		String markinfo;
+		float score;
+		float raw_score;
+		while(rs.next())
+		{
+			if(rs.getString("verifiedcorrect") != null)
+			{
+				question_id = rs.getInt("question_id");
+				max_marks = rs.getInt("max_marks");
+				rollnum = rs.getString("rollnum");
+				markinfo = rs.getString("markinfo");
+				score = rs.getFloat("score");
+				raw_score = rs.getFloat("raw_score");
+				DatabaseHelper.InsertIntoScores(dbcon, assignmentID, question_id, 1, courseID, max_marks, rollnum, markinfo, score, raw_score);
+			}
+		}
 		stmt.close();
 		rs.close();
+		
 		String url="";
 		
 		if(!((String)request.getSession().getAttribute("LOGIN_USER")).equalsIgnoreCase("tester")){
