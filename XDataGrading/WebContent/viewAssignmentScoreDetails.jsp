@@ -76,6 +76,7 @@ function getParameterByName(name) {
 								<th> Student response</th>
 										<th> Status</th>
 										<th> Marks Obtained </th>
+										<th> Scaled Marks</th>
 										<th> Error Details</th>
 										<th> Mark Details</th>
 										</tr> 
@@ -90,7 +91,7 @@ function getParameterByName(name) {
 							
 							//String marks = "Select result,max_marks from score where assignment_id=? and rollnum= ? " +
 									//"and question_id= ?";
-						String marks = "Select score,max_marks from xdata_student_queries where assignment_id=? and rollnum= ? " +
+						String marks = "Select score,max_marks,scaled_score from xdata_student_queries where assignment_id=? and rollnum= ? " +
 								"and question_id= ?";
 							PreparedStatement stmt=dbcon.prepareStatement(assignment);
 							stmt.setInt(1,Integer.parseInt(assignment_id));
@@ -100,6 +101,7 @@ function getParameterByName(name) {
 							ResultSet rset=stmt.executeQuery();
 							while(rset.next()){
 								float marksAwarded = 0.0f;
+								float scaledMarks = 0.0f;
 								int maxMarks = 0;
 								PreparedStatement stmt1=dbcon.prepareStatement(marks);
 								stmt1.setInt(1,Integer.parseInt(assignment_id));
@@ -109,8 +111,8 @@ function getParameterByName(name) {
 								ResultSet rs1=stmt1.executeQuery();
 								 
 								if(rs1.next()){
-									marksAwarded = Math.round(rs1.getFloat("score"));
-									
+									marksAwarded = rs1.getFloat("score");
+									scaledMarks = rs1.getFloat("scaled_score");
 								}
 								if(rset.getString("verifiedcorrect") != null){
 									
@@ -133,6 +135,7 @@ function getParameterByName(name) {
 										
 											<td class="wrapword"><%=status%></td>
 											<td class="wrapword"><%=marksAwarded%></td>	
+											<td class="wrapword"><%=scaledMarks%></td>	
 											<td class="wrapword">
 											<!-- <a class='loadDiv1' id='<%//=rs.getString("rollnum")%>'  href="FailedTestCases?assignment_id=<%//=assignment_id %>&question_id=<%//=rset.getInt("question_id") %>&user_id=<%//= rs.getString("rollnum")%>">Test cases</a></td> -->
 											<!-- <a class="text-warning" data-toggle="modal" data-target="#errorModal"
@@ -159,8 +162,14 @@ function getParameterByName(name) {
 												<td class="wrapword"><pre><code class="sql"><%=rset.getString("querystring").replaceAll("''", "'")%></code></pre></td>
 												<td class="wrapword"><%=status%></td>
 												<td class="wrapword"><%=+ marksAwarded%></td>
+												<td class="wrapword"><%=scaledMarks%></td>
 												<td class="wrapword">Correct</td>
-												<td class="wrapword">Full Marks</td>
+												<td class="wrapword">
+											<!-- <a class="text-warning" data-toggle="modal" data-target="#marksModal"
+	 												href="PartialMarkDetails.jsp?reqFrom=popUp&assignment_id=<%//=assignment_id %>&question_id=<%//=rset.getInt("question_id") %>&user_id=<%= request.getParameter("rollnum")%>">Mark Details</a>
+	 												-->
+	 												<a id="marks" style='color: #00f;' href="PartialMarkDetails.jsp?reqFrom=popUp&assignment_id=<%=assignment_id %>&question_id=<%=rset.getInt("question_id") %>&user_id=<%= request.getParameter("rollnum")%>" target="_blank" type="new_tab"> Mark Details</a>
+	 										</td>
 												</tr>
 								
 									<%} 
