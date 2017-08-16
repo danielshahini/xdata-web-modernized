@@ -185,9 +185,8 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 		Boolean ltiIntegration = Boolean.parseBoolean(session.getAttribute(
 				"ltiIntegration").toString());
 		String assignment_id = request.getParameter("AssignmentID");
-		
-		String total = "select sum(totalmarks) total, count(*) as numberOfQuestions from xdata_qinfo where assignment_id = ? and course_id=?";
-		String result = "select sum(score) score, user_name, email, rollnum from xdata_users u left join xdata_student_queries s on u.internal_user_id = s.rollnum "
+		String total = "select sum(scale) total, count(*) as numberOfQuestions from xdata_qinfo where assignment_id = ? and course_id=?";
+		String result = "select sum(scaled_score) score, user_name, email, rollnum from xdata_users u left join xdata_student_queries s on u.internal_user_id = s.rollnum "
 				+"where assignment_id = ? group by user_name, email, rollnum order by rollnum";
 		String course_id = (String) request.getSession().getAttribute("context_label");
 		Connection dbcon = null;
