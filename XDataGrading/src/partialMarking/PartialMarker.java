@@ -11,6 +11,8 @@ import parsing.JoinClauseInfo;
 import parsing.Node;
 import util.MyConnection;
 import parsing.QueryStructure;
+import util.Pair;
+
 public class PartialMarker {
 	private static Logger logger = Logger.getLogger(PartialMarker.class.getName());
 	// The unique identifier of the assignment
@@ -133,6 +135,64 @@ public class PartialMarker {
 			logger.log(Level.SEVERE,ex.getMessage(), ex);
 			//ex.printStackTrace();
 		}
+	}
+	
+	// master to be edited by only one distance 
+	private List<QueryStructure> single_edit(QueryStructure master, QueryStructure slave)
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		List<Node> selection_conds = master.getLstSelectionConditions();
+		for (Node t:selection_conds)
+		{
+			System.out.println(t.toString());
+			a.add(master);
+		}
+		
+		return a;
+	}
+	private float editScore(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
+	{
+		QueryStructure canonicalized_instructor = Instructor;
+		QueryStructure canonicalized_student = Student;
+		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
+		CanonicalizeQuery.Canonicalize(canonicalized_student);
+		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
+		if(result.Marks == 100)
+			return maxMarks;
+		if(maxMarks < deductMarks)
+			return 0;
+		List<QueryStructure> single_edit_instructor = single_edit(Instructor,Student);
+		List<QueryStructure> single_edit_student = single_edit(Student, Instructor);
+		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
+		for(QueryStructure editedinstructorqueries: single_edit_instructor)
+		{
+			QueryStructure temp = editedinstructorqueries;
+			CanonicalizeQuery.Canonicalize(editedinstructorqueries);
+			MarkInfo result1 = calculateScore(editedinstructorqueries, canonicalized_student, 0);
+			if(result1.Marks > maxMarks)
+			{
+				BestMatch.setFirst(temp);
+				BestMatch.setSecond(Student);
+				maxMarks=result1.Marks;
+			}
+		}
+
+		for(QueryStructure editedstudentqueries: single_edit_student)
+		{
+			QueryStructure temp = editedstudentqueries;
+			CanonicalizeQuery.Canonicalize(editedstudentqueries);
+			MarkInfo result1 = calculateScore(canonicalized_instructor, editedstudentqueries, 0);
+			if(result1.Marks > maxMarks)
+			{
+				BestMatch.setFirst(Instructor);
+				BestMatch.setSecond(temp);
+				maxMarks=result1.Marks;
+			}
+		}
+		if(maxMarks == 100)
+			return maxMarks - deductMarks;
+		maxMarks = maxMarks - deductMarks;
+		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 	}
 
 	// Returns the marks corresponding to the query of the student in comparison to the instructor query
