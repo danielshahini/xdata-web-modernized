@@ -24,16 +24,12 @@ public class DatabaseHelper {
 			try(ResultSet rs = ps.executeQuery()){
 			
 				if(rs.next()){
-					float auto_grade=rs.getFloat("xdata_score");
+					//float auto_grade=rs.getFloat("xdata_score");
 					float manual_grade=rs.getFloat("manual_score");
 					if(rs.getObject("manual_score") != null && ! rs.wasNull())
 						 ans=manual_grade;
 					else{
-						if(rs.getObject("xdata_score") != null && ! rs.wasNull())
-						ans=auto_grade;
-						else
-							ans=marks;
-					
+						 ans=marks;
 					}
 				}
 			}

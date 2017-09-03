@@ -1,4 +1,8 @@
 package partialMarking;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -136,27 +140,79 @@ public class PartialMarker {
 			//ex.printStackTrace();
 		}
 	}
-	
-	// master to be edited by only one distance 
-	private List<QueryStructure> single_edit(QueryStructure master, QueryStructure slave)
+	public static Object deepClone(Object object) {
+		   try {
+		     ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		     ObjectOutputStream oos = new ObjectOutputStream(baos);
+		     oos.writeObject(object);
+		     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		     ObjectInputStream ois = new ObjectInputStream(bais);
+		     return ois.readObject();
+		   }
+		   catch (Exception e) {
+		     e.printStackTrace();
+		     return null;
+		   }
+		 }
+	// Removing Selection Conditions one by one 
+	private List<QueryStructure> removeSelectionConditions(QueryStructure master, QueryStructure slave)
 	{
 		List<QueryStructure> a = new ArrayList <QueryStructure>();
-		List<Node> selection_conds = master.getLstSelectionConditions();
-		for (Node t:selection_conds)
+		//QueryStructure temp = (QueryStructure)deepClone(master);
+		int size =  master.getLstSelectionConditions().size();
+		int i=0;
+		while(i<size)
 		{
-			System.out.println(t.toString());
-			a.add(master);
+			QueryStructure temp = (QueryStructure)deepClone(master);
+			temp.getLstSelectionConditions().remove(i);
+			a.add(temp);
+			i++;
 		}
 		
 		return a;
 	}
+	// Removing Projection cols  one by one 
+	private List<QueryStructure> removeProjectionList(QueryStructure master, QueryStructure slave)
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		int size =  master.getLstProjectedCols().size();
+		int i=0;
+		while(i<size)
+		{
+			QueryStructure temp = (QueryStructure)deepClone(master);
+			temp.getLstProjectedCols().remove(i);
+			a.add(temp);
+			i++;
+		}
+		
+		return a;
+	}
+	// master to be edited by only one distance 
+	private List<QueryStructure> single_edit(QueryStructure master, QueryStructure slave)
+	{
+		List<QueryStructure> edited_query_structure = new ArrayList <QueryStructure>();
+		List<QueryStructure> selection_cond_deleted = removeSelectionConditions(master,slave);
+		List<QueryStructure> projection_list_deleted = removeProjectionList(master,slave);
+		for(QueryStructure t:selection_cond_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:projection_list_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		return edited_query_structure;
+	}
 	private float editScore(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
-		QueryStructure canonicalized_instructor = Instructor;
-		QueryStructure canonicalized_student = Student;
+		
+		QueryStructure canonicalized_instructor = (QueryStructure)deepClone(Instructor);
+		QueryStructure canonicalized_student = (QueryStructure)deepClone(Student);
 		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
 		CanonicalizeQuery.Canonicalize(canonicalized_student);
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
+		System.out.println("MArks: "+ result.Marks);
+		//System.out.println("Intial mark: " + result.Marks);
 		if(result.Marks == 100)
 			return maxMarks;
 		if(maxMarks < deductMarks)
@@ -164,32 +220,33 @@ public class PartialMarker {
 		List<QueryStructure> single_edit_instructor = single_edit(Instructor,Student);
 		List<QueryStructure> single_edit_student = single_edit(Student, Instructor);
 		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
+		float maxScore = 0;
 		for(QueryStructure editedinstructorqueries: single_edit_instructor)
 		{
-			QueryStructure temp = editedinstructorqueries;
-			CanonicalizeQuery.Canonicalize(editedinstructorqueries);
-			MarkInfo result1 = calculateScore(editedinstructorqueries, canonicalized_student, 0);
-			if(result1.Marks > maxMarks)
+			QueryStructure temp = (QueryStructure)deepClone(editedinstructorqueries);
+			CanonicalizeQuery.Canonicalize(temp);
+			MarkInfo result1 = calculateScore(temp, canonicalized_student, 0);
+			if(result1.Marks > maxScore)
 			{
-				BestMatch.setFirst(temp);
+				BestMatch.setFirst(editedinstructorqueries);
 				BestMatch.setSecond(Student);
-				maxMarks=result1.Marks;
+				maxScore=result1.Marks;
 			}
 		}
 
 		for(QueryStructure editedstudentqueries: single_edit_student)
 		{
-			QueryStructure temp = editedstudentqueries;
-			CanonicalizeQuery.Canonicalize(editedstudentqueries);
-			MarkInfo result1 = calculateScore(canonicalized_instructor, editedstudentqueries, 0);
-			if(result1.Marks > maxMarks)
+			QueryStructure temp = (QueryStructure)deepClone(editedstudentqueries);
+			CanonicalizeQuery.Canonicalize(temp);
+			MarkInfo result1 = calculateScore(temp, canonicalized_instructor, 0);
+			if(result1.Marks > maxScore)
 			{
 				BestMatch.setFirst(Instructor);
-				BestMatch.setSecond(temp);
-				maxMarks=result1.Marks;
+				BestMatch.setSecond(editedstudentqueries);
+				maxScore=result1.Marks;
 			}
 		}
-		if(maxMarks == 100)
+		if(maxScore == 100)
 			return maxMarks - deductMarks;
 		maxMarks = maxMarks - deductMarks;
 		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
@@ -199,7 +256,7 @@ public class PartialMarker {
 	public MarkInfo getMarksForQueryStructures() throws Exception{
 
 		this.initialize();
-
+		float originalMarks = editScore(this.InstructorQuery.getQueryStructure(), this.StudentQuery.getQueryStructure(),maxMarks,10);
 		// Canonicalizing the queries
 		CanonicalizeQuery.Canonicalize(this.InstructorQuery.getQueryStructure());
 		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
@@ -228,6 +285,7 @@ public class PartialMarker {
 			result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
 			result.Marks = result.Marks<result.Configuration.maxPartialMarks?result.Marks:result.Configuration.maxPartialMarks;
 		//System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
+		result.Marks = originalMarks;
 		return result;
 	}
 
@@ -722,7 +780,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				//score=score-0.5f;
+				score=score-0.5f;
 			}
 		}
 
@@ -742,7 +800,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				//score=score-0.5f;
+				score=score-0.5f;
 			}
 		}		
 		return score;
