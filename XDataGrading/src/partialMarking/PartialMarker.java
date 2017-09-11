@@ -16,9 +16,11 @@ import parsing.Node;
 import util.MyConnection;
 import parsing.QueryStructure;
 import util.Pair;
+import util.Utilities;
 
 public class PartialMarker {
 	private static Logger logger = Logger.getLogger(PartialMarker.class.getName());
+	private final int  FULL_MARKS = 100;
 	// The unique identifier of the assignment
 	int assignmentId;
 
@@ -155,49 +157,176 @@ public class PartialMarker {
 		   }
 		 }
 	// Removing Selection Conditions one by one 
-	private List<QueryStructure> removeSelectionConditions(QueryStructure master, QueryStructure slave)
+	private List<QueryStructure> removeSelectionConditions(QueryStructure student, QueryStructure instructor) throws Exception
 	{
 		List<QueryStructure> a = new ArrayList <QueryStructure>();
-		//QueryStructure temp = (QueryStructure)deepClone(master);
-		int size =  master.getLstSelectionConditions().size();
+		int size =  student.getLstSelectionConditions().size();
 		int i=0;
 		while(i<size)
 		{
-			QueryStructure temp = (QueryStructure)deepClone(master);
-			temp.getLstSelectionConditions().remove(i);
-			a.add(temp);
+			Node t = student.getLstSelectionConditions().get(i);
+			if(!instructor.getLstSelectionConditions().contains(t))
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstSelectionConditions().remove(i);
+				a.add(temp);
+			}	
 			i++;
 		}
 		
 		return a;
 	}
-	// Removing Projection cols  one by one 
-	private List<QueryStructure> removeProjectionList(QueryStructure master, QueryStructure slave)
+	private List<QueryStructure> removeProjectionConditions(QueryStructure student, QueryStructure instructor) throws Exception
 	{
 		List<QueryStructure> a = new ArrayList <QueryStructure>();
-		int size =  master.getLstProjectedCols().size();
+		int size =  student.getLstProjectedCols().size();
 		int i=0;
 		while(i<size)
 		{
-			QueryStructure temp = (QueryStructure)deepClone(master);
-			temp.getLstProjectedCols().remove(i);
-			a.add(temp);
+			Node t = student.getLstProjectedCols().get(i);
+			if(!instructor.getLstProjectedCols().contains(t))
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstProjectedCols().remove(i);
+				a.add(temp);
+			}	
 			i++;
 		}
 		
+		return a;
+	}
+	private List<QueryStructure> addSelectionConditions(QueryStructure student, QueryStructure instructor) throws Exception
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		for(Node t:instructor.getLstSelectionConditions())
+		{
+			if(!student.getLstSelectionConditions().contains(t))
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstSelectionConditions().add(t);
+				a.add(temp);
+			}
+		}
+		return a;
+	}
+	private List<QueryStructure> addProjectionConditions(QueryStructure student, QueryStructure instructor) throws Exception
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		for(Node t:instructor.getLstProjectedCols())
+		{
+			if(!student.getLstProjectedCols().contains(t))
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstProjectedCols().add(t);
+				a.add(temp);
+			}
+		}
+		return a;
+	}
+	private List<QueryStructure> editSelectionConditions(QueryStructure student, QueryStructure instructor) throws Exception
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
+		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
+		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
+		for(Node t:instructor.getLstSelectionConditions())
+		{
+			if(student.getLstSelectionConditions().contains(t))
+			{
+				ins_not_matched.getLstSelectionConditions().remove(t);
+			}
+		}
+		for(Node t:student.getLstSelectionConditions())
+		{
+			if(instructor.getLstSelectionConditions().contains(t))
+			{
+				stu_not_matched.getLstSelectionConditions().remove(t);
+			}
+			else
+			{
+				stu_matched.getLstSelectionConditions().remove(t);
+			}
+		}
+		for(Node st:stu_not_matched.getLstSelectionConditions())
+		{
+			for(Node t: ins_not_matched.getLstSelectionConditions())
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstSelectionConditions().remove(st);
+				temp.getLstSelectionConditions().add(t);
+				a.add(temp);
+			}
+		}
+		return a;
+	}
+	private List<QueryStructure> editProjectionConditions(QueryStructure student, QueryStructure instructor) throws Exception
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
+		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
+		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
+		for(Node t:instructor.getLstProjectedCols())
+		{
+			if(student.getLstProjectedCols().contains(t))
+			{
+				ins_not_matched.getLstProjectedCols().remove(t);
+			}
+		}
+		for(Node t:student.getLstProjectedCols())
+		{
+			if(instructor.getLstProjectedCols().contains(t))
+			{
+				stu_not_matched.getLstProjectedCols().remove(t);
+			}
+			else
+			{
+				stu_matched.getLstProjectedCols().remove(t);
+			}
+		}
+		for(Node st:stu_not_matched.getLstProjectedCols())
+		{
+			for(Node t: ins_not_matched.getLstProjectedCols())
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstProjectedCols().remove(st);
+				temp.getLstProjectedCols().add(t);
+				a.add(temp);
+			}
+		}
 		return a;
 	}
 	// master to be edited by only one distance 
-	private List<QueryStructure> single_edit(QueryStructure master, QueryStructure slave)
+	private List<QueryStructure> single_edit(QueryStructure student, QueryStructure instructor) throws Exception
 	{
 		List<QueryStructure> edited_query_structure = new ArrayList <QueryStructure>();
-		List<QueryStructure> selection_cond_deleted = removeSelectionConditions(master,slave);
-		List<QueryStructure> projection_list_deleted = removeProjectionList(master,slave);
+		List<QueryStructure> selection_cond_deleted = removeSelectionConditions(student,instructor);
+		List<QueryStructure> selection_cond_added = addSelectionConditions(student,instructor);
+		List<QueryStructure> selection_cond_edited = editSelectionConditions(student,instructor);
+		List<QueryStructure> projection_cond_deleted = removeProjectionConditions(student,instructor);
+		List<QueryStructure> projection_cond_added = addProjectionConditions(student,instructor);
+		List<QueryStructure> projection_cond_edited = editProjectionConditions(student,instructor);
+		//List<QueryStructure> projection_list_deleted = removeProjectionList(master,slave);
 		for(QueryStructure t:selection_cond_deleted)
 		{
 			edited_query_structure.add(t);
 		}
-		for(QueryStructure t:projection_list_deleted)
+		for(QueryStructure t:selection_cond_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:selection_cond_edited)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:projection_cond_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:projection_cond_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:projection_cond_edited)
 		{
 			edited_query_structure.add(t);
 		}
@@ -206,37 +335,22 @@ public class PartialMarker {
 	private float editScore(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
 		
-		QueryStructure canonicalized_instructor = (QueryStructure)deepClone(Instructor);
-		QueryStructure canonicalized_student = (QueryStructure)deepClone(Student);
-		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
+		QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(Instructor);
+		QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(Student);
 		CanonicalizeQuery.Canonicalize(canonicalized_student);
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
-		System.out.println("MArks: "+ result.Marks);
-		//System.out.println("Intial mark: " + result.Marks);
-		if(result.Marks == 100)
+		System.out.println("Marks: "+ result.Marks);
+		if(result.Marks == FULL_MARKS)
 			return maxMarks;
-		if(maxMarks < deductMarks)
+		if(maxMarks <= 0)
 			return 0;
-		List<QueryStructure> single_edit_instructor = single_edit(Instructor,Student);
-		List<QueryStructure> single_edit_student = single_edit(Student, Instructor);
+		List<QueryStructure> single_edit_student = single_edit(Student, canonicalized_instructor);
 		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
 		float maxScore = 0;
-		for(QueryStructure editedinstructorqueries: single_edit_instructor)
-		{
-			QueryStructure temp = (QueryStructure)deepClone(editedinstructorqueries);
-			CanonicalizeQuery.Canonicalize(temp);
-			MarkInfo result1 = calculateScore(temp, canonicalized_student, 0);
-			if(result1.Marks > maxScore)
-			{
-				BestMatch.setFirst(editedinstructorqueries);
-				BestMatch.setSecond(Student);
-				maxScore=result1.Marks;
-			}
-		}
 
 		for(QueryStructure editedstudentqueries: single_edit_student)
 		{
-			QueryStructure temp = (QueryStructure)deepClone(editedstudentqueries);
+			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries);
 			CanonicalizeQuery.Canonicalize(temp);
 			MarkInfo result1 = calculateScore(temp, canonicalized_instructor, 0);
 			if(result1.Marks > maxScore)
@@ -246,7 +360,7 @@ public class PartialMarker {
 				maxScore=result1.Marks;
 			}
 		}
-		if(maxScore == 100)
+		if(maxScore == FULL_MARKS)
 			return maxMarks - deductMarks;
 		maxMarks = maxMarks - deductMarks;
 		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
@@ -256,9 +370,9 @@ public class PartialMarker {
 	public MarkInfo getMarksForQueryStructures() throws Exception{
 
 		this.initialize();
+		CanonicalizeQuery.Canonicalize(this.InstructorQuery.getQueryStructure());
 		float originalMarks = editScore(this.InstructorQuery.getQueryStructure(), this.StudentQuery.getQueryStructure(),maxMarks,10);
 		// Canonicalizing the queries
-		CanonicalizeQuery.Canonicalize(this.InstructorQuery.getQueryStructure());
 		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
 
 		//Check for distinct
