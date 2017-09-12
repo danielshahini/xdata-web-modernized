@@ -305,7 +305,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
   		       
   		       while(rs.next()){
   		    	  %>
-  		    	 <p><h4>Instructor Query: <pre><code class=\"sql\"><%= rs.getString("sql")%></code></pre></h4></p>
+  		    	 <p><h4>Instructor Query: <pre><code class=\"sql\"><%= CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("sql")))%></code></pre></h4></p>
   		    	 <input type='hidden' id='hdnInstrQuery' value='<%= rs.getString("sql")%>'/>
   		       <%
   		       } 		       
@@ -318,7 +318,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       
    		       if(rs.next()){
    		    	%> 
-   		    		  <p><h4>Student Query: <pre><code class=\"sql\"><%= rs.getString("querystring")%></code></pre>
+   		    		  <p><h4>Student Query:<pre><code class=\"sql\"><%= CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("querystring")))%></code></pre>
    		    		  </h4></p>
    		    		   <input type='hidden' id='hdnStudentQuery' value='<%= rs.getString("querystring")%>'/>
    		    		  <p><label>Do you want to change the marks?</label>

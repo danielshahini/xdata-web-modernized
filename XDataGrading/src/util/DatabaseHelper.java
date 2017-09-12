@@ -95,7 +95,7 @@ public class DatabaseHelper {
 			 logger.log(Level.SEVERE,"Error in DatabaseHelper.java : InsertIntoScores : \n" + e.getMessage(),e);
 		}
 		
-		if(isScaled==false)
+		if(isScaled==false || max_mark==0)
 			return marks;
 		ans=marks * (scaling_factor/max_mark);
 			return ans;

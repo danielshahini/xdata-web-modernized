@@ -268,7 +268,7 @@ public class ViewAssignment extends HttpServlet {
 						output += "<tr>"+
 								"<td>Question "+rs.getInt("question_id") +"</td>"+
 								"<td>"+rs.getString("querytext").replaceAll("''", "'")+"</td>"+
-								"<td>"+rs.getString("querystring").replaceAll("''", "'")+"</td>"+
+								"<td><pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("querystring")))+"</code></pre></td>"+
 								"<td>"+status+"</td>"+
 								"<td>"+ marksAwarded+"</td>"+	
 								"<td>"+ maxMarks+"</td>"+
@@ -286,7 +286,7 @@ public class ViewAssignment extends HttpServlet {
 						output += "<tr>"+
 								"<td>Question "+rs.getInt("question_id") +"</td>"+
 								"<td>"+rs.getString("querytext").replaceAll("''", "'")+"</td>"+
-								"<td>"+rs.getString("querystring").replaceAll("''", "'")+"</td>"+
+								"<td><pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("querystring")))+"</code></pre></td>"+
 								"<td>"+status+"</td>"+
 								"<td>"+ marksAwarded +"</td>"+	
 								"<td>"+ maxMarks+"</td>"+	
@@ -298,7 +298,7 @@ public class ViewAssignment extends HttpServlet {
 						output += "<tr>"+
 								"<td>Question "+rs.getInt("question_id") +"</td>"+
 								"<td>"+rs.getString("querytext").replaceAll("''", "'")+"</td>"+
-								"<td>"+rs.getString("querystring").replaceAll("''", "'")+"</td>"+
+								"<td><pre><code class=\"sql\">"+CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("querystring")))+"</code></pre></td>"+
 								"<td>"+"Question not yet graded."+"</td>"+
 								"<td></td>"+"<td></td>"+ "<td></td>"+ "<td></td>"+
 								"</tr>";

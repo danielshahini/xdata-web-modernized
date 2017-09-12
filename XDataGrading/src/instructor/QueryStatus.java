@@ -159,7 +159,7 @@ public class QueryStatus extends HttpServlet {
 							+ rs.getString("user_name") + "</td>" + "<td>"
 							+ rs.getString("email") + "</td>"
 							+ "<td> <pre><code class=\"sql\">"
-							+ rs.getString("querystring")
+							+ CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("querystring")))
 							+ "</code></pre></td>" + "<td>" + "Wrong" + "</td>"
 							+ "<td>" + rs.getFloat("score") + "</td>"
 												

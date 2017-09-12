@@ -142,7 +142,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
   		       ResultSet rs = stmt.executeQuery();
   		     while(rs.next()){
  		    	  %>
- 		    	 <p><h4>Instructor Query: <%= rs.getString("sql")%></h4></p>
+ 		    	  <p><h4>Instructor Query: </h4><pre><code class="sql"><%= CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("sql")))%></code></pre></p>
  		       <%
  		       } 		       
 
@@ -154,7 +154,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
   		       
   		       if(rs.next()){
   		    	%> 
-  		    		  <p><h4>Student Query: <%= rs.getString("querystring")%></h4></p>
+  		    		  <p><h4>Student Query: </h4><pre><code class="sql"><%= CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("querystring")))%></code></pre></p>
   		    		   <% }
    		       
    		       stmt = conn.prepareStatement("select * from xdata_student_queries where rollnum = ? and assignment_id = ? and question_id = ?");
