@@ -160,18 +160,14 @@ public class PartialMarker {
 	private List<QueryStructure> removeSelectionConditions(QueryStructure student, QueryStructure instructor) throws Exception
 	{
 		List<QueryStructure> a = new ArrayList <QueryStructure>();
-		int size =  student.getLstSelectionConditions().size();
-		int i=0;
-		while(i<size)
+		for(Node t:student.getLstSelectionConditions())
 		{
-			Node t = student.getLstSelectionConditions().get(i);
 			if(!instructor.getLstSelectionConditions().contains(t))
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
-				temp.getLstSelectionConditions().remove(i);
+				temp.getLstSelectionConditions().remove(t);
 				a.add(temp);
 			}	
-			i++;
 		}
 		
 		return a;
@@ -179,18 +175,30 @@ public class PartialMarker {
 	private List<QueryStructure> removeProjectionConditions(QueryStructure student, QueryStructure instructor) throws Exception
 	{
 		List<QueryStructure> a = new ArrayList <QueryStructure>();
-		int size =  student.getLstProjectedCols().size();
-		int i=0;
-		while(i<size)
+		for(Node t:student.getLstProjectedCols())
 		{
-			Node t = student.getLstProjectedCols().get(i);
 			if(!instructor.getLstProjectedCols().contains(t))
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
-				temp.getLstProjectedCols().remove(i);
+				temp.getLstProjectedCols().remove(t);
 				a.add(temp);
 			}	
-			i++;
+		}
+		
+		return a;
+	}
+	private List<QueryStructure> removeGroupByConditions(QueryStructure student, QueryStructure instructor) throws Exception
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		for(Node t:student.getLstGroupByNodes())
+		{
+			if(!instructor.getLstGroupByNodes().contains(t))
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstGroupByNodes().remove(t);
+				temp.getLstProjectedCols().remove(t);
+				a.add(temp);
+			}	
 		}
 		
 		return a;
@@ -218,6 +226,20 @@ public class PartialMarker {
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstProjectedCols().add(t);
+				a.add(temp);
+			}
+		}
+		return a;
+	}
+	private List<QueryStructure> addGroupByConditions(QueryStructure student, QueryStructure instructor) throws Exception
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		for(Node t:instructor.getLstGroupByNodes())
+		{
+			if(!student.getLstGroupByNodes().contains(t))
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstGroupByNodes().add(t);
 				a.add(temp);
 			}
 		}
@@ -295,6 +317,43 @@ public class PartialMarker {
 		}
 		return a;
 	}
+	private List<QueryStructure> editGroupByConditions(QueryStructure student, QueryStructure instructor) throws Exception
+	{
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
+		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
+		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
+		for(Node t:instructor.getLstGroupByNodes())
+		{
+			if(student.getLstGroupByNodes().contains(t))
+			{
+				ins_not_matched.getLstGroupByNodes().remove(t);
+			}
+		}
+		for(Node t:student.getLstGroupByNodes())
+		{
+			if(instructor.getLstGroupByNodes().contains(t))
+			{
+				stu_not_matched.getLstGroupByNodes().remove(t);
+			}
+			else
+			{
+				stu_matched.getLstGroupByNodes().remove(t);
+			}
+		}
+		for(Node st:stu_not_matched.getLstGroupByNodes())
+		{
+			for(Node t: ins_not_matched.getLstGroupByNodes())
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstGroupByNodes().remove(st);
+				temp.getLstProjectedCols().remove(st);
+				temp.getLstGroupByNodes().add(t);
+				a.add(temp);
+			}
+		}
+		return a;
+	}
 	// master to be edited by only one distance 
 	private List<QueryStructure> single_edit(QueryStructure student, QueryStructure instructor) throws Exception
 	{
@@ -305,7 +364,9 @@ public class PartialMarker {
 		List<QueryStructure> projection_cond_deleted = removeProjectionConditions(student,instructor);
 		List<QueryStructure> projection_cond_added = addProjectionConditions(student,instructor);
 		List<QueryStructure> projection_cond_edited = editProjectionConditions(student,instructor);
-		//List<QueryStructure> projection_list_deleted = removeProjectionList(master,slave);
+		List<QueryStructure> groupby_cond_deleted = removeGroupByConditions(student,instructor);
+		List<QueryStructure> groupby_cond_added = addGroupByConditions(student,instructor);
+		List<QueryStructure> groupby_cond_edited = editGroupByConditions(student,instructor);
 		for(QueryStructure t:selection_cond_deleted)
 		{
 			edited_query_structure.add(t);
@@ -327,6 +388,18 @@ public class PartialMarker {
 			edited_query_structure.add(t);
 		}
 		for(QueryStructure t:projection_cond_edited)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:groupby_cond_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:groupby_cond_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:groupby_cond_edited)
 		{
 			edited_query_structure.add(t);
 		}
