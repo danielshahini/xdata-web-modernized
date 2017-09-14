@@ -444,7 +444,7 @@ public class PartialMarker {
 
 		this.initialize();
 		CanonicalizeQuery.Canonicalize(this.InstructorQuery.getQueryStructure());
-		float originalMarks = editScore(this.InstructorQuery.getQueryStructure(), this.StudentQuery.getQueryStructure(),maxMarks,10);
+		//float originalMarks = editScore(this.InstructorQuery.getQueryStructure(), this.StudentQuery.getQueryStructure(),maxMarks,10);
 		// Canonicalizing the queries
 		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
 
@@ -472,7 +472,7 @@ public class PartialMarker {
 			result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
 			result.Marks = result.Marks<result.Configuration.maxPartialMarks?result.Marks:result.Configuration.maxPartialMarks;
 		//System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
-		result.Marks = originalMarks;
+		//result.Marks = originalMarks;
 		return result;
 	}
 
@@ -967,7 +967,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				//score=score-0.5f;
 			}
 		}
 
@@ -987,7 +987,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				//score=score-0.5f;
 			}
 		}		
 		return score;
