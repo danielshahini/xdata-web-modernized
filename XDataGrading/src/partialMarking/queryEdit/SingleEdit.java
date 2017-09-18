@@ -1,0 +1,59 @@
+package partialMarking.queryEdit;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import parsing.QueryStructure;
+
+public class SingleEdit {
+	public static List<QueryStructure> single_edit(QueryStructure student, QueryStructure instructor) throws Exception
+	{
+		List<QueryStructure> edited_query_structure = new ArrayList <QueryStructure>();
+		List<QueryStructure> selection_cond_deleted = new Selection().remove(student,instructor);
+		List<QueryStructure> selection_cond_added = new Selection().add(student,instructor);
+		List<QueryStructure> selection_cond_edited = new Selection().edit(student,instructor);
+		List<QueryStructure> projection_cond_deleted = new Projection().remove(student,instructor);
+		List<QueryStructure> projection_cond_added = new Projection().add(student,instructor);
+		List<QueryStructure> projection_cond_edited = new Projection().edit(student,instructor);
+		List<QueryStructure> groupby_cond_deleted = new GroupBy().remove(student,instructor);
+		List<QueryStructure> groupby_cond_added = new GroupBy().add(student,instructor);
+		List<QueryStructure> groupby_cond_edited = new GroupBy().edit(student,instructor);
+		for(QueryStructure t:selection_cond_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:selection_cond_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:selection_cond_edited)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:projection_cond_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:projection_cond_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:projection_cond_edited)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:groupby_cond_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:groupby_cond_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:groupby_cond_edited)
+		{
+			edited_query_structure.add(t);
+		}
+		return edited_query_structure;
+	}
+}
