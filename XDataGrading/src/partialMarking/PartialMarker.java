@@ -16,6 +16,8 @@ import parsing.Node;
 import util.MyConnection;
 import parsing.QueryStructure;
 import partialMarking.queryEdit.GroupBy;
+import partialMarking.queryEdit.Metric;
+import partialMarking.queryEdit.OrderBy;
 import partialMarking.queryEdit.Projection;
 import partialMarking.queryEdit.Selection;
 import partialMarking.queryEdit.SingleEdit;
@@ -147,7 +149,51 @@ public class PartialMarker {
 		}
 	}
 	
+	private float editOrderByScore(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
+	{
+		QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(Student);
+		CanonicalizeQuery.Canonicalize(canonicalized_student);
+		float Marks =  Metric.LCS(canonicalized_student, Instructor);
+		if(Marks == FULL_MARKS)
+			return maxMarks;
+		if(maxMarks <= 0)
+			return 0;
+		List<QueryStructure> edited_query_structure = new ArrayList <QueryStructure>();
+		List<QueryStructure> orderby_deleted = new OrderBy().remove(Student,Instructor);
+    	List<QueryStructure> orderby_added = new OrderBy().add(Student,Instructor);
+		List<QueryStructure> orderby_moved = new OrderBy().move(Student,Instructor);
+		for(QueryStructure t:orderby_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:orderby_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:orderby_moved)
+		{
+			edited_query_structure.add(t);
+		}
+		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
+		float maxScore = 0;
 
+		for(QueryStructure editedstudentqueries: edited_query_structure)
+		{
+			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries);
+			CanonicalizeQuery.Canonicalize(temp);
+			float result1 = Metric.LCS(temp, Instructor);
+			if(result1 > maxScore)
+			{
+				BestMatch.setFirst(Instructor);
+				BestMatch.setSecond(editedstudentqueries);
+				maxScore=result1;
+			}
+		}
+		if(maxScore == FULL_MARKS)
+			return maxMarks - deductMarks;
+		maxMarks = maxMarks - deductMarks;
+		return editOrderByScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
+	}
 	private float editScore(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
 		
@@ -187,7 +233,14 @@ public class PartialMarker {
 
 		this.initialize();
 		CanonicalizeQuery.Canonicalize(this.InstructorQuery.getQueryStructure());
-		float originalMarks = editScore(this.InstructorQuery.getQueryStructure(), this.StudentQuery.getQueryStructure(),maxMarks,10);
+		QueryStructure instructorNoOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
+		QueryStructure studentNoOrderBy = (QueryStructure)Utilities.copy(this.StudentQuery.getQueryStructure());
+		studentNoOrderBy.setLstOrderByNodes(this.InstructorQuery.getQueryStructure().getLstOrderByNodes());
+		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,maxMarks,10);
+		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
+		QueryStructure studentOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
+		studentOrderBy.setLstOrderByNodes(this.StudentQuery.getQueryStructure().getLstOrderByNodes());
+		float orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,100,10);
 		// Canonicalizing the queries
 		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
 
@@ -1743,7 +1796,7 @@ public class PartialMarker {
 		float uniqueSetOperators = instructorData.getLstSetOpetators().size();
 		float uniqueDistinct = 0;
 		if(instructorData.getIsDistinct()) uniqueDistinct = 1;
-		float orderByColumns = instructorData.getOrderByNodes().size();
+		float orderByColumns = instructorData.getLstOrderByNodes().size();
 		//float uniqueWhereSubquery = instructorData.getWhereClauseSubqueries().size();
 		//float uniqueFromSubquery = instructorData.getFromClauseSubqueries().size();
 

@@ -11,7 +11,7 @@ public class Metric {
 	{
 		ArrayList<Node> std=student.getLstOrderByNodes();
 		ArrayList<Node> inst=Instructor.getLstOrderByNodes();
-		int p= lcs(std,inst,std.size()-1,inst.size()-1);
+		int p= lcs(std,inst,std.size(),inst.size());
 		return (p*100)/(float)max(std.size(),inst.size());
 	}
 	 private static int lcs( ArrayList<Node> X, ArrayList<Node> Y, int m, int n )
