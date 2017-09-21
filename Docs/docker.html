@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="XData - Test Data Generation for SQL Queries" />
+    <meta name="keywords" content="Docker XData" />
+    <meta name="author" content="XData team" />
+    <meta name="generator" content="webgen - http://webgen.rubyforge.org" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" media="screen,projection" />
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+    <title>XData</title>
+  </head>
+<style>
+</style>
+
+</head>
+
+<body>
+
+<div id="wrap">
+  <div id="header">
+	<label style="font-size: 25px;font-family:helvetica;color:#fff;font-weight: bold; padding-left: 	40px;padding-top:20px;">XData</label>
+      </div>
+
+      <div id="leftside">
+     	<li><a href="index.html"> Home</a> <br /> </li>
+	<li><a href="Readme_Inst_Setup.html">Installation</a><br /> </li>
+	<li><a href="docker.html">Docker Installation</a><br /> </li>
+	<li><a href="Readme_Admin_Usage.html"> Administrator Usage</a> <br /></li>
+	<li><a href="Readme_Inst_Basics.html" > Instructor Mode</a><br /></li>
+	
+	<ul style="list-style-type:square">
+	<li><a href="Readme_Inst_Basics.html">Basic setup</a><br />
+	<!--<li><a href="Readme_Inst_Usage.html" > Instructor Usage</a><br />-->
+	<li><a href="Readme_Inst_Assignment.html">Assignment creation</a><br />
+	<li><a href="Readme_Inst_Evaluation.html">Evaluation</a><br />	
+	<li><a href="Readme_Inst_PartialMarks.html" >Grades and partial marking</a><br />
+	<li><a href="Readme_LT_Integration.html" > Learning Tool Integration</a> <br /></li>
+	<!--<li><a href="Readme_Inst_Usage.html"> Instructor Usage</a> <br /></li>-->
+	</ul>		
+	<li><a href="Readme_Student.html" > Student Usage</a> <br /></li>
+	<li><a href="Readme_Dev.html" > Developer Setup</a> <br /></li>
+      </div>
+
+      <div id="content" align="justify">
+        <h2 id="testing">Using XData on docker</h2> 
+
+
+<ol>
+  <li> Install Docker : 
+
+<ul style="list-style-type:disc" >
+	<li>
+<a href="https://docs.docker.com/engine/installation/linux/ubuntu/#install-using-the-repository">Follow the installation steps shown here</a> </li>
+
+<li>Verify docker has correctly been intalled using : <b> $ sudo docker run hello-world  </b> </li>
+
+<li> Also do the following post-installation steps for user priviledges (as given in the website) : 
+
+<br><b> $ sudo groupadd docker </b>
+
+<br><b> $ sudo usermod -aG docker $USER </b> 
+<br>[Log out and log back in so that your group membership is re-evaluated. If testing on a virtual machine, it may be necessary to restart the virtual machine for changes to take affect. On a desktop Linux environment such as X Windows, log out of your session completely and then log back in.] 
+
+</ul> </li>
+
+<li> Unzip the 'Xdata' directory </li>
+
+<li> Open a terminal in the Xdata directory </li>
+
+<li> <b>$ docker build -t xdata:1 . </b>
+
+<br>[This command builds a docker image from dockerfile. Note the dot (.) at the end of the command. This command may take some time.] </li>
+
+<li> <b> $ docker run -it -p &lsaquo;port_no&rsaquo;:8080 xdata:1 </b>
+
+<br>[This command runs the docker image. Use any free port number in the &lsaquo;port_no&rsaquo; slot. ] </li>
+
+<li> Open the link: 'localhost:&lsaquo;port_no&rsaquo;/XDataGrading/' in your local browser.
+
+<br>[Use the same free port number as step 5 ]</li>
+
+<li> Use 'exit' command in terminal to exit from docker.
+
+<br>[Steps 2-5 has to be done only once for the initial creation of docker image and running it. Subsequently only the following steps are 
+sufficient for running dockerized Xdata]
+</li>
+<li> Open terminal and run <b>$ docker ps -a </b></li>
+
+<li> Note the container-id of the latest xdata:1 image </li>
+
+<li> <b>$ docker start &lsaquo;container-id&rsaquo; </b>
+
+<br>[Use the container-id obtained from above for the following command] </li>
+
+<li> <b>$ docker attach &lsaquo;container-id&rsaquo;</b> [And press enter] </li>
+
+<li> Wait for a few seconds and follow steps 6 & 7 </li>
+
+</ol>
+
+</body>
+</html>
+ 
