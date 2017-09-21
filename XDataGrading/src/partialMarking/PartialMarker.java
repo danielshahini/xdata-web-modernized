@@ -148,7 +148,30 @@ public class PartialMarker {
 			//ex.printStackTrace();
 		}
 	}
-	
+	public float totalNodes(QueryStructure instructorData)
+	{
+		float whereSubQueryPredicate = weightOfSubquery(instructorData.getWhereClauseSubqueries());
+		float fromSubQueryPredicate = weightOfSubquery(instructorData.getFromClauseSubqueries());
+
+		float uniquePredicates = instructorData.getLstSelectionConditions().size();
+		float uniqueRelations = instructorData.getLstRelationInstances().size();
+		float uniqueProj = instructorData.getLstProjectedCols().size();
+		float instructorJoin = getJoinCount(instructorData);
+		float uniqueGroupBy = instructorData.getLstGroupByNodes().size();
+		float uniqueHavingClause = instructorData.getLstHavingConditions().size();
+		float uniqueSubQConnective = instructorData.getLstSubQConnectives().size();
+		float uniqueAggregates = instructorData.getLstAggregateList().size(); 
+		float uniqueSetOperators = instructorData.getLstSetOpetators().size();
+		float uniqueDistinct = 0;
+		if(instructorData.getIsDistinct()) uniqueDistinct = 1;
+		float orderByColumns = instructorData.getLstOrderByNodes().size();
+
+		float totalWeightage = uniquePredicates + uniqueRelations + uniqueProj + instructorJoin + uniqueGroupBy + uniqueHavingClause + uniqueSubQConnective;
+		totalWeightage += uniqueAggregates + uniqueSetOperators + uniqueDistinct + orderByColumns + whereSubQueryPredicate + fromSubQueryPredicate;
+
+		//float WEIGHT = 100/ totalWeightage;
+		return totalWeightage;
+	}
 	private float editOrderByScore(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
 		QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(Student);
@@ -162,6 +185,7 @@ public class PartialMarker {
 		List<QueryStructure> orderby_deleted = new OrderBy().remove(Student,Instructor);
     	List<QueryStructure> orderby_added = new OrderBy().add(Student,Instructor);
 		List<QueryStructure> orderby_moved = new OrderBy().move(Student,Instructor);
+		List<QueryStructure> orderby_edited = new OrderBy().edit(Student,Instructor);
 		for(QueryStructure t:orderby_deleted)
 		{
 			edited_query_structure.add(t);
@@ -174,6 +198,11 @@ public class PartialMarker {
 		{
 			edited_query_structure.add(t);
 		}
+		for(QueryStructure t:orderby_edited)
+		{
+			edited_query_structure.add(t);
+		}
+		
 		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
 		float maxScore = 0;
 
@@ -236,11 +265,17 @@ public class PartialMarker {
 		QueryStructure instructorNoOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentNoOrderBy = (QueryStructure)Utilities.copy(this.StudentQuery.getQueryStructure());
 		studentNoOrderBy.setLstOrderByNodes(this.InstructorQuery.getQueryStructure().getLstOrderByNodes());
-		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,maxMarks,10);
+		
+		float totalNodes = totalNodes(instructorNoOrderBy);
+		float totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
+		
+		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,100,10);
 		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		studentOrderBy.setLstOrderByNodes(this.StudentQuery.getQueryStructure().getLstOrderByNodes());
 		float orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,100,10);
+		
+		
 		// Canonicalizing the queries
 		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
 
