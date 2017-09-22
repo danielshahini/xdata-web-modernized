@@ -21,8 +21,48 @@ public class OrderBy implements QueryComponent {
 	 */
 	@Override
 	public List<QueryStructure> edit(QueryStructure student, QueryStructure instructor) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
+		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
+		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
+		for(Node t:instructor.getLstOrderByNodes())
+		{
+			if(student.getLstOrderByNodes().contains(t))
+			{
+				ins_not_matched.getLstOrderByNodes().remove(t);
+			}
+		}
+		for(Node t:student.getLstOrderByNodes())
+		{
+			if(instructor.getLstOrderByNodes().contains(t))
+			{
+				stu_not_matched.getLstOrderByNodes().remove(t);
+			}
+			else
+			{
+				stu_matched.getLstOrderByNodes().remove(t);
+			}
+		}
+		int c=0;
+		int size = student.getLstOrderByNodes().size();
+		for(Node st:student.getLstOrderByNodes())
+		{
+			if(stu_not_matched.getLstOrderByNodes().contains(st))
+			{
+				for(Node t: ins_not_matched.getLstOrderByNodes())
+				{
+					QueryStructure temp = (QueryStructure)Utilities.copy(student);
+					if(c==size-1)
+						temp.getLstOrderByNodes().add(t);
+					else
+						temp.getLstOrderByNodes().add(c,t);
+					temp.getLstOrderByNodes().remove(st);
+					a.add(temp);
+				}
+			}
+			c++;
+		}
+		return a;
 	}
 
 	/* (non-Javadoc)

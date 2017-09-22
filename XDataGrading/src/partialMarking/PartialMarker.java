@@ -147,9 +147,11 @@ public class PartialMarker {
 	}
 	private float getScaledMarks(float totalNodes,float totalOrderByNodes,float originalMarks,float orderByMarks,int maxMarks)
 	{
-		float ans= originalMarks*(totalNodes-totalOrderByNodes)/totalNodes ;
-		ans+=orderByMarks*(totalOrderByNodes)/totalNodes;
-		ans=ans*maxMarks/100;
+		//float totalDeduct = (100 - originalMarks) + (100 - orderByMarks);
+		float ans = originalMarks + orderByMarks;
+//		float ans= originalMarks*(totalNodes-totalOrderByNodes)/totalNodes ;
+//		ans+=orderByMarks*(totalOrderByNodes)/totalNodes;
+		ans=(ans*maxMarks)/totalNodes;
 		return ans;
 	}
 	public float totalNodes(QueryStructure instructorData)
@@ -273,11 +275,11 @@ public class PartialMarker {
 		float totalNodes = totalNodes(instructorNoOrderBy);
 		float totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
 		float deduct=100/totalNodes;
-		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,100,deduct);
+		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
 		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		studentOrderBy.setLstOrderByNodes(this.StudentQuery.getQueryStructure().getLstOrderByNodes());
-		float orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,100,deduct);
+		float orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,totalOrderByNodes,1);
 		
 		float total_marks=getScaledMarks(totalNodes,totalOrderByNodes,originalMarks,orderByMarks,maxMarks);
 		
