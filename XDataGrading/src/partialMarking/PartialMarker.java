@@ -1,8 +1,5 @@
 package partialMarking;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -148,6 +145,13 @@ public class PartialMarker {
 			//ex.printStackTrace();
 		}
 	}
+	private float getScaledMarks(float totalNodes,float totalOrderByNodes,float originalMarks,float orderByMarks,int maxMarks)
+	{
+		float ans= originalMarks*(totalNodes-totalOrderByNodes)/totalNodes ;
+		ans+=orderByMarks*(totalOrderByNodes)/totalNodes;
+		ans=ans*maxMarks/100;
+		return ans;
+	}
 	public float totalNodes(QueryStructure instructorData)
 	{
 		float whereSubQueryPredicate = weightOfSubquery(instructorData.getWhereClauseSubqueries());
@@ -268,13 +272,14 @@ public class PartialMarker {
 		
 		float totalNodes = totalNodes(instructorNoOrderBy);
 		float totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
-		
-		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,100,10);
+		float deduct=100/totalNodes;
+		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,100,deduct);
 		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		studentOrderBy.setLstOrderByNodes(this.StudentQuery.getQueryStructure().getLstOrderByNodes());
-		float orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,100,10);
+		float orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,100,deduct);
 		
+		float total_marks=getScaledMarks(totalNodes,totalOrderByNodes,originalMarks,orderByMarks,maxMarks);
 		
 		// Canonicalizing the queries
 		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
@@ -303,7 +308,7 @@ public class PartialMarker {
 			result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
 			result.Marks = result.Marks<result.Configuration.maxPartialMarks?result.Marks:result.Configuration.maxPartialMarks;
 		//System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
-		result.Marks = originalMarks;
+		result.Marks = total_marks;
 		return result;
 	}
 
