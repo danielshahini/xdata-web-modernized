@@ -244,7 +244,8 @@ public class PartialMarker {
 		List<QueryStructure> single_edit_student = SingleEdit.single_edit(Student, canonicalized_instructor);
 		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
 		float maxScore = 0;
-
+		BestMatch.setFirst(canonicalized_instructor);
+		BestMatch.setSecond(canonicalized_student);
 		for(QueryStructure editedstudentqueries: single_edit_student)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries);
@@ -271,7 +272,7 @@ public class PartialMarker {
 		QueryStructure instructorNoOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentNoOrderBy = (QueryStructure)Utilities.copy(this.StudentQuery.getQueryStructure());
 		studentNoOrderBy.setLstOrderByNodes(this.InstructorQuery.getQueryStructure().getLstOrderByNodes());
-		
+		studentNoOrderBy.setOrderByNodes(this.InstructorQuery.getQueryStructure().getOrderByNodes());
 		float totalNodes = totalNodes(instructorNoOrderBy);
 		float totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
 		float deduct=100/totalNodes;

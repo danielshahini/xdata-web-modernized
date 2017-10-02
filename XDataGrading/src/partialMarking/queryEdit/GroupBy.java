@@ -39,7 +39,7 @@ public class GroupBy implements QueryComponent {
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstGroupByNodes().remove(st);
-				temp.getLstProjectedCols().remove(st);
+				//temp.getLstProjectedCols().remove(st);
 				temp.getLstGroupByNodes().add(t);
 				a.add(temp);
 			}
@@ -72,7 +72,7 @@ public class GroupBy implements QueryComponent {
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstGroupByNodes().remove(t);
-				temp.getLstProjectedCols().remove(t);
+				//temp.getLstProjectedCols().remove(t);
 				a.add(temp);
 			}	
 		}
