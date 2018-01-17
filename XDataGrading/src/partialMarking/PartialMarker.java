@@ -250,7 +250,7 @@ public class PartialMarker {
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries);
 			CanonicalizeQuery.Canonicalize(temp);
-			MarkInfo result1 = calculateScore(temp, canonicalized_instructor, 0);
+			MarkInfo result1 = calculateScore(canonicalized_instructor,temp, 0);
 			if(result1.Marks > maxScore)
 			{
 				BestMatch.setFirst(Instructor);
@@ -489,7 +489,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				//score=score-0.5f;
+				score=score-0.5f;
 			}
 		}
 
