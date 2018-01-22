@@ -19,6 +19,7 @@ public class SingleEdit {
 		List<QueryStructure> groupby_cond_added = new GroupBy().add(student,instructor);
 		List<QueryStructure> groupby_cond_edited = new GroupBy().edit(student,instructor);
 		List<QueryStructure> rel_cond_added = new JoinRelation().add(student,instructor);
+		List<QueryStructure> rel_cond_deleted = new JoinRelation().remove(student,instructor);
 		for(QueryStructure t:selection_cond_deleted)
 		{
 			edited_query_structure.add(t);
@@ -56,6 +57,10 @@ public class SingleEdit {
 			edited_query_structure.add(t);
 		}
 		for(QueryStructure t:rel_cond_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:rel_cond_deleted)
 		{
 			edited_query_structure.add(t);
 		}

@@ -237,7 +237,7 @@ public class PartialMarker {
 		CanonicalizeQuery.Canonicalize(canonicalized_student);
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
 		System.out.println("Marks: "+ result.Marks);
-		if(result.Marks == FULL_MARKS)
+		if(result.Marks >= FULL_MARKS)
 			return maxMarks;
 		if(maxMarks <= 0)
 			return 0;
@@ -258,7 +258,7 @@ public class PartialMarker {
 				maxScore=result1.Marks;
 			}
 		}
-		if(maxScore == FULL_MARKS)
+		if(maxScore >= FULL_MARKS)
 			return maxMarks - deductMarks;
 		maxMarks = maxMarks - deductMarks;
 		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
@@ -791,7 +791,13 @@ public class PartialMarker {
 	return score;*/
 	}
 
-	public static float compareSelection(List<Node> master, List<Node> slave){
+	public static float compareSelection(List<Node> master, List<Node> slave1){
+		ArrayList<Node> slave= new ArrayList<Node>();
+		for (Node dupWord : slave1) {
+		    if (!slave.contains(dupWord)) {
+		    	slave.add(dupWord);
+		    }
+		}
 		float score = 0;
 		for(Node n1 : slave){
 			Boolean found = false;
