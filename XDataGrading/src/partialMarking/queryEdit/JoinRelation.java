@@ -19,7 +19,42 @@ public class JoinRelation implements QueryComponent {
 				return true;
 			}
 		}
-		
+		// Check dependency in groupBy clauses
+		ArrayList<Node> groupByNodes = student.getLstGroupByNodes();
+		for(Node t: groupByNodes)
+		{
+			if(s.equals(t.getTableNameNo()))
+			{
+				return true;
+			}
+		}
+		// Check dependency in orderBy clauses
+		ArrayList<Node> orderByNodes = student.getLstOrderByNodes();
+		for(Node t: orderByNodes)
+		{
+			if(s.equals(t.getTableNameNo()))
+			{
+				return true;
+			}
+		}
+		// Check dependency in selection clauses
+		ArrayList<Node> selectionNodes = student.getLstSelectionConditions();
+		for(Node t: selectionNodes)
+		{
+			if(s.equals(t.getLeft().getTableNameNo()) || s.equals(t.getRight().getTableNameNo()))
+			{
+				return true;
+			}
+		}
+//		// Check dependency in having clauses
+				ArrayList<Node> havingNodes = student.getLstHavingConditions();
+				for(Node t: havingNodes)
+				{
+					if(s.equals(t.getLeft().getTableNameNo()) || s.equals(t.getRight().getTableNameNo()))
+					{
+						return true;
+					}
+				}
 		return false;
 	}
 	@Override
