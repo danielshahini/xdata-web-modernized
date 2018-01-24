@@ -59,8 +59,41 @@ public class JoinRelation implements QueryComponent {
 	}
 	@Override
 	public List<QueryStructure> edit(QueryStructure student, QueryStructure instructor) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
+		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
+		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
+		for(String t:instructor.getLstRelationInstances())
+		{
+			if(student.getLstRelationInstances().contains(t))
+			{
+				ins_not_matched.getLstRelationInstances().remove(t);
+			}
+		}
+		for(String t:student.getLstRelationInstances())
+		{
+			if(instructor.getLstRelationInstances().contains(t))
+			{
+				stu_not_matched.getLstRelationInstances().remove(t);
+			}
+			else
+			{
+				stu_matched.getLstRelationInstances().remove(t);
+			}
+		}
+		for(String st:stu_not_matched.getLstRelationInstances())
+		{
+			if(isDependent(student,st))
+				continue;
+			for(String t: ins_not_matched.getLstRelationInstances())
+			{
+				QueryStructure temp = (QueryStructure)Utilities.copy(student);
+				temp.getLstRelationInstances().remove(st);
+				temp.getLstRelationInstances().add(t);
+				a.add(temp);
+			}
+		}
+		return a;
 	}
 
 	@Override
