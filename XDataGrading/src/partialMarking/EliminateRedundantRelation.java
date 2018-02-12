@@ -221,9 +221,17 @@ public class EliminateRedundantRelation {
 		/*Note that selConds contain both joinConditions and Selection Conditions (one of the operands is a constant)
 		 * Hence, filter join conditions and put it seperately to joinConds
 		 */
-		for(Node selCond:selConds){
-			if(selCond.getLeft().getNodeType().equals(Node.getColRefType())&&selCond.getRight().getNodeType().equals(Node.getColRefType()))
-				joinConds.add(selCond);
+		if(selConds!=null) {
+			
+			ArrayList<Node> tempList=new ArrayList<Node>();
+			
+			for(Node selCond:selConds){
+				if(selCond.getLeft().getNodeType().equals(Node.getColRefType())&&selCond.getRight().getNodeType().equals(Node.getColRefType())) {
+					joinConds.add(selCond);
+					tempList.add(selCond);
+				}
+			}
+			selConds.removeAll(tempList);
 		}
 		if(joinConds!=null&&joinConds.size()>0){
 			joinConds=parsing.Util.removeDuplicates(joinConds);

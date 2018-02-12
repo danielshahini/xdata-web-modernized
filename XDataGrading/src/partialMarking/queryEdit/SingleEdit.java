@@ -20,6 +20,10 @@ public class SingleEdit {
 		List<QueryStructure> groupby_cond_edited = new GroupBy().edit(student,instructor);
 		List<QueryStructure> rel_cond_added = new JoinRelation().add(student,instructor);
 		List<QueryStructure> rel_cond_deleted = new JoinRelation().remove(student,instructor);
+		List<QueryStructure> rel_cond_edited = new JoinRelation().edit(student,instructor);
+		List<QueryStructure> join_cond_added = new JoinCondition().add(student,instructor);
+		List<QueryStructure> join_cond_deleted = new JoinCondition().remove(student,instructor);
+		List<QueryStructure> join_cond_edited = new JoinCondition().edit(student,instructor);
 		for(QueryStructure t:selection_cond_deleted)
 		{
 			edited_query_structure.add(t);
@@ -61,6 +65,22 @@ public class SingleEdit {
 			edited_query_structure.add(t);
 		}
 		for(QueryStructure t:rel_cond_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:rel_cond_edited)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:join_cond_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:join_cond_deleted)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:join_cond_edited)
 		{
 			edited_query_structure.add(t);
 		}
