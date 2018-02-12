@@ -207,7 +207,9 @@ public class EliminateRedundantRelation {
 		else
 			query.getLstRedundantRelations().addAll(eliminateRelations);
 		
-		query.reviseAfterFindingRedundantRelations();	
+		query.reviseAfterFindingRedundantRelations();
+		
+		query.getLstSelectionConditions().removeAll(query.getLstJoinConditions());
 	}
 	
 	/*
