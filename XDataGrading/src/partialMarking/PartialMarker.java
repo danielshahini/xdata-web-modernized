@@ -2185,10 +2185,6 @@ public class PartialMarker {
 			if(instructorData.getIsDistinct()) nodeCount += 1;
 			if(instructorData.getOrderByNodes()!=null)
 			nodeCount += instructorData.getOrderByNodes().size();
-			if(instructorData.getWhereClauseSubqueries()!=null)
-			nodeCount += instructorData.getWhereClauseSubqueries().size();
-			if(instructorData.getFromClauseSubqueries()!=null)
-			nodeCount += instructorData.getFromClauseSubqueries().size();
 			nodeCount += weightOfSubquery(instructorData.getWhereClauseSubqueries());
 			nodeCount += weightOfSubquery(instructorData.getFromClauseSubqueries());
 		}
