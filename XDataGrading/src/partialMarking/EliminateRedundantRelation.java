@@ -201,11 +201,14 @@ public class EliminateRedundantRelation {
 		} while(!baseTables.containsAll(baseTablesOld));
 		/////////////////////code for revised detection of redundant relation ends here
 		logger.info(" eliminated relations "+eliminateRelations);
+		if(query.getLstRedundantRelations()!=null)
+		{
+			if(query.getLstRedundantRelations().isEmpty())
+				query.setLstRedundantRelations(eliminateRelations);
+			else
+				query.getLstRedundantRelations().addAll(eliminateRelations);
+		}
 		
-		if(query.getLstRedundantRelations().isEmpty())
-			query.setLstRedundantRelations(eliminateRelations);
-		else
-			query.getLstRedundantRelations().addAll(eliminateRelations);
 		
 		query.reviseAfterFindingRedundantRelations();
 		

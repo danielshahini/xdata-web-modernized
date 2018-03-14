@@ -2369,6 +2369,7 @@ public class PartialMarker {
 
 
 			for(Node n : instructorData.getLstJoinConditions()){
+				if(n.getJoinType()==null) continue;
 				if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.innerJoin)){
 					instrInnerJoin.add(n.toString());
 				}
@@ -2377,7 +2378,9 @@ public class PartialMarker {
 						||n.getJoinType().equalsIgnoreCase(JoinClauseInfo.fullOuterJoin)){
 					instrOuterJoin.add(n.toString());
 				}
-			}for(Node n : studentData.getLstJoinConditions()){
+			}
+			for(Node n : studentData.getLstJoinConditions()){
+				if(n.getJoinType()==null) continue;
 				if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.innerJoin)){
 					studentInnerJoin.add(n.toString());
 				}else if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.leftOuterJoin)
