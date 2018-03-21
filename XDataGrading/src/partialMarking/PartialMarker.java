@@ -166,7 +166,10 @@ public class PartialMarker {
 		float instructorJoin = getJoinCount(instructorData);
 		float uniqueGroupBy = instructorData.getLstGroupByNodes().size();
 		float uniqueHavingClause = instructorData.getLstHavingConditions().size();
-		float uniqueSubQConnective = instructorData.getLstSubQConnectives().size();
+		//float uniqueSubQConnective = instructorData.getLstSubQConnectives().size();
+		float uniqueSubQConnective=0;
+		if(instructorData.getQueryType() != null)
+			uniqueSubQConnective=1;
 		float uniqueAggregates = instructorData.getLstAggregateList().size(); 
 		float uniqueSetOperators = instructorData.getLstSetOpetators().size();
 		float uniqueDistinct = 0;
@@ -312,7 +315,22 @@ public class PartialMarker {
 			int numEdit=All_Pair_whereclause(canonicalized_instructor,canonicalized_student);
 			return maxMarks - numEdit*deductMarks;
 		}
-		
+		if(canonicalized_student.getQueryType() != null || canonicalized_instructor.getQueryType() != null)
+		{
+			if(canonicalized_student.getQueryType() != null)
+			{
+				if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
+					maxMarks -=deductMarks;
+				
+			}
+			else if(canonicalized_instructor.getQueryType() != null)
+			{
+				if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
+					maxMarks -=deductMarks;
+			}
+		}
+		canonicalized_student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
+		Student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
 		System.out.println("Marks: "+ result.Marks);
 		if(result.Marks >= FULL_MARKS)
@@ -1918,10 +1936,12 @@ public class PartialMarker {
 		float instructorJoin = getJoinCount(instructorData);
 		float uniqueGroupBy = instructorData.getLstGroupByNodes().size();
 		float uniqueHavingClause = instructorData.getLstHavingConditions().size();
-		float uniqueSubQConnective = instructorData.getLstSubQConnectives().size();
 		float uniqueAggregates = instructorData.getLstAggregateList().size(); 
 		float uniqueSetOperators = instructorData.getLstSetOpetators().size();
 		float uniqueDistinct = 0;
+		float uniqueSubQConnective=0;
+		if(instructorData.getQueryType() != null)
+			uniqueSubQConnective=1;
 		if(instructorData.getIsDistinct()) uniqueDistinct = 1;
 		float orderByColumns = instructorData.getLstOrderByNodes().size();
 		//float uniqueWhereSubquery = instructorData.getWhereClauseSubqueries().size();
@@ -1953,7 +1973,13 @@ public class PartialMarker {
 		float havingClauseScore = compareHavingClause(instructorData.getLstHavingConditions(), studentData.getLstHavingConditions());
 		float havingClauseScoreTotal=havingClauseScore * WEIGHT;
 
-		float subQConnectiveScore = compare(instructorData.getLstSubQConnectives(),studentData.getLstSubQConnectives());
+		float subQConnectiveScore = 0;
+		//compare(instructorData.getLstSubQConnectives(),studentData.getLstSubQConnectives());
+		if(instructorData.getQueryType() != null && studentData.getQueryType() != null)
+		{
+			if(instructorData.getQueryType().getType().equalsIgnoreCase(studentData.getQueryType().getType()))
+				subQConnectiveScore++;
+		}
 		float subQConnectiveScoreTotal=subQConnectiveScore * WEIGHT;
 
 		float aggregateScore = compareAggregates(instructorData.getLstAggregateList(), studentData.getLstAggregateList());
@@ -2176,8 +2202,8 @@ public class PartialMarker {
 			nodeCount += instructorData.getLstGroupByNodes().size();
 			if(instructorData.getLstHavingConditions()!=null)
 			nodeCount += instructorData.getLstHavingConditions().size();
-			if(instructorData.getLstSubQConnectives()!=null)
-			nodeCount += instructorData.getLstSubQConnectives().size();
+			if(instructorData.getQueryType() != null)
+				nodeCount++;
 			if(instructorData.getLstAggregateList()!=null)
 			nodeCount += instructorData.getLstAggregateList().size(); 
 			if(instructorData.getLstSetOpetators()!=null)
