@@ -6,6 +6,10 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.uncommons.maths.Maths;
+
+import com.google.gdata.data.threading.Total;
 import com.google.gson.Gson;
 import parsing.AggregateFunction;
 import parsing.JoinClauseInfo;
@@ -155,7 +159,7 @@ public class PartialMarker {
 		ans=(ans*maxMarks)/totalNodes;
 		return ans;
 	}
-	public float totalNodes(QueryStructure instructorData)
+	public static float totalNodes(QueryStructure instructorData)
 	{
 		float whereSubQueryPredicate = weightOfSubquery(instructorData.getWhereClauseSubqueries());
 		float fromSubQueryPredicate = weightOfSubquery(instructorData.getFromClauseSubqueries());
@@ -168,7 +172,7 @@ public class PartialMarker {
 		float uniqueHavingClause = instructorData.getLstHavingConditions().size();
 		//float uniqueSubQConnective = instructorData.getLstSubQConnectives().size();
 		float uniqueSubQConnective=0;
-		if(instructorData.getQueryType() != null)
+		if(instructorData.getQueryType().getType() != null)
 			uniqueSubQConnective=1;
 		float uniqueAggregates = instructorData.getLstAggregateList().size(); 
 		float uniqueSetOperators = instructorData.getLstSetOpetators().size();
@@ -310,30 +314,31 @@ public class PartialMarker {
 		student_without_where_subq.setLstLstSubQConnectives (canonicalized_instructor.getLstSubQConnectives());
 		student_without_where_subq.getWhereClauseSubqueries().clear();
 		student_without_where_subq.getWhereClauseSubqueries().addAll(canonicalized_instructor.getWhereClauseSubqueries());
-		if(calculateScore(canonicalized_instructor,student_without_where_subq , 0).Marks== FULL_MARKS)
+		if(Math.round((double)calculateScore(canonicalized_instructor,student_without_where_subq , 0).Marks)== FULL_MARKS)
 		{
 			int numEdit=All_Pair_whereclause(canonicalized_instructor,canonicalized_student);
 			return maxMarks - numEdit*deductMarks;
 		}
-		if(canonicalized_student.getQueryType() != null || canonicalized_instructor.getQueryType() != null)
+		if(canonicalized_student.getQueryType().getType() != null || canonicalized_instructor.getQueryType().getType() != null)
 		{
-			if(canonicalized_student.getQueryType() != null)
+			if(canonicalized_student.getQueryType().getType() != null)
 			{
 				if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
 					maxMarks -=deductMarks;
 				
 			}
-			else if(canonicalized_instructor.getQueryType() != null)
+			else if(canonicalized_instructor.getQueryType().getType() != null)
 			{
 				if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
 					maxMarks -=deductMarks;
 			}
 		}
+		
 		canonicalized_student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		Student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
 		System.out.println("Marks: "+ result.Marks);
-		if(result.Marks >= FULL_MARKS)
+		if(Math.round(result.Marks) >= FULL_MARKS)
 			return maxMarks;
 		if(maxMarks <= 0)
 			return 0;
@@ -347,14 +352,14 @@ public class PartialMarker {
 			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries);
 			CanonicalizeQuery.Canonicalize(temp);
 			MarkInfo result1 = calculateScore(canonicalized_instructor,temp, 0);
-			if(result1.Marks > maxScore)
+			if(Math.round(result1.Marks) > maxScore)
 			{
 				BestMatch.setFirst(Instructor);
 				BestMatch.setSecond(editedstudentqueries);
 				maxScore=result1.Marks;
 			}
 		}
-		if(maxScore >= FULL_MARKS)
+		if(Math.round(maxScore) >= FULL_MARKS)
 			return maxMarks - deductMarks;
 		maxMarks = maxMarks - deductMarks;
 		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
@@ -1940,7 +1945,7 @@ public class PartialMarker {
 		float uniqueSetOperators = instructorData.getLstSetOpetators().size();
 		float uniqueDistinct = 0;
 		float uniqueSubQConnective=0;
-		if(instructorData.getQueryType() != null)
+		if(instructorData.getQueryType().getType() != null)
 			uniqueSubQConnective=1;
 		if(instructorData.getIsDistinct()) uniqueDistinct = 1;
 		float orderByColumns = instructorData.getLstOrderByNodes().size();
@@ -1975,7 +1980,7 @@ public class PartialMarker {
 
 		float subQConnectiveScore = 0;
 		//compare(instructorData.getLstSubQConnectives(),studentData.getLstSubQConnectives());
-		if(instructorData.getQueryType() != null && studentData.getQueryType() != null)
+		if(instructorData.getQueryType().getType() != null && studentData.getQueryType().getType() != null)
 		{
 			if(instructorData.getQueryType().getType().equalsIgnoreCase(studentData.getQueryType().getType()))
 				subQConnectiveScore++;
@@ -2006,7 +2011,7 @@ public class PartialMarker {
 		//float NoOfwhereSubQuryScoreTotal = uniqueWhereSubquery * WEIGHT;
 		//float NoOfFromSubQuryScoreTotal = uniqueFromSubquery * WEIGHT;
 		
-		float wheresubQueryScoreTotal = ((whereSubQuery.Marks * whereSubQueryPredicate)/100) * WEIGHT ;
+		float wheresubQueryScoreTotal = (whereSubQuery.Marks) * WEIGHT ;
 		float fromsubQueryScoreTotal = ((fromSubQuery.Marks * fromSubQueryPredicate)/100) * WEIGHT ;
 		float student =  normalizeNegativeValuesToZero(predicateScoreTotal + relationScoreTotal + projectionScoreTotal 
 				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
@@ -2202,7 +2207,7 @@ public class PartialMarker {
 			nodeCount += instructorData.getLstGroupByNodes().size();
 			if(instructorData.getLstHavingConditions()!=null)
 			nodeCount += instructorData.getLstHavingConditions().size();
-			if(instructorData.getQueryType() != null)
+			if(instructorData.getQueryType().getType() != null)
 				nodeCount++;
 			if(instructorData.getLstAggregateList()!=null)
 			nodeCount += instructorData.getLstAggregateList().size(); 
@@ -2239,7 +2244,9 @@ public class PartialMarker {
 				for(int i = 0; i < combination.size(); i++){					
 					MarkInfo e = calculateScore(master.get(i), slave.get(combination.get(i)), level);
 					currentInfo.addAll(e.SubqueryData);
-					score += e.Marks;
+					float edit = e.Marks/100;
+					edit *= totalNodes(master.get(i));
+					score += edit;
 				}
 
 				if(score > result){
@@ -2257,7 +2264,9 @@ public class PartialMarker {
 				for(int i = 0; i < combination.size(); i++){
 					MarkInfo e = calculateScore(master.get(combination.get(i)), slave.get(i), level);
 					currentInfo.addAll(e.SubqueryData);
-					score += e.Marks;
+					float edit = e.Marks/100;
+					edit *= totalNodes(master.get(combination.get(i)));
+					score += edit;
 				}
 
 				if(score > result){
