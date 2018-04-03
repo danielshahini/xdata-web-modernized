@@ -334,7 +334,10 @@ public class PartialMarker {
 					maxMarks -=deductMarks;
 			}
 		}
-		
+		if(canonicalized_instructor.getIsDistinct() != canonicalized_student.getIsDistinct())
+			maxMarks -=deductMarks;
+		canonicalized_student.setIsDistinct(canonicalized_instructor.getIsDistinct());
+		Student.setIsDistinct(canonicalized_instructor.getIsDistinct());
 		canonicalized_student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		Student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
@@ -2000,7 +2003,7 @@ public class PartialMarker {
 		}
 		else if(!instructorData.getIsDistinct() && studentData.getIsDistinct())
 		{
-			//distinctOperatorScore=distinctOperatorScore-0.5f;
+			distinctOperatorScore=distinctOperatorScore-0.5f;
 		}
 		
 		float distinctOperatorScoreTotal=distinctOperatorScore * WEIGHT;
