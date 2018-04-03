@@ -307,6 +307,7 @@ public class PartialMarker {
 	{
 		
 		QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(Instructor);
+		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
 		QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(Student);
 		QueryStructure student_without_where_subq=(QueryStructure)Utilities.copy(Student);
 		CanonicalizeQuery.Canonicalize(canonicalized_student);
