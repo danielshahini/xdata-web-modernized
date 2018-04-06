@@ -311,7 +311,6 @@ public class PartialMarker {
 		QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(Student);
 		QueryStructure student_without_where_subq=(QueryStructure)Utilities.copy(Student);
 		CanonicalizeQuery.Canonicalize(canonicalized_student);
-		//QueryStructure instr_without_where_subq = (QueryStructure)Utilities.copy(Instructor);
 		student_without_where_subq.setLstLstSubQConnectives (canonicalized_instructor.getLstSubQConnectives());
 		student_without_where_subq.getWhereClauseSubqueries().clear();
 		student_without_where_subq.getWhereClauseSubqueries().addAll(canonicalized_instructor.getWhereClauseSubqueries());
@@ -351,6 +350,9 @@ public class PartialMarker {
 		float maxScore = 0;
 		BestMatch.setFirst(canonicalized_instructor);
 		BestMatch.setSecond(canonicalized_student);
+		// If mismatch occurs only in distinct/querytype part
+		if(single_edit_student.size()==0) 
+			return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 		for(QueryStructure editedstudentqueries: single_edit_student)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries);
