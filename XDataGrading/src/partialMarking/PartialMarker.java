@@ -305,7 +305,7 @@ public class PartialMarker {
 	
 	private float editScore(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
-		
+		float old_marks = maxMarks;
 		QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(Instructor);
 		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
 		QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(Student);
@@ -351,7 +351,7 @@ public class PartialMarker {
 		BestMatch.setFirst(canonicalized_instructor);
 		BestMatch.setSecond(canonicalized_student);
 		// If mismatch occurs only in distinct/querytype part
-		if(single_edit_student.size()==0) 
+		if(single_edit_student.size()==0 && old_marks != maxMarks) 
 			return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 		for(QueryStructure editedstudentqueries: single_edit_student)
 		{
