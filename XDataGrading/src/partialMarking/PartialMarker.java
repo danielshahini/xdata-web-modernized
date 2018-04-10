@@ -2245,6 +2245,7 @@ public class PartialMarker {
 			leftovers.setSize(slaveCount);
 			generateCombinations(combinations, masterCount, slaveCount, new ArrayList<Integer>(), 0);
 			for(ArrayList<Integer> combination : combinations){
+				Collections.fill(leftovers, Boolean.FALSE);
 				int score = 0;
 				currentInfo = new ArrayList<QueryInfo>();
 				for(int i = 0; i < combination.size(); i++){					
