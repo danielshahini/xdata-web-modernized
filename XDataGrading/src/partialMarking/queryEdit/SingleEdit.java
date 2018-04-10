@@ -24,6 +24,9 @@ public class SingleEdit {
 		List<QueryStructure> join_cond_added = new JoinCondition().add(student,instructor);
 		List<QueryStructure> join_cond_deleted = new JoinCondition().remove(student,instructor);
 		List<QueryStructure> join_cond_edited = new JoinCondition().edit(student,instructor);
+		List<QueryStructure> distinct_added = new Distinct().add(student,instructor);
+		List<QueryStructure> distinct_deleted = new Distinct().remove(student,instructor);
+		
 		for(QueryStructure t:selection_cond_deleted)
 		{
 			edited_query_structure.add(t);
@@ -81,6 +84,14 @@ public class SingleEdit {
 			edited_query_structure.add(t);
 		}
 		for(QueryStructure t:join_cond_edited)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:distinct_added)
+		{
+			edited_query_structure.add(t);
+		}
+		for(QueryStructure t:distinct_deleted)
 		{
 			edited_query_structure.add(t);
 		}

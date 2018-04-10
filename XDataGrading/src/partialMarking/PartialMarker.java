@@ -237,12 +237,21 @@ public class PartialMarker {
 		maxMarks = maxMarks - deductMarks;
 		return editOrderByScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 	}
-	private int All_Pair_whereclause(QueryStructure Instructor,QueryStructure Student) throws Exception
+	private int All_Pair_whereclause(QueryStructure Instructor,QueryStructure Student,boolean isWhere) throws Exception
 	{
 		int num_edit = 0;
 		int result=10000;
-		Vector<QueryStructure> master = Instructor.getWhereClauseSubqueries();
-		Vector<QueryStructure> slave = Student.getWhereClauseSubqueries();
+		Vector<QueryStructure> master,slave;
+		if(isWhere)
+		{
+			master = Instructor.getWhereClauseSubqueries();
+			slave = Student.getWhereClauseSubqueries();
+		}
+		else
+		{
+			master = Instructor.getFromClauseSubqueries();
+			slave = Student.getFromClauseSubqueries();
+		}
 		int masterCount = master.size();		
 		int slaveCount = slave.size();
 		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
@@ -313,10 +322,14 @@ public class PartialMarker {
 		CanonicalizeQuery.Canonicalize(canonicalized_student);
 		student_without_where_subq.setLstLstSubQConnectives (canonicalized_instructor.getLstSubQConnectives());
 		student_without_where_subq.getWhereClauseSubqueries().clear();
+		student_without_where_subq.getFromClauseSubqueries().clear();
 		student_without_where_subq.getWhereClauseSubqueries().addAll(canonicalized_instructor.getWhereClauseSubqueries());
+		student_without_where_subq.getFromClauseSubqueries().addAll(canonicalized_instructor.getFromClauseSubqueries());
 		if(Math.round((double)calculateScore(canonicalized_instructor,student_without_where_subq , 0).Marks)== FULL_MARKS)
 		{
-			int numEdit=All_Pair_whereclause(canonicalized_instructor,canonicalized_student);
+			int numEdit=All_Pair_whereclause(canonicalized_instructor,canonicalized_student,true);
+			maxMarks -= numEdit*deductMarks;
+			numEdit=All_Pair_whereclause(canonicalized_instructor,canonicalized_student,false);
 			return maxMarks - numEdit*deductMarks;
 		}
 		if(canonicalized_student.getQueryType().getType() != null || canonicalized_instructor.getQueryType().getType() != null)
@@ -333,10 +346,10 @@ public class PartialMarker {
 					maxMarks -=deductMarks;
 			}
 		}
-		if(canonicalized_instructor.getIsDistinct() != canonicalized_student.getIsDistinct())
-			maxMarks -=deductMarks;
-		canonicalized_student.setIsDistinct(canonicalized_instructor.getIsDistinct());
-		Student.setIsDistinct(canonicalized_instructor.getIsDistinct());
+//		if(canonicalized_instructor.getIsDistinct() != canonicalized_student.getIsDistinct())
+//			maxMarks -=deductMarks;
+//		canonicalized_student.setIsDistinct(canonicalized_instructor.getIsDistinct());
+//		Student.setIsDistinct(canonicalized_instructor.getIsDistinct());
 		canonicalized_student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		Student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
@@ -2018,7 +2031,7 @@ public class PartialMarker {
 		//float NoOfFromSubQuryScoreTotal = uniqueFromSubquery * WEIGHT;
 		
 		float wheresubQueryScoreTotal = (whereSubQuery.Marks) * WEIGHT ;
-		float fromsubQueryScoreTotal = ((fromSubQuery.Marks * fromSubQueryPredicate)/100) * WEIGHT ;
+		float fromsubQueryScoreTotal = (fromSubQuery.Marks) * WEIGHT ;
 		float student =  normalizeNegativeValuesToZero(predicateScoreTotal + relationScoreTotal + projectionScoreTotal 
 				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
 				aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal + orderByOperatorScoreTotal + wheresubQueryScoreTotal + fromsubQueryScoreTotal);
