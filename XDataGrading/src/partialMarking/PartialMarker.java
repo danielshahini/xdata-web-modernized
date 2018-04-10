@@ -2230,7 +2230,7 @@ public class PartialMarker {
 	}
 	// Compares all permutations of the queries and allocates the maximum mark.
 	public static MarkInfo compareListOfQueries( Vector<QueryStructure> master, Vector<QueryStructure> slave, int level){
-		int result = 0;
+		int result = -10000;
 
 		MarkInfo marks = new MarkInfo();
 		ArrayList<QueryInfo> currentInfo = null;
@@ -2240,10 +2240,10 @@ public class PartialMarker {
 		int slaveCount = slave.size();
 
 		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
-		if(masterCount < slaveCount){						
+		if(masterCount < slaveCount){
+			Vector <Boolean> leftovers=new Vector<Boolean>(slaveCount);
+			leftovers.setSize(slaveCount);
 			generateCombinations(combinations, masterCount, slaveCount, new ArrayList<Integer>(), 0);
-
-			result = 0;
 			for(ArrayList<Integer> combination : combinations){
 				int score = 0;
 				currentInfo = new ArrayList<QueryInfo>();
@@ -2253,8 +2253,16 @@ public class PartialMarker {
 					float edit = e.Marks/100;
 					edit *= totalNodes(master.get(i));
 					score += edit;
+					leftovers.set(combination.get(i), true);
 				}
-
+				int count=-1;
+				for(Boolean leftover:leftovers)
+				{
+					count++;
+					if(leftover==true)
+						continue;
+					score-= 0.5 * totalNodes(slave.get(count));
+				}
 				if(score > result){
 					result = score;
 					maxInfo = currentInfo;
