@@ -325,11 +325,12 @@ public class PartialMarker {
 		student_without_where_subq.getFromClauseSubqueries().clear();
 		student_without_where_subq.getWhereClauseSubqueries().addAll(canonicalized_instructor.getWhereClauseSubqueries());
 		student_without_where_subq.getFromClauseSubqueries().addAll(canonicalized_instructor.getFromClauseSubqueries());
+		CanonicalizeQuery.Canonicalize(student_without_where_subq);
 		if(Math.round((double)calculateScore(canonicalized_instructor,student_without_where_subq , 0).Marks)== FULL_MARKS)
 		{
-			int numEdit=All_Pair_whereclause(canonicalized_instructor,canonicalized_student,true);
+			int numEdit=All_Pair_whereclause(canonicalized_instructor,Student,true);
 			maxMarks -= numEdit*deductMarks;
-			numEdit=All_Pair_whereclause(canonicalized_instructor,canonicalized_student,false);
+			numEdit=All_Pair_whereclause(canonicalized_instructor,Student,false);
 			return maxMarks - numEdit*deductMarks;
 		}
 		if(canonicalized_student.getQueryType().getType() != null || canonicalized_instructor.getQueryType().getType() != null)

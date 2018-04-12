@@ -17,6 +17,7 @@ public class Distinct implements QueryComponent {
 	@Override
 	public List<QueryStructure> add(QueryStructure student, QueryStructure instructor) throws Exception {
 		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		if(!student.getLstProjectedCols().containsAll(instructor.getLstProjectedCols())) return a;
 		if(instructor.getIsDistinct()==true && student.getIsDistinct()==false)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(student);
@@ -29,6 +30,7 @@ public class Distinct implements QueryComponent {
 	@Override
 	public List<QueryStructure> remove(QueryStructure student, QueryStructure instructor) throws Exception {
 		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		if(!student.getLstProjectedCols().containsAll(instructor.getLstProjectedCols())) return a;
 		if(instructor.getIsDistinct()==false && student.getIsDistinct()==true)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(student);
