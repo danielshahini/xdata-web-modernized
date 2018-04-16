@@ -164,10 +164,10 @@ public class PartialMarker {
 		float whereSubQueryPredicate = weightOfSubquery(instructorData.getWhereClauseSubqueries());
 		float fromSubQueryPredicate = weightOfSubquery(instructorData.getFromClauseSubqueries());
 
-		float uniquePredicates = instructorData.getLstSelectionConditions().size();
+		float uniquePredicates = instructorData.getLstSelectionConditions().size()*3;
 		float uniqueRelations = instructorData.getLstRelationInstances().size();
 		float uniqueProj = instructorData.getLstProjectedCols().size();
-		float instructorJoin = getJoinCount(instructorData);
+		float instructorJoin = getJoinCount(instructorData)*3;
 		float uniqueGroupBy = instructorData.getLstGroupByNodes().size();
 		float uniqueHavingClause = instructorData.getLstHavingConditions().size();
 		//float uniqueSubQConnective = instructorData.getLstSubQConnectives().size();
@@ -195,24 +195,24 @@ public class PartialMarker {
 			return maxMarks;
 		if(maxMarks <= 0)
 			return 0;
-		List<QueryStructure> edited_query_structure = new ArrayList <QueryStructure>();
-		List<QueryStructure> orderby_deleted = new OrderBy().remove(Student,Instructor);
-    	List<QueryStructure> orderby_added = new OrderBy().add(Student,Instructor);
-		List<QueryStructure> orderby_moved = new OrderBy().move(Student,Instructor);
-		List<QueryStructure> orderby_edited = new OrderBy().edit(Student,Instructor);
-		for(QueryStructure t:orderby_deleted)
+		List<Pair<QueryStructure,Float> > edited_query_structure = new ArrayList <Pair<QueryStructure,Float>>();
+		List<Pair<QueryStructure,Float> > orderby_deleted = new OrderBy().remove(Student,Instructor);
+		List<Pair<QueryStructure,Float> > orderby_added = new OrderBy().add(Student,Instructor);
+		List<Pair<QueryStructure,Float> > orderby_moved = new OrderBy().move(Student,Instructor);
+		List<Pair<QueryStructure,Float> > orderby_edited = new OrderBy().edit(Student,Instructor);
+		for(Pair<QueryStructure,Float> t:orderby_deleted)
 		{
 			edited_query_structure.add(t);
 		}
-		for(QueryStructure t:orderby_added)
+		for(Pair<QueryStructure,Float> t:orderby_added)
 		{
 			edited_query_structure.add(t);
 		}
-		for(QueryStructure t:orderby_moved)
+		for(Pair<QueryStructure,Float> t:orderby_moved)
 		{
 			edited_query_structure.add(t);
 		}
-		for(QueryStructure t:orderby_edited)
+		for(Pair<QueryStructure,Float> t:orderby_edited)
 		{
 			edited_query_structure.add(t);
 		}
@@ -220,7 +220,7 @@ public class PartialMarker {
 		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
 		float maxScore = 0;
 
-		for(QueryStructure editedstudentqueries: edited_query_structure)
+		for(Pair<QueryStructure,Float> editedstudentqueries: edited_query_structure)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries);
 			CanonicalizeQuery.Canonicalize(temp);
@@ -228,7 +228,7 @@ public class PartialMarker {
 			if(result1 > maxScore)
 			{
 				BestMatch.setFirst(Instructor);
-				BestMatch.setSecond(editedstudentqueries);
+				BestMatch.setSecond(editedstudentqueries.getFirst());
 				maxScore=result1;
 			}
 		}
@@ -327,7 +327,7 @@ public class PartialMarker {
 		student_without_where_subq.getWhereClauseSubqueries().addAll(canonicalized_instructor.getWhereClauseSubqueries());
 		student_without_where_subq.getFromClauseSubqueries().addAll(canonicalized_instructor.getFromClauseSubqueries());
 		CanonicalizeQuery.Canonicalize(student_without_where_subq);
-		if(Math.round((double)calculateScore(canonicalized_instructor,student_without_where_subq , 0).Marks)>= FULL_MARKS)
+		if(calculateScore(canonicalized_instructor,student_without_where_subq , 0).Marks>= FULL_MARKS)
 		{
 			int numEdit=All_Pair_whereclause(canonicalized_instructor,Student,true);
 			maxMarks -= numEdit*deductMarks;
@@ -352,7 +352,7 @@ public class PartialMarker {
 		Student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
 		System.out.println("Marks: "+ result.Marks);
-		if(Math.round(result.Marks) >= FULL_MARKS)
+		if(result.Marks >= FULL_MARKS)
 			return maxMarks;
 		if(maxMarks <= 0)
 			return 0;
@@ -364,21 +364,24 @@ public class PartialMarker {
 		// If mismatch occurs only in distinct/querytype part
 		if(single_edit_student.size()==0 && old_marks != maxMarks) 
 			return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
+		
+		float bestMatchCost=0;
 		for(Pair<QueryStructure,Float> editedstudentqueries: single_edit_student)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries.getFirst());
 			CanonicalizeQuery.Canonicalize(temp);
 			MarkInfo result1 = calculateScore(canonicalized_instructor,temp, 0);
-			if(Math.round(result1.Marks) -  editedstudentqueries.getSecond()> maxScore)
+			if(result1.Marks - editedstudentqueries.getSecond()> maxScore)
 			{
 				BestMatch.setFirst(Instructor);
 				BestMatch.setSecond(editedstudentqueries.getFirst());
-				maxScore=result1.Marks - editedstudentqueries.getSecond();
+				maxScore = result1.Marks - editedstudentqueries.getSecond();
+				bestMatchCost = editedstudentqueries.getSecond();
 			}
 		}
-		if(Math.round(maxScore) >= FULL_MARKS)
-			return maxMarks - deductMarks;
-		maxMarks = maxMarks - deductMarks;
+		if(maxScore >= FULL_MARKS)
+			return normalizeNegativeValuesToZero(maxMarks - bestMatchCost*deductMarks);
+		maxMarks = maxMarks - bestMatchCost*deductMarks;
 		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 	}
 
@@ -1952,10 +1955,10 @@ public class PartialMarker {
 		float whereSubQueryPredicate = weightOfSubquery(instructorData.getWhereClauseSubqueries());
 		float fromSubQueryPredicate = weightOfSubquery(instructorData.getFromClauseSubqueries());
 
-		float uniquePredicates = instructorData.getLstSelectionConditions().size();
+		float uniquePredicates = instructorData.getLstSelectionConditions().size()*3;
 		float uniqueRelations = instructorData.getLstRelationInstances().size();
 		float uniqueProj = instructorData.getLstProjectedCols().size();
-		float instructorJoin = getJoinCount(instructorData);
+		float instructorJoin = getJoinCount(instructorData)*3;
 		float uniqueGroupBy = instructorData.getLstGroupByNodes().size();
 		float uniqueHavingClause = instructorData.getLstHavingConditions().size();
 		float uniqueAggregates = instructorData.getLstAggregateList().size(); 
@@ -1975,7 +1978,7 @@ public class PartialMarker {
 		float WEIGHT = 1;
 
 
-		float predicateScore = compareSelection(instructorData.getLstSelectionConditions(), studentData.getLstSelectionConditions());
+		float predicateScore = compareSelection(instructorData.getLstSelectionConditions(), studentData.getLstSelectionConditions())*3;
 
 		float predicateScoreTotal = predicateScore * WEIGHT;
 
@@ -1986,7 +1989,7 @@ public class PartialMarker {
 		float relationScore = compare(instructorData.getLstRelationInstances(), studentData.getLstRelationInstances());
 		float relationScoreTotal=relationScore * WEIGHT;
 
-		float joinScore = getJoinScore(instructorData, studentData);
+		float joinScore = getJoinScore(instructorData, studentData)*3;
 		float joinScoreTotal=joinScore * WEIGHT;	
 
 		float groupByScore = compareProjection(instructorData.getLstGroupByNodes(), studentData.getLstGroupByNodes());
@@ -2214,12 +2217,12 @@ public class PartialMarker {
 		float nodeCount = 0;
 		for(QueryStructure instructorData:instructor){
 			if(instructorData.getLstSelectionConditions()!=null)
-				nodeCount += instructorData.getLstSelectionConditions().size();
+				nodeCount += instructorData.getLstSelectionConditions().size()*3;
 			if(instructorData.getLstRelationInstances()!=null)
 			nodeCount += instructorData.getLstRelationInstances().size();
 			if(instructorData.getLstProjectedCols()!=null)
 			nodeCount += instructorData.getLstProjectedCols().size();
-			nodeCount += getJoinCount(instructorData);
+			nodeCount += getJoinCount(instructorData)*3;
 			if(instructorData.getLstGroupByNodes() != null)
 			nodeCount += instructorData.getLstGroupByNodes().size();
 			if(instructorData.getLstHavingConditions()!=null)

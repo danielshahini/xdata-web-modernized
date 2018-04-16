@@ -5,13 +5,14 @@ import java.util.List;
 
 import parsing.Node;
 import parsing.QueryStructure;
+import util.Pair;
 import util.Utilities;
 
 public class Projection implements QueryComponent {
 
 	@Override
-	public List<QueryStructure> edit(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> edit(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
 		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
 		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
@@ -40,37 +41,46 @@ public class Projection implements QueryComponent {
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstProjectedCols().remove(st);
 				temp.getLstProjectedCols().add(t);
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);
 			}
 		}
 		return a;
 	}
 
 	@Override
-	public List<QueryStructure> add(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> add(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		for(Node t:instructor.getLstProjectedCols())
 		{
 			if(!student.getLstProjectedCols().contains(t))
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstProjectedCols().add(t);
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);
 			}
 		}
 		return a;
 	}
 
 	@Override
-	public List<QueryStructure> remove(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> remove(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		for(Node t:student.getLstProjectedCols())
 		{
 			if(!instructor.getLstProjectedCols().contains(t))
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstProjectedCols().remove(t);
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);
 			}	
 		}
 		

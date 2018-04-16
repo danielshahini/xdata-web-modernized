@@ -8,6 +8,7 @@ import java.util.List;
 
 import parsing.Node;
 import parsing.QueryStructure;
+import util.Pair;
 import util.Utilities;
 
 /**
@@ -20,8 +21,8 @@ public class OrderBy implements QueryComponent {
 	 * @see partialMarking.queryEdit.QueryComponent#edit(parsing.QueryStructure, parsing.QueryStructure)
 	 */
 	@Override
-	public List<QueryStructure> edit(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public  List<Pair<QueryStructure,Float>> edit(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
 		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
 		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
@@ -57,7 +58,10 @@ public class OrderBy implements QueryComponent {
 					else
 						temp.getLstOrderByNodes().add(c,t);
 					temp.getLstOrderByNodes().remove(st);
-					a.add(temp);
+					Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+					tempCost.setFirst(temp);
+					tempCost.setSecond((float) 1.0);
+					a.add(tempCost);
 				}
 			}
 			c++;
@@ -69,8 +73,8 @@ public class OrderBy implements QueryComponent {
 	 * @see partialMarking.queryEdit.QueryComponent#add(parsing.QueryStructure, parsing.QueryStructure)
 	 */
 	@Override
-	public List<QueryStructure> add(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public  List<Pair<QueryStructure,Float>> add(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		for(Node t:instructor.getLstOrderByNodes())
 		{
 			if(!student.getLstOrderByNodes().contains(t))
@@ -81,12 +85,18 @@ public class OrderBy implements QueryComponent {
 				{
 					QueryStructure temp = (QueryStructure)Utilities.copy(student);
 					temp.getLstOrderByNodes().add(i,t);
-					a.add(temp);
+					Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+					tempCost.setFirst(temp);
+					tempCost.setSecond((float) 1.0);
+					a.add(tempCost);
 					i++;
 				}
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstOrderByNodes().add(t);
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);
 			}
 		}
 		return a;
@@ -96,21 +106,24 @@ public class OrderBy implements QueryComponent {
 	 * @see partialMarking.queryEdit.QueryComponent#remove(parsing.QueryStructure, parsing.QueryStructure)
 	 */
 	@Override
-	public List<QueryStructure> remove(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public  List<Pair<QueryStructure,Float>> remove(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		for(Node t:student.getLstOrderByNodes())
 		{
 			if(!instructor.getLstOrderByNodes().contains(t))
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstOrderByNodes().remove(t);
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);
 			}	
 		}
 		return a;
 	}
-	public List<QueryStructure> move(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public  List<Pair<QueryStructure,Float>> move(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		int c=0;
 		for(Node t:student.getLstOrderByNodes())
 		{
@@ -124,7 +137,10 @@ public class OrderBy implements QueryComponent {
 				{
 					QueryStructure temp1 = (QueryStructure)Utilities.copy(temp);
 					temp1.getLstOrderByNodes().add(i,t);
-					a.add(temp1);
+					Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+					tempCost.setFirst(temp);
+					tempCost.setSecond((float) 1.0);
+					a.add(tempCost);
 				}
 				i++;
 			}
@@ -132,7 +148,10 @@ public class OrderBy implements QueryComponent {
 			{
 				QueryStructure temp1 = (QueryStructure)Utilities.copy(temp);
 				temp1.getLstOrderByNodes().add(t);
-				a.add(temp1);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);
 			}
 			c++;
 		}

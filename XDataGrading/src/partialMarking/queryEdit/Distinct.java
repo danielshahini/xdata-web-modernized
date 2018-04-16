@@ -4,38 +4,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 import parsing.QueryStructure;
+import util.Pair;
 import util.Utilities;
 
 public class Distinct implements QueryComponent {
 
 	@Override
-	public List<QueryStructure> edit(QueryStructure student, QueryStructure instructor) throws Exception {
+	public List<Pair<QueryStructure,Float>> edit(QueryStructure student, QueryStructure instructor) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<QueryStructure> add(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> add(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		if(!student.getLstProjectedCols().containsAll(instructor.getLstProjectedCols())) return a;
 		if(instructor.getIsDistinct()==true && student.getIsDistinct()==false)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(student);
 			temp.setIsDistinct(true);
-			a.add(temp);
+			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+			tempCost.setFirst(temp);
+			tempCost.setSecond((float) 1.0);
+			a.add(tempCost);
 		}
 		return a;
 	}
 
 	@Override
-	public List<QueryStructure> remove(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> remove(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		if(!student.getLstProjectedCols().containsAll(instructor.getLstProjectedCols())) return a;
 		if(instructor.getIsDistinct()==false && student.getIsDistinct()==true)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(student);
 			temp.setIsDistinct(false);
-			a.add(temp);
+			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+			tempCost.setFirst(temp);
+			tempCost.setSecond((float) 1.0);
+			a.add(tempCost);
 		}
 		return a;
 	}

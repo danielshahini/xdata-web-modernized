@@ -99,7 +99,7 @@ public class Selection implements QueryComponent {
 				temp.getLstSelectionConditions().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond(NodeDiff(st,t));
+				tempCost.setSecond(3-NodeDiff(st,t));
 				a.add(tempCost);
 				
 			}

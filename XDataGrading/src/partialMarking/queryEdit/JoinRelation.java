@@ -5,9 +5,14 @@ import java.util.List;
 
 import parsing.Node;
 import parsing.QueryStructure;
+import util.Pair;
 import util.Utilities;
 
 public class JoinRelation implements QueryComponent {
+	public static float NodeDiff(String st,String ins)
+	{
+		return (float) 0.0;
+	}
 	private boolean isDependent(QueryStructure student,String s)
 	{
 		// Check dependency in ProjectionCol
@@ -58,8 +63,8 @@ public class JoinRelation implements QueryComponent {
 		return false;
 	}
 	@Override
-	public List<QueryStructure> edit(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> edit(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();	
 		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
 		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
 		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
@@ -90,16 +95,19 @@ public class JoinRelation implements QueryComponent {
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstRelationInstances().remove(st);
 				temp.getLstRelationInstances().add(t);
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);
 			}
 		}
 		return a;
 	}
 
 	@Override
-	public List<QueryStructure> add(QueryStructure student, QueryStructure instructor) throws Exception {
+	public  List<Pair<QueryStructure,Float>> add(QueryStructure student, QueryStructure instructor) throws Exception {
 		
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		for(String t:instructor.getLstRelationInstances())
 		{
 			if(!student.getLstRelationInstances().contains(t))
@@ -107,22 +115,28 @@ public class JoinRelation implements QueryComponent {
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				//temp.getLstRelations().add(t);
 				temp.getLstRelationInstances().add(t);
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);;
 			}
 		}
 		return a;
 	}
 	
 	@Override
-	public List<QueryStructure> remove(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public  List<Pair<QueryStructure,Float>> remove(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		for(String t:student.getLstRelationInstances())
 		{
 			if(!instructor.getLstRelationInstances().contains(t) && !isDependent(student,t))
 			{
 				QueryStructure temp = (QueryStructure)Utilities.copy(student);
 				temp.getLstRelationInstances().remove(t);
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 1.0);
+				a.add(tempCost);
 			}	
 		}
 		return a;

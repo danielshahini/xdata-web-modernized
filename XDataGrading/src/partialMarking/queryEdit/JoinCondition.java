@@ -7,13 +7,14 @@ import java.util.Vector;
 import parsing.ConjunctQueryStructure;
 import parsing.Node;
 import parsing.QueryStructure;
+import util.Pair;
 import util.Utilities;
 
 public class JoinCondition implements QueryComponent {
 
 	@Override
-	public List<QueryStructure> edit(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> edit(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
 		QueryStructure stu_matched = (QueryStructure)Utilities.copy(student);	
 		QueryStructure ins_not_matched = (QueryStructure)Utilities.copy(instructor);
@@ -62,15 +63,18 @@ public class JoinCondition implements QueryComponent {
 					ArrayList<Node> EqClassArrayList = new ArrayList<Node>(EqClassElements);
 					temp.getLstEqClasses().add(EqClassArrayList);
 				}
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond(3-Selection.NodeDiff(st,t));
+				a.add(tempCost);
 			}
 		}
 		return a;
 	}
 
 	@Override
-	public List<QueryStructure> add(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> add(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		for(Node t:instructor.getLstJoinConditions())
 		{
 			if(!student.getLstJoinConditions().contains(t))
@@ -99,15 +103,18 @@ public class JoinCondition implements QueryComponent {
 					ArrayList<Node> EqClassArrayList = new ArrayList<Node>(EqClassElements);
 					temp.getLstEqClasses().add(EqClassArrayList);
 				}
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 3.0);
+				a.add(tempCost);
 			}
 		}
 		return a;
 	}
 
 	@Override
-	public List<QueryStructure> remove(QueryStructure student, QueryStructure instructor) throws Exception {
-		List<QueryStructure> a = new ArrayList <QueryStructure>();
+	public List<Pair<QueryStructure,Float>> remove(QueryStructure student, QueryStructure instructor) throws Exception {
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		for(Node t:student.getLstJoinConditions())
 		{
 			if(!instructor.getLstJoinConditions().contains(t))
@@ -138,10 +145,12 @@ public class JoinCondition implements QueryComponent {
 					ArrayList<Node> EqClassArrayList = new ArrayList<Node>(EqClassElements);
 					temp.getLstEqClasses().add(EqClassArrayList);
 				}
-				a.add(temp);
+				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+				tempCost.setFirst(temp);
+				tempCost.setSecond((float) 3.0);
+				a.add(tempCost);
 			}	
-		}
-		
+		}	
 		return a;
 	}
 
