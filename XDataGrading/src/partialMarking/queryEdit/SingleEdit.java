@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import parsing.QueryStructure;
-
+import util.Pair;
 public class SingleEdit {
-	public static List<QueryStructure> single_edit(QueryStructure student, QueryStructure instructor) throws Exception
+	public static List<Pair<QueryStructure,Float> > single_edit(QueryStructure student, QueryStructure instructor) throws Exception
 	{
 		List<QueryStructure> edited_query_structure = new ArrayList <QueryStructure>();
 		List<QueryStructure> selection_cond_deleted = new Selection().remove(student,instructor);
@@ -95,6 +95,6 @@ public class SingleEdit {
 		{
 			edited_query_structure.add(t);
 		}
-		return edited_query_structure;
+		return null;
 	}
 }
