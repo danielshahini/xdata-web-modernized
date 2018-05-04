@@ -587,7 +587,7 @@ public class PartialMarker {
 	// Calculates a score based on the relations involved in the join
 	// Number of inner and outer joins are also compared
 	public static float getJoinScore(QueryStructure masterData, QueryStructure slaveData){
-		float score = compareSelection(masterData.getLstJoinConditions(), slaveData.getLstJoinConditions());
+		float score = SelectionScore(masterData.getLstJoinConditions(), slaveData.getLstJoinConditions());
 
 	    score = masterData.getNumberOfOuterJoins() == slaveData.getNumberOfOuterJoins() ? score + masterData.getNumberOfOuterJoins() : score - 0.5f;
 		//score = masterData.getNumberOfInnerJoins() == slaveData.getNumberOfInnerJoins() ? score + masterData.getNumberOfInnerJoins() : score - 0.5f;
@@ -912,6 +912,57 @@ public class PartialMarker {
 	return score;*/
 	}
 
+	public static float SelectionScore(ArrayList<Node> master,ArrayList<Node> slave)
+	{
+		float score = 0;
+		float result=0;
+		int masterCount = master.size();		
+		int slaveCount = slave.size();
+		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
+		
+		if(masterCount < slaveCount){	
+			Vector <Boolean> leftovers=new Vector<Boolean>(slaveCount);
+			leftovers.setSize(slaveCount);
+			generateCombinations(combinations, masterCount, slaveCount, new ArrayList<Integer>(), 0);
+			for(ArrayList<Integer> combination : combinations){
+				score = 0;
+				Collections.fill(leftovers, Boolean.FALSE);
+				for(int i = 0; i < combination.size(); i++){
+					score += Selection.NodeDiff(master.get(i), slave.get(combination.get(i)));
+					leftovers.set(combination.get(i), true);
+				}
+				for(Boolean leftover:leftovers)
+				{
+					if(leftover==true)
+						continue;
+					score-= 1.5;
+				}
+				if(score > result){
+					result = score;
+				}
+			}
+			
+		} else {	
+			Vector <Boolean> leftovers=new Vector<Boolean>(masterCount);
+			leftovers.setSize(masterCount);
+			generateCombinations(combinations, slaveCount, masterCount, new ArrayList<Integer>(), 0);
+			for(ArrayList<Integer> combination : combinations){
+				score = 0;
+				Collections.fill(leftovers, Boolean.FALSE);
+				for(int i = 0; i < combination.size(); i++){
+					score += Selection.NodeDiff(master.get(combination.get(i)), slave.get(i));
+					leftovers.set(combination.get(i), true);
+				}
+
+				if(score > result){
+					result = score;
+				}
+			}
+		}
+
+		return result;
+	}
+	
 	public static float compareSelection(List<Node> master, List<Node> slave1){
 		ArrayList<Node> slave= new ArrayList<Node>();
 		for (Node dupWord : slave1) {
@@ -1978,7 +2029,7 @@ public class PartialMarker {
 		float WEIGHT = 1;
 
 
-		float predicateScore = compareSelection(instructorData.getLstSelectionConditions(), studentData.getLstSelectionConditions())*3;
+		float predicateScore = SelectionScore(instructorData.getLstSelectionConditions(), studentData.getLstSelectionConditions());
 
 		float predicateScoreTotal = predicateScore * WEIGHT;
 
@@ -1989,7 +2040,7 @@ public class PartialMarker {
 		float relationScore = compare(instructorData.getLstRelationInstances(), studentData.getLstRelationInstances());
 		float relationScoreTotal=relationScore * WEIGHT;
 
-		float joinScore = getJoinScore(instructorData, studentData)*3;
+		float joinScore = getJoinScore(instructorData, studentData);
 		float joinScoreTotal=joinScore * WEIGHT;	
 
 		float groupByScore = compareProjection(instructorData.getLstGroupByNodes(), studentData.getLstGroupByNodes());
