@@ -67,6 +67,89 @@ public class Selection implements QueryComponent {
 			
 		return (float) total_score;
 	}
+	public static List<Pair<QueryStructure,Float>> selectionClauseEdit(QueryStructure I, QueryStructure S,Node ins, Node st) throws Exception
+	{
+		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
+		if(!ins.getOperator().equals(st.getOperator()))
+		{
+			QueryStructure temp = (QueryStructure)Utilities.copy(S);
+			temp.getLstSelectionConditions().remove(st);
+			Node n =  st;
+			n.setOperator(ins.getOperator());
+			temp.getLstSelectionConditions().add(n);
+			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+			tempCost.setFirst(temp);
+			tempCost.setSecond((float)1);
+			a.add(tempCost);
+		}
+		boolean tag=true;
+		if(ins.getLeft().getNodeType().equals(Node.getColRefType())){
+			if(!st.getLeft().getNodeType().equals(Node.getColRefType()))
+				tag=  false;
+			if(!ins.getLeft().getTable().getTableName().equals(st.getLeft().getTable().getTableName()))
+				tag=  false;
+
+			if(!ins.getLeft().getTableNameNo().equals(st.getLeft().getTableNameNo()))
+				tag=  false;
+			if(!ins.getLeft().getColumn().getColumnName().equals(st.getLeft().getColumn().getColumnName()))
+				tag=  false;
+		}
+		if(ins.getLeft().getNodeType().equals(Node.getValType())){
+			if(!st.getLeft().getNodeType().equals(Node.getValType()))
+				tag=   false;
+			if(!ins.getLeft().getStrConst().equals(st.getLeft().getStrConst()))
+				tag=  false;
+		}
+		if(!tag)  // left of ins not matched with left of st
+		{
+			QueryStructure temp = (QueryStructure)Utilities.copy(S);
+			temp.getLstSelectionConditions().remove(st);
+			Node n =  st;
+			n.setLeft(ins.getLeft());
+			temp.getLstSelectionConditions().add(n);
+			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+			tempCost.setFirst(temp);
+			tempCost.setSecond((float)1);
+			a.add(tempCost);
+		}
+		
+		tag=true;
+		if(ins.getRight().getNodeType().equals(Node.getColRefType())){
+
+			if(!st.getRight().getNodeType().equals(Node.getColRefType()))
+				tag=   false;
+
+			if(!ins.getRight().getTable().getTableName().equals(st.getRight().getTable().getTableName()))
+				tag=  false;
+
+			if(!ins.getRight().getTableNameNo().equals(st.getRight().getTableNameNo()))
+				tag=  false;
+
+			if(!ins.getRight().getColumn().getColumnName().equals(st.getRight().getColumn().getColumnName()))
+				tag=  false;
+		}
+
+		if(ins.getRight().getNodeType().equals(Node.getValType())){
+			if(!st.getRight().getNodeType().equals(Node.getValType()))
+				tag=   false;
+
+			if(!ins.getRight().getStrConst().equals(st.getRight().getStrConst()))
+				tag=  false;
+		}
+		if(!tag)  // right of ins not matched with right of st
+		{
+			QueryStructure temp = (QueryStructure)Utilities.copy(S);
+			temp.getLstSelectionConditions().remove(st);
+			Node n =  st;
+			n.setRight(ins.getRight());
+			temp.getLstSelectionConditions().add(n);
+			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
+			tempCost.setFirst(temp);
+			tempCost.setSecond((float)1);
+			a.add(tempCost);
+		}
+		return a;
+	}
 	public List<Pair<QueryStructure,Float>> edit(QueryStructure student, QueryStructure instructor) throws Exception {
 		List<Pair<QueryStructure,Float>> a = new ArrayList <Pair<QueryStructure,Float>>();
 		QueryStructure stu_not_matched = (QueryStructure)Utilities.copy(student);
@@ -94,14 +177,8 @@ public class Selection implements QueryComponent {
 		{
 			for(Node t: ins_not_matched.getLstSelectionConditions())
 			{
-				QueryStructure temp = (QueryStructure)Utilities.copy(student);
-				temp.getLstSelectionConditions().remove(st);
-				temp.getLstSelectionConditions().add(t);
-				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
-				tempCost.setFirst(temp);
-				tempCost.setSecond(3-NodeDiff(st,t));
-				a.add(tempCost);
-				
+				List<Pair<QueryStructure,Float>> tempCost = selectionClauseEdit(instructor,student,t,st);
+				a.addAll(tempCost);
 			}
 		}
 		return a;
