@@ -161,6 +161,10 @@ public class PartialMarker {
 	}
 	public static float totalNodes(QueryStructure instructorData)
 	{
+		if((instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty()))
+		{
+			return totalNodes(instructorData.leftQuery) + totalNodes(instructorData.rightQuery) + 1;
+		}
 		float whereSubQueryPredicate = weightOfSubquery(instructorData.getWhereClauseSubqueries());
 		float fromSubQueryPredicate = weightOfSubquery(instructorData.getFromClauseSubqueries());
 
@@ -175,13 +179,13 @@ public class PartialMarker {
 		if(instructorData.getQueryType().getType() != null)
 			uniqueSubQConnective=1;
 		float uniqueAggregates = instructorData.getLstAggregateList().size(); 
-		float uniqueSetOperators = instructorData.getLstSetOpetators().size();
+		//float uniqueSetOperators = instructorData.getLstSetOpetators().size();
 		float uniqueDistinct = 0;
 		if(instructorData.getIsDistinct()) uniqueDistinct = 1;
 		float orderByColumns = instructorData.getLstOrderByNodes().size();
 
 		float totalWeightage = uniquePredicates + uniqueRelations + uniqueProj + instructorJoin + uniqueGroupBy + uniqueHavingClause + uniqueSubQConnective;
-		totalWeightage += uniqueAggregates + uniqueSetOperators + uniqueDistinct + orderByColumns + whereSubQueryPredicate + fromSubQueryPredicate;
+		totalWeightage += uniqueAggregates + uniqueDistinct + orderByColumns + whereSubQueryPredicate + fromSubQueryPredicate;
 
 		//float WEIGHT = 100/ totalWeightage;
 		return totalWeightage;
@@ -312,8 +316,45 @@ public class PartialMarker {
 		return result;
 	}
 	
+	private float editScoreSetoperator(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
+	{
+		float marks=0;
+		boolean tag=false;
+		// both have set operator
+		if((Instructor.setOperator!=null&&!Instructor.setOperator.isEmpty()) && (Student.setOperator!=null&&!Student.setOperator.isEmpty()))
+		{
+			if(!Instructor.setOperator.toString().equalsIgnoreCase(Student.setOperator.toString()))
+			{
+				tag=true;
+				Student.setOperator=Instructor.setOperator;
+			}
+			if(Instructor.setOperator.toString().equalsIgnoreCase("EXCEPT"))
+			{
+				marks =  editScore(Instructor.leftQuery,Student.leftQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.rightQuery,totalNodes(Instructor.rightQuery),deductMarks);
+			}
+			else
+			{
+				float marks1 = editScore(Instructor.leftQuery,Student.leftQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.rightQuery,totalNodes(Instructor.rightQuery),deductMarks);
+				float marks2 = editScore(Instructor.leftQuery,Student.rightQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.leftQuery,totalNodes(Instructor.rightQuery),deductMarks);
+				marks=max(marks1,marks2);
+			}
+			if(tag) maxMarks-=deductMarks;
+		}
+		return marks;
+	}
+	
+	private float max(float marks1, float marks2) {
+		return marks1>marks2?marks1:marks2;
+	}
+
 	private float editScore(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
+		// If there exits set operator
+		if((Instructor.setOperator!=null&&!Instructor.setOperator.isEmpty())||(Student.setOperator!=null&&!Student.setOperator.isEmpty()))
+		{
+			return editScoreSetoperator(Instructor,Student,maxMarks,deductMarks);
+		}
+		
 		float old_marks = maxMarks;
 		QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(Instructor);
 		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
@@ -395,13 +436,20 @@ public class PartialMarker {
 		studentNoOrderBy.setLstOrderByNodes(this.InstructorQuery.getQueryStructure().getLstOrderByNodes());
 		studentNoOrderBy.setOrderByNodes(this.InstructorQuery.getQueryStructure().getOrderByNodes());
 		float totalNodes = totalNodes(instructorNoOrderBy);
-		float totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
+		float totalOrderByNodes = 0;
+		if(instructorNoOrderBy.getLstOrderByNodes()!=null)
+			 totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
 		float deduct=100/totalNodes;
 		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
 		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		studentOrderBy.setLstOrderByNodes(this.StudentQuery.getQueryStructure().getLstOrderByNodes());
-		float orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,totalOrderByNodes,1);
+		float orderByMarks = 0;
+		if(!((this.InstructorQuery.getQueryStructure().setOperator!=null&&!this.InstructorQuery.getQueryStructure().setOperator.isEmpty())||(this.StudentQuery.getQueryStructure().setOperator!=null&&!this.StudentQuery.getQueryStructure().setOperator.isEmpty())))
+		{
+			 orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,totalOrderByNodes,1);
+		}
+		
 		
 		float total_marks=getScaledMarks(totalNodes,totalOrderByNodes,originalMarks,orderByMarks,maxMarks);
 		
