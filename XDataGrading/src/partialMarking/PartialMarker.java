@@ -422,6 +422,7 @@ public class PartialMarker {
 		}
 		if(maxScore >= FULL_MARKS)
 			return normalizeNegativeValuesToZero(maxMarks - bestMatchCost*deductMarks);
+		if(bestMatchCost==0) return 0;
 		maxMarks = maxMarks - bestMatchCost*deductMarks;
 		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 	}
@@ -2437,7 +2438,7 @@ public class PartialMarker {
 
 		for(int j = index; j < total; j++){
 			temp.add(j);
-			generateCombinations(combinations, limit, total, temp, index + 1);
+			generateCombinations(combinations, limit, total, temp, (index + 1));
 			temp.remove(index);
 		}
 	}
