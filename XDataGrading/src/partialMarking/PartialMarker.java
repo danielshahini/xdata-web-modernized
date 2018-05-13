@@ -2427,20 +2427,34 @@ public class PartialMarker {
 			return false;
 		}
 	}
-
-	// Generates all the combinations
-	public static void generateCombinations(ArrayList<ArrayList<Integer>> combinations, int limit,  int total, ArrayList<Integer> temp, int index){
-		if(temp.size() == limit){
+	private static void generateCombinations_Util(ArrayList<ArrayList<Integer>> combinations, int limit,  int total, Vector<Integer> temp, Vector<Boolean> mask,int index){
+	
+		if(index == limit){
 			combinations.add(new ArrayList<Integer>(temp));
-			temp = new ArrayList<Integer>();
 			return;
 		}
 
-		for(int j = index; j < total; j++){
-			temp.add(j);
-			generateCombinations(combinations, limit, total, temp, (index + 1));
-			temp.remove(index);
+		for(int j = 0; j < total; j++){
+			if(!mask.elementAt(j))
+			{
+				temp.add(j);
+				mask.setElementAt(true, j);
+				generateCombinations_Util(combinations, limit, total, temp, mask,index+1);
+				temp.remove(temp.size()-1);
+				mask.setElementAt(false, j);
+			}
 		}
+		
+	}
+	
+	// Generates all the combinations
+	public static void generateCombinations(ArrayList<ArrayList<Integer>> combinations, int limit,  int total, ArrayList<Integer> temp, int index){
+		Vector<Boolean> mask = new Vector<Boolean> (total);
+		Vector<Integer> Temp = new Vector<Integer> ();
+		mask.setSize(total);
+		//Temp.setSize(limit);
+		Collections.fill(mask, Boolean.FALSE);
+		generateCombinations_Util(combinations,limit,total,Temp, mask,0);	
 	}
 
 	private void cleanup(){
