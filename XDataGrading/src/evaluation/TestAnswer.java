@@ -2664,7 +2664,7 @@ public class TestAnswer {
 		try{
 			float lateSub_factor=lateSubmission_penalizer(conn,assignmentId,questionId,course_id,user);
 			//System.out.println("fraction>>> "+ lateSub_factor);
-			if(isQueryPass){
+			if(false && isQueryPass){
 				logger.log(Level.INFO,"Question passed the datasets expected");
 				if(studRole==null || !studRole.equals("guest")){
 					String qryUpdate = "update xdata_student_queries set verifiedcorrect = true where assignment_id ='"+assignmentId+"' and question_id = '"+questionId+"' and rollnum = '"+user+"' and course_id='"+course_id+"'";
@@ -2692,6 +2692,20 @@ public class TestAnswer {
 						pstmt2.executeUpdate(); 
 					}
 				}
+				String studentQuery = "";
+				  try( PreparedStatement stmt1 = conn.prepareStatement("select * from xdata_student_queries where rollnum = ? and assignment_id = ? and question_id = ?");)
+				  {
+					   stmt1.setString(1, user);
+		   		       stmt1.setInt(2, assignmentId);
+		   		       stmt1.setInt(3, questionId);
+		   		       try(ResultSet  rs = stmt1.executeQuery();)
+		   		       {
+		   		    	   if(rs.next())
+		   		    		   studentQuery = rs.getString("querystring");
+		   		       }
+				  }
+	   		       
+	   		       
 				// Initiate partial marking
 				String qry = "select * from xdata_instructor_query where assignment_id = ? and question_id = ? and course_id= ?";
 				try(PreparedStatement pstmt = conn.prepareStatement(qry)){
@@ -2702,7 +2716,8 @@ public class TestAnswer {
 						while(rs.next()){	
 							int queryId = rs.getInt("query_id");
 							try{
-								PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,course_id,user,failedDataSets.getStudentQueryString());
+								//PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,course_id,user,failedDataSets.getStudentQueryString());
+								PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,course_id,user,studentQuery);
 								if(studRole==null || !studRole.equals("guest")){
 
 								}else{
