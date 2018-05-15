@@ -352,6 +352,33 @@ public class PartialMarker {
 		// If there exits set operator
 		if((Instructor.setOperator!=null&&!Instructor.setOperator.isEmpty())||(Student.setOperator!=null&&!Student.setOperator.isEmpty()))
 		{
+			//Only student has a set op
+			if(Instructor.setOperator==null || Instructor.setOperator.isEmpty())
+			{
+				if(! Student.setOperator.toString().equalsIgnoreCase("EXCEPT"))
+				{
+					float temp1= editScore(Instructor,Student.leftQuery,maxMarks,deductMarks)-totalNodes(Student.rightQuery)-1; //set op score is 1
+					float temp2=editScore(Instructor,Student.rightQuery,maxMarks,deductMarks)-totalNodes(Student.leftQuery)-1;
+					return max(temp1,temp2);
+				}
+				else
+				{
+					return editScore(Instructor,Student.leftQuery,maxMarks,deductMarks)-totalNodes(Student.rightQuery);
+				}
+			}
+			//Only instructor has a set op
+			else if(Student.setOperator==null || Student.setOperator.isEmpty())
+			{
+				if(! Instructor.setOperator.toString().equalsIgnoreCase("EXCEPT"))
+				{
+					float temp1= editScore(Instructor.leftQuery,Student,totalNodes(Instructor.leftQuery),deductMarks);
+					float temp2=editScore(Instructor.rightQuery,Student,totalNodes(Instructor.rightQuery),deductMarks);
+					return max(temp1,temp2);
+				}
+				else
+					return editScore(Instructor.leftQuery,Student,totalNodes(Instructor.leftQuery),deductMarks);
+			}
+			else
 			return editScoreSetoperator(Instructor,Student,maxMarks,deductMarks);
 		}
 		
@@ -436,6 +463,10 @@ public class PartialMarker {
 		QueryStructure studentNoOrderBy = (QueryStructure)Utilities.copy(this.StudentQuery.getQueryStructure());
 		studentNoOrderBy.setLstOrderByNodes(this.InstructorQuery.getQueryStructure().getLstOrderByNodes());
 		studentNoOrderBy.setOrderByNodes(this.InstructorQuery.getQueryStructure().getOrderByNodes());
+		if(studentNoOrderBy.getLstOrderByNodes()==null)
+			studentNoOrderBy.setLstOrderByNodes(new ArrayList<Node>());
+		if(studentNoOrderBy.getOrderByNodes()==null)
+			studentNoOrderBy.setOrderByNodes(new Vector<Node>());
 		float totalNodes = totalNodes(instructorNoOrderBy);
 		float totalOrderByNodes = 0;
 		if(instructorNoOrderBy.getLstOrderByNodes()!=null)
