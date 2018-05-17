@@ -150,6 +150,16 @@ public class PartialMarker {
 			//ex.printStackTrace();
 		}
 	}
+	private void handlingDistinctForSet(QueryStructure q)
+	{
+		if((q.setOperator!=null && !q.setOperator.isEmpty()))
+		{
+			q.leftQuery.setIsDistinct(false);
+			q.rightQuery.setIsDistinct(false);
+			handlingDistinctForSet(q.leftQuery);
+			handlingDistinctForSet(q.rightQuery);
+		}
+	}
 	private float getScaledMarks(float totalNodes,float totalOrderByNodes,float originalMarks,float orderByMarks,int maxMarks)
 	{
 		//float totalDeduct = (100 - originalMarks) + (100 - orderByMarks);
@@ -161,7 +171,7 @@ public class PartialMarker {
 	}
 	public static float totalNodes(QueryStructure instructorData)
 	{
-		if((instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty()))
+		if((instructorData.setOperator!=null && !instructorData.setOperator.isEmpty()))
 		{
 			return totalNodes(instructorData.leftQuery) + totalNodes(instructorData.rightQuery) + 1;
 		}
@@ -339,6 +349,7 @@ public class PartialMarker {
 				marks=max(marks1,marks2);
 			}
 			if(tag) maxMarks-=deductMarks;
+			else marks++;
 		}
 		return marks;
 	}
@@ -363,7 +374,7 @@ public class PartialMarker {
 				}
 				else
 				{
-					return editScore(Instructor,Student.leftQuery,maxMarks,deductMarks)-totalNodes(Student.rightQuery);
+					return editScore(Instructor,Student.leftQuery,maxMarks,deductMarks)-totalNodes(Student.rightQuery)-1;
 				}
 			}
 			//Only instructor has a set op
@@ -458,6 +469,8 @@ public class PartialMarker {
 	public MarkInfo getMarksForQueryStructures() throws Exception{
 
 		this.initialize();
+		handlingDistinctForSet(this.InstructorQuery.getQueryStructure());
+		handlingDistinctForSet(this.StudentQuery.getQueryStructure());
 		CanonicalizeQuery.Canonicalize(this.InstructorQuery.getQueryStructure());
 		QueryStructure instructorNoOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentNoOrderBy = (QueryStructure)Utilities.copy(this.StudentQuery.getQueryStructure());
@@ -970,7 +983,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				//score=score-0.5f;
+				score=score-1f;
 			}
 		}
 
@@ -1015,7 +1028,7 @@ public class PartialMarker {
 				{
 					if(leftover==true)
 						continue;
-					score-= 1.5;
+					score-= 3;
 				}
 				if(score > result){
 					result = score;
@@ -1064,7 +1077,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				score=score-1f;
 			}
 		}
 
@@ -1084,7 +1097,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				score=score-0.5f;
+				score=score-1f;
 			}
 		}		
 		return score;
@@ -1105,7 +1118,7 @@ public class PartialMarker {
 				score++;
 			}
 			else{
-				//score=score-0.5f;
+				score=score-1f;
 			}
 		}		
 		return score;

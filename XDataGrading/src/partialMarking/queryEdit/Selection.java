@@ -74,7 +74,7 @@ public class Selection implements QueryComponent {
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(S);
 			temp.getLstSelectionConditions().remove(st);
-			Node n =  st;
+			Node n =  (Node)Utilities.copy(st);
 			n.setOperator(ins.getOperator());
 			temp.getLstSelectionConditions().add(n);
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
@@ -104,7 +104,7 @@ public class Selection implements QueryComponent {
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(S);
 			temp.getLstSelectionConditions().remove(st);
-			Node n =  st;
+			Node n =  (Node)Utilities.copy(st);
 			n.setLeft(ins.getLeft());
 			temp.getLstSelectionConditions().add(n);
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
@@ -140,7 +140,7 @@ public class Selection implements QueryComponent {
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(S);
 			temp.getLstSelectionConditions().remove(st);
-			Node n =  st;
+			Node n =  (Node)Utilities.copy(st);
 			n.setRight(ins.getRight());
 			temp.getLstSelectionConditions().add(n);
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
