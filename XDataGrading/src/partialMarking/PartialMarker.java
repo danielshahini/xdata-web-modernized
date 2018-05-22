@@ -180,7 +180,11 @@ public class PartialMarker {
 
 		float uniquePredicates = instructorData.getLstSelectionConditions().size()*3;
 		float uniqueRelations = instructorData.getLstRelationInstances().size();
-		float uniqueProj = instructorData.getLstProjectedCols().size();
+		float uniqueProj = 0;
+		if(instructorData.getQueryType().getType() != null && (instructorData.getQueryType().getType().equalsIgnoreCase("EXISTS") || instructorData.getQueryType().getType().equalsIgnoreCase("NOT EXISTS"))) 
+			uniqueProj = 0;
+		else
+			uniqueProj = instructorData.getLstProjectedCols().size();
 		float instructorJoin = getJoinCount(instructorData)*3;
 		float uniqueGroupBy = instructorData.getLstGroupByNodes().size();
 		float uniqueHavingClause = instructorData.getLstHavingConditions().size();
@@ -2128,7 +2132,11 @@ public class PartialMarker {
 
 		float projectionScore = compareProjection(instructorData.getLstProjectedCols(), studentData.getLstProjectedCols());		
 		//projectionScore = instructorData.getIsDistinct() == studentData.getIsDistinct() ? projectionScore : projectionScore*0.9f;
-		float projectionScoreTotal = projectionScore * WEIGHT;				
+		float projectionScoreTotal = projectionScore * WEIGHT;		
+		
+		if(instructorData.getQueryType().getType() != null && (instructorData.getQueryType().getType().equalsIgnoreCase("EXISTS") || instructorData.getQueryType().getType().equalsIgnoreCase("NOT EXISTS")))
+			projectionScoreTotal = 0;
+		
 
 		float relationScore = compare(instructorData.getLstRelationInstances(), studentData.getLstRelationInstances());
 		float relationScoreTotal=relationScore * WEIGHT;
@@ -2364,8 +2372,10 @@ public class PartialMarker {
 				nodeCount += instructorData.getLstSelectionConditions().size()*3;
 			if(instructorData.getLstRelationInstances()!=null)
 			nodeCount += instructorData.getLstRelationInstances().size();
-			if(instructorData.getLstProjectedCols()!=null)
-			nodeCount += instructorData.getLstProjectedCols().size();
+			if(instructorData.getQueryType().getType() != null && (instructorData.getQueryType().getType().equalsIgnoreCase("EXISTS") || instructorData.getQueryType().getType().equalsIgnoreCase("NOT EXISTS")))
+				nodeCount+=0;
+			else if(instructorData.getLstProjectedCols()!=null)
+				nodeCount += instructorData.getLstProjectedCols().size();
 			nodeCount += getJoinCount(instructorData)*3;
 			if(instructorData.getLstGroupByNodes() != null)
 			nodeCount += instructorData.getLstGroupByNodes().size();

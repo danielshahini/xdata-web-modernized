@@ -8,13 +8,25 @@ import util.Pair;
 public class SingleEdit {
 	public static List<Pair<QueryStructure,Float> > single_edit(QueryStructure student, QueryStructure instructor) throws Exception
 	{
+		List<Pair<QueryStructure,Float>> projection_cond_deleted = new ArrayList<Pair<QueryStructure,Float>> ();
+		List<Pair<QueryStructure,Float>> projection_cond_added = new ArrayList<Pair<QueryStructure,Float>> ();
+		List<Pair<QueryStructure,Float>> projection_cond_edited = new ArrayList<Pair<QueryStructure,Float>> ();
 		List<Pair<QueryStructure,Float>> edited_query_structure = new ArrayList <Pair<QueryStructure,Float>>();
 		List<Pair<QueryStructure,Float>> selection_cond_deleted = new Selection().remove(student,instructor);
 		List<Pair<QueryStructure,Float>> selection_cond_added = new Selection().add(student,instructor);
 		List<Pair<QueryStructure,Float>> selection_cond_edited = new Selection().edit(student,instructor);
-		List<Pair<QueryStructure,Float>> projection_cond_deleted = new Projection().remove(student,instructor);
-		List<Pair<QueryStructure,Float>> projection_cond_added = new Projection().add(student,instructor);
-		List<Pair<QueryStructure,Float>> projection_cond_edited = new Projection().edit(student,instructor);
+		
+		if(student.getQueryType().getType() != null && (student.getQueryType().getType().equalsIgnoreCase("EXISTS") || student.getQueryType().getType().equalsIgnoreCase("NOT EXISTS")))
+		{
+			
+		}
+		else
+		{
+			projection_cond_deleted = new Projection().remove(student,instructor);
+			projection_cond_added = new Projection().add(student,instructor);
+			projection_cond_edited = new Projection().edit(student,instructor);
+		}
+		
 		List<Pair<QueryStructure,Float>> groupby_cond_deleted = new GroupBy().remove(student,instructor);
 		List<Pair<QueryStructure,Float>> groupby_cond_added = new GroupBy().add(student,instructor);
 		List<Pair<QueryStructure,Float>> groupby_cond_edited = new GroupBy().edit(student,instructor);

@@ -46,7 +46,7 @@ public abstract class DatasourceConnection {
         p.setMaxActive(200);
 		p.setMaxIdle(40);
 		p.setInitialSize(40);
-		p.setMaxWait(10000);
+		p.setMaxWait(10000000);
 		
 		// In seconds
 		p.setRemoveAbandonedTimeout(1200);

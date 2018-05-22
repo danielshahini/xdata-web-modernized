@@ -144,6 +144,7 @@ public class QueryStatus extends HttpServlet {
 					.println("<tr style='background: #E4E4E4; text-align: center;font-weight: bold;'>"
 							+ "<td>Name</td>"
 							+ "<td>Email</td>"
+							+ "<td>Roll Num</td>"
 							+ "<td style = 'width: 500px;'>Student Answer</td>"
 							+ "<td>Status</td>"
 							+ "<td>Score</td>"
@@ -157,7 +158,8 @@ public class QueryStatus extends HttpServlet {
 				if (rs.getString("verifiedcorrect") != null && !rs.getBoolean("verifiedcorrect")) {
 					out_assignment.println("<tr>" + "<td>"
 							+ rs.getString("user_name") + "</td>" + "<td>"
-							+ rs.getString("email") + "</td>"
+							+ rs.getString("email") + "</td>"+ "<td>"
+							+ rs.getString("rollnum") + "</td>"
 							+ "<td> <pre><code class=\"sql\">"
 							+ CommonFunctions.encodeHTML(CommonFunctions.decodeURIComponent(rs.getString("querystring")))
 							+ "</code></pre></td>" + "<td>" + "Wrong" + "</td>"
@@ -189,7 +191,8 @@ public class QueryStatus extends HttpServlet {
 				} else if(rs.getString("verifiedcorrect") != null && rs.getBoolean("verifiedcorrect")){
 					out_assignment.println("<tr>" + "<td>"
 							+ rs.getString("user_name") + "</td>" + "<td>"
-							+ rs.getString("email") + "</td>"
+							+ rs.getString("email") + "</td>"+ "<td>"
+							+ rs.getString("rollnum") + "</td>"
 							+ "<td> <pre><code class=\"sql\">"
 							+ rs.getString("querystring")
 							+ "</code></pre></td>" + "<td>" + "Correct"
@@ -206,7 +209,8 @@ public class QueryStatus extends HttpServlet {
 				else{
 					out_assignment.println("<tr>" + "<td>"
 							+ rs.getString("user_name") + "</td>" + "<td>"
-							+ rs.getString("email") + "</td>"
+							+ rs.getString("email") + "</td>" + "<td>"
+							+ rs.getString("rollnum") + "</td>"
 							+ "<td> <pre><code class=\"sql\">"
 							+ rs.getString("querystring")
 							+ "</code></pre></td>" + "<td>" + "Not Graded"
