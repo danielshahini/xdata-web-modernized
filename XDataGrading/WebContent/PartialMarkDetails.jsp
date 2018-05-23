@@ -335,7 +335,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       if(rs.next()){
    		    	   String data = rs.getString("markinfo");
    		    	   %>
-   		    	   <p> <h4>Marks: <label id = 'queryMarks'><%= rs.getFloat("score")%></label></h4> </p> 
+   		    	   <p> <h4>Marks: <label id = 'queryMarks'><%= rs.getFloat("xdata_score")%></label></h4> </p> 
    		    	    <h4>Feedback:</h4> <label id = 'queryFeedback'> <%= rs.getString("feedback")%></label>  
    		    	   <%
    		    	   if(data!= null && !data.isEmpty()){

@@ -43,10 +43,10 @@ public abstract class DatasourceConnection {
         p.setTimeBetweenEvictionRunsMillis(30000);
 
 		
-        p.setMaxActive(200);
+        p.setMaxActive(800);
 		p.setMaxIdle(40);
 		p.setInitialSize(40);
-		p.setMaxWait(10000000);
+		p.setMaxWait(Integer.MAX_VALUE);
 		
 		// In seconds
 		p.setRemoveAbandonedTimeout(1200);
