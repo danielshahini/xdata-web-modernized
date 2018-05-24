@@ -1009,8 +1009,14 @@ public class PartialMarker {
 	return score;*/
 	}
 
-	public static float SelectionScore(ArrayList<Node> master,ArrayList<Node> slave)
+	public static float SelectionScore(ArrayList<Node> master,ArrayList<Node> slave1)
 	{
+		ArrayList<Node> slave= new ArrayList<Node>();
+		for (Node dupWord : slave1) {
+		    if (!slave.contains(dupWord)) {
+		    	slave.add(dupWord);
+		    }
+		}
 		float score = 0;
 		float result=0;
 		int masterCount = master.size();		
