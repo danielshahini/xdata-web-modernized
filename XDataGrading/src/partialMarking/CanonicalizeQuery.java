@@ -45,6 +45,7 @@ public class CanonicalizeQuery {
 			canonicalizeHavingClause(queryStruct);
 			canonicalizeOrderBy(queryStruct);
 			canonicalizeDistinct(queryStruct);
+			canonicalizeCompositeNodes(queryStruct);
 			//EliminateRedundantRelation.EliminateRedundantRelations(queryData);		
 			queryStruct.reAdjustJoins();
 			
@@ -60,12 +61,36 @@ public class CanonicalizeQuery {
 	}
 	
 	
+	//Added by Ananyo
+		private static void canonicalizeCompositeNodes(QueryStructure qStruct)
+		{
+			for(Vector<Node> conds: qStruct.getDnfCond())
+			{
+				Node composite=conds.firstElement();
+				if(composite.getLeft() != null && composite.getLeft().getComponentNodes()!=null && composite.getLeft().getComponentNodes().size()>1)
+				{
+					for(int i=0;i<composite.getLeft().getComponentNodes().size();i++)
+					{
+						Node n=new Node();
+						n.setLeft(composite.getLeft().getComponentNodes().get(i));
+						n.setRight(composite.getRight().getComponentNodes().get(i));
+						n.setOperator(composite.getOperator());
+						if(! qStruct.getLstSelectionConditions().contains(n))
+						qStruct.getLstSelectionConditions().add(n);
+					}
+				}
+			}
+			qStruct.reAdjustJoins();
+		}
+	
 	/** Written by Mathew on 22 April 2016
 	 * 
 	 * transforms every join condition to a condition of the form
 	 *  Col1 <joinOp> Col2 
 	 * such that  Col1 lexicographically appears before Col2 
 	 */
+	
+	
 	private static void canonicalizeJoinConditions(QueryStructure qd){
 		if(qd != null && qd.getLstJoinConditions() != null){
 			ArrayList<Node> joinConditions = qd.getLstJoinConditions();
