@@ -12,6 +12,7 @@ import org.uncommons.maths.Maths;
 import com.google.gdata.data.threading.Total;
 import com.google.gson.Gson;
 import parsing.AggregateFunction;
+import parsing.ConjunctQueryStructure;
 import parsing.JoinClauseInfo;
 import parsing.Node;
 import util.MyConnection;
@@ -150,12 +151,64 @@ public class PartialMarker {
 			//ex.printStackTrace();
 		}
 	}
+	private void flattenFromClauseInnerJoin(QueryStructure q)
+	{
+		boolean isInner=true;
+		for(Node joinConds : q.getLstJoinConditions())
+		{
+			if(!joinConds.getJoinType().equalsIgnoreCase("INNER JOIN"))
+			{
+				isInner=false;
+				break;
+			}
+		}
+		if(isInner)
+		{
+			for(int i=0;i<q.getFromClauseSubqueries().size();i++)
+			{
+				QueryStructure temp = q.getFromClauseSubqueries().elementAt(i);
+				q.getLstSelectionConditions().addAll(temp.getLstSelectionConditions());
+				q.getLstRelationInstances().addAll(temp.getLstRelationInstances());
+				q.getLstJoinConditions().addAll(temp.getLstJoinConditions());
+				
+				for(Node t:temp.getLstJoinConditions())
+				{
+					for(ConjunctQueryStructure conjunctElements : q.getConjuncts())
+					{
+						if(!conjunctElements.getJoinCondsForEquivalenceClasses().contains(t))
+						{
+							conjunctElements.getJoinCondsForEquivalenceClasses().add(t);
+							conjunctElements.getEquivalenceClasses().removeAll(conjunctElements.getEquivalenceClasses());
+							conjunctElements.createEqClass();	
+						}
+					}
+				}
+				
+				Vector<Vector<Node>> NewEqClass=new Vector<Vector<Node>>();
+				for(ConjunctQueryStructure conjunctElements : q.getConjuncts())
+				{
+					for(Vector<Node> EqClasses: conjunctElements.getEquivalenceClasses())
+						NewEqClass.add(EqClasses);
+				}
+				//Changing the Equivalence Class (lstEqClasses) Each time
+				q.getLstEqClasses().removeAll(q.getLstEqClasses());
+				for(Vector<Node> EqClassElements : NewEqClass)
+				{
+					ArrayList<Node> EqClassArrayList = new ArrayList<Node>(EqClassElements);
+					q.getLstEqClasses().add(EqClassArrayList);
+				}
+			}
+			q.getFromClauseSubqueries().clear();
+		}
+	}
 	private void handlingDistinctForSet(QueryStructure q)
 	{
 		if((q.setOperator!=null && !q.setOperator.isEmpty()))
 		{
 			q.leftQuery.setIsDistinct(false);
 			q.rightQuery.setIsDistinct(false);
+			flattenFromClauseInnerJoin(q.leftQuery);
+			flattenFromClauseInnerJoin(q.rightQuery);
 			handlingDistinctForSet(q.leftQuery);
 			handlingDistinctForSet(q.rightQuery);
 		}
@@ -776,8 +829,10 @@ public class PartialMarker {
 	}
 
 	public static Boolean checkProjectionEquality(Node n1, Node n2){
-		if(n1.getNodeType().equals(Node.getAggrNodeType())){
+		if(n1.getNodeType().equals(Node.getAggrNodeType()) || n2.getNodeType().equals(Node.getAggrNodeType())){
 
+			if(!n1.getNodeType().equals(Node.getAggrNodeType()))
+				return false;
 			if(!n2.getNodeType().equals(Node.getAggrNodeType()))
 				return false;
 
