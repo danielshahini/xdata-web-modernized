@@ -44,7 +44,7 @@ public class GroupBy implements QueryComponent {
 				temp.getLstGroupByNodes().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.groupby);
 				a.add(tempCost);
 			}
 		}
@@ -62,7 +62,7 @@ public class GroupBy implements QueryComponent {
 				temp.getLstGroupByNodes().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.groupby);
 				a.add(tempCost);
 			}
 		}
@@ -81,7 +81,7 @@ public class GroupBy implements QueryComponent {
 				temp.getLstGroupByNodes().remove(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.groupby);
 				a.add(tempCost);
 			}	
 		}

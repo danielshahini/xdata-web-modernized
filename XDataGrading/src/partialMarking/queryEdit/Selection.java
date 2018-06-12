@@ -79,7 +79,7 @@ public class Selection implements QueryComponent {
 			temp.getLstSelectionConditions().add(n);
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 			tempCost.setFirst(temp);
-			tempCost.setSecond((float)1);
+			tempCost.setSecond((float)EditWeightConfig.selectOpertor);
 			a.add(tempCost);
 		}
 		boolean tag=true;
@@ -109,7 +109,7 @@ public class Selection implements QueryComponent {
 			temp.getLstSelectionConditions().add(n);
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 			tempCost.setFirst(temp);
-			tempCost.setSecond((float)1);
+			tempCost.setSecond((float)EditWeightConfig.selectLeft);
 			a.add(tempCost);
 		}
 		
@@ -145,7 +145,7 @@ public class Selection implements QueryComponent {
 			temp.getLstSelectionConditions().add(n);
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 			tempCost.setFirst(temp);
-			tempCost.setSecond((float)1);
+			tempCost.setSecond((float)EditWeightConfig.selectRight);
 			a.add(tempCost);
 		}
 		return a;
@@ -195,7 +195,7 @@ public class Selection implements QueryComponent {
 				temp.getLstSelectionConditions().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 3.0);
+				tempCost.setSecond((float) EditWeightConfig.selectOpertor + EditWeightConfig.selectRight + EditWeightConfig.selectLeft);
 				a.add(tempCost);
 			}
 		}
@@ -213,7 +213,7 @@ public class Selection implements QueryComponent {
 				temp.getLstSelectionConditions().remove(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 3.0);
+				tempCost.setSecond((float) EditWeightConfig.selectOpertor + EditWeightConfig.selectRight + EditWeightConfig.selectLeft);
 				a.add(tempCost);
 			}	
 		}

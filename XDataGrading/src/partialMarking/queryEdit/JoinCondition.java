@@ -47,7 +47,7 @@ public class JoinCondition implements QueryComponent {
 			
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 			tempCost.setFirst(temp);
-			tempCost.setSecond((float)1);
+			tempCost.setSecond((float)EditWeightConfig.joinOpertor);
 			a.add(tempCost);
 		}
 		boolean tag=true;
@@ -99,7 +99,7 @@ public class JoinCondition implements QueryComponent {
 			
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 			tempCost.setFirst(temp);
-			tempCost.setSecond((float)1);
+			tempCost.setSecond((float)EditWeightConfig.joinLeft);
 			a.add(tempCost);
 		}
 		
@@ -158,7 +158,7 @@ public class JoinCondition implements QueryComponent {
 			
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 			tempCost.setFirst(temp);
-			tempCost.setSecond((float)1);
+			tempCost.setSecond((float)EditWeightConfig.joinRight);
 			a.add(tempCost);
 		}
 		return a;
@@ -231,7 +231,7 @@ public class JoinCondition implements QueryComponent {
 				}
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 3.0);
+				tempCost.setSecond((float) EditWeightConfig.joinLeft+ EditWeightConfig.joinRight+EditWeightConfig.joinOpertor);
 				a.add(tempCost);
 			}
 		}
@@ -273,7 +273,7 @@ public class JoinCondition implements QueryComponent {
 				}
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 3.0);
+				tempCost.setSecond((float) EditWeightConfig.joinLeft+ EditWeightConfig.joinRight+EditWeightConfig.joinOpertor);
 				a.add(tempCost);
 			}	
 		}	

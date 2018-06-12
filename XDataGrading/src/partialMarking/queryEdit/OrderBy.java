@@ -60,7 +60,7 @@ public class OrderBy implements QueryComponent {
 					temp.getLstOrderByNodes().remove(st);
 					Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 					tempCost.setFirst(temp);
-					tempCost.setSecond((float) 1.0);
+					tempCost.setSecond((float) EditWeightConfig.orderby);
 					a.add(tempCost);
 				}
 			}
@@ -87,7 +87,7 @@ public class OrderBy implements QueryComponent {
 					temp.getLstOrderByNodes().add(i,t);
 					Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 					tempCost.setFirst(temp);
-					tempCost.setSecond((float) 1.0);
+					tempCost.setSecond((float) EditWeightConfig.orderby);
 					a.add(tempCost);
 					i++;
 				}
@@ -95,7 +95,7 @@ public class OrderBy implements QueryComponent {
 				temp.getLstOrderByNodes().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.orderby);
 				a.add(tempCost);
 			}
 		}
@@ -116,7 +116,7 @@ public class OrderBy implements QueryComponent {
 				temp.getLstOrderByNodes().remove(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.orderby);
 				a.add(tempCost);
 			}	
 		}
@@ -139,7 +139,7 @@ public class OrderBy implements QueryComponent {
 					temp1.getLstOrderByNodes().add(i,t);
 					Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 					tempCost.setFirst(temp);
-					tempCost.setSecond((float) 1.0);
+					tempCost.setSecond((float) EditWeightConfig.orderby);
 					a.add(tempCost);
 				}
 				i++;
@@ -150,7 +150,7 @@ public class OrderBy implements QueryComponent {
 				temp1.getLstOrderByNodes().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.orderby);
 				a.add(tempCost);
 			}
 			c++;

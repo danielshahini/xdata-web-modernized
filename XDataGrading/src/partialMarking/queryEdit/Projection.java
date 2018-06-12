@@ -43,7 +43,7 @@ public class Projection implements QueryComponent {
 				temp.getLstProjectedCols().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.projection);
 				a.add(tempCost);
 			}
 		}
@@ -61,7 +61,7 @@ public class Projection implements QueryComponent {
 				temp.getLstProjectedCols().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.projection);
 				a.add(tempCost);
 			}
 		}
@@ -79,7 +79,7 @@ public class Projection implements QueryComponent {
 				temp.getLstProjectedCols().remove(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.projection);
 				a.add(tempCost);
 			}	
 		}

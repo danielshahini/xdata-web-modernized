@@ -97,7 +97,7 @@ public class JoinRelation implements QueryComponent {
 				temp.getLstRelationInstances().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.relation);
 				a.add(tempCost);
 			}
 		}
@@ -117,7 +117,7 @@ public class JoinRelation implements QueryComponent {
 				temp.getLstRelationInstances().add(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.relation);
 				a.add(tempCost);;
 			}
 		}
@@ -135,7 +135,7 @@ public class JoinRelation implements QueryComponent {
 				temp.getLstRelationInstances().remove(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) 1.0);
+				tempCost.setSecond((float) EditWeightConfig.relation);
 				a.add(tempCost);
 			}	
 		}

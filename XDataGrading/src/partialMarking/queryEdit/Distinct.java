@@ -25,7 +25,7 @@ public class Distinct implements QueryComponent {
 			temp.setIsDistinct(true);
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 			tempCost.setFirst(temp);
-			tempCost.setSecond((float) 1.0);
+			tempCost.setSecond((float) EditWeightConfig.distinct);
 			a.add(tempCost);
 		}
 		return a;
@@ -41,7 +41,7 @@ public class Distinct implements QueryComponent {
 			temp.setIsDistinct(false);
 			Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 			tempCost.setFirst(temp);
-			tempCost.setSecond((float) 1.0);
+			tempCost.setSecond((float) EditWeightConfig.distinct);
 			a.add(tempCost);
 		}
 		return a;
