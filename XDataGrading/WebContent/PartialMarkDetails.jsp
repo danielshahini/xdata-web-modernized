@@ -353,7 +353,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	   		    	   }});
    		    	   }
    		       %>     		    
-   		        <fieldset>
+   		       <!--   <fieldset>
 				<legend>Partial Marking Details</legend> 
 		  		<div align = "left">
 		  		<%
@@ -451,7 +451,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<td><%//= listToString(q.StudentAggregates,q.InstructorAggregates)%></td>
 			  		<td><%//= listToString(q.InstructorAggregates,q.StudentAggregates)%></td>
 			  		</tr>
-			  		-->
+		
 			  		<%if(q.StudentSetOperators != null && q.StudentSetOperators.size() > 0
 			  			||( q.InstructorSetOperators != null && q.InstructorSetOperators.size() > 0)){ %>
 			  		<tr>
@@ -485,9 +485,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<%
 		  		}
 		  		%>
-		  		</div>
+		  		</div> -->
 		  		</fieldset></div>
-		  		</div>
+		  		</div> 
 		  		
 		  		
 		  		

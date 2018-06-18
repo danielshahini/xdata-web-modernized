@@ -79,7 +79,7 @@ public class Projection implements QueryComponent {
 				temp.getLstProjectedCols().remove(t);
 				Pair<QueryStructure,Float> tempCost= new Pair<QueryStructure,Float> ();
 				tempCost.setFirst(temp);
-				tempCost.setSecond((float) EditWeightConfig.projection);
+				tempCost.setSecond((float) EditWeightConfig.projection / 2);
 				a.add(tempCost);
 			}	
 		}

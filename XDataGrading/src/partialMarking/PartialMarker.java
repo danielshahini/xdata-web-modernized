@@ -731,7 +731,7 @@ public class PartialMarker {
 	public static float getJoinCount(QueryStructure masterData){
 		float score=0;
 		if(masterData.getLstJoinConditions()!=null)
-			score = masterData.getLstJoinConditions().size() + masterData.getNumberOfOuterJoins();
+			score = masterData.getLstJoinConditions().size() ;
 		return score;
 	}
 	// Calculates a score based on the relations involved in the join
