@@ -308,6 +308,81 @@ public class PartialMarker {
 		maxMarks = maxMarks - deductMarks;
 		return editOrderByScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 	}
+	private int All_Pair_whereclauseExhaustive(QueryStructure Instructor,QueryStructure Student,boolean isWhere) throws Exception
+	{
+		int num_edit = 0;
+		int result=10000;
+		Vector<QueryStructure> master,slave;
+		if(isWhere)
+		{
+			master = Instructor.getWhereClauseSubqueries();
+			slave = Student.getWhereClauseSubqueries();
+		}
+		else
+		{
+			master = Instructor.getFromClauseSubqueries();
+			slave = Student.getFromClauseSubqueries();
+		}
+		int masterCount = master.size();		
+		int slaveCount = slave.size();
+		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
+		
+		if(masterCount < slaveCount){	
+			Vector <Boolean> leftovers=new Vector<Boolean>(slaveCount);
+			leftovers.setSize(slaveCount);
+			generateCombinations(combinations, masterCount, slaveCount, new ArrayList<Integer>(), 0);
+			for(ArrayList<Integer> combination : combinations){
+				num_edit = 0;
+				Collections.fill(leftovers, Boolean.FALSE);
+				for(int i = 0; i < combination.size(); i++){	
+					float num_nodes=totalNodes(master.get(i));
+					float e = editScoreExhaustive(master.get(i), slave.get(combination.get(i)), num_nodes,1);
+					num_edit += (num_nodes-e);
+					leftovers.set(combination.get(i), true);
+				}
+				int count=-1;
+				for(Boolean leftover:leftovers)
+				{
+					count++;
+					if(leftover==true)
+						continue;
+					num_edit+= totalNodes(slave.get(count));
+				}
+				if(num_edit < result){
+					result = num_edit;
+				}
+			}
+			
+		} else {	
+			Vector <Boolean> leftovers=new Vector<Boolean>(masterCount);
+			leftovers.setSize(masterCount);
+			generateCombinations(combinations, slaveCount, masterCount, new ArrayList<Integer>(), 0);
+			for(ArrayList<Integer> combination : combinations){
+				num_edit = 0;
+				Collections.fill(leftovers, Boolean.FALSE);
+				for(int i = 0; i < combination.size(); i++){
+					float num_nodes=totalNodes(master.get(combination.get(i)));
+					float e = editScoreExhaustive(master.get(combination.get(i)), slave.get(i), num_nodes,1);
+					num_edit +=  (num_nodes-e);
+					leftovers.set(combination.get(i), true);
+				}
+				int count=-1;
+				for(Boolean leftover:leftovers)
+				{
+					count++;
+					if(leftover==true)
+						continue;
+					num_edit+= totalNodes(master.get(count));
+				}
+				if(num_edit < result){
+					result = num_edit;
+				}
+			}
+		}
+
+		return result;
+	}
+	
 	private int All_Pair_whereclause(QueryStructure Instructor,QueryStructure Student,boolean isWhere) throws Exception
 	{
 		int num_edit = 0;
@@ -410,7 +485,33 @@ public class PartialMarker {
 		}
 		return marks;
 	}
-	
+	private float editScoreSetoperatorExhaustive(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
+	{
+		float marks=0;
+		boolean tag=false;
+		// both have set operator
+		if((Instructor.setOperator!=null&&!Instructor.setOperator.isEmpty()) && (Student.setOperator!=null&&!Student.setOperator.isEmpty()))
+		{
+			if(!Instructor.setOperator.toString().equalsIgnoreCase(Student.setOperator.toString()))
+			{
+				tag=true;
+				Student.setOperator=Instructor.setOperator;
+			}
+			if(Instructor.setOperator.toString().equalsIgnoreCase("EXCEPT"))
+			{
+				marks =  editScoreExhaustive(Instructor.leftQuery,Student.leftQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.rightQuery,totalNodes(Instructor.rightQuery),deductMarks);
+			}
+			else
+			{
+				float marks1 = editScoreExhaustive(Instructor.leftQuery,Student.leftQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.rightQuery,totalNodes(Instructor.rightQuery),deductMarks);
+				float marks2 = editScoreExhaustive(Instructor.leftQuery,Student.rightQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.leftQuery,totalNodes(Instructor.rightQuery),deductMarks);
+				marks=max(marks1,marks2);
+			}
+			if(tag) maxMarks-=deductMarks;
+			else marks++;
+		}
+		return marks;
+	}
 	private float max(float marks1, float marks2) {
 		return marks1>marks2?marks1:marks2;
 	}
@@ -487,7 +588,7 @@ public class PartialMarker {
 		canonicalized_student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		Student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
-		System.out.println("Marks: "+ result.Marks);
+		//System.out.println("Marks: "+ result.Marks);
 		if(result.Marks >= FULL_MARKS)
 			return maxMarks;
 		if(maxMarks <= 0)
@@ -522,6 +623,106 @@ public class PartialMarker {
 		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 	}
 
+	private float editScoreExhaustive(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
+	{
+		// If there exits set operator
+		if((Instructor.setOperator!=null&&!Instructor.setOperator.isEmpty())||(Student.setOperator!=null&&!Student.setOperator.isEmpty()))
+		{
+			//Only student has a set op
+			if(Instructor.setOperator==null || Instructor.setOperator.isEmpty())
+			{
+				if(! Student.setOperator.toString().equalsIgnoreCase("EXCEPT"))
+				{
+					float temp1= editScoreExhaustive(Instructor,Student.leftQuery,maxMarks,deductMarks)-totalNodes(Student.rightQuery)-1; //set op score is 1
+					float temp2=editScoreExhaustive(Instructor,Student.rightQuery,maxMarks,deductMarks)-totalNodes(Student.leftQuery)-1;
+					return max(temp1,temp2);
+				}
+				else
+				{
+					return editScoreExhaustive(Instructor,Student.leftQuery,maxMarks,deductMarks)-totalNodes(Student.rightQuery)-1;
+				}
+			}
+			//Only instructor has a set op
+			else if(Student.setOperator==null || Student.setOperator.isEmpty())
+			{
+				if(! Instructor.setOperator.toString().equalsIgnoreCase("EXCEPT"))
+				{
+					float temp1= editScoreExhaustive(Instructor.leftQuery,Student,totalNodes(Instructor.leftQuery),deductMarks);
+					float temp2=editScoreExhaustive(Instructor.rightQuery,Student,totalNodes(Instructor.rightQuery),deductMarks);
+					return max(temp1,temp2);
+				}
+				else
+					return editScoreExhaustive(Instructor.leftQuery,Student,totalNodes(Instructor.leftQuery),deductMarks);
+			}
+			else
+			return editScoreSetoperatorExhaustive(Instructor,Student,maxMarks,deductMarks);
+		}
+		
+		float old_marks = maxMarks;
+		QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(Instructor);
+		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
+		FULL_MARKS=totalNodes(canonicalized_instructor);
+		QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(Student);
+		QueryStructure student_without_where_subq=(QueryStructure)Utilities.copy(Student);
+		CanonicalizeQuery.Canonicalize(canonicalized_student);
+		student_without_where_subq.setLstLstSubQConnectives (canonicalized_instructor.getLstSubQConnectives());
+		student_without_where_subq.getWhereClauseSubqueries().clear();
+		student_without_where_subq.getFromClauseSubqueries().clear();
+		student_without_where_subq.getWhereClauseSubqueries().addAll(canonicalized_instructor.getWhereClauseSubqueries());
+		student_without_where_subq.getFromClauseSubqueries().addAll(canonicalized_instructor.getFromClauseSubqueries());
+		CanonicalizeQuery.Canonicalize(student_without_where_subq);
+		if(calculateScore(canonicalized_instructor,student_without_where_subq , 0).Marks>= FULL_MARKS)
+		{
+			int numEdit=All_Pair_whereclauseExhaustive(canonicalized_instructor,Student,true);
+			maxMarks -= numEdit*deductMarks;
+			numEdit=All_Pair_whereclauseExhaustive(canonicalized_instructor,Student,false);
+			return maxMarks - numEdit*deductMarks;
+		}
+		if(canonicalized_student.getQueryType().getType() != null || canonicalized_instructor.getQueryType().getType() != null)
+		{
+			if(canonicalized_student.getQueryType().getType() != null)
+			{
+				if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
+					maxMarks -=deductMarks;
+				
+			}
+			else if(canonicalized_instructor.getQueryType().getType() != null)
+			{
+				if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
+					maxMarks -=deductMarks;
+			}
+		}
+		canonicalized_student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
+		Student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
+		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
+		//System.out.println("Marks: "+ result.Marks);
+		if(result.Marks >= FULL_MARKS)
+			return maxMarks;
+		if(maxMarks <= 0)
+			return 0;
+		List<Pair<QueryStructure,Float> > single_edit_student = SingleEdit.single_edit(Student, canonicalized_instructor);
+		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
+		float maxScore = 0;
+		BestMatch.setFirst(canonicalized_instructor);
+		BestMatch.setSecond(canonicalized_student);
+		// If mismatch occurs only in distinct/querytype part
+		if(single_edit_student.size()==0 && old_marks != maxMarks) 
+			return editScoreExhaustive(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
+		for(Pair<QueryStructure,Float> editedstudentqueries: single_edit_student)
+		{
+			float marks=editScoreExhaustive(editedstudentqueries.getFirst(),canonicalized_instructor,normalizeNegativeValuesToZero(maxMarks - editedstudentqueries.getSecond()*deductMarks),deductMarks);
+			if(marks>maxScore)
+				maxScore=marks;
+		}
+		
+		return maxScore;
+//		if(maxScore >= FULL_MARKS)
+//			return normalizeNegativeValuesToZero(maxMarks - bestMatchCost*deductMarks);
+//		if(bestMatchCost==0) return 0;
+//		maxMarks = maxMarks - bestMatchCost*deductMarks;
+//		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
+	}
+
 	// Returns the marks corresponding to the query of the student in comparison to the instructor query
 	public MarkInfo getMarksForQueryStructures() throws Exception{
 
@@ -542,7 +743,7 @@ public class PartialMarker {
 		if(instructorNoOrderBy.getLstOrderByNodes()!=null)
 			 totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
 		float deduct=100/totalNodes;
-		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
+		float originalMarks = editScoreExhaustive(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
 		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		studentOrderBy.setLstOrderByNodes(this.StudentQuery.getQueryStructure().getLstOrderByNodes());
