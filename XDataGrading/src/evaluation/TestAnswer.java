@@ -1811,6 +1811,8 @@ public class TestAnswer {
 						cvc.closeConn();	
 						try{
 							// Check for views in student query
+							int counter = 0;
+							int tot_time=0;
 							for(int i = 0 ; i < studentRollNums.size(); i++){
 								String rollnum = studentRollNums.get(i);
 								String query = studentQueries.get(i);
@@ -1818,10 +1820,22 @@ public class TestAnswer {
 									query=checkForViews(query,rollnum);
 								}//set updated query to student query
 								studentQueries.set(i,query);
-								System.out.println("Student No > "+i+" Roll No > "+rollnum);
-								tempgetMarkDetails(conn,rollnum,assignmentId,questionId,course_id,query,rollnum,false,100,0);
-								
+								long startTime = System.currentTimeMillis();
+								float studentMarks = tempgetMarkDetails(conn,rollnum,assignmentId,questionId,course_id,query,rollnum,false,100,0);
+								long endTime   = System.currentTimeMillis();
+								long totalTime = endTime - startTime;
+								if(studentMarks >0 && studentMarks<100)
+								{
+									System.out.println("Student No > "+counter+" Roll No > "+rollnum+" Marks> "+ studentMarks + " Time> "+ totalTime);
+									counter++;
+									tot_time+=totalTime;
+								}
+								if(counter>=10) 
+								{
+									break;
+								}
 							}
+							System.out.println("Total time> "+tot_time + " Avg time> " + (float)tot_time/counter);
 						}
 						catch(Exception e)
 						{
@@ -2639,7 +2653,7 @@ public class TestAnswer {
 		return 1-penalty;
 	}
 	
-	public void tempgetMarkDetails(Connection conn,String studRole, 
+	float  tempgetMarkDetails(Connection conn,String studRole, 
 			int assignmentId, int questionId,String course_id,String query,
 			String user,boolean isLateSubmission, int maxMarks,
 			float reduceLateSubmissionMarks) throws Exception
@@ -2705,7 +2719,7 @@ public class TestAnswer {
 		//TODO URGENT : SCHEMA CHANGE !!!!!
 		DatabaseHelper.InsertIntoScores(conn, assignmentId, questionId, 1, course_id, maxMarks, user, info, markInfo.Marks,raw_marks);
 	}
-
+	return  markInfo.Marks;
 }
 
 		

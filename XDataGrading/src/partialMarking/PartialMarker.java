@@ -98,6 +98,7 @@ public class PartialMarker {
 	public void setStudentQuery(String query){
 		this.studentId = query;
 	}
+	public static HashMap<String, Float> dp = new HashMap<>();
 
 	// Returns an instance of the partial marker
 	public PartialMarker(int assignmentId, int quesId, int queryId, String course_id, String rollNum){
@@ -625,6 +626,7 @@ public class PartialMarker {
 
 	private float editScoreExhaustive(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
+		if(dp.containsKey(Student.toString()) && dp.get(Student.toString())>=maxMarks) return dp.get(Student.toString());
 		// If there exits set operator
 		if((Instructor.setOperator!=null&&!Instructor.setOperator.isEmpty())||(Student.setOperator!=null&&!Student.setOperator.isEmpty()))
 		{
@@ -697,9 +699,16 @@ public class PartialMarker {
 		MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
 		//System.out.println("Marks: "+ result.Marks);
 		if(result.Marks >= FULL_MARKS)
+		{
+			dp.put(Student.toString(), maxMarks);
 			return maxMarks;
+		}
+			
 		if(maxMarks <= 0)
+		{
+			dp.put(Student.toString(), (float)0);
 			return 0;
+		}
 		List<Pair<QueryStructure,Float> > single_edit_student = SingleEdit.single_edit(Student, canonicalized_instructor);
 		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
 		float maxScore = 0;
@@ -710,11 +719,12 @@ public class PartialMarker {
 			return editScoreExhaustive(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 		for(Pair<QueryStructure,Float> editedstudentqueries: single_edit_student)
 		{
-			float marks=editScoreExhaustive(editedstudentqueries.getFirst(),canonicalized_instructor,normalizeNegativeValuesToZero(maxMarks - editedstudentqueries.getSecond()*deductMarks),deductMarks);
+			float marks=editScoreExhaustive(canonicalized_instructor,editedstudentqueries.getFirst(),normalizeNegativeValuesToZero(maxMarks - editedstudentqueries.getSecond()*deductMarks),deductMarks);
 			if(marks>maxScore)
 				maxScore=marks;
+			//if(maxScore >= FULL_MARKS) break;
 		}
-		
+		dp.put(Student.toString(), maxScore);
 		return maxScore;
 //		if(maxScore >= FULL_MARKS)
 //			return normalizeNegativeValuesToZero(maxMarks - bestMatchCost*deductMarks);
@@ -725,7 +735,7 @@ public class PartialMarker {
 
 	// Returns the marks corresponding to the query of the student in comparison to the instructor query
 	public MarkInfo getMarksForQueryStructures() throws Exception{
-
+		dp.clear();
 		this.initialize();
 		handlingDistinctForSet(this.InstructorQuery.getQueryStructure());
 		handlingDistinctForSet(this.StudentQuery.getQueryStructure());
@@ -743,7 +753,14 @@ public class PartialMarker {
 		if(instructorNoOrderBy.getLstOrderByNodes()!=null)
 			 totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
 		float deduct=100/totalNodes;
-		float originalMarks = editScoreExhaustive(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
+		
+		
+		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
+		
+		// To run the exhaustive version uncomment below and comment above
+		//float originalMarks = editScoreExhaustive(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
+
+		
 		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		studentOrderBy.setLstOrderByNodes(this.StudentQuery.getQueryStructure().getLstOrderByNodes());
