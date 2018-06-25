@@ -1820,22 +1820,24 @@ public class TestAnswer {
 									query=checkForViews(query,rollnum);
 								}//set updated query to student query
 								studentQueries.set(i,query);
-								long startTime = System.currentTimeMillis();
-								float studentMarks = tempgetMarkDetails(conn,rollnum,assignmentId,questionId,course_id,query,rollnum,false,100,0);
-								long endTime   = System.currentTimeMillis();
-								long totalTime = endTime - startTime;
-								if(studentMarks >0 && studentMarks<100)
-								{
-									System.out.println("Student No > "+counter+" Roll No > "+rollnum+" Marks> "+ studentMarks + " Time> "+ totalTime);
-									counter++;
-									tot_time+=totalTime;
-								}
-								if(counter>=10) 
-								{
-									break;
-								}
+								
+								// For the experiment
+//								long startTime = System.currentTimeMillis();
+//								float studentMarks = tempgetMarkDetails(conn,rollnum,assignmentId,questionId,course_id,query,rollnum,false,100,0);
+//								long endTime   = System.currentTimeMillis();
+//								long totalTime = endTime - startTime;
+//								if(studentMarks >0 && studentMarks<100)
+//								{
+//									System.out.println("Student No > "+counter+" Roll No > "+rollnum+" Marks> "+ studentMarks + " Time> "+ totalTime);
+//									counter++;
+//									tot_time+=totalTime;
+//								}
+//								if(counter>=10) 
+//								{
+//									break;
+//								}
 							}
-							System.out.println("Total time> "+tot_time + " Avg time> " + (float)tot_time/counter);
+//							System.out.println("Total time> "+tot_time + " Avg time> " + (float)tot_time/counter);
 						}
 						catch(Exception e)
 						{
@@ -1844,246 +1846,246 @@ public class TestAnswer {
 						}
 						
 						//For each instructor answer loop to compare datasets
-//						while(rs.next()){
-//
-//							boolean incorrect=false;
-//							Map <String,Vector<String>> resultPerStudentPerInstructorQuery =new HashMap<String,Vector<String>>();
-//							String sqlQuery=rs.getString("sql");
-//							queryId = rs.getInt("query_id");
-//							maxMarks = rs.getInt("marks");
-//							//FIXME we change the filepath to hold the query_id 
-//							filePath = filePath.substring(0,filePath.length()-1)+queryId;
-//							String instrQueryId = "A"+assignmentId +"Q"+questionId+"S"+queryId;
-//							instrQuery = sqlQuery;
-//							failedStudentRollNumList = new ArrayList<String>();
-//							passedStudentRollNumList = new ArrayList<String>();
-//							maxMarksPerInstrQueryMap.put(queryId,maxMarks);
-//							Vector <String> resultOnDataSet = new Vector<String>();
-//							Vector<String> dataSetIdListFailed = new Vector<String>(); 
-//							//Get default dataset for question - run all stud queries on that.
-//
-//							try{								
-//								if(defaultDSIdsPerQuestion != null){
-//									for(int dId= 0; dId < defaultDSIdsPerQuestion.length;dId++){
-//										Vector<String> cmismatch = new Vector<String>();
-//										
-//										logger.log(Level.FINE,"Default dataset "+defaultDSIdsPerQuestion[dId]+" Loaded : ");
-//										
-//
-//										String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id, defaultDSIdsPerQuestion[dId].toString());
-//										ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery
-//												(studentRollNums, studentQueries, instrQueryId, defaultDSIdsPerQuestion[dId].toString(), instrQuery, 
-//														"NoPath", orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,null);
-//
-//										//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
-//										//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList									
-//										for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){													 
-//											String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
-//											if(failedStudentRollNumList.contains(stdRoll)){
-//												processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
-//											}else{
-//												failedStudentRollNumList.add(stdRoll);
-//												fdvFailedList.get(fl).getDataSetIdList().add(fdvFailedList.get(fl).getDataSetId() );
-//												finalFailedDsList.add(fdvFailedList.get(fl));
-//											}
-//										}
-//									}
-//								}
-//								p.deleteAllTempTablesFromTestUser(testConn);								
-//							}catch(Exception e){
-//								logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
-//								e.printStackTrace();
-//							}
-//
-//							//Get default dataset for assignment - run all student queries on that
-//							try{
-//								if((defaultDSIdsPerQuestion == null || (defaultDSIdsPerQuestion != null && defaultDSIdsPerQuestion.length == 0))
-//										&&  defaultDSIdsAssignment != null){
-//
-//									for(int dId= 0; dId < defaultDSIdsAssignment.length;dId++){
-//										Vector<String> cmismatch = new Vector<String>();
-//										
-//										logger.log(Level.FINE,"Default dataset "+defaultDSIdsAssignment[dId]+" Loaded : ");
-//										
-//
-//										String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id,
-//												defaultDSIdsAssignment[dId].toString());
-//										ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery
-//												(studentRollNums, studentQueries, instrQueryId, defaultDSIdsAssignment[dId].toString(), instrQuery, 
-//														"NoPath", orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,null);
-//										//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
-//										//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList								
-//										for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){
-//											String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
-//											if(failedStudentRollNumList.contains(stdRoll)){
-//												processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
-//											}else{
-//												failedStudentRollNumList.add(stdRoll);
-//												fdvFailedList.get(fl).getDataSetIdList().add(fdvFailedList.get(fl).getDataSetId());
-//												finalFailedDsList.add(fdvFailedList.get(fl));
-//											}
-//										}
-//									}
-//									p.deleteAllTempTablesFromTestUser(testConn);
-//								}	
-//							}catch(Exception e){
-//								logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
-//								e.printStackTrace();
-//							}
-//							//Get generated datasets and loop on datasets.
-//							Map <Integer,Vector<String>>  datasetForQueryMap =	downloadDatasets(assignmentId,questionId,queryId,course_id,conn,filePath, false);
-//							//Even if no default data sets are there and no datasets are available for the query, , check against the sample Data file that the assignment uses.
-//
-//							for(Integer id : datasetForQueryMap.keySet()){
-//								Vector<String> datasets = datasetForQueryMap.get(id);
-//								for(int i=0;i<datasets.size();i++){
-//									boolean flag=true;
-//									//load the contents of DS
-//									String dsPath = Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasets.get(i);
-//									File ds=new File(dsPath);
-//									String copyFiles[] = ds.list();
-//									Vector<String> vs = new Vector<String>();
-//									for(int m=0;m<copyFiles.length;m++){
-//										vs.add(copyFiles[m]);
-//									}				 		
-//									// query output handling
-//									/*Pattern pattern = Pattern.compile("^A([0-9]+)Q[0-9]+");
-//									Matcher matcher = pattern.matcher(instrQueryId);
-//									int assignId = 1;
-//									if (matcher.find()) {
-//										assignId = Integer.parseInt(matcher.group(1));
-//									}*/
-//									//populate datasets for testing
-//									p.populateTestDataForTesting(vs, filePath+"/"+datasets.get(i), tm, testConn, assignmentId, questionId);
-//									Vector<String> cmismatch=new Vector<String>();
-//									//Check against the query	
-//									ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery(studentRollNums, studentQueries, instrQueryId, datasets.get(i), instrQuery, filePath, 
-//											orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,vs);
-//									//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
-//									//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList									
-//									for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){
-//										String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
-//										if(failedStudentRollNumList.contains(stdRoll)){
-//											processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
-//										}else{
-//											failedStudentRollNumList.add(stdRoll);	
-//											fdvFailedList.get(fl).getDataSetIdList().add(fdvFailedList.get(fl).getDataSetId());
-//											finalFailedDsList.add(fdvFailedList.get(fl));
-//										}
-//									}
-//								}
-//							}
-//							//Put failedStudentsRollNumList against the instructor_query_id
-//							instrQueryVsFailedStudentList.put(queryId,failedStudentRollNumList);	
-//							//Get passed student roll number list for that query
-//							for(String passedRollNum : studentRollNums){
-//								if(! failedStudentRollNumList.contains(passedRollNum)){
-//									//Add the roll num to passed student roll number
-//									passedStudentRollNumList.add(passedRollNum);
-//								}
-//							}
-//							instrQueryVsPassedStudentList.put(queryId,passedStudentRollNumList);
-//						}//End of Instructor queries loop 	
-//					}
-//				} 
-//				int cnt = 0 ;
-//				ArrayList<String> failedRollNum = new  ArrayList<String>();
-//				if(isMatchAll){
-//					//then update all students in FailedDsList as fail and calculate partial marks - update xdata_Student_queries table with updated data
-//					Iterator<Integer> it = instrQueryVsFailedStudentList.keySet().iterator();
-//					//Store the students who have failed against all the instructor queries. Even if student queries fails against one instructor query, one DataSet,
-//					//Query Fails as it is mathc All option
-//					ArrayList<String> allFailedIds = new  ArrayList<String>();
-//					while(it.hasNext()){
-//						int qry_id = (Integer)it.next();
-//						ArrayList<String> failedIds =  instrQueryVsFailedStudentList.get(qry_id);
-//						for(String fsId : failedIds){
-//							//Get partial marks for the students who have failed
-//							for(FailedDataSetValues fdFailed : finalFailedDsList){
-//								if(fdFailed.getStudentRollNo().equals(fsId)){
-//									if(!allFailedIds.contains(fsId)){
-//										allFailedIds.add(fsId);
-//									}
-//									fdFailed = getMarkDetails(conn, fdFailed, false, studRole, assignmentId, questionId, course_id, fdFailed.getStudentQueryString(), fsId, false,maxMarks, 
-//											reduceLateSubmissionMarks);
-//									//finalFailedDsList.add(fdFailed);
-//								}
-//							}	
-//						}
-//					}
-//					//All other students with roll nums other than the ones in the allFailedIds will have status as Passed
-//					//Passed students will have to send the maxmarks for the query in which they have passed. - If one instructor question has 2-3 answers each with different max marks, then this applies.
-//					Iterator<Integer> it1 = instrQueryVsPassedStudentList.keySet().iterator();				
-//					while(it1.hasNext()){
-//						int qry_id = (Integer)it1.next();
-//						ArrayList<String> passedIds = instrQueryVsPassedStudentList.get(qry_id);
-//						for(String psId : passedIds){
-//							if(! allFailedIds.contains(psId)){
-//								FailedDataSetValues passedDataSetObject = new FailedDataSetValues();
-//								passedDataSetObject.setStatus("Passed");
-//								//No failed datasets
-//								passedDataSetObject.setDataSetIdList(null);
-//								passedDataSetObject.setInstrQuery(instrQuery);								
-//								passedDataSetObject = getMarkDetails(conn, passedDataSetObject, true, studRole, assignmentId, questionId, course_id, instrQuery,psId, false,maxMarksPerInstrQueryMap.get(qry_id), 
-//										reduceLateSubmissionMarks);
-//
-//								for(FailedDataSetValues passedDS : finalFailedDsList){
-//									if(passedDataSetObject.getStudentRollNo().equalsIgnoreCase(passedDS.getStudentRollNo())){
-//										finalFailedDsList.add(passedDataSetObject);
-//									}
-//								}
-//							}
-//						}
-//					}
-//				}
-//				else{ // Match Any 
-//					//If the lists have common student Id, mark those students as FAILED, else mark them as Passed as they have passed atleast one answer					
-//					Iterator it = instrQueryVsFailedStudentList.keySet().iterator();				
-//					while(it.hasNext()){
-//
-//						if(cnt ==0){
-//							int qry_id = (Integer)it.next(); 
-//							failedRollNum = instrQueryVsFailedStudentList.get(qry_id);
-//						}
-//						//If there are more than one instructor query, find the students who have failed in all - intersection of all failed Students list
-//						if(it.hasNext()){
-//							ArrayList<String> failedRollNumNxt = instrQueryVsFailedStudentList.get(it.next());//2nd elmnt
-//							//RetainAll will give the elements that are common in both lists
-//							failedRollNum.retainAll(failedRollNumNxt);
-//							cnt++;
-//						}					
-//					}				
-//					//List failedRollnum will have the Student Id's that have failed all instuctor_queries  - calculate marks for the same
-//					for(String fdRoll: failedRollNum){
-//						for(FailedDataSetValues fdvs : finalFailedDsList){
-//							if(fdvs.getStudentRollNo().equalsIgnoreCase(fdRoll)){							    
-//								fdvs = getMarkDetails(conn, fdvs, false, studRole, assignmentId, questionId, course_id, fdvs.getStudentQueryString(), fdvs.getStudentRollNo(), false,maxMarks, 
-//										reduceLateSubmissionMarks);
-//								//finalFailedDsList.add(fdvs);
-//							}
-//						}
-//					}				
-//					//Loop through all passed students per query and set FailedDataSets Object - calculate marks - update the DB
-//					Iterator it1 = instrQueryVsPassedStudentList.keySet().iterator();				
-//					while(it1.hasNext()){
-//						int qry_id = (Integer)it1.next();
-//						ArrayList<String> passedIds = instrQueryVsPassedStudentList.get(qry_id);
-//						for(String psId : passedIds){
-//
-//							FailedDataSetValues passedDataSetObject = new FailedDataSetValues();
-//							passedDataSetObject.setStatus("Passed");
-//							//No failed datasets
-//							passedDataSetObject.setDataSetIdList(null);
-//							passedDataSetObject.setInstrQuery(instrQuery);								
-//							passedDataSetObject = getMarkDetails(conn, passedDataSetObject, true, studRole, assignmentId, questionId, course_id, instrQuery,psId, false,maxMarksPerInstrQueryMap.get(qry_id), 
-//									reduceLateSubmissionMarks);
-//
-//							for(FailedDataSetValues passedDS : finalFailedDsList){
-//								if(passedDataSetObject.getStudentRollNo().equalsIgnoreCase(passedDS.getStudentRollNo())){
-//									finalFailedDsList.add(passedDataSetObject);
-//								}
-//							}				
-//						}
+						while(rs.next()){
+
+							boolean incorrect=false;
+							Map <String,Vector<String>> resultPerStudentPerInstructorQuery =new HashMap<String,Vector<String>>();
+							String sqlQuery=rs.getString("sql");
+							queryId = rs.getInt("query_id");
+							maxMarks = rs.getInt("marks");
+							//FIXME we change the filepath to hold the query_id 
+							filePath = filePath.substring(0,filePath.length()-1)+queryId;
+							String instrQueryId = "A"+assignmentId +"Q"+questionId+"S"+queryId;
+							instrQuery = sqlQuery;
+							failedStudentRollNumList = new ArrayList<String>();
+							passedStudentRollNumList = new ArrayList<String>();
+							maxMarksPerInstrQueryMap.put(queryId,maxMarks);
+							Vector <String> resultOnDataSet = new Vector<String>();
+							Vector<String> dataSetIdListFailed = new Vector<String>(); 
+							//Get default dataset for question - run all stud queries on that.
+
+							try{								
+								if(defaultDSIdsPerQuestion != null){
+									for(int dId= 0; dId < defaultDSIdsPerQuestion.length;dId++){
+										Vector<String> cmismatch = new Vector<String>();
+										
+										logger.log(Level.FINE,"Default dataset "+defaultDSIdsPerQuestion[dId]+" Loaded : ");
+										
+
+										String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id, defaultDSIdsPerQuestion[dId].toString());
+										ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery
+												(studentRollNums, studentQueries, instrQueryId, defaultDSIdsPerQuestion[dId].toString(), instrQuery, 
+														"NoPath", orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,null);
+
+										//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
+										//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList									
+										for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){													 
+											String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
+											if(failedStudentRollNumList.contains(stdRoll)){
+												processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
+											}else{
+												failedStudentRollNumList.add(stdRoll);
+												fdvFailedList.get(fl).getDataSetIdList().add(fdvFailedList.get(fl).getDataSetId() );
+												finalFailedDsList.add(fdvFailedList.get(fl));
+											}
+										}
+									}
+								}
+								p.deleteAllTempTablesFromTestUser(testConn);								
+							}catch(Exception e){
+								logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
+								e.printStackTrace();
+							}
+
+							//Get default dataset for assignment - run all student queries on that
+							try{
+								if((defaultDSIdsPerQuestion == null || (defaultDSIdsPerQuestion != null && defaultDSIdsPerQuestion.length == 0))
+										&&  defaultDSIdsAssignment != null){
+
+									for(int dId= 0; dId < defaultDSIdsAssignment.length;dId++){
+										Vector<String> cmismatch = new Vector<String>();
+										
+										logger.log(Level.FINE,"Default dataset "+defaultDSIdsAssignment[dId]+" Loaded : ");
+										
+
+										String dsName = p.createTempTableWithDefaultData(conn,testConn,assignmentId,questionId,course_id,
+												defaultDSIdsAssignment[dId].toString());
+										ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery
+												(studentRollNums, studentQueries, instrQueryId, defaultDSIdsAssignment[dId].toString(), instrQuery, 
+														"NoPath", orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,null);
+										//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
+										//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList								
+										for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){
+											String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
+											if(failedStudentRollNumList.contains(stdRoll)){
+												processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
+											}else{
+												failedStudentRollNumList.add(stdRoll);
+												fdvFailedList.get(fl).getDataSetIdList().add(fdvFailedList.get(fl).getDataSetId());
+												finalFailedDsList.add(fdvFailedList.get(fl));
+											}
+										}
+									}
+									p.deleteAllTempTablesFromTestUser(testConn);
+								}	
+							}catch(Exception e){
+								logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
+								e.printStackTrace();
+							}
+							//Get generated datasets and loop on datasets.
+							Map <Integer,Vector<String>>  datasetForQueryMap =	downloadDatasets(assignmentId,questionId,queryId,course_id,conn,filePath, false);
+							//Even if no default data sets are there and no datasets are available for the query, , check against the sample Data file that the assignment uses.
+
+							for(Integer id : datasetForQueryMap.keySet()){
+								Vector<String> datasets = datasetForQueryMap.get(id);
+								for(int i=0;i<datasets.size();i++){
+									boolean flag=true;
+									//load the contents of DS
+									String dsPath = Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasets.get(i);
+									File ds=new File(dsPath);
+									String copyFiles[] = ds.list();
+									Vector<String> vs = new Vector<String>();
+									for(int m=0;m<copyFiles.length;m++){
+										vs.add(copyFiles[m]);
+									}				 		
+									// query output handling
+									/*Pattern pattern = Pattern.compile("^A([0-9]+)Q[0-9]+");
+									Matcher matcher = pattern.matcher(instrQueryId);
+									int assignId = 1;
+									if (matcher.find()) {
+										assignId = Integer.parseInt(matcher.group(1));
+									}*/
+									//populate datasets for testing
+									p.populateTestDataForTesting(vs, filePath+"/"+datasets.get(i), tm, testConn, assignmentId, questionId);
+									Vector<String> cmismatch=new Vector<String>();
+									//Check against the query	
+									ArrayList<FailedDataSetValues> fdvFailedList = newCheckAgainstOriginalQuery(studentRollNums, studentQueries, instrQueryId, datasets.get(i), instrQuery, filePath, 
+											orderIndependent, cmismatch, testConn, resultOnDataSet, assignmentId,questionId,course_id,conn,tm,vs);
+									//get the fdvList - get failed studentId List and if it is already there in the finalFailedStudentId list, update the datasets it has failed and result on dataset
+									//If the student ID is not there already, just add it to the failedStudentRollNumList and finalFailedDSList									
+									for(int fl = 0 ; fl< fdvFailedList.size() ; fl++){
+										String stdRoll = fdvFailedList.get(fl).getStudentRollNo();
+										if(failedStudentRollNumList.contains(stdRoll)){
+											processFailedDSList(fdvFailedList.get(fl), finalFailedDsList);
+										}else{
+											failedStudentRollNumList.add(stdRoll);	
+											fdvFailedList.get(fl).getDataSetIdList().add(fdvFailedList.get(fl).getDataSetId());
+											finalFailedDsList.add(fdvFailedList.get(fl));
+										}
+									}
+								}
+							}
+							//Put failedStudentsRollNumList against the instructor_query_id
+							instrQueryVsFailedStudentList.put(queryId,failedStudentRollNumList);	
+							//Get passed student roll number list for that query
+							for(String passedRollNum : studentRollNums){
+								if(! failedStudentRollNumList.contains(passedRollNum)){
+									//Add the roll num to passed student roll number
+									passedStudentRollNumList.add(passedRollNum);
+								}
+							}
+							instrQueryVsPassedStudentList.put(queryId,passedStudentRollNumList);
+						}//End of Instructor queries loop 	
+					}
+				} 
+				int cnt = 0 ;
+				ArrayList<String> failedRollNum = new  ArrayList<String>();
+				if(isMatchAll){
+					//then update all students in FailedDsList as fail and calculate partial marks - update xdata_Student_queries table with updated data
+					Iterator<Integer> it = instrQueryVsFailedStudentList.keySet().iterator();
+					//Store the students who have failed against all the instructor queries. Even if student queries fails against one instructor query, one DataSet,
+					//Query Fails as it is mathc All option
+					ArrayList<String> allFailedIds = new  ArrayList<String>();
+					while(it.hasNext()){
+						int qry_id = (Integer)it.next();
+						ArrayList<String> failedIds =  instrQueryVsFailedStudentList.get(qry_id);
+						for(String fsId : failedIds){
+							//Get partial marks for the students who have failed
+							for(FailedDataSetValues fdFailed : finalFailedDsList){
+								if(fdFailed.getStudentRollNo().equals(fsId)){
+									if(!allFailedIds.contains(fsId)){
+										allFailedIds.add(fsId);
+									}
+									fdFailed = getMarkDetails(conn, fdFailed, false, studRole, assignmentId, questionId, course_id, fdFailed.getStudentQueryString(), fsId, false,maxMarks, 
+											reduceLateSubmissionMarks);
+									//finalFailedDsList.add(fdFailed);
+								}
+							}	
+						}
+					}
+					//All other students with roll nums other than the ones in the allFailedIds will have status as Passed
+					//Passed students will have to send the maxmarks for the query in which they have passed. - If one instructor question has 2-3 answers each with different max marks, then this applies.
+					Iterator<Integer> it1 = instrQueryVsPassedStudentList.keySet().iterator();				
+					while(it1.hasNext()){
+						int qry_id = (Integer)it1.next();
+						ArrayList<String> passedIds = instrQueryVsPassedStudentList.get(qry_id);
+						for(String psId : passedIds){
+							if(! allFailedIds.contains(psId)){
+								FailedDataSetValues passedDataSetObject = new FailedDataSetValues();
+								passedDataSetObject.setStatus("Passed");
+								//No failed datasets
+								passedDataSetObject.setDataSetIdList(null);
+								passedDataSetObject.setInstrQuery(instrQuery);								
+								passedDataSetObject = getMarkDetails(conn, passedDataSetObject, true, studRole, assignmentId, questionId, course_id, instrQuery,psId, false,maxMarksPerInstrQueryMap.get(qry_id), 
+										reduceLateSubmissionMarks);
+
+								for(FailedDataSetValues passedDS : finalFailedDsList){
+									if(passedDataSetObject.getStudentRollNo().equalsIgnoreCase(passedDS.getStudentRollNo())){
+										finalFailedDsList.add(passedDataSetObject);
+									}
+								}
+							}
+						}
+					}
+				}
+				else{ // Match Any 
+					//If the lists have common student Id, mark those students as FAILED, else mark them as Passed as they have passed atleast one answer					
+					Iterator it = instrQueryVsFailedStudentList.keySet().iterator();				
+					while(it.hasNext()){
+
+						if(cnt ==0){
+							int qry_id = (Integer)it.next(); 
+							failedRollNum = instrQueryVsFailedStudentList.get(qry_id);
+						}
+						//If there are more than one instructor query, find the students who have failed in all - intersection of all failed Students list
+						if(it.hasNext()){
+							ArrayList<String> failedRollNumNxt = instrQueryVsFailedStudentList.get(it.next());//2nd elmnt
+							//RetainAll will give the elements that are common in both lists
+							failedRollNum.retainAll(failedRollNumNxt);
+							cnt++;
+						}					
+					}				
+					//List failedRollnum will have the Student Id's that have failed all instuctor_queries  - calculate marks for the same
+					for(String fdRoll: failedRollNum){
+						for(FailedDataSetValues fdvs : finalFailedDsList){
+							if(fdvs.getStudentRollNo().equalsIgnoreCase(fdRoll)){							    
+								fdvs = getMarkDetails(conn, fdvs, false, studRole, assignmentId, questionId, course_id, fdvs.getStudentQueryString(), fdvs.getStudentRollNo(), false,maxMarks, 
+										reduceLateSubmissionMarks);
+								//finalFailedDsList.add(fdvs);
+							}
+						}
+					}				
+					//Loop through all passed students per query and set FailedDataSets Object - calculate marks - update the DB
+					Iterator it1 = instrQueryVsPassedStudentList.keySet().iterator();				
+					while(it1.hasNext()){
+						int qry_id = (Integer)it1.next();
+						ArrayList<String> passedIds = instrQueryVsPassedStudentList.get(qry_id);
+						for(String psId : passedIds){
+
+							FailedDataSetValues passedDataSetObject = new FailedDataSetValues();
+							passedDataSetObject.setStatus("Passed");
+							//No failed datasets
+							passedDataSetObject.setDataSetIdList(null);
+							passedDataSetObject.setInstrQuery(instrQuery);								
+							passedDataSetObject = getMarkDetails(conn, passedDataSetObject, true, studRole, assignmentId, questionId, course_id, instrQuery,psId, false,maxMarksPerInstrQueryMap.get(qry_id), 
+									reduceLateSubmissionMarks);
+
+							for(FailedDataSetValues passedDS : finalFailedDsList){
+								if(passedDataSetObject.getStudentRollNo().equalsIgnoreCase(passedDS.getStudentRollNo())){
+									finalFailedDsList.add(passedDataSetObject);
+								}
+							}				
+						}
 					}
 				}//Match any else stmnt ends
 			}
@@ -2754,7 +2756,7 @@ public class TestAnswer {
 		try{
 			float lateSub_factor=lateSubmission_penalizer(conn,assignmentId,questionId,course_id,user);
 			//System.out.println("fraction>>> "+ lateSub_factor);
-			if(false && isQueryPass){
+			if(isQueryPass){
 				logger.log(Level.INFO,"Question passed the datasets expected");
 				if(studRole==null || !studRole.equals("guest")){
 					String qryUpdate = "update xdata_student_queries set verifiedcorrect = true where assignment_id ='"+assignmentId+"' and question_id = '"+questionId+"' and rollnum = '"+user+"' and course_id='"+course_id+"'";
