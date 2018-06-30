@@ -11,42 +11,6 @@ import com.google.gson.reflect.TypeToken;
 
 import util.*;
 
-/*class CallableProcess implements Callable {
-    private Process p;
-    private String filePath="";
-    private String cvcFileName="";
-
-    public CallableProcess(Process pr){
-    	p=pr;
-    }
-    public  CallableProcess(String fp,String fileName) {
-    	filePath = fp;
-    	cvcFileName = fileName;
-       // p = process;
-    }
-
-    public Integer call() throws Exception {
-    	  //Executing the CVC file generated for given query
-		Runtime r = Runtime.getRuntime();
-		Process myProcess = r.exec(Configuration.smtsolver+" "+Configuration.homeDir+"/temp_cvc"+filePath+"/" + cvcFileName);
-		int ch;
-	    InputStreamReader myIStreamReader = new InputStreamReader(myProcess.getInputStream());
-
-		//Writing output to .out file
-		BufferedWriter out = new BufferedWriter(new FileWriter(Configuration.homeDir+"/temp_cvc"+filePath+"/" + cvcFileName.substring(0,cvcFileName.lastIndexOf(".cvc")) + ".out"));
-
-		while ((ch = myIStreamReader.read()) != -1) 
-		{ 
-			out.write((char)ch); 
-		} 	
-		Utilities.closeProcessStreams(myProcess);
-
-		out.close(); 
-
-		return myProcess.waitFor();
-    }
-}*/
-
 public class PopulateTestDataGrading {
 
 	private static Logger logger = Logger.getLogger(PopulateTestDataGrading.class.getName());
