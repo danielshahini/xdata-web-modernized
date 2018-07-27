@@ -131,13 +131,22 @@
 		}else if($('#enddatetimepicker').val() === ''){
 			alert("Select deadline date");
 			return false;
-		}else if($('#assignmentName').val() === ''){
+		}
+		else if($('#enddatetimepicker').val()< $('#startdatetimepicker').val()){
+			alert("Select End Time greater than Start Time");
+			return false;
+		}
+		else if($('#assignmentName').val() === ''){
 			alert("Please enter name of the assignment");
 			return false;
 		}
 		else if($('#softdeadlineselectid').is(':checked') && $('#softdatetimepicker').val() === '')
 		{
 			alert("Select hard deadline date");
+			return false;
+		}
+		else if($('#softdeadlineselectid').is(':checked') && $('#softdatetimepicker').val()< $('#enddatetimepicker').val()){
+			alert("Select Hard Deadline time greater than End Time");
 			return false;
 		}
 		else{
