@@ -340,7 +340,7 @@ public class TestUploadedFile extends HttpServlet {
 				// in order to not execute empty statements  
 				if (!inst[j].trim().equals("")) {
 					
-					String temp = inst[j].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create temporary table ");
+					String temp = inst[j].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
 					if(temp.contains("drop table") || temp.contains("alter database") || temp.contains("delete from")
 							|| temp.contains("alter user") || temp.contains("alter password") || temp.contains("alter login")
 							|| temp.contains("alter ")){

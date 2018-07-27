@@ -334,7 +334,9 @@ public class StudentTestCase extends HttpServlet {
 						     Map<String, ArrayList<String>> studDataFailed = failedDSValues.getStudentQueryOutput().get(dataSetId);
 						     Iterator it = studDataFailed.keySet().iterator();
 						     while(it.hasNext()){ 
-						    	 out_assignment.println("<th>"+ (String)it.next()+"</th>");			    	 
+						    	 String colName=it.next().toString();
+						    	 out_assignment.println("<th>"+ colName+"</th>");	
+						    	 
 						     }
 						     out_assignment.println("</tr>");
 						     it = studDataFailed.keySet().iterator();
@@ -374,7 +376,8 @@ public class StudentTestCase extends HttpServlet {
 						     Map<String, ArrayList<String>> instrDataFailed = failedDSValues.getInstrQueryOutput().get(dataSetId);
 						     Iterator it1 = instrDataFailed.keySet().iterator();
 						     while(it1.hasNext()){ 
-						    	 out_assignment.println("<th>"+ (String)it1.next()+"</th>");			    	 
+						    	 String colName=it1.next().toString();
+						    	 out_assignment.println("<th>"+ colName+"</th>");			    	 
 						     }
 						     out_assignment.println("</tr>");
 						     it1 = instrDataFailed.keySet().iterator();

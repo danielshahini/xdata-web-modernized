@@ -27,7 +27,7 @@ import util.Pair;
 import util.Utilities;
 
 public class PartialMarker {
-	
+
 	private static Logger logger = Logger.getLogger(PartialMarker.class.getName());
 	private float  FULL_MARKS = 100;
 	// The unique identifier of the assignment
@@ -171,7 +171,7 @@ public class PartialMarker {
 				q.getLstSelectionConditions().addAll(temp.getLstSelectionConditions());
 				q.getLstRelationInstances().addAll(temp.getLstRelationInstances());
 				q.getLstJoinConditions().addAll(temp.getLstJoinConditions());
-				
+
 				for(Node t:temp.getLstJoinConditions())
 				{
 					for(ConjunctQueryStructure conjunctElements : q.getConjuncts())
@@ -184,7 +184,7 @@ public class PartialMarker {
 						}
 					}
 				}
-				
+
 				Vector<Vector<Node>> NewEqClass=new Vector<Vector<Node>>();
 				for(ConjunctQueryStructure conjunctElements : q.getConjuncts())
 				{
@@ -218,8 +218,8 @@ public class PartialMarker {
 	{
 		//float totalDeduct = (100 - originalMarks) + (100 - orderByMarks);
 		float ans = originalMarks + orderByMarks;
-//		float ans= originalMarks*(totalNodes-totalOrderByNodes)/totalNodes ;
-//		ans+=orderByMarks*(totalOrderByNodes)/totalNodes;
+		//		float ans= originalMarks*(totalNodes-totalOrderByNodes)/totalNodes ;
+		//		ans+=orderByMarks*(totalOrderByNodes)/totalNodes;
 		ans=(ans*maxMarks)/totalNodes;
 		return ans;
 	}
@@ -288,7 +288,7 @@ public class PartialMarker {
 		{
 			edited_query_structure.add(t);
 		}
-		
+
 		Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
 		float maxScore = 0;
 
@@ -327,7 +327,7 @@ public class PartialMarker {
 		int masterCount = master.size();		
 		int slaveCount = slave.size();
 		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
-		
+
 		if(masterCount < slaveCount){	
 			Vector <Boolean> leftovers=new Vector<Boolean>(slaveCount);
 			leftovers.setSize(slaveCount);
@@ -353,7 +353,7 @@ public class PartialMarker {
 					result = num_edit;
 				}
 			}
-			
+
 		} else {	
 			Vector <Boolean> leftovers=new Vector<Boolean>(masterCount);
 			leftovers.setSize(masterCount);
@@ -383,7 +383,7 @@ public class PartialMarker {
 
 		return result;
 	}
-	
+
 	private int All_Pair_whereclause(QueryStructure Instructor,QueryStructure Student,boolean isWhere) throws Exception
 	{
 		int num_edit = 0;
@@ -402,7 +402,7 @@ public class PartialMarker {
 		int masterCount = master.size();		
 		int slaveCount = slave.size();
 		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
-		
+
 		if(masterCount < slaveCount){	
 			Vector <Boolean> leftovers=new Vector<Boolean>(slaveCount);
 			leftovers.setSize(slaveCount);
@@ -428,7 +428,7 @@ public class PartialMarker {
 					result = num_edit;
 				}
 			}
-			
+
 		} else {	
 			Vector <Boolean> leftovers=new Vector<Boolean>(masterCount);
 			leftovers.setSize(masterCount);
@@ -458,7 +458,7 @@ public class PartialMarker {
 
 		return result;
 	}
-	
+
 	private float editScoreSetoperator(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
 		float marks=0;
@@ -549,9 +549,9 @@ public class PartialMarker {
 					return editScore(Instructor.leftQuery,Student,totalNodes(Instructor.leftQuery),deductMarks);
 			}
 			else
-			return editScoreSetoperator(Instructor,Student,maxMarks,deductMarks);
+				return editScoreSetoperator(Instructor,Student,maxMarks,deductMarks);
 		}
-		
+
 		float old_marks = maxMarks;
 		QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(Instructor);
 		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
@@ -578,7 +578,7 @@ public class PartialMarker {
 			{
 				if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
 					maxMarks -=deductMarks;
-				
+
 			}
 			else if(canonicalized_instructor.getQueryType().getType() != null)
 			{
@@ -602,7 +602,7 @@ public class PartialMarker {
 		// If mismatch occurs only in distinct/querytype part
 		if(single_edit_student.size()==0 && old_marks != maxMarks) 
 			return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
-		
+
 		float bestMatchCost=0;
 		for(Pair<QueryStructure,Float> editedstudentqueries: single_edit_student)
 		{
@@ -657,9 +657,9 @@ public class PartialMarker {
 					return editScoreExhaustive(Instructor.leftQuery,Student,totalNodes(Instructor.leftQuery),deductMarks);
 			}
 			else
-			return editScoreSetoperatorExhaustive(Instructor,Student,maxMarks,deductMarks);
+				return editScoreSetoperatorExhaustive(Instructor,Student,maxMarks,deductMarks);
 		}
-		
+
 		float old_marks = maxMarks;
 		QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(Instructor);
 		CanonicalizeQuery.Canonicalize(canonicalized_instructor);
@@ -686,7 +686,7 @@ public class PartialMarker {
 			{
 				if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
 					maxMarks -=deductMarks;
-				
+
 			}
 			else if(canonicalized_instructor.getQueryType().getType() != null)
 			{
@@ -703,7 +703,7 @@ public class PartialMarker {
 			dp.put(Student.toString(), maxMarks);
 			return maxMarks;
 		}
-			
+
 		if(maxMarks <= 0)
 		{
 			dp.put(Student.toString(), (float)0);
@@ -726,11 +726,11 @@ public class PartialMarker {
 		}
 		dp.put(Student.toString(), maxScore);
 		return maxScore;
-//		if(maxScore >= FULL_MARKS)
-//			return normalizeNegativeValuesToZero(maxMarks - bestMatchCost*deductMarks);
-//		if(bestMatchCost==0) return 0;
-//		maxMarks = maxMarks - bestMatchCost*deductMarks;
-//		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
+		//		if(maxScore >= FULL_MARKS)
+		//			return normalizeNegativeValuesToZero(maxMarks - bestMatchCost*deductMarks);
+		//		if(bestMatchCost==0) return 0;
+		//		maxMarks = maxMarks - bestMatchCost*deductMarks;
+		//		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 	}
 
 	// Returns the marks corresponding to the query of the student in comparison to the instructor query
@@ -751,28 +751,28 @@ public class PartialMarker {
 		float totalNodes = totalNodes(instructorNoOrderBy);
 		float totalOrderByNodes = 0;
 		if(instructorNoOrderBy.getLstOrderByNodes()!=null)
-			 totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
+			totalOrderByNodes = instructorNoOrderBy.getLstOrderByNodes().size();
 		float deduct=100/totalNodes;
-		
-		
+
+
 		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
-		
+
 		// To run the exhaustive version uncomment below and comment above
 		//float originalMarks = editScoreExhaustive(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
 
-		
+
 		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		QueryStructure studentOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
 		studentOrderBy.setLstOrderByNodes(this.StudentQuery.getQueryStructure().getLstOrderByNodes());
 		float orderByMarks = 0;
 		if(!((this.InstructorQuery.getQueryStructure().setOperator!=null&&!this.InstructorQuery.getQueryStructure().setOperator.isEmpty())||(this.StudentQuery.getQueryStructure().setOperator!=null&&!this.StudentQuery.getQueryStructure().setOperator.isEmpty())))
 		{
-			 orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,totalOrderByNodes,1);
+			orderByMarks = editOrderByScore(instructorOrderBy,studentOrderBy,totalOrderByNodes,1);
 		}
-		
-		
+
+
 		float total_marks=getScaledMarks(totalNodes,totalOrderByNodes,originalMarks,orderByMarks,maxMarks);
-		
+
 		// Canonicalizing the queries
 		CanonicalizeQuery.Canonicalize(this.StudentQuery.getQueryStructure());
 
@@ -798,80 +798,10 @@ public class PartialMarker {
 		}
 		else
 			result.Marks = mainQueryScore/maxMainQueryScore * PartialMarker.maxMarks ;
-			result.Marks = result.Marks<result.Configuration.maxPartialMarks?result.Marks:result.Configuration.maxPartialMarks;
+		result.Marks = result.Marks<result.Configuration.maxPartialMarks?result.Marks:result.Configuration.maxPartialMarks;
 		//System.out.println("Computed Marks="+result.Marks+ " student score="+studentQueryScore +" mainqueryScore="+maxMainQueryScore);
 		result.Marks = total_marks;
 		return result;
-	}
-
-
-	public static void main(String args[]) throws Exception{		
-		//Connection conn = MyConnection.getExistingDatabaseConnection();
-		try(Connection conn = MyConnection.getDatabaseConnection()){
-
-			String instructorQuery=" SELECT distinct time_slot.day FROM teaches, section, time_slot where teaches.course_id=section.course_id AND teaches.semester=section.semester AND teaches.year=section.year AND teaches.sec_id=section.sec_id AND section.time_slot_id= time_slot.time_slot_id AND section.semester='Fall' AND section.year='2009' and teaches.id='22222'";
-			String studentAnswer="select time_slot.time_slot_id FROM teaches, section, time_slot where teaches.course_id=section.course_id AND teaches.semester=section.semester AND teaches.year=section.year AND teaches.sec_id=section.sec_id AND section.time_slot_id= time_slot.time_slot_id AND section.semester='Fall' AND section.year='2009' and teaches.id='22222'";
-			String courseId = "CS632";
-			int assignmentId =11;
-			int questionId = 1;
-			String rollnum = "09005027";
-			int queryId = 1;		
-			int maxMarks = 100;
-			String oldQueryId = "A" + assignmentId + "Q" + questionId + "S" + queryId;
-			String desc = "DUMMY";
-
-			insertIntoQinfo(courseId, assignmentId, questionId, queryId, instructorQuery, desc, maxMarks, maxMarks);
-
-			//WriteFileAndUploadDatasets.updateQueryInfo(new GenerateDataset_new(""), assignmentId, questionId, queryId, instructorQuery, "Find, for each course, the number of distinct students who have taken the course");
-
-			try(PreparedStatement stmt = conn.prepareStatement("select * from xdata_student_queries where assignment_id = ? and question_id = ? and rollnum = ?")){
-				stmt.setInt(1, assignmentId);
-				stmt.setInt(2, questionId);
-				stmt.setString(3, rollnum);
-				try(ResultSet rs = stmt.executeQuery()){
-
-					if(!rs.next()){		
-						String insertquery = "INSERT INTO xdata_student_queries (dbid, queryid, rollnum, querystring, assignment_id, question_id,course_id) VALUES (?,?,?,?,?,?,?)";			
-						try(PreparedStatement stmt1 = conn.prepareStatement(insertquery)){
-							stmt1.setString(1, "d1");
-							stmt1.setString(2, oldQueryId);
-							stmt1.setString(3, rollnum);
-							stmt1.setString(4, studentAnswer);
-							stmt1.setInt(5, assignmentId);
-							stmt1.setInt(6, questionId);
-							stmt1.setString(7,courseId);
-							stmt1.executeUpdate();
-						}
-					} else {
-						try(PreparedStatement stmt1 = conn.prepareStatement("update xdata_student_queries set querystring = ? where assignment_id = ? and question_id = ? and rollnum = ? and course_id=?")){
-							stmt1.setString(1, studentAnswer);
-							stmt1.setInt(2, assignmentId);
-							stmt1.setInt(3, questionId);
-							stmt1.setString(4, rollnum);			
-							stmt1.setString(5,courseId);
-							stmt1.executeUpdate();
-						}
-					}
-				}	
-
-				PartialMarker part = new PartialMarker(assignmentId, questionId, queryId, courseId, rollnum);
-				//MarkInfo result = part.getMarks(); commented and line following added by mathew on 19 oct 2016
-				MarkInfo result = part.getMarksForQueryStructures();
-				Gson gson = new Gson();
-				String json = gson.toJson(result);
-				String updateScoreQuery = "update xdata_student_queries set score = ?,markinfo=?,max_marks=? where assignment_id=? and question_id=? and rollnum=?";
-				try(PreparedStatement ps = conn.prepareStatement(updateScoreQuery)){
-					ps.setFloat(1, result.Marks);
-					ps.setString(2, json);
-					ps.setInt(3, maxMarks);
-					ps.setFloat(4, assignmentId);
-					ps.setInt(5,questionId);
-					ps.setString(6, rollnum);
-					ps.executeUpdate();
-				}
-
-			}
-		}
 	}
 
 	private static void insertIntoQinfo(String courseId, int asId, int qId, int queryId, String query, String desc, int maxMarks, int marks) throws Exception{		
@@ -957,7 +887,7 @@ public class PartialMarker {
 	public static float getJoinScore(QueryStructure masterData, QueryStructure slaveData){
 		float score = SelectionScore(masterData.getLstJoinConditions(), slaveData.getLstJoinConditions());
 
-	    score = masterData.getNumberOfOuterJoins() == slaveData.getNumberOfOuterJoins() ? score + masterData.getNumberOfOuterJoins() : score - 0.5f;
+		score = masterData.getNumberOfOuterJoins() == slaveData.getNumberOfOuterJoins() ? score + masterData.getNumberOfOuterJoins() : score - 0.5f;
 		//score = masterData.getNumberOfInnerJoins() == slaveData.getNumberOfInnerJoins() ? score + masterData.getNumberOfInnerJoins() : score - 0.5f;
 
 		return score;
@@ -1286,16 +1216,16 @@ public class PartialMarker {
 	{
 		ArrayList<Node> slave= new ArrayList<Node>();
 		for (Node dupWord : slave1) {
-		    if (!slave.contains(dupWord)) {
-		    	slave.add(dupWord);
-		    }
+			if (!slave.contains(dupWord)) {
+				slave.add(dupWord);
+			}
 		}
 		float score = 0;
 		float result=0;
 		int masterCount = master.size();		
 		int slaveCount = slave.size();
 		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
-		
+
 		if(masterCount < slaveCount){	
 			Vector <Boolean> leftovers=new Vector<Boolean>(slaveCount);
 			leftovers.setSize(slaveCount);
@@ -1317,7 +1247,7 @@ public class PartialMarker {
 					result = score;
 				}
 			}
-			
+
 		} else {	
 			Vector <Boolean> leftovers=new Vector<Boolean>(masterCount);
 			leftovers.setSize(masterCount);
@@ -1338,13 +1268,13 @@ public class PartialMarker {
 
 		return result;
 	}
-	
+
 	public static float compareSelection(List<Node> master, List<Node> slave1){
 		ArrayList<Node> slave= new ArrayList<Node>();
 		for (Node dupWord : slave1) {
-		    if (!slave.contains(dupWord)) {
-		    	slave.add(dupWord);
-		    }
+			if (!slave.contains(dupWord)) {
+				slave.add(dupWord);
+			}
 		}
 		float score = 0;
 		for(Node n1 : slave){
@@ -1534,7 +1464,7 @@ public class PartialMarker {
 		ArrayList<QueryInfo> maxInfo;
 		float result=0;
 		// case when instructor query is a set operator query	
-		
+
 		if(instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty()){
 			// case when student query is also a set operator query
 			if(studentData.setOperator!=null&&!studentData.setOperator.isEmpty()){
@@ -1552,21 +1482,21 @@ public class PartialMarker {
 				qInfo.Level =  level;
 				currentInfo.add(qInfo);
 				//case 1, compare left operand with left operand of the set operator and right operand with right
-				
+
 				Vector<QueryStructure> leftPart = new Vector<QueryStructure> ();
 				leftPart.add(instructorData.leftQuery);
 				float NoOfNodesLeft= weightOfSubquery(leftPart);
 				MarkInfo lefte = calculateScore(instructorData.leftQuery,studentData.leftQuery, level+1);
 				currentInfo.addAll(lefte.SubqueryData);
-				
-				
+
+
 				Vector<QueryStructure> rightPart = new Vector<QueryStructure> ();
 				rightPart.add(instructorData.rightQuery);
 				float NoOfNodesright= weightOfSubquery(rightPart);
 				MarkInfo righte = calculateScore(instructorData.rightQuery,studentData.rightQuery, level+1);
 				currentInfo.addAll(righte.SubqueryData);
-				
-				
+
+
 				float WEIGHT = 100/(NoOfNodesLeft + NoOfNodesright + 1);
 				float setOpNodeMatch = 0;
 				if(instructorData.setOperator.equalsIgnoreCase(studentData.setOperator))
@@ -1596,20 +1526,20 @@ public class PartialMarker {
 					qInfo.Level =  level;
 					currentInfo.add(qInfo);
 					//case 1, compare left operand with left operand of the set operator and right operand with right
-					
+
 					leftPart = new Vector<QueryStructure> ();
 					leftPart.add(instructorData.leftQuery);
 					NoOfNodesLeft= weightOfSubquery(leftPart);
 					lefte = calculateScore(instructorData.leftQuery,studentData.leftQuery, level + 1);
 					currentInfo.addAll(lefte.SubqueryData);
-					
-					
+
+
 					rightPart = new Vector<QueryStructure> ();
 					rightPart.add(instructorData.rightQuery);
 					NoOfNodesright= weightOfSubquery(rightPart);
 					righte = calculateScore(instructorData.rightQuery,studentData.rightQuery, level + 1);
 					currentInfo.addAll(righte.SubqueryData);
-					
+
 					setOpNodeMatch = 0;
 					if(instructorData.setOperator.equalsIgnoreCase(studentData.setOperator))
 						setOpNodeMatch = 1;
@@ -1648,12 +1578,12 @@ public class PartialMarker {
 				float NoOfNodesLeft= weightOfSubquery(leftPart);
 				MarkInfo e = calculateScore(instructorData.leftQuery,studentData, level);
 				currentInfo.addAll(e.SubqueryData);
-				
+
 				float WEIGHT = 100/(NoOfNodesLeft + 1);
 				score = (e.Marks * NoOfNodesLeft) /100;
 				score *= WEIGHT;
-				
-				
+
+
 				result = score;;
 				maxInfo = currentInfo;
 
@@ -1663,10 +1593,10 @@ public class PartialMarker {
 				Vector<QueryStructure> rightPart = new Vector<QueryStructure> ();
 				rightPart.add(instructorData.rightQuery);
 				float NoOfNodesRight= weightOfSubquery(rightPart);
-				
+
 				e = calculateScore(instructorData.rightQuery,studentData, level);					
 				currentInfo.addAll(e.SubqueryData);
-				
+
 				WEIGHT = 100/(NoOfNodesRight + 1);
 				score = (e.Marks * NoOfNodesRight) /100;
 				score *= WEIGHT;
@@ -1695,7 +1625,7 @@ public class PartialMarker {
 			qInfo.Level =  level;
 			currentInfo.add(qInfo);
 			//case 1, compare  the instructor Query with left operand of the student query
-			
+
 			MarkInfo e = calculateScore(instructorData,studentData.leftQuery, level);
 			currentInfo.addAll(e.SubqueryData);
 			result = e.Marks;;
@@ -1736,8 +1666,8 @@ public class PartialMarker {
 
 				MarkInfo e = calculateScore(instructorData.leftQuery,studentData.leftQuery, level);
 				currentInfo.addAll(e.SubqueryData);
-				
-				
+
+
 				score += e.Marks;
 
 				e=calculateScore(instructorData.rightQuery,studentData.rightQuery, level);
@@ -2368,7 +2298,7 @@ public class PartialMarker {
 
 		if(Configuration==null)
 			PartialMarker.setConfigurationValues(instructorData);
-		
+
 		MarkInfo marks = new MarkInfo();
 		//Set level 0 query details for display
 		marks.SubqueryData.add(populateQueryInfo(instructorData,studentData,level));
@@ -2412,10 +2342,10 @@ public class PartialMarker {
 		float projectionScore = compareProjection(instructorData.getLstProjectedCols(), studentData.getLstProjectedCols());		
 		//projectionScore = instructorData.getIsDistinct() == studentData.getIsDistinct() ? projectionScore : projectionScore*0.9f;
 		float projectionScoreTotal = projectionScore * WEIGHT;		
-		
+
 		if(instructorData.getQueryType().getType() != null && (instructorData.getQueryType().getType().equalsIgnoreCase("EXISTS") || instructorData.getQueryType().getType().equalsIgnoreCase("NOT EXISTS")))
 			projectionScoreTotal = 0;
-		
+
 
 		float relationScore = compare(instructorData.getLstRelationInstances(), studentData.getLstRelationInstances());
 		float relationScoreTotal=relationScore * WEIGHT;
@@ -2452,22 +2382,22 @@ public class PartialMarker {
 		{
 			distinctOperatorScore=distinctOperatorScore-0.5f;
 		}
-		
+
 		float distinctOperatorScoreTotal=distinctOperatorScore * WEIGHT;
 
 		float orderByScore = compareOrderBy(instructorData.getLstOrderByNodes(),studentData.getLstOrderByNodes()); ///compute order by score
 
 		float orderByOperatorScoreTotal=orderByScore * WEIGHT;
-		
+
 		//float NoOfwhereSubQuryScoreTotal = uniqueWhereSubquery * WEIGHT;
 		//float NoOfFromSubQuryScoreTotal = uniqueFromSubquery * WEIGHT;
-		
+
 		float wheresubQueryScoreTotal = (whereSubQuery.Marks) * WEIGHT ;
 		float fromsubQueryScoreTotal = (fromSubQuery.Marks) * WEIGHT ;
 		float student =  predicateScoreTotal + relationScoreTotal + projectionScoreTotal 
 				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
 				aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal + orderByOperatorScoreTotal + wheresubQueryScoreTotal + fromsubQueryScoreTotal;
-		
+
 
 		float score = student;
 		marks.Marks = score;
@@ -2650,25 +2580,25 @@ public class PartialMarker {
 			if(instructorData.getLstSelectionConditions()!=null)
 				nodeCount += instructorData.getLstSelectionConditions().size()*3;
 			if(instructorData.getLstRelationInstances()!=null)
-			nodeCount += instructorData.getLstRelationInstances().size();
+				nodeCount += instructorData.getLstRelationInstances().size();
 			if(instructorData.getQueryType().getType() != null && (instructorData.getQueryType().getType().equalsIgnoreCase("EXISTS") || instructorData.getQueryType().getType().equalsIgnoreCase("NOT EXISTS")))
 				nodeCount+=0;
 			else if(instructorData.getLstProjectedCols()!=null)
 				nodeCount += instructorData.getLstProjectedCols().size();
 			nodeCount += getJoinCount(instructorData)*3;
 			if(instructorData.getLstGroupByNodes() != null)
-			nodeCount += instructorData.getLstGroupByNodes().size();
+				nodeCount += instructorData.getLstGroupByNodes().size();
 			if(instructorData.getLstHavingConditions()!=null)
-			nodeCount += instructorData.getLstHavingConditions().size();
+				nodeCount += instructorData.getLstHavingConditions().size();
 			if(instructorData.getQueryType().getType() != null)
 				nodeCount++;
 			if(instructorData.getLstAggregateList()!=null)
-			nodeCount += instructorData.getLstAggregateList().size(); 
+				nodeCount += instructorData.getLstAggregateList().size(); 
 			if(instructorData.getLstSetOpetators()!=null)
-			nodeCount += instructorData.getLstSetOpetators().size();
+				nodeCount += instructorData.getLstSetOpetators().size();
 			if(instructorData.getIsDistinct()) nodeCount += 1;
 			if(instructorData.getOrderByNodes()!=null)
-			nodeCount += instructorData.getOrderByNodes().size();
+				nodeCount += instructorData.getOrderByNodes().size();
 			nodeCount += weightOfSubquery(instructorData.getWhereClauseSubqueries());
 			nodeCount += weightOfSubquery(instructorData.getFromClauseSubqueries());
 		}
@@ -2727,7 +2657,7 @@ public class PartialMarker {
 					MarkInfo e = calculateScore(master.get(combination.get(i)), slave.get(i), level);
 					currentInfo.addAll(e.SubqueryData);
 					float edit = e.Marks;
-				//	edit *= totalNodes(master.get(combination.get(i)));
+					//	edit *= totalNodes(master.get(combination.get(i)));
 					score += edit;
 				}
 
@@ -2738,8 +2668,8 @@ public class PartialMarker {
 			}
 		}
 
-		logger.log(Level.INFO,combinations.toString());
-		logger.log(Level.INFO,"size ="+combinations.size());
+		logger.log(Level.FINE,combinations.toString());
+		logger.log(Level.FINE,"size ="+combinations.size());
 
 		marks.SubqueryData = maxInfo;
 		//marks.Marks = result/(Math.abs(masterCount - slaveCount) + 1);
@@ -2761,7 +2691,7 @@ public class PartialMarker {
 		}
 	}
 	private static void generateCombinations_Util(ArrayList<ArrayList<Integer>> combinations, int limit,  int total, Vector<Integer> temp, Vector<Boolean> mask,int index){
-	
+
 		if(index == limit){
 			combinations.add(new ArrayList<Integer>(temp));
 			return;
@@ -2777,9 +2707,9 @@ public class PartialMarker {
 				mask.setElementAt(false, j);
 			}
 		}
-		
+
 	}
-	
+
 	// Generates all the combinations
 	public static void generateCombinations(ArrayList<ArrayList<Integer>> combinations, int limit,  int total, ArrayList<Integer> temp, int index){
 		Vector<Boolean> mask = new Vector<Boolean> (total);
@@ -2806,8 +2736,8 @@ public class PartialMarker {
 		//System.out.println("Under populateQueryInfo");
 		QueryInfo qInfo = new QueryInfo();
 		qInfo.Level = level;
-		
-		
+
+
 		if(instructorData.getIsDistinct())
 			qInfo.instructorDistinct=true;
 		else qInfo.instructorDistinct=false;
@@ -2912,5 +2842,75 @@ public class PartialMarker {
 
 		return qInfo;
 	}
+
+	public static void main(String args[]) throws Exception{		
+		//Connection conn = MyConnection.getExistingDatabaseConnection();
+		try(Connection conn = MyConnection.getDatabaseConnection()){
+
+			String instructorQuery=" SELECT distinct time_slot.day FROM teaches, section, time_slot where teaches.course_id=section.course_id AND teaches.semester=section.semester AND teaches.year=section.year AND teaches.sec_id=section.sec_id AND section.time_slot_id= time_slot.time_slot_id AND section.semester='Fall' AND section.year='2009' and teaches.id='22222'";
+			String studentAnswer="select time_slot.time_slot_id FROM teaches, section, time_slot where teaches.course_id=section.course_id AND teaches.semester=section.semester AND teaches.year=section.year AND teaches.sec_id=section.sec_id AND section.time_slot_id= time_slot.time_slot_id AND section.semester='Fall' AND section.year='2009' and teaches.id='22222'";
+			String courseId = "CS632";
+			int assignmentId =11;
+			int questionId = 1;
+			String rollnum = "09005027";
+			int queryId = 1;		
+			int maxMarks = 100;
+			String oldQueryId = "A" + assignmentId + "Q" + questionId + "S" + queryId;
+			String desc = "DUMMY";
+
+			insertIntoQinfo(courseId, assignmentId, questionId, queryId, instructorQuery, desc, maxMarks, maxMarks);
+
+			//WriteFileAndUploadDatasets.updateQueryInfo(new GenerateDataset_new(""), assignmentId, questionId, queryId, instructorQuery, "Find, for each course, the number of distinct students who have taken the course");
+
+			try(PreparedStatement stmt = conn.prepareStatement("select * from xdata_student_queries where assignment_id = ? and question_id = ? and rollnum = ?")){
+				stmt.setInt(1, assignmentId);
+				stmt.setInt(2, questionId);
+				stmt.setString(3, rollnum);
+				try(ResultSet rs = stmt.executeQuery()){
+
+					if(!rs.next()){		
+						String insertquery = "INSERT INTO xdata_student_queries (dbid, queryid, rollnum, querystring, assignment_id, question_id,course_id) VALUES (?,?,?,?,?,?,?)";			
+						try(PreparedStatement stmt1 = conn.prepareStatement(insertquery)){
+							stmt1.setString(1, "d1");
+							stmt1.setString(2, oldQueryId);
+							stmt1.setString(3, rollnum);
+							stmt1.setString(4, studentAnswer);
+							stmt1.setInt(5, assignmentId);
+							stmt1.setInt(6, questionId);
+							stmt1.setString(7,courseId);
+							stmt1.executeUpdate();
+						}
+					} else {
+						try(PreparedStatement stmt1 = conn.prepareStatement("update xdata_student_queries set querystring = ? where assignment_id = ? and question_id = ? and rollnum = ? and course_id=?")){
+							stmt1.setString(1, studentAnswer);
+							stmt1.setInt(2, assignmentId);
+							stmt1.setInt(3, questionId);
+							stmt1.setString(4, rollnum);			
+							stmt1.setString(5,courseId);
+							stmt1.executeUpdate();
+						}
+					}
+				}	
+
+				PartialMarker part = new PartialMarker(assignmentId, questionId, queryId, courseId, rollnum);
+				//MarkInfo result = part.getMarks(); commented and line following added by mathew on 19 oct 2016
+				MarkInfo result = part.getMarksForQueryStructures();
+				Gson gson = new Gson();
+				String json = gson.toJson(result);
+				String updateScoreQuery = "update xdata_student_queries set score = ?,markinfo=?,max_marks=? where assignment_id=? and question_id=? and rollnum=?";
+				try(PreparedStatement ps = conn.prepareStatement(updateScoreQuery)){
+					ps.setFloat(1, result.Marks);
+					ps.setString(2, json);
+					ps.setInt(3, maxMarks);
+					ps.setFloat(4, assignmentId);
+					ps.setInt(5,questionId);
+					ps.setString(6, rollnum);
+					ps.executeUpdate();
+				}
+
+			}
+		}
+	}
+
 
 }

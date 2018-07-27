@@ -354,7 +354,7 @@ public class PopulateTestDataGrading {
 										// we ensure that there is no spaces before or after the request string  
 										// in order to not execute empty statements  
 										if (!inst[i].trim().equals("") && ! inst[i].trim().contains("drop table")) {
-											String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create temporary table ");
+											String temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
 											try(PreparedStatement stmt2 = conn.prepareStatement(temp)){
 												stmt2.executeUpdate();					
 											} catch (SQLException sqle){
@@ -430,7 +430,7 @@ public class PopulateTestDataGrading {
 										// we ensure that there is no spaces before or after the request string  
 										// in order to not execute empty statements  
 										if (!inst[i].trim().equals("") && ! inst[i].trim().contains("drop table")) {
-											String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create temporary table ");
+											String temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
 											try(PreparedStatement stmt2 = conn.prepareStatement(temp)){
 												stmt2.executeUpdate();					
 											}
@@ -496,7 +496,7 @@ public class PopulateTestDataGrading {
 										// we ensure that there is no spaces before or after the request string  
 										// in order to not execute empty statements  
 										if (!inst[i].trim().equals("") && ! inst[i].trim().contains("drop table")) {
-											String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create temporary table ");
+											String temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
 											try(PreparedStatement stmt2 = conn.prepareStatement(temp)){
 												stmt2.executeUpdate();					
 											}
@@ -591,7 +591,7 @@ public class PopulateTestDataGrading {
 							// we ensure that there is no spaces before or after the request string  
 							// in order to not execute empty statements  
 							if (!inst[i].trim().equals("") && ! inst[i].trim().contains("drop table")) {
-								String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create temporary table ");
+								String temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
 								try(PreparedStatement stmt2 = testConn.prepareStatement(temp)){
 									stmt2.executeUpdate();	
 								}

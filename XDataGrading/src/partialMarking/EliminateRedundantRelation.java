@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import parsing.Column;
 import parsing.ForeignKey;
@@ -100,7 +101,7 @@ public class EliminateRedundantRelation {
 			}
 		}
 		
-		logger.info(" relation to Selection Conds Map "+relationToSelConds);
+		logger.log(Level.FINE, " relation to Selection Conds Map "+relationToSelConds);
 		//		for(Entry<String, ArrayList<Node>> entry:relationToSelConds.entrySet()){
 		//		System.out.println("key="+entry.getKey());
 		//		System.out.println("Values:");
@@ -111,10 +112,10 @@ public class EliminateRedundantRelation {
 		//			System.out.println(n.getLeft()+"="+n.getRight());
 		//		}
 		//	}
-		logger.info(" relation to Projection Conds Map "+relationToProjCols);
-		logger.info(" relation to Group By Cols Map "+relationToGroupByCols);
-		logger.info(" relation to Having Conds Map "+relationToHavingConds);
-		logger.info(" relation to Order By Conds Map "+relationToOrderByCols);
+		logger.log(Level.FINE," relation to Projection Conds Map "+relationToProjCols);
+		logger.log(Level.FINE," relation to Group By Cols Map "+relationToGroupByCols);
+		logger.log(Level.FINE," relation to Having Conds Map "+relationToHavingConds);
+		logger.log(Level.FINE," relation to Order By Conds Map "+relationToOrderByCols);
 		
 		/////////////////////code for revised detection of redundant relation starts here
 		/** Get the list of foreign keys*/
@@ -127,7 +128,7 @@ public class EliminateRedundantRelation {
 		for(String table: query.getLstRelationInstances()){
 			baseTables.add(table);
 		}
-		logger.info( " baseTables "+baseTables);
+		logger.log(Level.FINE, " baseTables "+baseTables);
 		Set<String> baseTablesOld;
 		/*
 		 * Do while loop below computes a fix point of the  eliminateRelations
@@ -147,7 +148,7 @@ public class EliminateRedundantRelation {
 			 * relation induced by the query
 			 */
 			ArrayList<String> referencedRelations=parsing.QueryData.getReferencedRelations(baseTables, eliminateRelations, foreignKeys, relationToRelationEqNodes);	
-			logger.info("Referenced Relations:"+referencedRelations);
+			logger.log(Level.FINE,"Referenced Relations:"+referencedRelations);
 			/* any referenced relation is a candidates for 
 			 * a redundant relation if every projected (resp. selected) column c1 from this relation 
 			 * have an equivalent projected (resp. selected ) column c2 with c1.tableName != c2.tableName
@@ -162,31 +163,31 @@ public class EliminateRedundantRelation {
 					continue;
 				boolean altEqSelFlag=existsAlternateEquivalentSelectionConditions(refTable, relationToSelConds, nodeToEqNodes, baseTables);
 				if(!altEqSelFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
+					logger.log(Level.FINE,"Table "+refTable+ " is not a candidate");
 					continue;
 				}				
 				boolean altEqProjFlag=existsAlternateEquivalentProjections(refTable, relationToProjCols, nodeToEqNodes, baseTables);
 				if(!altEqProjFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
+					logger.log(Level.FINE,"Table "+refTable+ " is not a candidate");
 					continue;
 				}
 				boolean altEqGroupByFlag=existsAlternateEquivalentGroupByCols(refTable, relationToGroupByCols, nodeToEqNodes, baseTables);
 				if(!altEqGroupByFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
+					logger.log(Level.FINE,"Table "+refTable+ " is not a candidate");
 					continue;
 				}
 				boolean altEqHavingFlag=existsAlternateEquivalentHavingConditions(refTable, relationToHavingConds, nodeToEqNodes, baseTables);
 				if(!altEqHavingFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
+					logger.log(Level.FINE,"Table "+refTable+ " is not a candidate");
 					continue;
 				}
 				boolean altEqOrderByFlag=existsAlternateEquivalentProjections(refTable, relationToOrderByCols, nodeToEqNodes, baseTables);
 				if(!altEqOrderByFlag){
-					logger.info("Table "+refTable+ " is not a candidate");
+					logger.log(Level.FINE,"Table "+refTable+ " is not a candidate");
 					continue;
 				}
 				if(altEqSelFlag && altEqProjFlag && altEqGroupByFlag && altEqHavingFlag && altEqOrderByFlag){
-					logger.info("Relation "+refTable+ " is a redundant relation");
+					logger.log(Level.FINE,"Relation "+refTable+ " is a redundant relation");
 					foreignKeys=EliminateRedundantRelation.removeForeignKey(refTable, foreignKeys);
 					eliminateRelations.add(refTable);
 					baseTables.remove(refTable);
@@ -200,7 +201,7 @@ public class EliminateRedundantRelation {
 			}
 		} while(!baseTables.containsAll(baseTablesOld));
 		/////////////////////code for revised detection of redundant relation ends here
-		logger.info(" eliminated relations "+eliminateRelations);
+		logger.log(Level.FINE," eliminated relations "+eliminateRelations);
 		if(query.getLstRedundantRelations()!=null)
 		{
 			if(query.getLstRedundantRelations().isEmpty())
@@ -241,7 +242,7 @@ public class EliminateRedundantRelation {
 		if(joinConds!=null&&joinConds.size()>0){
 			joinConds=parsing.Util.removeDuplicates(joinConds);
 			if(joinConds.size()>=2){
-				logger.info("Table "+tableNameNo +" is involved in multiple join conditions, and hence cannot be removed");
+				logger.log(Level.FINE,"Table "+tableNameNo +" is involved in multiple join conditions, and hence cannot be removed");
 				return true;
 			}
 		}
@@ -1234,7 +1235,7 @@ public class EliminateRedundantRelation {
 			if(!fk.getFKTablename().equals(relation) && !fk.getReferenceTable().getTableName().equals(relation))
 				fksCopy.add(fk);
 			else
-				logger.info(" Foreign key removed with table: "+relation);
+				logger.log(Level.FINE," Foreign key removed with table: "+relation);
 		}
 		return fksCopy;
 	}

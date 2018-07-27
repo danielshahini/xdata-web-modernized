@@ -58,8 +58,9 @@
  		Connection dbcon = (new DatabaseConnection()).dbConnection();
 
  		PreparedStatement stmt = dbcon
- 									.prepareStatement("SELECT * FROM xdata_lti_credentials where requesting_url=?");	
+ 									.prepareStatement("SELECT * FROM xdata_lti_credentials where requesting_url=? and consumer_key=?");	
  		stmt.setString(1, outcomeURL);
+ 		stmt.setString(2, oauth_consumer_key);
  		ResultSet rs = stmt.executeQuery(); 
  		if(rs.next()){ 			
 	 		if (rs.getString("consumer_key").equals(oauth_consumer_key)) { 			
@@ -81,14 +82,14 @@
  		//course_id = request.getParameter("context_label");
  		course_id = oauth_consumer_key+"_"+request.getParameter("context_id");
  		acc = new OAuthAccessor(cons);
- 		System.out.println("Accessot Obj =access token =  " + acc.accessToken);
+ 		/* System.out.println("Accessot Obj =access token =  " + acc.accessToken);
  		System.out.println("Accessot Obj = requestToken =  " + acc.requestToken);
  		System.out.println("Accessot Obj = tokenSecret = " + acc.tokenSecret);
  		System.out.println("Accessot Obj = Consumer callback url = " + acc.consumer.callbackURL);
  		System.out.println("Accessot Obj = Consumer key = " +acc.consumer.consumerKey);
  		System.out.println("Accessot Obj = Consumer secret key = " +acc.consumer.consumerSecret);
  		System.out.println("Accessot Obj = Consumer service provider = " +acc.consumer.serviceProvider);
- 		System.out.println("Req :" + request.getParameter("lis_person_name_full"));		
+ 		System.out.println("Req :" + request.getParameter("lis_person_name_full"));		 */
  		
  		System.out.println("Assignment Id : " + request.getParameter("assignmentId"));
  		if(request.getParameter("assignmentId") != null){
@@ -123,7 +124,7 @@
 
  	try{
  		DatabaseProperties properties = new DatabaseProperties();
- 		Connection dbcon = dbcon = (new DatabaseConnection()).dbConnection();
+ 		Connection dbcon = (new DatabaseConnection()).dbConnection();
  		PreparedStatement stmt; 
  		ResultSet rs = null;
  		//To insert new users from learning tool login

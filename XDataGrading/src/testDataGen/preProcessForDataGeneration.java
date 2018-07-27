@@ -209,7 +209,7 @@ public GenerateCVC1 initializeConnectionDetails(GenerateCVC1 cvc) throws Excepti
 								//Changed for MSSQL testing
 								//String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create table ##");
 								//stmt = assignmentConn.prepareStatement(temp);
-								String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create temporary table ");
+								String temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
 								PreparedStatement stmt2 = testConn.prepareStatement(temp);
 									stmt2.executeUpdate();	
 								stmt2.close();
