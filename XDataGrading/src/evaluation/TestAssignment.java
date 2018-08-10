@@ -11,6 +11,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -838,7 +839,7 @@ public class TestAssignment {
 	public FailedDataSetValues getStudentOutput(Connection testCon, String dataSetId, String OriginalQry,
 			ArrayList<FailedColumnValues> failedList, FailedDataSetValues failedDs,
 			Map<String, Map<String, ArrayList<String>>> failedStudDataMap, boolean isDefaultDS) {
-		Map<String, ArrayList<String>> failedColMap = new HashMap<String, ArrayList<String>>();
+		Map<String, ArrayList<String>> failedColMap = new LinkedHashMap<String, ArrayList<String>>();
 
 		try {
 			// execute student query on the failed DS and get the output
@@ -917,7 +918,7 @@ public class TestAssignment {
 			ArrayList<FailedColumnValues> failedList, FailedDataSetValues failedDs,
 			Map<String, Map<String, ArrayList<String>>> failedInstrDataMap, boolean isDefaultDS) {
 
-		Map<String, ArrayList<String>> failedInstrColMap = new HashMap<String, ArrayList<String>>();
+		Map<String, ArrayList<String>> failedInstrColMap = new LinkedHashMap<String, ArrayList<String>>();
 		try {
 			try (PreparedStatement pp = testCon.prepareStatement(OriginalQry)) {
 				try (ResultSet rr = pp.executeQuery()) {
