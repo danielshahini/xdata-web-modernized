@@ -116,8 +116,6 @@ label span,.required {
 												stmt.setInt(1, assignID);
 												stmt.setString(2, courseID);
 												
-												System.out.println("DEBUG" + stmt);
-
 												ResultSet rs = null;
 												try{
 												rs = stmt.executeQuery();

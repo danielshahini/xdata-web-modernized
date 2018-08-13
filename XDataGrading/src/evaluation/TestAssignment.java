@@ -1241,7 +1241,7 @@ public class TestAssignment {
 
 				QueryStatus status = QueryStatus.Incorrect;
 				// SQLParser sqlParser = new SQLParser();
-				CCJSqlParserManager pm = new CCJSqlParserManager();
+				//CCJSqlParserManager pm = new CCJSqlParserManager();
 				String StudQueryString = "select querystring from xdata_student_queries where assignment_id=? and question_id=? and rollnum=? and course_id=?";
 
 				TestAnswer test = new TestAnswer();
@@ -1250,7 +1250,7 @@ public class TestAssignment {
 					studQueryStmt.setInt(2, question_id);
 					studQueryStmt.setString(3, rollnum);
 					studQueryStmt.setString(4, courseId);
-					logger.log(Level.INFO, "A" + assignment_id + "Q" + question_id + "S" + 1);
+					logger.log(Level.FINE, "A" + assignment_id + "Q" + question_id + "S" + 1);
 
 					try (ResultSet studentQuery = studQueryStmt.executeQuery()) {
 						if (studentQuery.next()) {
@@ -1263,17 +1263,16 @@ public class TestAssignment {
 							if (qry != null && !qry.isEmpty() && testQuery != null && !testQuery.isEmpty()) {
 								isQueryExists = true;
 								String OriginalQry = qry.replaceAll("''", "'");
-								logger.log(Level.INFO, "queryString" + OriginalQry);
+								logger.log(Level.FINE, "queryString" + OriginalQry);
 								qry = OriginalQry.trim().replaceAll("\n+", " ");
 								qry = qry.trim().replaceAll(" +", " ");
 								qry = qry.replace("NATURAL LEFT OUTER", "NATURAL");
 								qry = qry.replace("NATURAL RIGHT OUTER", "NATURAL");
 
-								logger.log(Level.INFO, "Cleansed Query is " + qry);
+								logger.log(Level.FINE, "Cleansed Query is " + qry);
 								try {
-									logger.log(Level.INFO, "queryString" + testQuery);
 									//testQuery = testQuery.trim().replaceAll("\n+", " ");
-									testQuery = testQuery.trim().replaceAll(" +", " ");
+									//testQuery = testQuery.trim().replaceAll(" +", " ");
 									
 									populateTestData.deleteAllTempTablesFromTestUser(testCon);
 									populateTestData.createTempTables(testCon, assignment_id, question_id);

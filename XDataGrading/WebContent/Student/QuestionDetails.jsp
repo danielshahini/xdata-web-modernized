@@ -280,9 +280,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 								stmt.setInt(1, assignID);
 								stmt.setString(2, (String) request.getSession().getAttribute("context_label"));
 								stmt.setInt(3, Integer.parseInt(request.getParameter("questionId").trim()));
-								System.out.println("QId :"	+ (String) request.getParameter("questionId"));
-								System.out.println("Course Id: " + (String) request.getSession().getAttribute("context_label"));
-								System.out.println("AssId :" + assignID);
+								//System.out.println("QId :"	+ (String) request.getParameter("questionId"));
+								//System.out.println("Course Id: " + (String) request.getSession().getAttribute("context_label"));
+								//System.out.println("AssId :" + assignID);
 
 								ResultSet rs = stmt.executeQuery();
 								String qID = (String) request.getParameter("questionId");

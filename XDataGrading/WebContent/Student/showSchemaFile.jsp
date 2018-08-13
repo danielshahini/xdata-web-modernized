@@ -35,7 +35,7 @@ breadcrumbs();
 
 <%          
 	String schemaID = (String)request.getParameter("schema_id");
-	System.out.println("SCHEMA ID = = "+ schemaID);
+	//System.out.println("SCHEMA ID = = "+ schemaID);
 	PrintWriter output = response.getWriter();
 	int i=Integer.parseInt(schemaID);
 	Connection conn= (new DatabaseConnection()).dbConnection();

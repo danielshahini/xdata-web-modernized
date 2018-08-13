@@ -62,7 +62,7 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 			String query_id= "A"+asID+"Q"+questionID+"S1";
 			//correctquery = correctquery;
 			//.replaceAll("[ ;]+$", "");
-			System.out.println("Student Query" + correctquery);
+			//System.out.println("Student Query" + correctquery);
 			Connection dbcon = null;
 
 			dbcon = (new DatabaseConnection()).dbConnection();
@@ -94,8 +94,8 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 			}
 	
 			
-			System.out.println("Start :" + start);
-			System.out.println("End :" + end);
+			//System.out.println("Start :" + start);
+			//System.out.println("End :" + end);
 			//now check whether current time is less than start time.Then only assignment can be edited
 			boolean expired = false;
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -210,13 +210,13 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 				try {
 					
 				//String questionId = "A"+asID+"Q"+queryID.trim()+"S1";			
-				System.out.println("questionId:::::"+questionID);
+				//System.out.println("questionId:::::"+questionID);
 				stmt = dbcon.prepareStatement("select * from xdata_student_queries where assignment_id=? and question_id = ? and rollnum = ? and course_id=?");
 				stmt.setInt(1, asID);
 				stmt.setInt(2,Integer.parseInt(questionID));
 				stmt.setString(3, studentID);
 				stmt.setString(4,courseID);
-				System.out.println(stmt.toString());
+				//System.out.println(stmt.toString());
 				
 			//	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
 				//Date parsedDate = dateFormat.parse(currentDate);
