@@ -253,7 +253,7 @@ public class TestAnswer {
 		boolean next1 = true;
 		boolean next2 = true;
 		Vector<String> queryIds = new Vector<String>();		
-		System.out.println(">>>>>>>>>>>>>>>>QUERY STRING:::"+queryString);
+		//System.out.println(">>>>>>>>>>>>>>>>QUERY STRING:::"+queryString);
 		try{
 
 			try{
@@ -1164,22 +1164,22 @@ public class TestAnswer {
 								}
 
 								Vector<String> killedMutants = checkAgainstOriginalQuery(mutants, "DS_Default", sqlQuery,"NoPath", orderIndependent, cmismatch, testConn);
-								logger.log(Level.INFO,"******************");
-								logger.log(Level.INFO,"Default dataset Loaded : " + " " + killedMutants.size());
-								logger.log(Level.INFO,"******************");
+								logger.log(Level.FINE,"******************");
+								logger.log(Level.FINE,"Default dataset Loaded : " + " " + killedMutants.size());
+								logger.log(Level.FINE,"******************");
 								for(int l=0;l<killedMutants.size();l++){
 									if(mutants.containsKey(killedMutants.get(l))){
 										flag = false;
 										incorrect = true;
 									}
 								}
+								///TODO: FIX: In case of no dataset
+								//incorrect=false;
 								if(!incorrect){
 									//isDataSetVerified.add(true);
 								}	
 								else{
-
 									resultOfDatasetMatchForEachQuery.put(queryId,false);
-									logger.log(Level.INFO,"");
 								}	
 
 								if(!(resultOfDatasetMatchForEachQuery.containsKey(queryId))){
@@ -1231,13 +1231,13 @@ public class TestAnswer {
 
 
 										Vector<String> cmismatch = new Vector<String>();
-										logger.log(Level.INFO,datasets.get(i));
+										logger.log(Level.FINE,datasets.get(i));
 
 
 										Vector<String> killedMutants = checkAgainstOriginalQuery(mutants, datasets.get(i), sqlQuery, dsPath, orderIndependent, cmismatch, testConn);
-										logger.log(Level.INFO,"******************");
-										logger.log(Level.INFO,datasets.get(i) + " " + killedMutants.size());
-										logger.log(Level.INFO,"******************");
+										logger.log(Level.FINE,"******************");
+										logger.log(Level.FINE,datasets.get(i) + " " + killedMutants.size());
+										logger.log(Level.FINE,"******************");
 										for(int l=0;l<killedMutants.size();l++){
 											if(mutants.containsKey(killedMutants.get(l))){
 												flag = false;

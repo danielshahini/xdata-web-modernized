@@ -26,13 +26,13 @@
  	} 
  	
  	// Consumer key will be set if the app is running within LMS system (Moodle, Canvas, Blackboard)
- 	System.out.println("Request param value for oauth_consumer_key = "+request.getParameter("oauth_consumer_key"));
+ 	//System.out.println("Request param value for oauth_consumer_key = "+request.getParameter("oauth_consumer_key"));
  	Boolean ltiMode = request.getParameter("oauth_consumer_key") != null;
- 	System.out.println("ltimode = " + ltiMode);
- 	System.out.println("pageContext.getServletContext().getContextPath() = " + pageContext.getServletContext().getContextPath());
+ 	//System.out.println("ltimode = " + ltiMode);
+ 	//System.out.println("pageContext.getServletContext().getContextPath() = " + pageContext.getServletContext().getContextPath());
  	
- 	System.out.println("server nam.e : " + pageContext.getRequest().getServerName());
- 	System.out.println("local name : " + pageContext.getRequest().getLocalName());
+ 	//System.out.println("server nam.e : " + pageContext.getRequest().getServerName());
+ 	//System.out.println("local name : " + pageContext.getRequest().getLocalName());
  	
  	String userId = "", name = "", email = "", role = "";
 	int assignment_id = 0;
@@ -231,16 +231,16 @@
  	}
 
  	if (ltiMode) {
- 		System.out.println("ltimode @ end : "+ ltiMode);
+ 		//System.out.println("ltimode @ end : "+ ltiMode);
 
  		try {
  			
- 	System.out.println("OAM String : Signature =  " + oam.getSignature() + " --------  " +oam.URL);
+ 	//System.out.println("OAM String : Signature =  " + oam.getSignature() + " --------  " +oam.URL);
  	//System.out.println("OAM String : consumer key and tokem =  " + oam.getConsumerKey() + " --------  " +oam.getToken());
  	
  	out.println("\n<b>Base Message</b>\n</pre><p>\n");
  	oam.URL =ltiProp.getMoodleXdataUrl();
- 	System.out.println("url from properties file : " + oam.URL);
+ 	//System.out.println("url from properties file : " + oam.URL);
  	out.println("<pre>\n");
  	oav.validateMessage(oam, acc);
  	//System.out.println("Mesage Validated ---");
@@ -260,7 +260,7 @@
  		}
  	}
 
- 	System.out.println("updated2");
+ 	//System.out.println("updated2");
  %>
 <jsp:forward page="/InitAssignment" />
 <html>

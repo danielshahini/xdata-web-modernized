@@ -27,10 +27,10 @@ public class CommonFunctions {
 		String timeDiff = diffDays + " days," + diffHours + " hours, "
 				+ diffMinutes + " minutes, " + diffSeconds + " seconds.";
 
-		System.out.print(diffDays + " days, ");
-		System.out.print(diffHours + " hours, ");
-		System.out.print(diffMinutes + " minutes, ");
-		System.out.print(diffSeconds + " seconds.");
+		//System.out.print(diffDays + " days, ");
+		//System.out.print(diffHours + " hours, ");
+		//System.out.print(diffMinutes + " minutes, ");
+		//System.out.print(diffSeconds + " seconds.");
 
 		return timeDiff;
 	}

@@ -172,8 +172,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 
 							}
 							
-							System.out.println("Start :" + start);
-							System.out.println("End :" + end);
+							
 							//now check whether current time is less than start time.Then only assignment can be edited
 							boolean yes = false;
 							SimpleDateFormat formatter = new SimpleDateFormat(
@@ -218,7 +217,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 
 									int qID = rs1.getInt("question_id");
 									q_index++;
-									System.out.println(qID);
+									//System.out.println(qID);
 									String desc = rs1.getString("querytext");
 									optionalSchemaID = rs1.getInt("optionalschemaid");
 									
@@ -364,7 +363,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								%>
 									<div class="questionelement">
 										<label>
-										<font color='#353275'>The assignment starts on <%=strtDate%>. Please wait till the start time to view the question. 
+										<font color='#353275'>The assignment starts on <%=strtDate%>. Please wait till the start time to view the questions. 
 										</font>
 										</label>
 									</div>
