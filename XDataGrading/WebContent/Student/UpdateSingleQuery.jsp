@@ -56,7 +56,7 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 			String questionID = (String) request.getParameter("questionId");
 			int asID = Integer.parseInt(request.getParameter("assignmentId"));
 			String courseID = (String) request.getSession().getAttribute(
-			"context_label");
+			"context_label"); //Take this from db?
 			String studentID = (String) request.getParameter("studentId");
 			String correctquery = (String) request.getParameter("query");
 			String query_id= "A"+asID+"Q"+questionID+"S1";

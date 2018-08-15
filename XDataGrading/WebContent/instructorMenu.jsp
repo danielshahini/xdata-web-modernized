@@ -94,8 +94,8 @@ a:visited{
 </head>
 <body style="font-family: helvetica;text-decoration: none;">
 <%
-System.out.println("login_user: "+session.getAttribute("LOGIN_USER")+"ROle: "+session.getAttribute("role")+"ltiintegretion: "+Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString()));
-System.out.println("Contextlebel: "+request.getSession().getAttribute("context_label")+"course_id: "+(String) request.getSession().getAttribute("course_id"));
+//System.out.println("login_user: "+session.getAttribute("LOGIN_USER")+"ROle: "+session.getAttribute("role")+"ltiintegretion: "+Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString()));
+//System.out.println("Contextlebel: "+request.getSession().getAttribute("context_label")+"course_id: "+(String) request.getSession().getAttribute("course_id"));
 if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
 	return;

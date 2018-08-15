@@ -249,7 +249,6 @@ public class WriteFileAndUploadDatasets {
 						}
 						
 					}
-					System.out.println("instrQuery = "+ instrQuery);
 					if(instrQuery != null){
 						//TestAnswer testAns = new TestAnswer();
 			

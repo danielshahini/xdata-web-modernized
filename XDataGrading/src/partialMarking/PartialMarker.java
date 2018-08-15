@@ -98,7 +98,7 @@ public class PartialMarker {
 	public void setStudentQuery(String query){
 		this.studentId = query;
 	}
-	public static HashMap<String, Float> dp = new HashMap<>();
+	public HashMap<String, Float> dp = new HashMap<>();
 
 	// Returns an instance of the partial marker
 	public PartialMarker(int assignmentId, int quesId, int queryId, String course_id, String rollNum){
@@ -2403,7 +2403,7 @@ public class PartialMarker {
 		marks.Marks = score;
 		//if(fromSubQuery!=null&&whereSubQuery!=null)
 		//marks.Marks = Configuration.OuterQuery * score + Configuration.FromSubQueries * fromSubQuery.Marks + Configuration.WhereSubQueries * whereSubQuery.Marks ;				
-		logger.info("partial mark="+marks.Marks);
+		logger.log(Level.FINE,"partial mark="+marks.Marks);
 		return marks;
 	}
 
@@ -2550,25 +2550,25 @@ public class PartialMarker {
 				perGroupBy * uniqueGroupBy + perHavingClause * uniqueHavingClause + perSubQConnective * uniqueSubQConnective + perAggregate * uniqueAggregates + perSetOperator * uniqueSetOperators + perDistinctOperator * uniqueDistinct +perOrderBy;
 
 		if(level==0){
-			logger.info("                  |     instructor    |    student         ");
-			logger.info("distinct   score  |     "+perDistinctOperator * uniqueDistinct+"    |    "+distinctOperatorScoreTotal);
-			logger.info("projection score  |     "+perProjection * uniqueProj+"    |    "+projectionScoreTotal);
-			logger.info("selection score   |     "+perPredicate*uniquePredicates+"    |    "+predicateScoreTotal);
-			logger.info("relation score    |     "+perRelation * uniqueRelations+"    |    "+relationScoreTotal);
-			logger.info("join score        |     "+perJoin * instructorJoin+"    |    "+joinScoreTotal);
-			logger.info("group by score    |     "+perGroupBy * uniqueGroupBy+"    |    "+groupByScoreTotal);
-			logger.info("having score      |     "+perHavingClause * uniqueHavingClause+"    |    "+havingClauseScoreTotal);
-			logger.info("order by score    |     "+perOrderBy+"    |    "+orderByOperatorScoreTotal);
-			logger.info("subq. conn. score |     "+perSubQConnective * uniqueSubQConnective+"    |    "+subQConnectiveScoreTotal);
-			logger.info("aggregate score   |     "+perAggregate * uniqueAggregates+"    |    "+aggregateScoreTotal);
-			logger.info("set oper. score   |     "+perSetOperator * uniqueSetOperators+"    |    "+setOperatorScoreTotal);
-			logger.info("total score       |     "+instructor+"    |    "+student);
+			logger.log(Level.FINE,"                  |     instructor    |    student         ");
+			logger.log(Level.FINE,"distinct   score  |     "+perDistinctOperator * uniqueDistinct+"    |    "+distinctOperatorScoreTotal);
+			logger.log(Level.FINE,"projection score  |     "+perProjection * uniqueProj+"    |    "+projectionScoreTotal);
+			logger.log(Level.FINE,"selection score   |     "+perPredicate*uniquePredicates+"    |    "+predicateScoreTotal);
+			logger.log(Level.FINE,"relation score    |     "+perRelation * uniqueRelations+"    |    "+relationScoreTotal);
+			logger.log(Level.FINE,"join score        |     "+perJoin * instructorJoin+"    |    "+joinScoreTotal);
+			logger.log(Level.FINE,"group by score    |     "+perGroupBy * uniqueGroupBy+"    |    "+groupByScoreTotal);
+			logger.log(Level.FINE,"having score      |     "+perHavingClause * uniqueHavingClause+"    |    "+havingClauseScoreTotal);
+			logger.log(Level.FINE,"order by score    |     "+perOrderBy+"    |    "+orderByOperatorScoreTotal);
+			logger.log(Level.FINE,"subq. conn. score |     "+perSubQConnective * uniqueSubQConnective+"    |    "+subQConnectiveScoreTotal);
+			logger.log(Level.FINE,"aggregate score   |     "+perAggregate * uniqueAggregates+"    |    "+aggregateScoreTotal);
+			logger.log(Level.FINE,"set oper. score   |     "+perSetOperator * uniqueSetOperators+"    |    "+setOperatorScoreTotal);
+			logger.log(Level.FINE,"total score       |     "+instructor+"    |    "+student);
 		}
 		float score = student/instructor * maxMarks;
 		marks.Marks = score;
 		if(fromSubQuery!=null&&whereSubQuery!=null)
 			marks.Marks = Configuration.OuterQuery * score + Configuration.FromSubQueries * fromSubQuery.Marks + Configuration.WhereSubQueries * whereSubQuery.Marks ;				
-		logger.info("partial mark="+marks.Marks);
+		logger.log(Level.FINE,"partial mark="+marks.Marks);
 		return marks;
 	}
 

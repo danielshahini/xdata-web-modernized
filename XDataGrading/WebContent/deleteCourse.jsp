@@ -38,7 +38,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 				stmt.setInt(1, id);
 				stmt.execute();
 					
-				System.out.println("Deleted Course Id : "+id);
+				//System.out.println("Deleted Course Id : "+id);
 			dbcon.close(); 
 			}catch (Exception err) {
 				err.printStackTrace();

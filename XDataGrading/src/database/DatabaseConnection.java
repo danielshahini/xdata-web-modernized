@@ -20,7 +20,7 @@ public class DatabaseConnection {
 			
 
 			if (dbcon != null) {
-				System.out.println("Connected successfullly");
+				//System.out.println("Connected successfullly");
 			}
 		} catch (SQLException ex) {
 

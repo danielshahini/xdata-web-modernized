@@ -54,7 +54,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 String ids =  request.getParameter("schema_id"); 
 		String s = ids.substring(0,ids.indexOf("-"));
 		String sampledata_id = ids.substring(ids.indexOf("-")+1);
-		System.out.println("SAMPLE DATA ID = " + sampledata_id);
+		//System.out.println("SAMPLE DATA ID = " + sampledata_id);
 		String courseID = (String) request.getSession().getAttribute("context_label");
 		//get connection
 		try {
@@ -70,7 +70,7 @@ String ids =  request.getParameter("schema_id");
 					stmt.setInt(3,Integer.parseInt(sampledata_id));
 					 stmt.executeUpdate(); 
 				
-					System.out.println("Deleted : Schema Id : "+s +"  :: sampledata_id :: "+sampledata_id);
+					//System.out.println("Deleted : Schema Id : "+s +"  :: sampledata_id :: "+sampledata_id);
 					
 		//		} 
 			dbcon.close(); 

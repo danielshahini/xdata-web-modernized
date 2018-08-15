@@ -12,7 +12,7 @@
 String userId = (String)session.getAttribute("user_id");
 String course = (String)request.getParameter("contextLabel");
 session.setAttribute("context_label",course);
-System.out.println("Data for forwarding request , userId = " + userId + " - course = "+course);		
+//System.out.println("Data for forwarding request , userId = " + userId + " - course = "+course);		
 Connection dbcon = null;
 String role = "";
 if(session.getAttribute("role") != null){

@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import com.google.gson.Gson;
 
 import util.Configuration;
+import util.DataSetValue;
 import util.DatabaseConnection;
 import util.DatabaseHelper;
 import util.MyConnection;
@@ -491,10 +492,12 @@ public class TestAnswer {
 			pstmt.executeUpdate();
 			int i=1;			
 
-			logger.log(Level.INFO,"queryString" + queryString);
-			queryString=queryString.trim().replaceAll("\n+", " ");
-			queryString=queryString.trim().replaceAll(" +", " ");	
-			queryString = queryString.trim().replace(";", " ");
+			logger.log(Level.INFO,"queryString:" + queryString);
+			queryString=queryString.trim().replaceAll("\n+", " ").trim();
+			//queryString=queryString.trim().replaceAll(" +", " ");	
+			while(queryString.endsWith(";"))
+				queryString=queryString.substring(0, queryString.length()-1);
+			//queryString = queryString.trim().replace(";", " ");
 
 			try{
 				//	PreparedStatement pstm1 = conn.prepareStatement("create temporary table xdata_temp1  as ("+queryString+");");
@@ -531,7 +534,7 @@ public class TestAnswer {
 					PreparedStatement pstmt11 = testConn.prepareStatement(queryString);
 					PreparedStatement pstmt22 = testConn.prepareStatement(mutant_qry);
 					
-					logger.log(Level.INFO,"Mutant query -" + mutant_qry.toString());
+					logger.log(Level.FINE,"Mutant query -" + mutant_qry.toString());
 					
 					if(orderIndependent){
 						try{				
@@ -543,7 +546,7 @@ public class TestAnswer {
 									"or exists ((select * from x2) except all (select * from x1))");
 
 							
-							logger.log(Level.INFO,"Student Id : "+studentRollnums.get(l)+" evaluated");
+							logger.log(Level.FINE,"Student Id : "+studentRollnums.get(l)+" evaluated");
 							
 							//pstmt.setQueryTimeout(60);
 							rs = pstmt.executeQuery();
@@ -592,13 +595,13 @@ public class TestAnswer {
 								queryIds.add(instrQueryId);
 								columnmismatch.add(instrQueryId);
 								resultOnDsetMap.add(studentRollnums.get(l));							
-								logger.log(Level.SEVERE,s.getMessage(), s);
+								//logger.log(Level.INFO,"Error in query of "+studentRollnums.get(l)+":"+s.getMessage(), s);
 								//throw s;
 							}
-							logger.log(Level.INFO," SQL EXCEPTION"+s.getMessage(),s);
+							logger.log(Level.INFO,"Error in query of "+studentRollnums.get(l)+":"+s.getMessage());
 						}
 						catch(Exception ex){
-							logger.log(Level.SEVERE,ex.getMessage(), ex);
+							logger.log(Level.INFO,"Error in query of "+studentRollnums.get(l)+":"+ex.getMessage());
 							//ex.printStackTrace();
 							try{
 								pstmt = testConn.prepareStatement(mutant_qry);
@@ -625,7 +628,7 @@ public class TestAnswer {
 								queryIds.add(instrQueryId);
 								resultOnDsetMap.add(studentRollnums.get(l));
 							}catch(Exception e){
-								logger.log(Level.SEVERE,e.getMessage(), e);
+								logger.log(Level.INFO,"Error in query of "+studentRollnums.get(l)+":"+e.getMessage());
 								//e.printStackTrace();
 								queryIds.add(instrQueryId);
 								resultOnDsetMap.add(studentRollnums.get(l));
@@ -1037,19 +1040,15 @@ public class TestAnswer {
 			datasets.add(datasetid);
 			dataSetForQueries.put(rs.getInt("query_id"), datasets);
 
-			/*String dsPath=Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid;
+			String dsPath=Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid;
 				File f=new File(dsPath);
 				if(!f.exists()){
 					f.mkdirs();
 				}
 				else{
-					//Runtime r = Runtime.getRuntime();
-					//Process proc = r.exec("rm "+Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
-
-				//	proc.waitFor();
-					//Utilities.closeProcessStreams(proc);
-					//proc.destroy();
+					
 					Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
+					//continue;
 				}
 				//JSON implementation reqd and test here.
 				//It holds JSON obj tat has list of Datasetvalue class
@@ -1078,7 +1077,7 @@ public class TestAnswer {
 						brd.close();		
 						fos.close();
 					}
-			 */			
+			 		
 		}
 		rs.close();
 		smt.close();
@@ -1150,6 +1149,7 @@ public class TestAnswer {
 							if(datasetForQueryMap.isEmpty()){
 								//Load the default sample data file
 								boolean flag=true;
+								
 								Vector<String> cmismatch = new Vector<String>();
 								try{
 									p.deleteAllTempTablesFromTestUser(testConn);
@@ -2187,7 +2187,7 @@ public class TestAnswer {
 			} // try block for pp statement ends
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE,
-					"Student test case output generation fails because of syntax error :" + e.getMessage(), e);		
+					"Student test case output generation fails because of syntax error :" + e.getMessage());		
 		}
 		failedStudDataMap.put(dataSetId, failedColMap);
 		failedDs.setStudentQueryOutput(failedStudDataMap);
@@ -2480,10 +2480,10 @@ public class TestAnswer {
 
 				/*******Check for Match all or match One Option Start******/
 				isQueryPass = this.getMatchForAllQueries(resultOfDatasetMatchForEachQuery,isQueryPass,isMatchAll);
-				System.out.println(">>>>>status33: "+failedDataSets.getStatus());
+				
 				//Set Marks for the failedStudentQuery
 				failedDataSets = this.getMarkDetails(conn,failedDataSets, isQueryPass,studRole,assignmentId,questionId,course_id,query,user,isLateSubmission,maxMarks,reduceLateSubmissionMarks);
-				System.out.println(">>>>>status4: "+failedDataSets.getStatus());
+				
 				return failedDataSets;
 
 			}// try block for TestConn ends
@@ -2578,10 +2578,10 @@ public class TestAnswer {
 	private float lateSubmission_penalizer(Connection conn,int assignmentId, int questionId,String course_id,String user) throws Exception
 	{
 		float penalty=0;
-		try{
+		try(Connection conn1= MyConnection.getDatabaseConnection()){
 
 			String qry1 = "select * from xdata_student_queries where assignment_id = ? and question_id = ? and course_id= ? and rollnum = ?";
-			PreparedStatement pstmt1 = conn.prepareStatement(qry1);
+			PreparedStatement pstmt1 = conn1.prepareStatement(qry1);
 			pstmt1.setInt(1,assignmentId);
 			pstmt1.setInt(2,questionId);
 			pstmt1.setString(3,course_id);
@@ -2594,7 +2594,7 @@ public class TestAnswer {
 
 
 			String qry2="select * from xdata_assignment where assignment_id = ? and course_id= ?";
-			PreparedStatement pstmt2 = conn.prepareStatement(qry2);
+			PreparedStatement pstmt2 = conn1.prepareStatement(qry2);
 			pstmt2.setInt(1,assignmentId);
 			pstmt2.setString(2,course_id);	
 			ResultSet rs2 = pstmt2.executeQuery();
@@ -2757,7 +2757,7 @@ public class TestAnswer {
 			float lateSub_factor=lateSubmission_penalizer(conn,assignmentId,questionId,course_id,user);
 			//System.out.println("fraction>>> "+ lateSub_factor);
 			if(isQueryPass){
-				logger.log(Level.INFO,"Question passed the datasets expected");
+				logger.log(Level.FINE,"Question passed the datasets expected");
 				if(studRole==null || !studRole.equals("guest")){
 					String qryUpdate = "update xdata_student_queries set verifiedcorrect = true where assignment_id ='"+assignmentId+"' and question_id = '"+questionId+"' and rollnum = '"+user+"' and course_id='"+course_id+"'";
 					try(PreparedStatement pstmt3 = conn.prepareStatement(qryUpdate)){
@@ -2815,15 +2815,19 @@ public class TestAnswer {
 								}else{
 
 								}
-								MarkInfo result = marker.getMarksForQueryStructures();
-								if(result.Marks > markInfo.Marks)
-									markInfo = result;
+								try {
+									MarkInfo result = marker.getMarksForQueryStructures();
+									if(result.Marks > markInfo.Marks)
+										markInfo = result;
+								}catch(Exception e) {
+									logger.log(Level.INFO, e.getMessage(), e);
+								}
 
 								//markInfo.Marks = 0;
 							}
 							catch(Exception ex){
 								logger.log(Level.SEVERE,ex.getMessage(), ex);
-								ex.printStackTrace();
+								//ex.printStackTrace();
 							}		
 						}
 					}//close resultset try

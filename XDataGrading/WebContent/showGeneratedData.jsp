@@ -257,7 +257,7 @@ $( document ).ready(function() {
 											}.getType();
 
 											List<DataSetValue> dsList = new Gson().fromJson(value, listType);
-											System.out.println("dsList.size() = " + dsList.size());
+											//System.out.println("dsList.size() = " + dsList.size());
 											boolean refTableExists = false;
 											for (int i = 0; i < dsList.size(); i++) {
 												DataSetValue dsValue = (DataSetValue) dsList.get(i);

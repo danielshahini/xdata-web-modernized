@@ -218,7 +218,6 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 					PreparedStatement pstmt1 = dbcon.prepareStatement(result);
 					pstmt1.setInt(1, Integer.parseInt(assignment_id));
 					ResultSet rs = pstmt1.executeQuery();
-					System.out.println("pstmt1 = "+pstmt1.toString());
 						%>
 					<table>
 					<%String uploadHeader = "";

@@ -41,7 +41,7 @@ public class PopulateTestDataGrading {
 				Type listType = new TypeToken<ArrayList<DataSetValue>>() {
 				}.getType();
 				List<DataSetValue> dsList = new Gson().fromJson(dataset, listType);
-				logger.log(Level.INFO,"dsList.size() = "+ dsList.size());
+				logger.log(Level.FINE,"dsList.size() = "+ dsList.size());
 				for(int i = 0 ; i < dsList.size();i++ ){
 					DataSetValue dsValue = dsList.get(i);
 					String tname,values; 
@@ -283,7 +283,7 @@ public class PopulateTestDataGrading {
 
 			rs.close();
 		}catch(Exception e){
-			logger.log(Level.SEVERE,e.getMessage(),e);
+			logger.log(Level.INFO,e.getMessage());
 		}
 
 	}

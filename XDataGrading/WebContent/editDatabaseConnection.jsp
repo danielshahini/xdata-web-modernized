@@ -161,7 +161,7 @@ return;
 					<%
 					String connectionID = request.getParameter("DBconnectionId");
 					String dbType=null;
-					System.out.println("CONNECTION ID + = "+connectionID);
+					//System.out.println("CONNECTION ID + = "+connectionID);
 					//get the connection for testing1
 					Connection dbcon = (new DatabaseConnection()).dbConnection();
 					int conId = Integer.parseInt(connectionID);
