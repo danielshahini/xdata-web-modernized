@@ -1149,7 +1149,6 @@ public class TestAnswer {
 							if(datasetForQueryMap.isEmpty()){
 								//Load the default sample data file
 								boolean flag=true;
-								
 								Vector<String> cmismatch = new Vector<String>();
 								try{
 									p.deleteAllTempTablesFromTestUser(testConn);

@@ -123,7 +123,7 @@ public class QueryStatus extends HttpServlet {
 				"on u.internal_user_id = info.rollnum "+
 				" inner join xdata_roles xdr on " +
 				"xdr.internal_user_id=u.internal_user_id" +
-				" and xdr.role='student' and xdr.course_id=?";
+				" and xdr.role='student' and xdr.course_id=? order by rollnum";
 
 		int index = 0;
 		// String 
