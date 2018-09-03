@@ -132,7 +132,7 @@
  		.prepareStatement("SELECT * FROM xdata_users where internal_user_id=?");
  		stmt.setString(1, (String)session.getAttribute("user_id"));
  		rs = stmt.executeQuery(); 
- 		System.out.println("session.getAttribute ltiIntegration = " + session.getAttribute("ltiIntegration"));
+ 		//System.out.println("session.getAttribute ltiIntegration = " + session.getAttribute("ltiIntegration"));
 	if (!rs.next() && session.getAttribute("ltiIntegration") != null 
 			&& Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())) {			
 	 	stmt = dbcon.prepareStatement("INSERT INTO xdata_users VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
@@ -223,7 +223,7 @@
  		stmt.close();
  		rs.close();
  		dbcon.close();
- 		System.out.println("Closing all connections");
+ 		//System.out.println("Closing all connections");
  	} catch (Exception e) {
  		out.println("<b>Error inserting/retrieving user information</b>\n");
  		out.println(e);

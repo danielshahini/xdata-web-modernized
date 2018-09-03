@@ -79,7 +79,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					//stmt1.execute(); 
 				
 					
-					System.out.println("Deleted : Assignment Id : "+s);
+					//System.out.println("Deleted : Assignment Id : "+s);
 					 
 				//}
 			dbcon.close(); 

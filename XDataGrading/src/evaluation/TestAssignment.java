@@ -608,7 +608,6 @@ public class TestAssignment {
 									String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 									FailedDataSetValues failedDs = test.testAnswer(assignment_id, question_id, courseId,
 											OriginalQry, rollNum, "4/" + courseId + "/" + queryId, false,null);
-									System.out.println(">>>>>status: "+failedDs.getStatus());
 									GenerateCVC1 cvc = new GenerateCVC1();											
 									preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
 									
@@ -620,7 +619,6 @@ public class TestAssignment {
 								 	
 									TableMap tm = cvc.getTableMap();
 									if (failedDs.getStatus().equalsIgnoreCase("Failed")) {
-										System.out.println(">>>>>>>>>>>>>>Failed");
 										// Get DS0
 										Map<String, Map<String, ArrayList<String>>> failedStudDataMap = new HashMap<String, Map<String, ArrayList<String>>>();
 										Map<String, Map<String, ArrayList<String>>> failedInstrDataMap = new HashMap<String, Map<String, ArrayList<String>>>();
@@ -797,25 +795,26 @@ public class TestAssignment {
 						Gson gson = new Gson();
 						String json = "";
 						int count = 1;
-						try (PreparedStatement updtstmt = dbcon.prepareStatement(updateStudentTableString)) {					
+						try(Connection dbcon1 = MyConnection.getDatabaseConnection()){
+						try (PreparedStatement updtstmt = dbcon1.prepareStatement(updateStudentTableString)) {					
 								for(FailedDataSetValues fdv :  failedList){							
 										json = gson.toJson(fdv);
-										upstmt.setBoolean(1, true);
-										upstmt.setString(2, json);
-										upstmt.setInt(3, assignment_id);
-										upstmt.setInt(4, question_id);
-										upstmt.setString(5,fdv.getStudentRollNo());
-										upstmt.setString(6, courseId);
-										upstmt.executeUpdate();
-										logger.log(Level.WARNING,"***************************************************");
+										updtstmt.setBoolean(1, true);
+										updtstmt.setString(2, json);
+										updtstmt.setInt(3, assignment_id);
+										updtstmt.setInt(4, question_id);
+										updtstmt.setString(5,fdv.getStudentRollNo());
+										updtstmt.setString(6, courseId);
+										updtstmt.executeUpdate();
+										logger.log(Level.FINE,"***************************************************");
 										logger.log(Level.WARNING,"FailedDs Item : Roll No :: " + count +" :::: "+fdv.getStudentRollNo());						
-										logger.log(Level.WARNING,"FailedDs Status :: " + fdv.getStatus());
-										logger.log(Level.WARNING,"***************************************************");
+										logger.log(Level.FINE,"FailedDs Status :: " + fdv.getStatus());
+										logger.log(Level.FINE,"***************************************************");
 										count++;
-								}		
+								}}		
 						}catch (Exception e) {
 							logger.log(Level.SEVERE, "Exception caught here: " + e.getMessage(), e);
-							upstmt.setBoolean(1, true);
+							//upstmt.setBoolean(1, true);
 						}	
 			}
 		}		
@@ -891,7 +890,7 @@ public class TestAssignment {
 			} // try block for pp statement ends
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE,
-					"Student test case output generation fails because of syntax error :" + e.getMessage(), e);
+					"Student test case output generation fails because of syntax error :" + e.getMessage());
 			
 		}
 		failedStudDataMap.put(dataSetId, failedColMap);

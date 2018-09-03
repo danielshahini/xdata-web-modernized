@@ -2,6 +2,7 @@
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -64,9 +65,9 @@ public class SessionTimeOutFilter implements Filter {
 				 
 				   String timeoutUrl =  "index.jsp?TimeOut=true";  
 				
-				System.out.println("Request ContextPath for redirection : "+req.getContextPath());
-				System.out.println("Local address for redirection : "+request.getLocalAddr());
-				System.out.println("Servlet context path - for redirection on timeout :  "+ request.getServletContext().getContextPath());
+				logger.log(Level.FINE, "Request ContextPath for redirection : "+req.getContextPath());
+				logger.log(Level.FINE,"Local address for redirection : "+request.getLocalAddr());
+				logger.log(Level.FINE, "Servlet context path - for redirection on timeout :  "+ request.getServletContext().getContextPath());
 				
 				//Invalidate the session and forward to login page
 					   if(session!= null){   

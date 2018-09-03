@@ -258,7 +258,6 @@ public class TestPartialMarking {
 		Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
 		Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
 		System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
-		//SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
 	}
 	/**
 	 * @param args
@@ -391,21 +390,7 @@ public class TestPartialMarking {
 			//readQueriesFromFileParseAndTest();
 			//readQueriesFromDBParseAndTest();			
 			processStudentQueryFromKeyboard(testObj);
-			//testObj.StudentQuery=testObj.processCanonicalize(testObj.StudentQuery,1, studentQuery);
-//			System.out.println(testObj.StudentQuery.qStructure.toString());
-		
-//			for(Entry<String, Table> e:testObj.StudentQuery.getData().getTableMap().getTables().entrySet())
-//				System.out.println("key:"+e.getKey()+" value"+e.getValue().getPrimaryKey());
 			
-			
-//			SerializeXML.serializeXML("student.xml", testObj.StudentQuery.qStructure);
-//			testObj.InstructorQuery=testObj.processCanonicalize(testObj.InstructorQuery,1, instructorQuery);
-//			SerializeXML.serializeXML("student.xml", "instructor.xml", testObj.StudentQuery.qStructure, testObj.InstructorQuery.qStructure);
-//			util.SerializeXML.serializeXML("instructor.xml", testObj.InstructorQuery.OuterQuery);			
-//			Float normalMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.InstructorQuery.qStructure, 0).Marks;
-//			Float studentMarks=PartialMarker.calculateScore(testObj.InstructorQuery.qStructure, testObj.StudentQuery.qStructure, 0).Marks;
-//			System.out.println("normal Marks"+normalMarks+ " studentMarks "+studentMarks+ " partial marks"+studentMarks*100/normalMarks);
-			//testObj.copyData();
 		}
 		catch(Exception e){
 			e.printStackTrace();

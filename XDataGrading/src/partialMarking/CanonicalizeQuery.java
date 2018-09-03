@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import parsing.Column;
 import parsing.ForeignKey;
@@ -158,7 +159,7 @@ public class CanonicalizeQuery {
 					 for(Node n: selectionConds){
 						 checkBinaryHavingClauseNodes(n);
 						 checkSelectionHavingClauseNodes(n);
-						 logger.info("after node"+n);
+						 logger.log(Level.FINE, "after node"+n);
 					 }
 				 }
 			 }
@@ -332,7 +333,7 @@ public class CanonicalizeQuery {
 				}
 		}
 		}
-		logger.info("After "+left.getNodeType()+" "+right);
+		logger.log(Level.FINE, "After "+left.getNodeType()+" "+right);
 	}
 	
 	
@@ -453,7 +454,7 @@ public class CanonicalizeQuery {
 			if(n.getJoinType()!=null && n.getJoinType().equals(JoinClauseInfo.leftOuterJoin)){
 				Node rightNode=n.getRight();
 				if(existsNullFailingSelectionCondition(rightNode.getTableNameNo(),qData)){
-					logger.info("converting outer joins to inner joins for node "+n);
+					logger.log(Level.FINE,"converting outer joins to inner joins for node "+n);
 					n.setJoinType(JoinClauseInfo.innerJoin);
 					qData.setNumberOfOuterJoins(qData.getNumberOfOuterJoins()-1);
 					qData.setNumberOfInnerJoins(qData.getNumberOfInnerJoins()+1);
@@ -471,7 +472,7 @@ public class CanonicalizeQuery {
 			if(n.getJoinType()!=null && n.getJoinType().equals(JoinClauseInfo.rightOuterJoin)){
 				Node leftNode=n.getLeft();	
 				if(existsNullFailingSelectionCondition(leftNode.getTableNameNo(),qData)){
-					logger.info("converting outer joins to inner joins for node "+n);
+					logger.log(Level.FINE,"converting outer joins to inner joins for node "+n);
 					n.setJoinType(JoinClauseInfo.innerJoin);
 					qData.setNumberOfOuterJoins(qData.getNumberOfOuterJoins()-1);
 					qData.setNumberOfInnerJoins(qData.getNumberOfInnerJoins()+1);
@@ -560,14 +561,14 @@ public class CanonicalizeQuery {
 			Node tailNode=prefix.removeLast();
 			Vector<Node> tailVector=new Vector<Node>();
 			tailVector.add(tailNode);
-			logger.info("prefix :"+" "+prefix+ " tailnode: "+tailNode);
+			logger.log(Level.FINE,"prefix :"+" "+prefix+ " tailnode: "+tailNode);
 			LinkedList<Node> residue=new LinkedList<Node>();
 			residue.addAll(prefix);
 			residue.addAll(suffix);
 			if(!functionallyDeterminesUptoEquivalence(residue,tailVector,qData, new ArrayList<String>()))
 				suffix.add(0,getCanonicalRepresentative(tailNode,qData));
 		}
-		logger.info("canonicalized group by vector: "+suffix);
+		logger.log(Level.FINE,"canonicalized group by vector: "+suffix);
 		qData.setLstGroupByNodes(suffix);
 	}
 	/** @author mathew on 20 June 2016
@@ -592,13 +593,13 @@ public class CanonicalizeQuery {
 		
 		while(!prefix.isEmpty()){
 			Node tailNode=prefix.removeLast();
-			logger.info("prefix :"+" "+prefix+ " tailnode: "+tailNode);
+			logger.log(Level.FINE,"prefix :"+" "+prefix+ " tailnode: "+tailNode);
 			Vector<Node> tailVector=new Vector<Node>();
 			tailVector.add(tailNode);
 			if(!functionallyDeterminesUptoEquivalence(prefix,tailVector,qData, new ArrayList<String>()))
 				suffix.add(0,getCanonicalRepresentative(tailNode,qData));
 		}
-		logger.info("canonicalized order by vector: "+suffix);
+		logger.log(Level.FINE,"canonicalized order by vector: "+suffix);
 		qData.setLstOrderByNodes(suffix);
 	}
 	
@@ -632,7 +633,7 @@ public class CanonicalizeQuery {
 			if(hasSameTableNameNo(expKey) && !visitedTableNameNos.contains(expKey.get(0).getTableNameNo()))
 				validKeys.add(expKey);
 		}
-		logger.info("expanded: valid keys "+expandedKeys +": "+validKeys);
+		logger.log(Level.FINE,"expanded: valid keys "+expandedKeys +": "+validKeys);
 		for(Vector<Node> validKey:validKeys){
 			/*extract the primary key columns of the table that contain validKey 
 			 *  and store it in the vector primaryKeyCols. Note that if 
@@ -641,7 +642,7 @@ public class CanonicalizeQuery {
 			 */
 			Vector<Column> primaryKeyCols=validKey.get(0).getTable().getPrimaryKey();
 			Vector<Node> primaryKeyNodes=convertColumnVectorToNodeVector(primaryKeyCols,validKey.get(0));
-			logger.info(" primaryKey"+primaryKeyNodes);
+			logger.log(Level.FINE," primaryKey"+primaryKeyNodes);
 			if(parsing.Util.containsElements(prefix,primaryKeyNodes))
 				return true;
 			else{
