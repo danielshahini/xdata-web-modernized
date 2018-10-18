@@ -3,7 +3,6 @@ package partialMarking;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import parsing.QueryStructure;
 
 public class MarkInfo implements Serializable {
 	

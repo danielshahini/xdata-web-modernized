@@ -2,7 +2,10 @@ package partialMarking;
 
 import java.util.ArrayList;
 
+import parsing.AggregateFunction;
+import parsing.JoinClauseInfo;
 import parsing.Node;
+import parsing.QueryStructure;
 
 public class QueryInfo {
 	 
@@ -94,6 +97,121 @@ public class QueryInfo {
 		public float instructorDistinctMarks;
 		
 		public int Level;
+		
+		
+		static QueryInfo getQueryInfo(QueryStructure instructorData, QueryStructure studentData, int level){
+
+			//System.out.println("Under populateQueryInfo");
+			QueryInfo qInfo = new QueryInfo();
+			qInfo.Level = level;
+
+
+			if(instructorData.getIsDistinct())
+				qInfo.instructorDistinct=true;
+			else qInfo.instructorDistinct=false;
+			if(studentData.getIsDistinct())
+				qInfo.studentDistinct=true;
+			else qInfo.studentDistinct=false; 
+
+
+			for(Node n: instructorData.getLstSelectionConditions()){
+				qInfo.InstructorPredicates.add(n.toString());
+			}
+			//getLstSelectionConditions
+			for(Node n: studentData.getLstSelectionConditions()){
+				qInfo.StudentPredicates.add(n.toString());
+			}
+
+			for(Node n: instructorData.getLstProjectedCols()){
+				qInfo.InstructorProjections.add(n.toString());
+			}
+
+			for(Node n: studentData.getLstProjectedCols()){
+				qInfo.StudentProjections.add(n.toString());
+			}
+
+			for(Node n: instructorData.getLstGroupByNodes()){
+				qInfo.InstructorGroupBy.add(n.toString());
+			}
+
+			for(Node n: studentData.getLstGroupByNodes()){
+				qInfo.StudentGroupBy.add(n.toString());
+			}
+
+			for(String n: instructorData.getLstRelations()){
+				qInfo.InstructorRelations.add(n);
+			}
+
+			for(String n: studentData.getLstRelations()){
+				qInfo.StudentRelations.add(n);
+			}
+
+			for(Node n : instructorData.getLstHavingConditions()){
+				qInfo.InstructorHavingClause.add(n.toString());
+			}
+
+			for(Node n : studentData.getLstHavingConditions()){
+				qInfo.StudentHavingClause.add(n.toString());
+			}
+
+			for(String n : instructorData.getLstSubQConnectives()){
+				qInfo.InstructorSubQConnective.add(n);
+			}
+			for(String n : studentData.getLstSubQConnectives()){
+				qInfo.StudentSubQConnective.add(n);
+			}
+
+			for(AggregateFunction n : instructorData.getLstAggregateList()){
+				qInfo.InstructorAggregates.add(n.toString());
+			}
+			for(AggregateFunction n : studentData.getLstAggregateList()){
+				qInfo.StudentAggregates.add(n.toString());
+			}
+
+			ArrayList<String> instrInnerJoin =new ArrayList<String>();
+			ArrayList<String> studentInnerJoin =new ArrayList<String>();
+			ArrayList<String> instrOuterJoin =new ArrayList<String>();
+			ArrayList<String> studentOuterJoin =new ArrayList<String>();
+
+			if( (instructorData != null && instructorData.getLstJoinConditions()!=null && instructorData.getLstJoinConditions().size() > 0) || 
+					(studentData != null &&  
+					studentData.getLstJoinConditions()!=null &&  studentData.getLstJoinConditions().size() > 0)){
+
+
+				for(Node n : instructorData.getLstJoinConditions()){
+					if(n.getJoinType()==null) continue;
+					if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.innerJoin)){
+						instrInnerJoin.add(n.toString());
+					}
+					else if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.leftOuterJoin)
+							|| n.getJoinType().equalsIgnoreCase(JoinClauseInfo.rightOuterJoin)
+							||n.getJoinType().equalsIgnoreCase(JoinClauseInfo.fullOuterJoin)){
+						instrOuterJoin.add(n.toString());
+					}
+				}
+				for(Node n : studentData.getLstJoinConditions()){
+					if(n.getJoinType()==null) continue;
+					if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.innerJoin)){
+						studentInnerJoin.add(n.toString());
+					}else if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.leftOuterJoin)
+							|| n.getJoinType().equalsIgnoreCase(JoinClauseInfo.rightOuterJoin)
+							||n.getJoinType().equalsIgnoreCase(JoinClauseInfo.fullOuterJoin)){
+						studentOuterJoin.add(n.toString());
+					}
+				}
+
+			}
+
+			qInfo.InstructorInnerJoins = instrInnerJoin;
+			qInfo.StudentInnerJoins = studentInnerJoin;
+
+			qInfo.InstructorOuterJoins = instrOuterJoin;
+			qInfo.StudentOuterJoins = studentOuterJoin;
+
+			return qInfo;
+		}
+
+		
 		
 		public QueryInfo(){
 			//this.Predicates = new ArrayList<ArrayList<String>>();
