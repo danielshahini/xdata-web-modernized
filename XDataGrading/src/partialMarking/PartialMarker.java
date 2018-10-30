@@ -7,22 +7,14 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.uncommons.maths.Maths;
 
-import com.google.gdata.data.threading.Total;
 import com.google.gson.Gson;
 import parsing.AggregateFunction;
 import parsing.ConjunctQueryStructure;
-import parsing.JoinClauseInfo;
 import parsing.Node;
 import util.MyConnection;
 import parsing.QueryStructure;
-import partialMarking.queryEdit.GroupBy;
-import partialMarking.queryEdit.Metric;
-import partialMarking.queryEdit.OrderBy;
-import partialMarking.queryEdit.Projection;
-import partialMarking.queryEdit.Selection;
-import partialMarking.queryEdit.SingleEdit;
+import partialMarking.queryEdit.*;
 import util.Pair;
 import util.Utilities;
 
@@ -98,7 +90,9 @@ public class PartialMarker {
 	public void setStudentQuery(String query){
 		this.studentId = query;
 	}
-	public HashMap<String, Float> dp = new HashMap<>();
+	
+	
+	HashMap<String, Float> dp = new HashMap<>();
 
 	// Returns an instance of the partial marker
 	public PartialMarker(int assignmentId, int quesId, int queryId, String course_id, String rollNum){
@@ -337,7 +331,7 @@ public class PartialMarker {
 				Collections.fill(leftovers, Boolean.FALSE);
 				for(int i = 0; i < combination.size(); i++){	
 					float num_nodes=totalNodes(master.get(i));
-					float e = editScoreExhaustive(master.get(i), slave.get(combination.get(i)), num_nodes,1);
+					float e = editScoreExhaustiveIterative(master.get(i), slave.get(combination.get(i)), num_nodes,1);
 					num_edit += (num_nodes-e);
 					leftovers.set(combination.get(i), true);
 				}
@@ -363,7 +357,7 @@ public class PartialMarker {
 				Collections.fill(leftovers, Boolean.FALSE);
 				for(int i = 0; i < combination.size(); i++){
 					float num_nodes=totalNodes(master.get(combination.get(i)));
-					float e = editScoreExhaustive(master.get(combination.get(i)), slave.get(i), num_nodes,1);
+					float e = editScoreExhaustiveIterative(master.get(combination.get(i)), slave.get(i), num_nodes,1);
 					num_edit +=  (num_nodes-e);
 					leftovers.set(combination.get(i), true);
 				}
@@ -500,12 +494,12 @@ public class PartialMarker {
 			}
 			if(Instructor.setOperator.toString().equalsIgnoreCase("EXCEPT"))
 			{
-				marks =  editScoreExhaustive(Instructor.leftQuery,Student.leftQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.rightQuery,totalNodes(Instructor.rightQuery),deductMarks);
+				marks =  editScoreExhaustiveIterative(Instructor.leftQuery,Student.leftQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.rightQuery,totalNodes(Instructor.rightQuery),deductMarks);
 			}
 			else
 			{
-				float marks1 = editScoreExhaustive(Instructor.leftQuery,Student.leftQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.rightQuery,totalNodes(Instructor.rightQuery),deductMarks);
-				float marks2 = editScoreExhaustive(Instructor.leftQuery,Student.rightQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.leftQuery,totalNodes(Instructor.rightQuery),deductMarks);
+				float marks1 = editScoreExhaustiveIterative(Instructor.leftQuery,Student.leftQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.rightQuery,totalNodes(Instructor.rightQuery),deductMarks);
+				float marks2 = editScoreExhaustiveIterative(Instructor.leftQuery,Student.rightQuery,totalNodes(Instructor.leftQuery),deductMarks) + editScore(Instructor.rightQuery,Student.leftQuery,totalNodes(Instructor.rightQuery),deductMarks);
 				marks=max(marks1,marks2);
 			}
 			if(tag) maxMarks-=deductMarks;
@@ -624,7 +618,7 @@ public class PartialMarker {
 		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
 	}
 
-	private float editScoreExhaustive(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
+	/*private float editScoreExhaustive(QueryStructure Instructor,QueryStructure Student,float maxMarks, float deductMarks) throws Exception
 	{
 		if(dp.containsKey(Student.toString()) && dp.get(Student.toString())>=maxMarks) return dp.get(Student.toString());
 		// If there exits set operator
@@ -726,12 +720,150 @@ public class PartialMarker {
 		}
 		dp.put(Student.toString(), maxScore);
 		return maxScore;
-		//		if(maxScore >= FULL_MARKS)
-		//			return normalizeNegativeValuesToZero(maxMarks - bestMatchCost*deductMarks);
-		//		if(bestMatchCost==0) return 0;
-		//		maxMarks = maxMarks - bestMatchCost*deductMarks;
-		//		return editScore(BestMatch.getFirst(),BestMatch.getSecond(),maxMarks,deductMarks);
+		
+	}  **/
+	
+	
+	private float editScoreExhaustiveIterative(QueryStructure CQ,QueryStructure SQ,float maxMarks, float deductMarks) throws Exception
+	{
+
+		if((CQ.setOperator!=null&&!CQ.setOperator.isEmpty())||(SQ.setOperator!=null&&!SQ.setOperator.isEmpty()))
+		{
+			//Only student has a set op
+			if(CQ.setOperator==null || CQ.setOperator.isEmpty())
+			{
+				if(! SQ.setOperator.toString().equalsIgnoreCase("EXCEPT"))
+				{
+					float temp1= editScoreExhaustiveIterative(CQ,SQ.leftQuery,maxMarks,deductMarks)-totalNodes(SQ.rightQuery)-1; //set op score is 1
+					float temp2=editScoreExhaustiveIterative(CQ,SQ.rightQuery,maxMarks,deductMarks)-totalNodes(SQ.leftQuery)-1;
+					return max(temp1,temp2);
+				}
+				else
+				{
+					return editScoreExhaustiveIterative(CQ,SQ.leftQuery,maxMarks,deductMarks)-totalNodes(SQ.rightQuery)-1;
+				}
+			}
+			//Only instructor has a set op
+			else if(SQ.setOperator==null || SQ.setOperator.isEmpty())
+			{
+				if(! CQ.setOperator.toString().equalsIgnoreCase("EXCEPT"))
+				{
+					float temp1= editScoreExhaustiveIterative(CQ.leftQuery,SQ,totalNodes(CQ.leftQuery),deductMarks);
+					float temp2=editScoreExhaustiveIterative(CQ.rightQuery,SQ,totalNodes(CQ.rightQuery),deductMarks);
+					return max(temp1,temp2);
+				}
+				else
+					return editScoreExhaustiveIterative(CQ.leftQuery,SQ,totalNodes(CQ.leftQuery),deductMarks);
+			}
+			else
+				return editScoreSetoperatorExhaustive(CQ,SQ,maxMarks,deductMarks);
+		}
+		
+		HashMap<QueryStructure, Float> eq = new HashMap<>();		
+		
+		eq.put(SQ, maxMarks);
+		
+		while(!eq.isEmpty()) {
+			
+			
+			float maxTempScore=Float.MIN_VALUE;
+			QueryStructure editedQuery=null;
+			for(QueryStructure key:eq.keySet()) {
+				if(eq.get(key)>maxTempScore) {
+					maxTempScore=eq.get(key);
+					editedQuery=key;
+				}
+			}
+			eq.remove(editedQuery);
+			float curMarks=maxTempScore;
+			
+			
+			QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(CQ);
+			CanonicalizeQuery.Canonicalize(canonicalized_instructor);
+			FULL_MARKS=totalNodes(canonicalized_instructor);
+			
+			QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(editedQuery);
+			CanonicalizeQuery.Canonicalize(canonicalized_student);
+			MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
+			if(result.Marks >= FULL_MARKS) {
+				return curMarks;
+			}
+			
+			float old_marks = curMarks;
+			
+			canonicalized_student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
+			editedQuery.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
+			
+			canonicalized_student = (QueryStructure)Utilities.copy(editedQuery);
+			QueryStructure student_without_where_subq=(QueryStructure)Utilities.copy(editedQuery);
+			CanonicalizeQuery.Canonicalize(canonicalized_student);
+			student_without_where_subq.setLstLstSubQConnectives (canonicalized_instructor.getLstSubQConnectives());
+			student_without_where_subq.getWhereClauseSubqueries().clear();
+			student_without_where_subq.getFromClauseSubqueries().clear();
+			student_without_where_subq.getWhereClauseSubqueries().addAll(canonicalized_instructor.getWhereClauseSubqueries());
+			student_without_where_subq.getFromClauseSubqueries().addAll(canonicalized_instructor.getFromClauseSubqueries());
+			CanonicalizeQuery.Canonicalize(student_without_where_subq);
+			if(calculateScore(canonicalized_instructor,student_without_where_subq , 0).Marks>= FULL_MARKS)
+			{
+				int numEdit=All_Pair_whereclauseExhaustive(canonicalized_instructor,editedQuery,true);
+				curMarks -= numEdit*deductMarks;
+				numEdit=All_Pair_whereclauseExhaustive(canonicalized_instructor,editedQuery,false);
+				return curMarks - numEdit*deductMarks;
+			}
+			if(canonicalized_student.getQueryType().getType() != null || canonicalized_instructor.getQueryType().getType() != null)
+			{
+				if(canonicalized_student.getQueryType().getType() != null)
+				{
+					if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
+						curMarks -=deductMarks;
+
+				}
+				else if(canonicalized_instructor.getQueryType().getType() != null)
+				{
+					if(!canonicalized_student.getQueryType().getType().equalsIgnoreCase(canonicalized_instructor.getQueryType().getType()))
+						curMarks -=deductMarks;
+				}
+			}
+			
+			
+			List<Pair<QueryStructure,Float> > single_edit_student = SingleEdit.single_edit(editedQuery, canonicalized_instructor);
+			Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
+			
+			BestMatch.setFirst(canonicalized_instructor);
+			BestMatch.setSecond(canonicalized_student);
+			// If mismatch occurs only in distinct/querytype part
+			if(single_edit_student.size()==0 && old_marks != curMarks) 
+				return editScoreExhaustiveIterative(BestMatch.getFirst(),BestMatch.getSecond(),curMarks,deductMarks);
+			for(Pair<QueryStructure,Float> editedstudentqueries: single_edit_student) {
+				
+				
+				float genMarks=curMarks - editedstudentqueries.getSecond()*deductMarks;
+				if(genMarks<=0)
+					continue;
+				QueryStructure curEditedQuery=editedstudentqueries.getFirst();
+				if(eq.containsKey(curEditedQuery)) {
+					if(eq.get(curEditedQuery)<genMarks) {
+						eq.put(curEditedQuery, genMarks);
+					}
+				} else {
+					eq.put(curEditedQuery, genMarks);
+				}
+				
+				
+			}
+			
+		}
+		
+		return 0;
+		
 	}
+
+	
+	
+	
+	
+	
+	
 
 	// Returns the marks corresponding to the query of the student in comparison to the instructor query
 	public MarkInfo getMarksForQueryStructures() throws Exception{
@@ -755,10 +887,10 @@ public class PartialMarker {
 		float deduct=100/totalNodes;
 
 
-		float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
+		//float originalMarks = editScore(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
 
 		// To run the exhaustive version uncomment below and comment above
-		//float originalMarks = editScoreExhaustive(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
+		float originalMarks = editScoreExhaustiveIterative(instructorNoOrderBy,studentNoOrderBy,totalNodes-totalOrderByNodes,1);
 
 
 		QueryStructure instructorOrderBy = (QueryStructure)Utilities.copy(this.InstructorQuery.getQueryStructure());
@@ -2288,11 +2420,11 @@ public class PartialMarker {
 		if((instructorData.setOperator!=null&&!instructorData.setOperator.isEmpty())||(studentData.setOperator!=null&&!studentData.setOperator.isEmpty()))
 			return newcalculateScoreForSetOperatorQueries(instructorData, studentData, level);
 		else
-			return newcalculateScoreForPlainSelect(instructorData, studentData, level);
+			return calculateScoreForPlainSelect(instructorData, studentData, level);
 	}
 
-
-	public static MarkInfo newcalculateScoreForPlainSelect( QueryStructure instructorData, QueryStructure studentData,
+	// Compares query structure corresponding to the instructor and student
+	public static MarkInfo calculateScoreForPlainSelect( QueryStructure instructorData, QueryStructure studentData,
 			int level) {
 		// TODO Auto-generated method stub
 
@@ -2301,7 +2433,7 @@ public class PartialMarker {
 
 		MarkInfo marks = new MarkInfo();
 		//Set level 0 query details for display
-		marks.SubqueryData.add(populateQueryInfo(instructorData,studentData,level));
+		marks.SubqueryData.add(QueryInfo.getQueryInfo(instructorData,studentData,level));
 
 		MarkInfo whereSubQuery = compareListOfQueries(instructorData.getWhereClauseSubqueries(), studentData.getWhereClauseSubqueries(), level + 1);
 		marks.SubqueryData.addAll(whereSubQuery.SubqueryData);
@@ -2407,170 +2539,6 @@ public class PartialMarker {
 		return marks;
 	}
 
-
-	// Compares query structure corresponding to the instructor and student
-
-	public static MarkInfo calculateScoreForPlainSelect( QueryStructure instructorData, QueryStructure studentData,
-			int level) {
-		// TODO Auto-generated method stub
-
-		if(Configuration==null)
-			PartialMarker.setConfigurationValues(instructorData);
-
-		int distinctWeightage = 0;
-		MarkInfo marks = new MarkInfo();
-		//Set level 0 query details for display
-		marks.SubqueryData.add(populateQueryInfo(instructorData,studentData,level));
-
-		MarkInfo whereSubQuery = compareListOfQueries(instructorData.getWhereClauseSubqueries(), studentData.getWhereClauseSubqueries(), level + 1);
-		marks.SubqueryData.addAll(whereSubQuery.SubqueryData);
-
-		MarkInfo fromSubQuery = compareListOfQueries(instructorData.getFromClauseSubqueries(), studentData.getFromClauseSubqueries(), level + 1);
-		marks.SubqueryData.addAll(fromSubQuery.SubqueryData);
-
-
-		distinctWeightage = Configuration.Distinct;
-
-
-
-		float totalWeightage = Configuration.Predicate + Configuration.Relation + Configuration.Projection + Configuration.Joins + Configuration.GroupBy + Configuration.HavingClause + Configuration.SubQConnective + Configuration.Aggregates + Configuration.SetOperators + distinctWeightage +Configuration.OrderBy;
-
-		float predWeightage = (Configuration.Predicate * 100)/totalWeightage;
-		float relationWeightage = (Configuration.Relation * 100)/totalWeightage;
-		float projWeightage = (Configuration.Projection* 100)/totalWeightage;
-		float joinWeightage = (Configuration.Joins * 100)/totalWeightage;
-		float groupByWeightage = (Configuration.GroupBy * 100)/totalWeightage;
-		float havingClauseWeightage = (Configuration.HavingClause * 100)/totalWeightage;
-		float subQConnectiveWeightage = (Configuration.SubQConnective * 100)/totalWeightage;
-		float aggregateWeightage = (Configuration.Aggregates * 100) / totalWeightage;
-		float setOperatorWeightage = (Configuration.SetOperators * 100) / totalWeightage;
-		float distinctOpWeightage = (distinctWeightage * 100) / totalWeightage;
-		float orderWeightage=0;
-		if(level==0)
-			orderWeightage = (Configuration.OrderBy*100)/totalWeightage;
-
-
-		float uniquePredicates = instructorData.getLstSelectionConditions().size();
-		float uniqueRelations = instructorData.getLstRelationInstances().size();
-		float uniqueProj = instructorData.getLstProjectedCols().size();
-		float instructorJoin = getJoinScore(instructorData, instructorData);
-		float uniqueGroupBy = instructorData.getLstGroupByNodes().size();
-		float uniqueHavingClause = instructorData.getLstHavingConditions().size();
-		float uniqueSubQConnective = instructorData.getLstSubQConnectives().size();
-		float uniqueAggregates = instructorData.getLstAggregateList().size(); 
-		float uniqueSetOperators = instructorData.getLstSetOpetators().size();
-		float uniqueDistinct = 1;
-		float orderByColumns = instructorData.getOrderByNodes().size();
-
-		float perPredicate = uniquePredicates == 0 ? 0 : predWeightage/uniquePredicates;
-
-		float perRelation = uniqueRelations == 0 ? 0 : relationWeightage/uniqueRelations;
-
-		float perProjection = uniqueProj == 0 ? 0 : projWeightage/uniqueProj;
-
-		float perJoin = instructorJoin == 0 ? 0 : joinWeightage/instructorJoin;
-
-		float perGroupBy = uniqueGroupBy == 0 ? 0 : groupByWeightage/uniqueGroupBy;
-
-		float perHavingClause = uniqueHavingClause == 0 ? 0 : havingClauseWeightage/uniqueHavingClause;
-
-		float perSubQConnective = uniqueSubQConnective == 0 ? 0 : subQConnectiveWeightage/uniqueSubQConnective;
-
-		float perAggregate = uniqueAggregates == 0 ? 0 : aggregateWeightage/ uniqueAggregates;
-
-		float perSetOperator = uniqueSetOperators == 0 ? 0 : setOperatorWeightage / uniqueSetOperators;
-
-		float perDistinctOperator = uniqueDistinct == 0? 0 : distinctOpWeightage / uniqueDistinct;
-
-		float perOrderBy = orderByColumns == 0 ? 0 : orderWeightage/orderByColumns;
-
-		float predicateScore = compareSelection(instructorData.getLstSelectionConditions(), studentData.getLstSelectionConditions());
-
-		float predicateScoreTotal=(perPredicate==0&&predicateScore!=0)?-predWeightage/2:
-			perPredicate*normalizeNegativeValuesToZero(predicateScore);
-
-		float projectionScore = compareProjection(instructorData.getLstProjectedCols(), studentData.getLstProjectedCols());		
-		projectionScore = instructorData.getIsDistinct() == studentData.getIsDistinct() ? projectionScore : projectionScore*0.9f;
-		float projectionScoreTotal=(perProjection==0 && projectionScore!=0)?-projWeightage/2:
-			perProjection*normalizeNegativeValuesToZero(projectionScore);				
-
-		float relationScore = compare(instructorData.getLstRelationInstances(), studentData.getLstRelationInstances());
-		float relationScoreTotal=(perRelation==0 && relationScore!=0)?-relationWeightage/2:
-			perRelation*normalizeNegativeValuesToZero(relationScore);
-
-		float joinScore = getJoinScore(instructorData, studentData);
-		float joinScoreTotal=(perJoin==0 && joinScore!=0)?-joinWeightage/2:
-			perJoin*normalizeNegativeValuesToZero(joinScore);	
-
-		float groupByScore = compareProjection(instructorData.getLstGroupByNodes(), studentData.getLstGroupByNodes());
-		float groupByScoreTotal=(perGroupBy==0 && groupByScore!=0)?-groupByWeightage/2:
-			perGroupBy*normalizeNegativeValuesToZero(groupByScore);
-
-		float havingClauseScore = compareHavingClause(instructorData.getLstHavingConditions(), studentData.getLstHavingConditions());
-		float havingClauseScoreTotal=(perHavingClause==0 && havingClauseScore!=0)?-havingClauseWeightage/2:
-			perHavingClause*normalizeNegativeValuesToZero(havingClauseScore);
-
-		float subQConnectiveScore = compare(instructorData.getLstSubQConnectives(),studentData.getLstSubQConnectives());
-		float subQConnectiveScoreTotal=(perSubQConnective==0 && subQConnectiveScore!=0)?-subQConnectiveWeightage/2:
-			perSubQConnective*normalizeNegativeValuesToZero(subQConnectiveScore);
-
-		float aggregateScore = compareAggregates(instructorData.getLstAggregateList(), studentData.getLstAggregateList());
-		float aggregateScoreTotal=(perAggregate==0 && aggregateScore!=0)?-aggregateWeightage/2:
-			perAggregate*normalizeNegativeValuesToZero(aggregateScore);
-		float setOperatorScore = compare(instructorData.getLstSetOpetators(),studentData.getLstSetOpetators());
-		float setOperatorScoreTotal=(perSetOperator==0 && setOperatorScore!=0)?-setOperatorWeightage/2:
-			perSetOperator*normalizeNegativeValuesToZero(setOperatorScore);
-
-		float distinctOperatorScore = 0;
-
-		if(instructorData.getIsDistinct() && studentData.getIsDistinct()){
-			distinctOperatorScore++;
-		}
-		else if(!instructorData.getIsDistinct() && !studentData.getIsDistinct()){
-			distinctOperatorScore++;
-		}
-		else{
-			//Even if any one query doesnot has Distinct - there is a mismatch
-			//distinctOperatorScore=distinctOperatorScore-0.5f;
-		}
-		float distinctOperatorScoreTotal=(perDistinctOperator==0 && distinctOperatorScore!=0)?-distinctOpWeightage/2:
-			perDistinctOperator*distinctOperatorScore;
-
-		float orderByScore = compareOrderBy(instructorData.getLstOrderByNodes(),studentData.getLstOrderByNodes()); ///compute order by score
-
-		float orderByOperatorScoreTotal=(perOrderBy==0 && orderByScore!=0)? -orderWeightage/2:perOrderBy*orderByScore;
-		if(orderByOperatorScoreTotal<0)
-			orderByOperatorScoreTotal=0;
-
-		float student =  normalizeNegativeValuesToZero(predicateScoreTotal + relationScoreTotal + projectionScoreTotal 
-				+ joinScoreTotal + groupByScoreTotal + havingClauseScoreTotal + subQConnectiveScoreTotal + 
-				aggregateScoreTotal + setOperatorScoreTotal + distinctOperatorScoreTotal + orderByOperatorScoreTotal);
-
-		float instructor = perPredicate * uniquePredicates + perRelation * uniqueRelations + perProjection * uniqueProj + perJoin * instructorJoin + 
-				perGroupBy * uniqueGroupBy + perHavingClause * uniqueHavingClause + perSubQConnective * uniqueSubQConnective + perAggregate * uniqueAggregates + perSetOperator * uniqueSetOperators + perDistinctOperator * uniqueDistinct +perOrderBy;
-
-		if(level==0){
-			logger.log(Level.FINE,"                  |     instructor    |    student         ");
-			logger.log(Level.FINE,"distinct   score  |     "+perDistinctOperator * uniqueDistinct+"    |    "+distinctOperatorScoreTotal);
-			logger.log(Level.FINE,"projection score  |     "+perProjection * uniqueProj+"    |    "+projectionScoreTotal);
-			logger.log(Level.FINE,"selection score   |     "+perPredicate*uniquePredicates+"    |    "+predicateScoreTotal);
-			logger.log(Level.FINE,"relation score    |     "+perRelation * uniqueRelations+"    |    "+relationScoreTotal);
-			logger.log(Level.FINE,"join score        |     "+perJoin * instructorJoin+"    |    "+joinScoreTotal);
-			logger.log(Level.FINE,"group by score    |     "+perGroupBy * uniqueGroupBy+"    |    "+groupByScoreTotal);
-			logger.log(Level.FINE,"having score      |     "+perHavingClause * uniqueHavingClause+"    |    "+havingClauseScoreTotal);
-			logger.log(Level.FINE,"order by score    |     "+perOrderBy+"    |    "+orderByOperatorScoreTotal);
-			logger.log(Level.FINE,"subq. conn. score |     "+perSubQConnective * uniqueSubQConnective+"    |    "+subQConnectiveScoreTotal);
-			logger.log(Level.FINE,"aggregate score   |     "+perAggregate * uniqueAggregates+"    |    "+aggregateScoreTotal);
-			logger.log(Level.FINE,"set oper. score   |     "+perSetOperator * uniqueSetOperators+"    |    "+setOperatorScoreTotal);
-			logger.log(Level.FINE,"total score       |     "+instructor+"    |    "+student);
-		}
-		float score = student/instructor * maxMarks;
-		marks.Marks = score;
-		if(fromSubQuery!=null&&whereSubQuery!=null)
-			marks.Marks = Configuration.OuterQuery * score + Configuration.FromSubQueries * fromSubQuery.Marks + Configuration.WhereSubQueries * whereSubQuery.Marks ;				
-		logger.log(Level.FINE,"partial mark="+marks.Marks);
-		return marks;
-	}
 
 	private static float weightOfSubquery(Vector<QueryStructure> instructor)
 	{
@@ -2690,7 +2658,7 @@ public class PartialMarker {
 			return false;
 		}
 	}
-	private static void generateCombinations_Util(ArrayList<ArrayList<Integer>> combinations, int limit,  int total, Vector<Integer> temp, Vector<Boolean> mask,int index){
+	private static void generateCombinations(ArrayList<ArrayList<Integer>> combinations, int limit,  int total, Vector<Integer> temp, Vector<Boolean> mask,int index){
 
 		if(index == limit){
 			combinations.add(new ArrayList<Integer>(temp));
@@ -2702,7 +2670,7 @@ public class PartialMarker {
 			{
 				temp.add(j);
 				mask.setElementAt(true, j);
-				generateCombinations_Util(combinations, limit, total, temp, mask,index+1);
+				generateCombinations(combinations, limit, total, temp, mask,index+1);
 				temp.remove(temp.size()-1);
 				mask.setElementAt(false, j);
 			}
@@ -2717,7 +2685,7 @@ public class PartialMarker {
 		mask.setSize(total);
 		//Temp.setSize(limit);
 		Collections.fill(mask, Boolean.FALSE);
-		generateCombinations_Util(combinations,limit,total,Temp, mask,0);	
+		generateCombinations(combinations,limit,total,Temp, mask,0);	
 	}
 
 	private void cleanup(){
@@ -2730,120 +2698,9 @@ public class PartialMarker {
 			//ex.printStackTrace();
 		}
 	}
-
-	private static QueryInfo populateQueryInfo(QueryStructure instructorData, QueryStructure studentData, int level){
-
-		//System.out.println("Under populateQueryInfo");
-		QueryInfo qInfo = new QueryInfo();
-		qInfo.Level = level;
-
-
-		if(instructorData.getIsDistinct())
-			qInfo.instructorDistinct=true;
-		else qInfo.instructorDistinct=false;
-		if(studentData.getIsDistinct())
-			qInfo.studentDistinct=true;
-		else qInfo.studentDistinct=false; 
-
-
-		for(Node n: instructorData.getLstSelectionConditions()){
-			qInfo.InstructorPredicates.add(n.toString());
-		}
-		//getLstSelectionConditions
-		for(Node n: studentData.getLstSelectionConditions()){
-			qInfo.StudentPredicates.add(n.toString());
-		}
-
-		for(Node n: instructorData.getLstProjectedCols()){
-			qInfo.InstructorProjections.add(n.toString());
-		}
-
-		for(Node n: studentData.getLstProjectedCols()){
-			qInfo.StudentProjections.add(n.toString());
-		}
-
-		for(Node n: instructorData.getLstGroupByNodes()){
-			qInfo.InstructorGroupBy.add(n.toString());
-		}
-
-		for(Node n: studentData.getLstGroupByNodes()){
-			qInfo.StudentGroupBy.add(n.toString());
-		}
-
-		for(String n: instructorData.getLstRelations()){
-			qInfo.InstructorRelations.add(n);
-		}
-
-		for(String n: studentData.getLstRelations()){
-			qInfo.StudentRelations.add(n);
-		}
-
-		for(Node n : instructorData.getLstHavingConditions()){
-			qInfo.InstructorHavingClause.add(n.toString());
-		}
-
-		for(Node n : studentData.getLstHavingConditions()){
-			qInfo.StudentHavingClause.add(n.toString());
-		}
-
-		for(String n : instructorData.getLstSubQConnectives()){
-			qInfo.InstructorSubQConnective.add(n);
-		}
-		for(String n : studentData.getLstSubQConnectives()){
-			qInfo.StudentSubQConnective.add(n);
-		}
-
-		for(AggregateFunction n : instructorData.getLstAggregateList()){
-			qInfo.InstructorAggregates.add(n.toString());
-		}
-		for(AggregateFunction n : studentData.getLstAggregateList()){
-			qInfo.StudentAggregates.add(n.toString());
-		}
-
-		ArrayList<String> instrInnerJoin =new ArrayList<String>();
-		ArrayList<String> studentInnerJoin =new ArrayList<String>();
-		ArrayList<String> instrOuterJoin =new ArrayList<String>();
-		ArrayList<String> studentOuterJoin =new ArrayList<String>();
-
-		if( (instructorData != null && instructorData.getLstJoinConditions()!=null && instructorData.getLstJoinConditions().size() > 0) || 
-				(studentData != null &&  
-				studentData.getLstJoinConditions()!=null &&  studentData.getLstJoinConditions().size() > 0)){
-
-
-			for(Node n : instructorData.getLstJoinConditions()){
-				if(n.getJoinType()==null) continue;
-				if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.innerJoin)){
-					instrInnerJoin.add(n.toString());
-				}
-				else if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.leftOuterJoin)
-						|| n.getJoinType().equalsIgnoreCase(JoinClauseInfo.rightOuterJoin)
-						||n.getJoinType().equalsIgnoreCase(JoinClauseInfo.fullOuterJoin)){
-					instrOuterJoin.add(n.toString());
-				}
-			}
-			for(Node n : studentData.getLstJoinConditions()){
-				if(n.getJoinType()==null) continue;
-				if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.innerJoin)){
-					studentInnerJoin.add(n.toString());
-				}else if(n.getJoinType().equalsIgnoreCase(JoinClauseInfo.leftOuterJoin)
-						|| n.getJoinType().equalsIgnoreCase(JoinClauseInfo.rightOuterJoin)
-						||n.getJoinType().equalsIgnoreCase(JoinClauseInfo.fullOuterJoin)){
-					studentOuterJoin.add(n.toString());
-				}
-			}
-
-		}
-
-		qInfo.InstructorInnerJoins = instrInnerJoin;
-		qInfo.StudentInnerJoins = studentInnerJoin;
-
-		qInfo.InstructorOuterJoins = instrOuterJoin;
-		qInfo.StudentOuterJoins = studentOuterJoin;
-
-		return qInfo;
-	}
-
-	public static void main(String args[]) throws Exception{		
+	
+	
+	public static void main1(String args[]) throws Exception{		
 		//Connection conn = MyConnection.getExistingDatabaseConnection();
 		try(Connection conn = MyConnection.getDatabaseConnection()){
 
@@ -2911,6 +2768,95 @@ public class PartialMarker {
 			}
 		}
 	}
+	
+	public static void main(String args[]) throws Exception{
+		//int[] questionArr= {1,2,3,4,5,6};
+		int[] questionArr= {4};
+		for(int questionId:questionArr) {
+			System.out.println("---------------"+questionId+"----------------");
+			try {
+				long timeTaken=Long.MAX_VALUE;
+				int exp=0;
+				int maxIter=1;
+				for(int i=0;i<maxIter;i++) {
+					long curTimeTaken=0;
+					int assignmentId=13;
+					//int questionId=6;
+					//String courseId="cs387_5581";  //2017
+					String courseId="cs387_3874"; //2016
+					//String courseId="CS 387-2015-1"; //2015
+					List<Integer> queryIds=new ArrayList<>();
+					Connection conn = MyConnection.getDatabaseConnection();
+
+					PreparedStatement pstmt=conn.prepareStatement("select query_id from xdata_instructor_query where assignment_id=? and question_id=? and course_id=? order by query_id");
+					pstmt.setInt(1, assignmentId);pstmt.setInt(2, questionId);pstmt.setString(3, courseId);
+					ResultSet rs=pstmt.executeQuery();
+					while(rs.next()) {
+						queryIds.add(rs.getInt(1));
+					}
+					pstmt.close();
+					rs.close();
+					
+					HashSet<String> blockRoll=new HashSet<>(); //blockRoll.add("cs3874606");
+					pstmt=conn.prepareStatement("select rollnum,querystring from xdata_student_queries "
+							+ "where assignment_id=? and question_id=? and course_id=? and raw_score<100 "
+							+ "order by rollnum");
+					pstmt.setInt(1, assignmentId);pstmt.setInt(2, questionId);pstmt.setString(3, courseId);
+
+					int studIter=0;
+					rs=pstmt.executeQuery();
+					
+					while(rs.next()) {
+						if(studIter++<=10)
+							continue;
+						String roll=rs.getString(1);
+						String query=rs.getString(2);
+						//System.out.println(roll);
+						if(blockRoll.contains(roll))
+							continue;
+						double maxMarks=0;
+						long startTime=System.currentTimeMillis();
+						for(int queryId:queryIds) {	
+							try {
+								
+								PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,courseId,roll,query);
+								MarkInfo result=marker.getMarksForQueryStructures();
+								maxMarks=Math.max(maxMarks, result.Marks); /* */
+								
+							}catch(NullPointerException e) {
+								exp++;
+							}catch(StringIndexOutOfBoundsException e) {
+								exp++;
+							}catch(IndexOutOfBoundsException e) {
+								exp++;
+							}
+						}
+						long endTime=System.currentTimeMillis();
+						if(maxMarks!=100)
+							curTimeTaken+=(endTime-startTime);
+						if(i==0 && maxMarks!=100)
+							System.out.println(Math.round(maxMarks)); /* */
+					}
+					if(i==0) System.out.println(queryIds.size());
+					
+					timeTaken=Math.min(timeTaken, curTimeTaken);
+
+					pstmt.close();
+					rs.close();
+					conn.close();
+					System.out.println("Curri"+i);
+
+				} 
+
+				System.out.println(timeTaken);
+				System.out.println(exp/maxIter);
+			}catch(Exception e) {
+				System.out.println("Error in processing question id:"+questionId);
+				e.printStackTrace();
+			}
+		}
+	}
+
 
 
 }

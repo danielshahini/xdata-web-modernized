@@ -268,7 +268,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 							%>
 							<tr><td class="wrapword"><%=rs.getString("user_name")%>
 									</td><td class="wrapword"><%= rs.getString("email")%></td> 
-									<td class="wrapword"><%=totRoundedScores%> / <%= totRoundedMarks %></td>
+									<td class="wrapword"><%=totRoundedScores%></td>
 									<%= detailsLink%><%=uploadLink%>
 									</tr>
 							

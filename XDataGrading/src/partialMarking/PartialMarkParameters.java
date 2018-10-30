@@ -219,7 +219,6 @@ public int QueryId;
 	}
 	
 	public Integer getValue(){
-		int total = 0;
 	
 		return (this.Projection+this.Joins+this.WhereSubQueries+this.FromSubQueries+this.OuterQuery+this.HavingClause
 				+this.SubQConnective+this.Aggregates+this.SetOperators+this.Distinct);

@@ -65,7 +65,6 @@ public class PartialMarkerConfig {
 				try(ResultSet rs = stmt.executeQuery()){
 
 					if(rs.next()){	
-						Gson gson = new Gson();
 						Type listType = new TypeToken<PartialMarkParameters>() {}.getType();
 						PartialMarkParameters partialMarks = new Gson().fromJson(rs.getString("partialmarkinfo"), listType);
 						if(partialMarks!=null){
