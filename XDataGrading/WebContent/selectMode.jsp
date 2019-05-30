@@ -46,6 +46,11 @@ try{
  		rd.forward(request, response);
 	
 	}
+	else if(role.equalsIgnoreCase("guest")){
+		RequestDispatcher rd = request.getRequestDispatcher("StudentHome.jsp?contextLabel="+course);
+ 		rd.forward(request, response);
+	
+	}
 } catch (Exception err) {
 
 				err.printStackTrace();

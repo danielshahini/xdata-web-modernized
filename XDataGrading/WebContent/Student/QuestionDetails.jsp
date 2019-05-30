@@ -19,7 +19,7 @@
 <script src="../scripts/codemirror/addon/hint/sql-hint.js"></script>
 <script type="text/javascript" src = "../scripts/jquery.js"></script>
 <script type="text/javascript" src = "../scripts/wufoo.js"></script>
-<script type="text/javascript" src = "../scripts/jquery-ui-min.js"></script>
+<script type="text/javascript" src = "../scripts/jquery-ui.min.js"></script>
 <script src="../scripts/codemirror/lib/codemirror.js"></script>
 <script src="../scripts/codemirror/mode/sql/sql.js"></script>
  

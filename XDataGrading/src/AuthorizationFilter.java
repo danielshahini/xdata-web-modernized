@@ -121,6 +121,7 @@ public class AuthorizationFilter implements Filter {
 				 return true;
 			 }
 		 }
+		 
 		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role") != null && session.getAttribute("role").equals("tester")){
 			 
 			 if( path.contains(".html") || path.contains(".jsp") ||   path.contains(".swf")  ||  path.contains(".js")||  path.contains(".css") ||  path.contains(".jpeg") ||  path.contains(".gif")||  path.contains(".png")||  path.contains(".jpg") ||  path.contains(".pdf")

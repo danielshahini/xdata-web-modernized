@@ -74,7 +74,7 @@ public class StudentTestCase extends HttpServlet {
 		//Instead of getting it from sessin, get it from student table - tajudgement attribute
 		//If evaluation status of the assignment is true, then the assignment is evaluated, set this label to true.
 		
-		if(session.getAttribute("displayTestCase") != null && Boolean.valueOf(session.getAttribute("displayTestCase").toString()) == true){
+		if(session.getAttribute("displayTestCase") != null && Boolean.valueOf(session.getAttribute("displayTestCase").toString()) == false){
 			//dbCon = (Connection) session.getAttribute("dbConn");
 			//testcon = (Connection) session.getAttribute("testConn");
 			session.setAttribute("displayTestCase", false);

@@ -225,6 +225,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 											<option value="instructor" <%if(role.equalsIgnoreCase("instructor")){%>selected<%}else{%> <%} %>>Instructor</option>
 											<option value="student" <%if(role.equalsIgnoreCase("student")){%>selected<%}else{%> <%} %>>Student</option>
 											<option value="tester" <%if(role.equalsIgnoreCase("tester")){%>selected<%}else{%> <%} %>>Tester</option>
+											<option value="guest" <%if(role.equalsIgnoreCase("guest")){%>selected<%}else{%> <%} %>>Guest</option>
 										</select> 									
 								</div>
 							</td>
