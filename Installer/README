@@ -1,0 +1,8 @@
+The documentation is available at http://www.cse.iitb.ac.in/infolab/xdata/Docs
+
+To install XData run the script Install.sh as sudo user. More information can 
+be found in the Installation page of the documentation.
+
+System requirements:
+Linux 64 bit system with  Postgresql (version 9.3 or above) and  Apache tomcat
+ (version 7 or above).
