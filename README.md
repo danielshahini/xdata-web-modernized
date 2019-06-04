@@ -20,7 +20,6 @@ Documentation
 
 Documentation on installation and usage available at
     
-    http://www.cse.iitb.ac.in/infolab/xdata/XData/XDataDocs
-        
+    http://www.cse.iitb.ac.in/infolab/xdata/Docs/Readme_Dev.html    
 
 If you face any issues in using the grading system please drop an email to xdata@cse.iitb.ac.in 
