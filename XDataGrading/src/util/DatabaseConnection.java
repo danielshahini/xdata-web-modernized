@@ -33,7 +33,11 @@ public class DatabaseConnection {
 		else if(dbType.equals("MSSQL")){
 			con = getMicorsoftSQLConnection(dbDetails);
 		}
-			return con;
+		else if(dbType.equals("SQLite")){
+			con = getSQLiteConnection(dbDetails);
+		}
+		
+		return con;
 	}
 
 	@Deprecated
@@ -65,12 +69,23 @@ public class DatabaseConnection {
 			  String driver = "org.postgresql.Driver";
 			  
 			  String url="jdbc:postgresql://"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName();
-			    String username = dbDetails.getDbUser();
+		   		String username = dbDetails.getDbUser();
 			    String password = dbDetails.getDbPwd();
 			    Class.forName(driver); // load POSTGRESQL driver
 			    Connection conn = DriverManager.getConnection(url, username, password);
 				
 			    return conn;
+		  }
+		  @Deprecated
+		  private static Connection getSQLiteConnection(DatabaseConnectionDetails dbDetails) throws Exception{
+			  	String driver = "org.sqlite.JDBC";
+			  	String url="jdbc:sqlite:memory//"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName();
+			  	String username = dbDetails.getDbUser();
+			  	String password = dbDetails.getDbPwd();
+			  	Class.forName(driver); // load POSTGRESQL driver
+			  	Connection conn = DriverManager.getConnection(url, username, password);
+			  	
+		  return conn;
 		  }
 		  @Deprecated
 			private static Connection getMicorsoftSQLConnection (
@@ -122,8 +137,10 @@ public class DatabaseConnection {
 								String dbUser = rSet.getString("database_user");
 								String dbPassword = rSet.getString("database_password");
 								
+								
 								DatabaseConnectionDetails dbDetails = new DatabaseConnectionDetails();
 								DatabaseConnection dbConnection = new DatabaseConnection();
+								dbDetails.setConnId(rSet.getString("connection_id")); // added by ram
 								dbDetails.setConnName(rSet.getString("connection_name"));
 								dbDetails.setDbName(rSet.getString("database_name"));
 								dbDetails.setDbType(rSet.getString("database_type"));

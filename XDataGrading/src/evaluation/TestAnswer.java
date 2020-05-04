@@ -1,10 +1,6 @@
 package evaluation;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +28,6 @@ import util.MyConnection;
 import util.TableMap;
 import util.Utilities;
 
-import java.sql.SQLException;
 import java.util.*;
 
 import testDataGen.GenerateCVC1;
@@ -492,7 +487,7 @@ public class TestAnswer {
 			pstmt.executeUpdate();
 			int i=1;			
 
-			logger.log(Level.INFO,"queryString:" + queryString);
+			logger.log(Level.INFO,"queryString: " + queryString);
 			queryString=queryString.trim().replaceAll("\n+", " ").trim();
 			//queryString=queryString.trim().replaceAll(" +", " ");	
 			while(queryString.endsWith(";"))
@@ -500,7 +495,7 @@ public class TestAnswer {
 			//queryString = queryString.trim().replace(";", " ");
 
 			try{
-				//	PreparedStatement pstm1 = conn.prepareStatement("create temporary table xdata_temp1  as ("+queryString+");");
+				//PreparedStatement pstm1 = conn.prepareStatement("create temporary table xdata_temp1  as ("+queryString+");");
 				//PreparedStatement pstm1 = conn.prepareStatement("with x1 as ("+queryString+") SELECT md5(CAST((array_agg(f.*))AS text)) FROM x1 as f;");
 				//pstm1.execute();
 			}catch(Exception e){
@@ -509,7 +504,33 @@ public class TestAnswer {
 
 			//Calculate the MD5 HAsh for xdata_temp1 : using SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_temp1 f; 
 			//PreparedStatement hashStmnt = conn.prepareStatement("SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_temp1 f");
-			PreparedStatement hashStmnt = testConn.prepareStatement("with x1 as ("+queryString+") SELECT md5(CAST((array_agg(f.*))AS text)) FROM x1 as f;");
+			
+			// added by rambabu for mysql
+			DatabaseMetaData dbmd=testConn.getMetaData();      
+			String dbType = dbmd.getDatabaseProductName(); 
+			PreparedStatement hashStmnt = null;
+			if (dbType.equalsIgnoreCase("MySql"))
+			{
+				//hashStmnt = testConn.prepareStatement("with x1 as ("+queryString+") SELECT md5(GROUP_CONCAT(f.*)) FROM x1 as f;");
+				hashStmnt = testConn.prepareStatement(queryString);
+				ResultSet temp_rs = hashStmnt.executeQuery();
+				ResultSetMetaData rsmd=temp_rs.getMetaData();
+				String col_names = "";
+				for(int k=1; k<=rsmd.getColumnCount();k++)
+				{
+					col_names+=rsmd.getColumnName(k);
+					if(k!=rsmd.getColumnCount())
+						col_names+=", ";
+				}
+				
+				System.out.println(col_names);
+				
+				hashStmnt = testConn.prepareStatement("with x1 as ("+queryString+") SELECT md5(GROUP_CONCAT("+col_names+")) FROM x1 as f;");
+			}
+			else if(dbType.equalsIgnoreCase("PostgreSQL")) {
+				hashStmnt = testConn.prepareStatement("with x1 as ("+queryString+") SELECT md5(CAST((array_agg(f.* order by f.*))AS text)) FROM x1 as f;");
+			}
+			
 			ResultSet hashResult = hashStmnt.executeQuery();
 			if(hashResult.next()){
 				hashValueOfInstructorQueryTable = hashResult.getString(1);
@@ -537,19 +558,116 @@ public class TestAnswer {
 					logger.log(Level.FINE,"Mutant query -" + mutant_qry.toString());
 					
 					if(orderIndependent){
-						try{				
-			
+						try{
+							//added by rambabu for mysql
+							// it is equivalent to the query given in postgreSQL case
+							if (dbType.equalsIgnoreCase("MySql"))
+							{
+								
+								String tmp_query = "create temporary table xdata_S1 as " + mutant_qry;
+								PreparedStatement pstmt_temp = testConn.prepareStatement(tmp_query);
+								pstmt_temp.executeUpdate();
+								
+								ResultSet rs_temp = testConn.prepareStatement("select * from xdata_S1").executeQuery();
+								
+								ResultSetMetaData rsmd_temp = rs_temp.getMetaData();
+								ArrayList<String> SQColList = new ArrayList<String>();
+								String SQColList_String = "";
+								for(int k=1; k<=rsmd_temp.getColumnCount();k++)
+								{
+									SQColList.add(rsmd_temp.getColumnName(k));
+									//SQColList_String+=rsmd_temp.getColumnName(k);
+									if(k!=rsmd_temp.getColumnCount())
+										SQColList_String+="C"+String.valueOf(k)+", ";
+									else
+										SQColList_String+="C"+String.valueOf(k);
+								}
+								
+								String SQselect_String = "";
+								
+								for(int k=0; k<SQColList.size(); k++) {
+									SQselect_String+= SQColList.get(k)+" as C"+ String.valueOf(k+1);
+									if(k!=SQColList.size()-1)
+										SQselect_String+=", ";
+								}
+								
+								
+								tmp_query = "create temporary table xdata_I1 as "+queryString;
+								pstmt_temp = testConn.prepareStatement(tmp_query);
+								pstmt_temp.executeUpdate();
+								rs_temp = testConn.prepareStatement("select * from xdata_I1").executeQuery();
+								
+								rsmd_temp = rs_temp.getMetaData();
+								
+								ArrayList<String> IQColList = new ArrayList<String>();
+								String IQColList_String = "";
+								for(int k=1; k<=rsmd_temp.getColumnCount();k++)
+								{
+									IQColList.add(rsmd_temp.getColumnName(k));
+									//IQColList_String+=rsmd_temp.getColumnName(k);
+									if(k!=rsmd_temp.getColumnCount())
+										IQColList_String+="C"+String.valueOf(k)+", ";
+									else
+										IQColList_String+="C"+String.valueOf(k);
+								}
+								
+								String IQselect_String = "";
+								
+								for(int k=0; k<IQColList.size(); k++) {
+									IQselect_String+= IQColList.get(k)+" as C"+ String.valueOf(k+1);
+									if(k!=IQColList.size()-1)
+										IQselect_String+=", ";
+									}
+								
+								
+								tmp_query = "create temporary table xdata_S2 as select "+ SQselect_String + 
+											", count(*) as S_cnt from xdata_S1 group by " +SQColList_String;
+								pstmt_temp = testConn.prepareStatement(tmp_query);
+								pstmt_temp.executeUpdate();
+								
+								tmp_query = "create temporary table xdata_I2 as select "+ IQselect_String + 
+										", count(*) as I_cnt from xdata_I1 group by " +IQColList_String;
+								pstmt_temp = testConn.prepareStatement(tmp_query);
+								pstmt_temp.executeUpdate();
+								// duplicate copy of xdata_I2 and xdata_S2 as temp tables can't be accessed two times in single query in MySql
+								pstmt_temp = testConn.prepareStatement("create temporary table xdata_I2_copy as select * from xdata_I2");
+								pstmt_temp.executeUpdate();
+								
+								pstmt_temp = testConn.prepareStatement("create temporary table xdata_S2_copy as select * from xdata_S2");
+								pstmt_temp.executeUpdate();
+								
+								
+								tmp_query = "select * from xdata_I2 natural left join xdata_S2_copy "+
+											"where S_cnt is null "+
+											"union "+
+											"select * from xdata_S2 natural left join xdata_I2_copy "+
+											"where I_cnt is null";
+								
+								pstmt = testConn.prepareStatement(tmp_query);
+								
+								logger.log(Level.FINE,"Student Id : "+studentRollnums.get(l)+" evaluated");
+								
+								//pstmt.setQueryTimeout(60);
+								rs = pstmt.executeQuery();
+								
+								pstmt_temp = testConn.prepareStatement("drop table xdata_S2, xdata_S1, xdata_I2, xdata_I1, xdata_I2_copy, xdata_S2_copy");
+								pstmt_temp.executeUpdate();
+							}
+							else if(dbType.equalsIgnoreCase("PostgreSQL")) {
+							
 							pstmt = testConn.prepareStatement("with x1 as (" + queryString + ")," +
 									" x2 as (" + mutant_qry + ") select 'Q" + i 
 									+ " was killed by ' as const "+//,dataset.name from dataset " +
 									"where exists ((select * from x1) except all (select * from x2)) " +
 									"or exists ((select * from x2) except all (select * from x1))");
-
 							
 							logger.log(Level.FINE,"Student Id : "+studentRollnums.get(l)+" evaluated");
 							
 							//pstmt.setQueryTimeout(60);
 							rs = pstmt.executeQuery();
+							}
+							
+							
 							ResultSet rs11 = pstmt22.executeQuery(); 
 							while(rs11.next()){ 
 								//logger.log(Level.INFO,rs11.getString(1));
@@ -562,7 +680,32 @@ public class TestAnswer {
 							//Check the MD5 HASH of instructor table with newly calculated HASH - if it does not match, mark student query as incorrect
 							//Failed - and re-run the populateData method to re-load the dataset again.
 							//	PreparedStatement hashStmnt1 = conn.prepareStatement("SELECT md5(CAST((array_agg(f.*))AS text)) FROM xdata_temp1 f");
-							PreparedStatement hashStmnt1 = testConn.prepareStatement("with x1 as ("+queryString+") SELECT md5(CAST((array_agg(f.*))AS text)) FROM x1 as f;");
+							
+							// added by rambabu for mysql
+							PreparedStatement hashStmnt1 = null;
+							if (dbType.equalsIgnoreCase("MySql"))
+							{
+								//hashStmnt = testConn.prepareStatement("with x1 as ("+queryString+") SELECT md5(GROUP_CONCAT(f.*)) FROM x1 as f;");
+								
+								hashStmnt = testConn.prepareStatement(queryString);
+								ResultSet temp_rs = hashStmnt.executeQuery();
+								ResultSetMetaData rsmd=temp_rs.getMetaData();
+								String col_names = "";
+								for(int k=1; k<=rsmd.getColumnCount();k++)
+								{
+									col_names+=rsmd.getColumnName(k);
+									if(k!=rsmd.getColumnCount())
+										col_names+=", ";
+								}
+								
+								System.out.println(col_names);
+								
+								hashStmnt1 = testConn.prepareStatement("with x1 as ("+queryString+") SELECT md5(GROUP_CONCAT("+col_names+")) FROM x1 as f;");
+							}
+							else if(dbType.equalsIgnoreCase("PostgreSQL")) {
+								hashStmnt1 = testConn.prepareStatement("with x1 as ("+queryString+") SELECT md5(CAST((array_agg(f.* order by f.*))AS text)) FROM x1 as f;");
+							}
+							
 							ResultSet hashResult1 = hashStmnt1.executeQuery();
 							if(hashResult1.next()){
 								hashValueOfInstructorQueryTableAfterExecution = hashResult1.getString(1);
@@ -1039,15 +1182,17 @@ public class TestAnswer {
 
 			datasets.add(datasetid);
 			dataSetForQueries.put(rs.getInt("query_id"), datasets);
-
-			String dsPath=Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid;
+			
+			//String dsPath=Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid;
+			String dsPath=Configuration.homeDir+"/temp_smt"+filePath+"/"+datasetid; // added by rambabu
 				File f=new File(dsPath);
 				if(!f.exists()){
 					f.mkdirs();
 				}
 				else{
 					
-					Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
+					//Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasetid+"/*");
+					Utilities.deletePath(Configuration.homeDir+"/temp_smt"+filePath+"/"+datasetid+"/*"); // added by rambabu
 					//continue;
 				}
 				//JSON implementation reqd and test here.
@@ -1940,7 +2085,8 @@ public class TestAnswer {
 								for(int i=0;i<datasets.size();i++){
 									boolean flag=true;
 									//load the contents of DS
-									String dsPath = Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasets.get(i);
+									//String dsPath = Configuration.homeDir+"/temp_cvc"+filePath+"/"+datasets.get(i);
+									String dsPath = Configuration.homeDir+"/temp_smt"+filePath+"/"+datasets.get(i); // added by rambabu 
 									File ds=new File(dsPath);
 									String copyFiles[] = ds.list();
 									Vector<String> vs = new Vector<String>();

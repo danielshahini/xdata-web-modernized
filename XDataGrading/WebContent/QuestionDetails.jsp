@@ -550,10 +550,8 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						
 						out.println(instr); 
 						
-						
 // 						instr += "</div><div style='float: left; width: 400px'><label style='float:left; margin-left: 10px;'>Marks:</label><output style='float: left; width: 20px;'>"
 // 								 +"</output><div style='float: left; width: 300px; margin-left: 10px;  padding-top: 3px;'><input name='maxMarks' type='range' min='0' max='100' value='100' data-rangeslider-main></div></div></div>";
- 						
 						
 					} catch (Exception err) { 
 		
@@ -570,7 +568,6 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 					try {
 						 
 						
-						 
 						stmt = dbcon
 								.prepareStatement("SELECT * FROM xdata_qinfo  where assignment_id=? and course_id=? and question_id=?");
 						stmt.setInt(1, assignID);
@@ -649,9 +646,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 										out.println(instr); 
 										rs2.close();
 										instr = "";
+										
 								
 						%> 
-						
+											
 							
 						 <script>document.getElementById("optionalschemaid").value = <%=rs.getInt("optionalschemaid")%>;
 						</script>
@@ -754,7 +752,6 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						if(rs1.next()){
 							newQueryID = (rs1.getInt(1));
 						}
-						
 						String query = "";
 						String description = ""; 
 						newQueryID=1;
@@ -776,7 +773,6 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									Gson gson = new Gson();
 									Type listType = new TypeToken<String[]>() {}.getType();
 				                    String[] dsList = new Gson().fromJson(defaultDataIdsForAssignment, listType);
-				                   
 				                    if(dsList != null && dsList.length != 0 ){
 				                    	 instr += "<p></p><label style='float:left;'>Please select the default datasets for evaluation.</label><p></p>"; 
 						                for(int i=0;i<dsList.length;i++){
@@ -815,6 +811,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 							}
                 		instr += "</div>";
 						out.println(instr); 
+						
 	%>  					<!-- <div>
 								<div id="loadDefaultDataSets" style='display:none;'><p></p>
 								</div> 
@@ -911,6 +908,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 					finally{
 						dbcon.close();
 					}
+					
 				%>		
 				<div class="editbutton"> 
 						<input type="button" onclick="onSubmit(this)"  value="Update Query" name="update" id="button <%= qID + " "+ assignID%>"/>

@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -459,6 +460,7 @@ public class FailedTestCases extends HttpServlet {
 
 									//tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".copy"));
 									PreparedStatement detailStmt = testcon.prepareStatement("select * from " + tname + " where 1 = 0");
+									//PreparedStatement detailStmt = testcon.prepareStatement("select * from " + tname.toLowerCase() + " where 1 = 0"); //added by ram for mysql
 									ResultSetMetaData columnDetail = detailStmt.executeQuery().getMetaData();
 									out_assignment.println("<table border=\"1\">");
 									out_assignment.println("<caption>"+tname+"</caption>");
@@ -506,6 +508,7 @@ public class FailedTestCases extends HttpServlet {
 										tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref"));
 
 										PreparedStatement detailStmt = testcon.prepareStatement("select * from " + tname + " where 1 = 0");
+										//PreparedStatement detailStmt = testcon.prepareStatement("select * from " + tname.toLowerCase() + " where 1 = 0"); //added by ram for mysql
 										ResultSetMetaData columnDetail = detailStmt.executeQuery().getMetaData();
 
 										out_assignment.println("<table border=\"1\">");
@@ -557,13 +560,26 @@ public class FailedTestCases extends HttpServlet {
 
 						populateTestData.deleteAllTablesFromTestUser(testcon);
 						populateTestData.createTempTableWithDefaultData(dbCon, testcon, assignment_id, question_id, course_id, dataSetId);			    	 
-
+						
+						
 						DatabaseMetaData meta = testcon.getMetaData();
-						String tableFilter[] = {"TEMPORARY TABLE"};
+						String dbType = meta.getDatabaseProductName(); 
+						//String tableFilter[] = {"TEMPORARY TABLE"};
+						//added by ram for mysql
+						String tableFilter[] = new String[1];
+					    if (dbType.equalsIgnoreCase("MySql"))
+						{
+					    	tableFilter[0] = "TABLE";
+						}
+						else if(dbType.equalsIgnoreCase("PostgreSQL")) {
+							tableFilter[0] = "TEMPORARY TABLE";
+						}
+					    
 
 						ResultSet r = meta.getTables(testcon.getCatalog(), null, "%", tableFilter);
 						while (r.next()) {                          
-							String tableName = r.getString("TABLE_NAME").toUpperCase();
+							//String tableName = r.getString("TABLE_NAME").toUpperCase();
+							String tableName = r.getString("TABLE_NAME"); //added by ram for mysql
 							if(tableName.equalsIgnoreCase("dataset")){
 								continue;
 							}

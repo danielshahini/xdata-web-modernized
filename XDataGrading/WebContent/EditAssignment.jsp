@@ -263,6 +263,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						if(rs1.getBoolean("learning_mode")){
 							output += "checked=\"checked\"";
 					 	}
+						
 						if(rs1.getBoolean("showmarks")){
 							showmarks = true;
 					 	}

@@ -117,6 +117,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								if (rs.getObject("scale") != null && !rs.wasNull()) {
 								    scale = rs.getFloat("scale");
 								  }
+								
 								%>
 								 <tr><td><%=qID%></td>
 								 <!-- <td><pre><%=desc%></pre></td>-->

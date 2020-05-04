@@ -72,7 +72,7 @@ public class PopulateTestDataGrading {
 						stmt.close();
 					}
 				}
-				//If tables ontains foreign key relation they will be available in foreignKeyGraph
+				//If tables contains foreign key relation they will be available in foreignKeyGraph
 				for(int i=0;i<tableMap.foreignKeyGraph.topSort().size();i++){
 					String tableName = tableMap.foreignKeyGraph.topSort().get(i).toString();
 					if(tables.containsKey(tableName)){
@@ -174,7 +174,8 @@ public class PopulateTestDataGrading {
 						listOfCopyFiles.remove(tableName+".copy");
 						String copyFile = tableName+".copy";
 
-						br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_cvc"+filePath+"/"+copyFile));
+						//br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_cvc"+filePath+"/"+copyFile));
+						br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_smt"+filePath+"/"+copyFile)); // added by ram 
 						String str;
 						String data="";
 						while((str = br.readLine())!=null){
@@ -185,7 +186,8 @@ public class PopulateTestDataGrading {
 					}else if(listOfCopyFiles.contains(tableName+".ref.copy")){
 						listOfCopyFiles.remove(tableName+".ref.copy");
 						String copyFile = tableName+".ref.copy";
-						br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_cvc"+filePath+"/"+copyFile));
+						//br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_cvc"+filePath+"/"+copyFile));
+						br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_smt"+filePath+"/"+copyFile)); // added by ram
 						String str;
 						String data="";
 						while((str = br.readLine())!=null){
@@ -206,7 +208,8 @@ public class PopulateTestDataGrading {
 			for(int i=0;i<listOfCopyFiles.size();i++){
 				try{
 					String copyFile = listOfCopyFiles.get(i);
-					br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_cvc"+filePath+"/"+copyFile));
+					// br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_cvc"+filePath+"/"+copyFile));
+					br = new BufferedReader(new FileReader(Configuration.homeDir+"/temp_smt"+filePath+"/"+copyFile)); // added by ram
 					String str;
 					String data="";
 					while((str = br.readLine())!=null){
@@ -240,7 +243,10 @@ public class PopulateTestDataGrading {
 		for(int i=0;i<t.length;i++){			
 			t[i]=t[i].replaceAll("\\|", "','");
 
-			PreparedStatement smt=conn.prepareStatement("Insert into "+ tablename+" Values ('"+t[i]+"')");
+			//PreparedStatement smt=conn.prepareStatement("Insert into "+ tablename+" Values ('"+t[i]+"')");
+			//PreparedStatement smt=conn.prepareStatement("Insert into "+ tablename.toLowerCase()+" Values ('"+t[i]+"')"); // added by ram for mysql
+			PreparedStatement smt=conn.prepareStatement("Insert into "+ tablename+" Values ('"+t[i]+"')"); // added by ram for mysql
+			
 			try{
 				smt.executeUpdate();
 
@@ -256,32 +262,102 @@ public class PopulateTestDataGrading {
 	}
 
 	public void deleteAllTempTablesFromTestUser(Connection dbConn) throws Exception{
-		Statement st = dbConn.createStatement();
-		st = dbConn.createStatement();
-		st.executeUpdate("DISCARD TEMPORARY");
-		st.close();
+		// added by ram to know metadata
+		DatabaseMetaData dbmd=dbConn.getMetaData();    
+//		System.out.println("Driver Name: "+dbmd.getDriverName());  
+//		System.out.println("Driver Version: "+dbmd.getDriverVersion());  
+//		System.out.println("UserName: "+dbmd.getUserName());  
+		String dbType = dbmd.getDatabaseProductName(); 
+		System.out.println(dbType);
+//		System.out.println("Database Product Version: "+dbmd.getDatabaseProductVersion());
+		
+		// metadata details ends here:ram
+		if (dbType.equalsIgnoreCase("MySql"))
+		{
+			//when its mysql, delete all tables, we have not create temp tables.
+			deleteAllTablesFromTestUser(dbConn);
+			
+		}
+		
+		else if(dbType.equalsIgnoreCase("postgreSQL"))
+		{
+			Statement st = dbConn.createStatement();
+			st = dbConn.createStatement();
+			st.executeUpdate("DISCARD TEMPORARY");
+			st.close();
+		}
 	}
 
 	public void deleteAllTablesFromTestUser(Connection conn) throws Exception{
 		try{
 			DatabaseMetaData dbm = conn.getMetaData();
-			String[] types = {"TEMPORARY TABLE"};
-			ResultSet rs = dbm.getTables(conn.getCatalog(), null, "%", types);		  
+			// added by ram
+			String dbType = dbm.getDatabaseProductName(); 
+			System.out.println(dbType);
+			
+			if (dbType.equalsIgnoreCase("MySql"))
+			{
+				String[] types = {"TABLE"};
+				ResultSet rs = dbm.getTables(conn.getCatalog(), null, "%", types);	
+			
+//				ResultSet rs = dbm.getTables(null, null, "%", types);
+//				while (rs.next()) {
+//				  System.out.println(rs.getString(3));
+//				}
+				String query= "SET FOREIGN_KEY_CHECKS = 0";
+				PreparedStatement pstmt = conn.prepareStatement(query);
+				pstmt.executeUpdate();
+				pstmt.close();
+				
+				while(rs.next()){
+					String table=rs.getString("TABLE_NAME");		
+					if(!table.equalsIgnoreCase("dataset") 
+							&& !table.equalsIgnoreCase("xdata_temp1")
+							&& !table.equalsIgnoreCase("xdata_temp2")){
+						System.out.println("drop table if exists "+table +" cascade");
+						//PreparedStatement pstmt = conn.prepareStatement("delete from "+table);						
+//						PreparedStatement pstmt = conn.prepareStatement("drop table if exists "+table +" cascade");
+//						pstmt.executeUpdate();
+//						pstmt.close();
+						
+						query = "drop table if exists "+table;
+						PreparedStatement pstmt1 = conn.prepareStatement(query);
+						pstmt1.executeUpdate();
+						pstmt1.close();
+					}
 
-			while(rs.next()){
-				String table=rs.getString("TABLE_NAME");		
-				if(!table.equalsIgnoreCase("dataset") 
-						&& !table.equalsIgnoreCase("xdata_temp1")
-						&& !table.equalsIgnoreCase("xdata_temp2")){
-					//PreparedStatement pstmt = conn.prepareStatement("delete from "+table);						
-					PreparedStatement pstmt = conn.prepareStatement("Truncate table "+table +" cascade");
-					pstmt.executeUpdate();
-					pstmt.close();
 				}
-
-			} 
-
-			rs.close();
+				
+				query= "SET FOREIGN_KEY_CHECKS = 1";
+				PreparedStatement pstmt2 = conn.prepareStatement(query);
+				pstmt2.executeUpdate();
+				pstmt2.close();
+				
+				rs.close();
+				
+			}
+			
+			else if(dbType.equalsIgnoreCase("postgreSQL"))
+			{
+				String[] types = {"TEMPORARY TABLE"};
+				ResultSet rs = dbm.getTables(conn.getCatalog(), null, "%", types);		  
+	
+				while(rs.next()){
+					String table=rs.getString("TABLE_NAME");		
+					if(!table.equalsIgnoreCase("dataset") 
+							&& !table.equalsIgnoreCase("xdata_temp1")
+							&& !table.equalsIgnoreCase("xdata_temp2")){
+						//PreparedStatement pstmt = conn.prepareStatement("delete from "+table);						
+						PreparedStatement pstmt = conn.prepareStatement("Truncate table "+table +" cascade");
+						pstmt.executeUpdate();
+						pstmt.close();
+					}
+	
+				} 
+			
+				rs.close();
+			}
+			
 		}catch(Exception e){
 			logger.log(Level.INFO,e.getMessage());
 		}
@@ -290,11 +366,13 @@ public class PopulateTestDataGrading {
 
 	public void deleteDatasets(String filePath) throws Exception{
 		//Runtime r = Runtime.getRuntime();
-		File f=new File(Configuration.homeDir+"/temp_cvc"+filePath+"/");
+		//File f=new File(Configuration.homeDir+"/temp_cvc"+filePath+"/");
+		File f=new File(Configuration.homeDir+"/temp_smt"+filePath+"/"); // added by ram
 		File f2[]=f.listFiles();
 		for(int i=0;i<f2.length;i++){
 			if(f2[i].isDirectory() && f2[i].getName().startsWith("DS")){
-				Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+filePath+"/"+f2[i].getName());
+				//Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+filePath+"/"+f2[i].getName());
+				Utilities.deletePath(Configuration.homeDir+"/temp_smt"+filePath+"/"+f2[i].getName()); // added by ram
 			}				
 		}
 	}
@@ -349,19 +427,34 @@ public class PopulateTestDataGrading {
 
 									ArrayList<String> listOfQueries = Utilities.createQueries(tempFile);
 									String[] inst = listOfQueries.toArray(new String[listOfQueries.size()]);
-
+									
+									//deleteAllTablesFromTestUser(conn); // added by ram for mysql
+									deleteAllTempTablesFromTestUser(conn); //added by ram for mysql
+									
 									for (int i = 0; i < inst.length; i++) {
 										// we ensure that there is no spaces before or after the request string  
 										// in order to not execute empty statements  
 										if (!inst[i].trim().equals("") && ! inst[i].trim().contains("drop table")) {
-											String temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
+											//added by ram for mysql
+											DatabaseMetaData dbmd=conn.getMetaData();      
+											String dbType = dbmd.getDatabaseProductName(); 
+											String temp = "";
+											if (dbType.equalsIgnoreCase("MySql"))
+											{
+												temp = inst[i].trim();
+											}
+											else if(dbType.equalsIgnoreCase("PostgreSQL")) {
+												temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");	
+											}
 											try(PreparedStatement stmt2 = conn.prepareStatement(temp)){
+												System.out.println(temp);// added by ram 
 												stmt2.executeUpdate();					
 											} catch (SQLException sqle){
 												logger.log(Level.SEVERE, sqle.getMessage());
 											}
 										}
 									}	
+									
 								}
 							}//try-with-resource for ressultset result
 						}//try-with-resource for stmt1		
@@ -586,17 +679,32 @@ public class PopulateTestDataGrading {
 
 						listOfQueries = Utilities.createQueries(tempFile);
 						inst = listOfQueries.toArray(new String[listOfQueries.size()]);
-
+						
+						deleteAllTablesFromTestUser(testConn); // added by ram for mysql
+						
 						for (int i = 0; i < inst.length; i++) {
 							// we ensure that there is no spaces before or after the request string  
-							// in order to not execute empty statements  
+							// in order to not execute empty statements 
+							
 							if (!inst[i].trim().equals("") && ! inst[i].trim().contains("drop table")) {
-								String temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
+								
+								//added by ram for mysql
+								DatabaseMetaData dbmd=testConn.getMetaData();      
+								String dbType = dbmd.getDatabaseProductName(); 
+								String temp = "";
+								if (dbType.equalsIgnoreCase("MySql"))
+								{
+									temp = inst[i].trim();
+								}
+								else if(dbType.equalsIgnoreCase("PostgreSQL")) {
+									temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");	
+								}
 								try(PreparedStatement stmt2 = testConn.prepareStatement(temp)){
 									stmt2.executeUpdate();	
 								}
 							}
 						}
+						
 					}
 				}
 			}
@@ -616,7 +724,7 @@ public class PopulateTestDataGrading {
 
 						listOfQueries = Utilities.createQueries(tempFile);
 						inst = listOfQueries.toArray(new String[listOfQueries.size()]);
-
+						
 						for (int i = 0; i < inst.length; i++) {
 							// we ensure that there is no spaces before or after the request string  
 							// in order to not execute empty statements  
@@ -627,6 +735,8 @@ public class PopulateTestDataGrading {
 								}
 							}
 						}
+						
+						
 
 					}//try-with-resource resultset obj
 				}//try-with-resource statement obj	
@@ -646,7 +756,7 @@ test student and instructor query options */
 	 * @throws IOException
 	 */
 	public String createTempTableWithDefaultData(Connection mainCon,Connection testConn,int assignmentId,
-			int questionId,String course_id,String sampledata_id) throws Exception{
+		int questionId,String course_id,String sampledata_id) throws Exception{
 		String sampleDataName = "";
 		byte[] dataBytes = null;
 		String tempFile = "";

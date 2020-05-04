@@ -98,7 +98,6 @@ public class UpdateSingleQuery extends HttpServlet {
 		if (matchAll != null && matchAll.equals("matchAll")) {
 			matchAllQueries = true;
 		}
-
 		String desc = request.getParameter("quesTxt");
 		String optionalSchemaId = request.getParameter("optionalschemaid");
 		//Get selected default data sets
@@ -122,7 +121,6 @@ public class UpdateSingleQuery extends HttpServlet {
 
 	
 				
-				
 		logger.log(Level.FINE,"Desc: " + queryDesc);
 		logger.log(Level.FINE,"optional schema id" + optId);
 		Connection graderConn=null;
@@ -133,7 +131,6 @@ public class UpdateSingleQuery extends HttpServlet {
 			stmt.setInt(2, asID);
 			stmt.setInt(3, qId);
 			ResultSet rs = stmt.executeQuery();
-			
 			try(PreparedStatement stmt1 = dbcon
 					.prepareStatement("SELECT MAX(query_id) from xdata_instructor_query where course_id=? and assignment_id=? and question_id=?")){
 			stmt1.setString(1, courseID);
@@ -146,6 +143,17 @@ public class UpdateSingleQuery extends HttpServlet {
 			}
 			PopulateTestDataGrading p = new PopulateTestDataGrading();
 			graderConn = new util.DatabaseConnection().getGraderConnection(asID);
+			// added by rambabu to know the metadata info
+			DatabaseMetaData dbmd=graderConn.getMetaData();  
+			  
+			System.out.println("Driver Name: "+dbmd.getDriverName());  
+			System.out.println("Driver Version: "+dbmd.getDriverVersion());  
+			System.out.println("UserName: "+dbmd.getUserName());  
+			System.out.println("Database Product Name: "+dbmd.getDatabaseProductName());  
+			System.out.println("Database Product Version: "+dbmd.getDatabaseProductVersion());
+			
+			// mycode ends here
+			
 			p.deleteAllTempTablesFromTestUser(graderConn);
 			p.createTempTables(graderConn, asID, qId);
 			if (rs.next()) {
@@ -156,7 +164,6 @@ public class UpdateSingleQuery extends HttpServlet {
 								"optionalschemaid=?, " +
 								"matchallqueries=?, totalmarks=?,default_sampledataid=?  " +
 								"WHERE course_id=? and assignment_id=? and question_id=?")){
-
 				stmt2.setString(1, queryDesc);
 				stmt2.setInt(2, optId);
 				stmt2.setBoolean(3, matchAllQueries);
@@ -182,7 +189,7 @@ public class UpdateSingleQuery extends HttpServlet {
 						//If there is no value set in the session, initialize to its default value
 						if(partialMarkParam.getValue() == 0){
 							partialMarkParam = new PartialMarkParameters();
-						} 
+						} 	
 						partialParamJson = gson.toJson(partialMarkParam);
 						String queryToSave = editedQueries[i];/*.trim()
 								.replaceAll("\r\n+", " ").trim()
@@ -294,7 +301,6 @@ public class UpdateSingleQuery extends HttpServlet {
 				
 					for (int i = 0; i < newQueries.length; i++) {
 						//System.out.println(" NEW Queries when submited : " + newQueries[i]);
-						
 						if (newQueries[i] != null) {
 							//Test query id here
 							partialParamJson="";

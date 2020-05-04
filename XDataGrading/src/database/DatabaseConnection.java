@@ -20,7 +20,7 @@ public class DatabaseConnection {
 			
 
 			if (dbcon != null) {
-				//System.out.println("Connected successfullly");
+				//System.out.println("Connected successfully");
 			}
 		} catch (SQLException ex) {
 
@@ -51,10 +51,15 @@ public class DatabaseConnection {
 		}
 		else if(dbType.equals("PostgreSQL")){
 			 url="jdbc:postgresql://"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName();
-		}else if(dbType.equals("MSSQL")){			
+		}
+		else if(dbType.equals("MSSQL")){			
 			
 			 url= "jdbc:sqlserver://" + dbDetails.getJdbc_Url() +
 			   ";databaseName=" + dbDetails.getDbName()+";";
+		}
+		
+		else if(dbType.equals("SQLite")){			
+			url= "jdbc:sqlite:memory//" + dbDetails.getJdbc_Url() + ";databaseName=" + dbDetails.getDbName()+";";
 		}
 		 
 		else if(dbType.equals("db2")){
@@ -65,6 +70,7 @@ public class DatabaseConnection {
 	public static Connection getConnection(DBConnectionInfo dbDetails) throws Exception{
 	
 		String dbType = dbDetails.getDbType(dbDetails.getDbType());
+		
 		Connection con = null;
 		if(dbType.equals("Oracle")){			
 			con = getOracleConnection(dbDetails);
@@ -81,6 +87,9 @@ public class DatabaseConnection {
 		}
 		else if(dbType.equals("MSSQL")){
 			con = getMicorsoftSQLConnection(dbDetails);
+		}
+		else if(dbType.equals("SQLite")){
+			con = getSQLiteConnection(dbDetails);
 		}
 			return con;
 	}
@@ -101,7 +110,7 @@ public class DatabaseConnection {
 		  }
  
 	 private static Connection getMySqlConnection(DBConnectionInfo dbDetails) throws Exception {
-		    String driver = "org.gjt.mm.mysql.Driver";
+		    String driver = "com.mysql.cj.jdbc.Driver";
 		    //String url = "jdbc:mysql://localhost/tiger";
 		    String url="jdbc:mysql://"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName();
 		    String username = dbDetails.getDbUser();
@@ -116,14 +125,26 @@ public class DatabaseConnection {
 		  private static Connection getPostgreSQLConnection(DBConnectionInfo dbDetails) throws Exception{
 			  String driver = "org.postgresql.Driver";
 			  	// String jdbcUrl = "jdbc:postgresql://" + host + "/" + dbName;
-			    String url="jdbc:postgresql://"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName();
-			    String username = dbDetails.getDbUser();
-			    String password = dbDetails.getDbPwd();
-			    Class.forName(driver); // load MySQL driver
-			    Connection conn = DriverManager.getConnection(url, username, password);
+			  String url="jdbc:postgresql://"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName();
+			  String username = dbDetails.getDbUser();
+			  String password = dbDetails.getDbPwd();
+			  Class.forName(driver); // load MySQL driver
+			  Connection conn = DriverManager.getConnection(url, username, password);
 
 				   
-			    return conn;
+			   return conn;
+		  }
+		  
+		  private static Connection getSQLiteConnection(DBConnectionInfo dbDetails) throws Exception {
+			   String driver = "org.sqlite.JDBC";
+			    //String url = "jdbc:sqlite://localhost/tiger";
+			   String url="jdbc:sqlite://"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName();
+			   String username = dbDetails.getDbUser();
+			   String password = dbDetails.getDbPwd();
+			   Class.forName(driver);
+			   Connection conn = DriverManager.getConnection(url, username, password);
+			   
+			   return conn;
 		  }
 		  
 	
@@ -150,6 +171,7 @@ public class DatabaseConnection {
 					e.printStackTrace();
 					throw e;
 				}
+				
 				return con;
 			}
 		  

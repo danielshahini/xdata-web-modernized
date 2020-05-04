@@ -32,8 +32,10 @@ public void setDataSourceDetailsTemp(PoolProperties poolProp,DatabaseConnectionD
     public void setDatasourceDetailsPostgresql(PoolProperties poolProp,DatabaseConnectionDetails dbDetails){
     	poolProp.setUrl("jdbc:postgresql://"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName());
     	poolProp.setDriverClassName("org.postgresql.Driver");
-    	poolProp.setUsername(Configuration.existingDatabaseUser);
-    	poolProp.setPassword(Configuration.existingDatabaseUserPasswd);
+//    	poolProp.setUsername(Configuration.existingDatabaseUser);
+//    	poolProp.setPassword(Configuration.existingDatabaseUserPasswd);
+    	poolProp.setUsername(dbDetails.getDbUser()); // added by ram
+    	poolProp.setPassword(dbDetails.getDbPwd()); // added by ram
     }
     
 	 public void setDatasourceDetailsOracle(PoolProperties poolProp,DatabaseConnectionDetails dbDetails){
@@ -51,9 +53,11 @@ public void setDataSourceDetailsTemp(PoolProperties poolProp,DatabaseConnectionD
 	    }
 	    public void setDatasourceDetailsMySQL(PoolProperties poolProp,DatabaseConnectionDetails dbDetails){
 	    	poolProp.setUrl("jdbc:mysql://"+dbDetails.getJdbc_Url()+"/"+dbDetails.getDbName());
-	    	poolProp.setDriverClassName("org.postgresql.Driver");
-	    	poolProp.setUsername(Configuration.existingDatabaseUser);
-	    	poolProp.setPassword(Configuration.existingDatabaseUserPasswd);
+	    	poolProp.setDriverClassName("com.mysql.cj.jdbc.Driver");
+//	    	poolProp.setUsername(Configuration.existingDatabaseUser);
+//	    	poolProp.setPassword(Configuration.existingDatabaseUserPasswd);
+	    	poolProp.setUsername(dbDetails.getDbUser()); // added by ram
+	    	poolProp.setPassword(dbDetails.getDbPwd()); // added by ram
 	    }
 	    public void setDatasourceDetailsDB2(PoolProperties poolProp,DatabaseConnectionDetails dbDetails){
 	    	/*poolProp.setUrl("jdbc:postgresql://" + Configuration.databaseIP + ":" + Configuration.databasePort + "/"+Configuration.databaseName);

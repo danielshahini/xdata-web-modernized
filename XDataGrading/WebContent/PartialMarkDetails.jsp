@@ -332,6 +332,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       stmt.setInt(2, assignID);
    		       stmt.setInt(3, questionID);
    		       rs = stmt.executeQuery();
+   		       System.out.println("i am here in webcontent partial marks details"); //added by me: ram
    		       if(rs.next()){
    		    	   String data = rs.getString("markinfo");
    		    	   %>

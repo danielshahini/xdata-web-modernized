@@ -269,7 +269,8 @@ $( document ).ready(function() {
 													refTableExists = true;
 												}
 												if (!(dsValue.getFilename().contains(".ref"))) {
-													tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".copy"));
+													//tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".copy"));
+													tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".copy")).toLowerCase(); //added by ram
 
 													PreparedStatement detailStmt = testcon
 															.prepareStatement("select * from " + tname + " where 1 = 0");
@@ -310,7 +311,8 @@ $( document ).ready(function() {
 													String tname = "", values;
 													
 													if (dsValue.getFilename().contains(".ref")) {
-														tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".ref"));
+														//tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".ref"));
+														tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".ref")).toLowerCase(); // added by ram
 
 														PreparedStatement detailStmt = testcon
 																.prepareStatement("select * from " + tname + " where 1 = 0");

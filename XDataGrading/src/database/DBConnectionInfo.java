@@ -47,6 +47,12 @@ public class DBConnectionInfo {
 		else if(dbSelected.equals("03")){
 			db = "Oracle";
 		}
+		else if(dbSelected.equals("04")){
+			db = "SQLite";
+		}
+		else if(dbSelected.equals("05")){
+			db = "MySql";
+		}
 		return db;
 	}
 	

@@ -201,6 +201,8 @@ return;
 						<option value="01" <%if( dbType != null && dbType.equalsIgnoreCase("01")){%>selected<%}%>>PostgreSQL(default)</option>
 						<option value="02" <%if( dbType != null && dbType.equalsIgnoreCase("02")){%>selected<%}%>><!-- MySql -->MicrosoftSQLServer</option>
 						<option value="03" <%if( dbType != null && dbType.equalsIgnoreCase("03")){%>selected<%}%>>Oracle</option>
+						<option value="04" <%if( dbType != null && dbType.equalsIgnoreCase("04")){%>selected<%}%>>SQLite</option>
+						<option value="05" <%if( dbType != null && dbType.equalsIgnoreCase("05")){%>selected<%}%>>MySql</option>
 					</select> 
 					</div>
 					 	

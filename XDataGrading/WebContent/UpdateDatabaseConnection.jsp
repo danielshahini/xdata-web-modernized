@@ -40,6 +40,7 @@
 			String testPassword = (String) request.getParameter("testPassword");
 			//String port = (String)request.getParameter("port");
 			
+			
 			Connection dbcon = null;
 
 			dbcon = (new DatabaseConnection()).dbConnection();
@@ -47,16 +48,16 @@
 		try {
 		PreparedStatement stmt;
 		stmt = dbcon
-				.prepareStatement("INSERT INTO xdata_database_connection VALUES (?,DEFAULT,?,?,?,?,?,?,?)");
+				.prepareStatement("INSERT INTO xdata_database_connection VALUES (?,DEFAULT,?,?,?,?,?,?,?,?)");
 
 		stmt.setString(1, courseId);
-		stmt.setString(2, dbName);
-		stmt.setString(3, databaseType);
-		stmt.setString(4, jdbcurl);
-		stmt.setString(5, dbuserName);
-		stmt.setString(6, dbPassword);
-		stmt.setString(7, testUserName);
-		stmt.setString(8, testPassword);
+		stmt.setString(3, dbName);
+		stmt.setString(4, databaseType);
+		stmt.setString(5, jdbcurl);
+		stmt.setString(6, dbuserName);
+		stmt.setString(7, dbPassword);
+		stmt.setString(8, testUserName);
+		stmt.setString(9, testPassword);
 		
 
 		stmt.executeUpdate();

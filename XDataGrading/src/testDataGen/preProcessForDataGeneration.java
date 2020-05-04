@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class preProcessForDataGeneration {
 		cvc.setAssignmentId(assignmentId);
 		cvc.setQuestionId(questionId);
 		cvc.setQueryId(queryId);
-		//cvc.setQueryString(query);		
+		//cvc.setQueryString(query);
 		cvc.setConcatenatedQueryId(concatenatedQueryId);
 		cvc.setOrderindependent(true);
 		
@@ -46,7 +47,7 @@ public class preProcessForDataGeneration {
 		cvc.setIpdb(false);
 		cvc.setFilePath(filePath);
 		cvc = initializeConnectionDetails(cvc);
-		
+				
 		try(Connection dbcon = MyConnection.getDatabaseConnection()){
 	    	if(dbcon!=null){
 	    	    	  logger.log(Level.INFO,"Connected successfullly");	    	  
@@ -61,6 +62,7 @@ public class preProcessForDataGeneration {
 				try(ResultSet rs=stmt.executeQuery()){ 
 					rs.next();
 					String sql=rs.getString("sql");
+					System.out.println(sql); // added by ram
 					cvc.setQueryString(sql);
 					
 				}
@@ -91,8 +93,11 @@ public class preProcessForDataGeneration {
 	public static void deletePreviousDatasets(GenerateDataset_new g, String query) throws IOException,InterruptedException {
 
 		//Runtime r = Runtime.getRuntime();
-		logger.log(Level.INFO,Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/");
-		File f=new File(Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/");
+		//logger.log(Level.INFO,Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/");
+		//File f=new File(Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/");
+		
+		logger.log(Level.INFO,Configuration.homeDir+"/temp_smt"+g.getFilePath()+"/"); // added by ram
+		File f=new File(Configuration.homeDir+"/temp_smt"+g.getFilePath()+"/"); /// added by ram
 		
 		if(f.exists()){		
 			File f2[]=f.listFiles();
@@ -100,13 +105,15 @@ public class preProcessForDataGeneration {
 			for(int i=0;i<f2.length;i++){
 				if(f2[i].isDirectory() && f2[i].getName().startsWith("DS")){
 					
-					Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/"+f2[i].getName());
+					//Utilities.deletePath(Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/"+f2[i].getName());
+					Utilities.deletePath(Configuration.homeDir+"/temp_smt"+g.getFilePath()+"/"+f2[i].getName()); // added by ram
 				}
 			}
 		}
 		
 
-		File dir= new File(Configuration.homeDir+"/temp_cvc"+g.getFilePath());
+		//File dir= new File(Configuration.homeDir+"/temp_cvc"+g.getFilePath());
+		File dir= new File(Configuration.homeDir+"/temp_smt"+g.getFilePath());
 		if(dir.exists()){
 			for(File file: dir.listFiles()) {
 				file.delete();
@@ -116,8 +123,10 @@ public class preProcessForDataGeneration {
 			dir.mkdirs();
 		}
 		
-		BufferedWriter ord = new BufferedWriter(new FileWriter(Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/queries.txt"));
-		BufferedWriter ord1 = new BufferedWriter(new FileWriter(Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/queries_mutant.txt"));
+		//BufferedWriter ord = new BufferedWriter(new FileWriter(Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/queries.txt"));
+		//BufferedWriter ord1 = new BufferedWriter(new FileWriter(Configuration.homeDir+"/temp_cvc"+g.getFilePath()+"/queries_mutant.txt"));
+		BufferedWriter ord = new BufferedWriter(new FileWriter(Configuration.homeDir+"/temp_smt"+g.getFilePath()+"/queries.txt"));    // added by ram
+		BufferedWriter ord1 = new BufferedWriter(new FileWriter(Configuration.homeDir+"/temp_smt"+g.getFilePath()+"/queries_mutant.txt")); // added by ram
 		ord.write(query);
 		ord1.write(query);
 		ord.close();
@@ -202,6 +211,11 @@ public GenerateCVC1 initializeConnectionDetails(GenerateCVC1 cvc) throws Excepti
 						listOfQueries = Utilities.createQueries(tempFile);
 						inst = listOfQueries.toArray(new String[listOfQueries.size()]);
 						listOfDDLQueries.addAll(listOfQueries);
+						p.deleteAllTablesFromTestUser(testConn); // added by ram : delete tables if already exists.
+						
+						// to test the time taken for creating tables, added by ram
+						long startTime = System.currentTimeMillis();
+						
 						for (int i = 0; i < inst.length; i++) {
 							// we ensure that there is no spaces before or after the request string  
 							// in order to not execute empty statements  
@@ -209,7 +223,18 @@ public GenerateCVC1 initializeConnectionDetails(GenerateCVC1 cvc) throws Excepti
 								//Changed for MSSQL testing
 								//String temp = inst[i].replaceAll("(?i)^[ ]*create[ ]+table[ ]+", "create table ##");
 								//stmt = assignmentConn.prepareStatement(temp);
-								String temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");
+								//add by ram
+								DatabaseMetaData dbmd=testConn.getMetaData();      
+								String dbType = dbmd.getDatabaseProductName(); 
+								String temp = "";
+								if (dbType.equalsIgnoreCase("MySql"))
+								{
+									temp = inst[i].trim();
+								}
+								else if(dbType.equalsIgnoreCase("PostgreSQL")) {
+									temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");	
+								}
+								System.out.println(temp); // added by ram
 								PreparedStatement stmt2 = testConn.prepareStatement(temp);
 									stmt2.executeUpdate();	
 								stmt2.close();
@@ -217,6 +242,12 @@ public GenerateCVC1 initializeConnectionDetails(GenerateCVC1 cvc) throws Excepti
 								    
 							}
 						}
+						
+						// to test the time taken for creating tables, added by ram
+						long stopTime = System.currentTimeMillis();
+						long elapsedTime = stopTime - startTime;
+				        System.out.println("Total time taken for creating tables/temp tables is: ");
+				        System.out.print(elapsedTime/1000F);
 					}
 					}
 					}
@@ -235,6 +266,9 @@ public GenerateCVC1 initializeConnectionDetails(GenerateCVC1 cvc) throws Excepti
 								
 								listOfQueries = Utilities.createQueries(tempFile);
 								inst = listOfQueries.toArray(new String[listOfQueries.size()]);
+								
+								// to test the time taken for creating tables, added by ram
+								long startTime = System.currentTimeMillis();
 								 
 								for (int i = 0; i < inst.length; i++) {
 									// we ensure that there is no spaces before or after the request string  
@@ -243,12 +277,18 @@ public GenerateCVC1 initializeConnectionDetails(GenerateCVC1 cvc) throws Excepti
 									//Changed for MSSQL TESTING
 										//String temp = inst[i].replaceAll("(?i)^[ ]*insert[ ]+into[ ]+", "insert into [xdata].[dbo].##");
 										//stmt = assignmentConn.prepareStatement(temp+";");
-										
+										System.out.println(inst[i]);// add by RAM
 										PreparedStatement stmt3 = testConn.prepareStatement(inst[i]);
 											stmt3.executeUpdate();							
 											stmt3.close();
 									}
 								}
+								
+								// to test the time taken for creating tables, added by ram
+								long stopTime = System.currentTimeMillis();
+								long elapsedTime = stopTime - startTime;
+						        System.out.println("Total time taken for uploading sample data is: ");
+						        System.out.print(elapsedTime/1000F);
 							} 
 					}
 					}

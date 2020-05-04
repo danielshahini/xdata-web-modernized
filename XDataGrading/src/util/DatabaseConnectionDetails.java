@@ -41,15 +41,19 @@ public class DatabaseConnectionDetails {
 		if(dbSelected.equals("01")){
 			db = "PostgreSQL";
 		}
-		//else if(dbSelected.equals("02")){
-		//	db ="MySql";
-		//}
+		else if(dbSelected.equals("05")){
+			db ="MySql";
+		}
 		else if(dbSelected.equals("03")){
 			db = "Oracle";
 		}
 		else if(dbSelected.equals("02")){
 			db="MSSQL";
 		}
+	    else if(dbSelected.equals("04")){
+	    	db="SQLite";
+	    }
+		
 		return db;
 	}
 	

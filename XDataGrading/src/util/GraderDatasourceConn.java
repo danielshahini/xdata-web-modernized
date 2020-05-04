@@ -27,8 +27,9 @@ public abstract class GraderDatasourceConn {
         		if(connMap.isEmpty() || !(connMap.containsKey(url))){
         				//Add to connPerDB and connTypeDBMap
         				datasource = initDatasource(dbDetails);
-        				connMap.put(url,datasource);	
+        				connMap.put(url,datasource);
         				conn = datasource.getConnection();
+        				
         			}
         		//Else return an existing connection from pool
         		else{

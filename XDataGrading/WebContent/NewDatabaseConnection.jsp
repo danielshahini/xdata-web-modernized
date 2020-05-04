@@ -116,7 +116,8 @@ $( document ).ready(function() {
 	        success: function(data) {
 	        	//alert("Database Connection test successful.");
 	        	$('.connError').hide(); 
-	        	$('.connSuccess').show();           
+	        	$('.connSuccess').show();
+	        	
 	    	 	var a = confirm("Database Connection test successful."+"\n\n"+"Do you want to save the connection?"); 
 	    		if(a == true){ 
 	    			 $.ajax({
@@ -200,12 +201,14 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						<option value="01">PostgreSQL(default)</option>
 						<option value="02"><!--  MySql -->MicrosoftSQLServer</option>
 						<option value="03">Oracle</option>
+						<option value="04">SQLite</option>
+						<option value="05">MySql</option>
 					</select>
 					</div>
 					
 					<div>
 					<span>JDBC URL	</span>
-					<input placeholder="Specify JDBC Url. PostgreSQL format  host_name:port_number" id="jdbc" name="jdbcurl"/>
+					<input placeholder="host_name:port_number" id="jdbc" name="jdbcurl"/>
 					</div>
 					<div> 
 					Specify the user name and password for the database where instructor query will be run for generating Datasets.
@@ -294,7 +297,11 @@ if (session.getAttribute("LOGIN_USER") == null) {
 								 dbType="MicrosoftSQLServer";}
 								//dbType="MySQL";}
 							else if(rs.getString("database_type").equals("03")){
-								dbType="Oracle";}								 
+								dbType="Oracle";}
+							else if(rs.getString("database_type").equals("04")){
+								dbType="SQLite";}
+							else if(rs.getString("database_type").equals("05")){
+								dbType="MySql";}								 
 							%>
 						<!-- 	<div class="info" style="float:right">
 			   					<a href='deleteDatabaseConnection.jsp?connection_id=<%//=rs.getInt("connection_id")%>' onclick="return confirm('Are you sure you want to delete the connection?')">Delete connection</a> </form>		

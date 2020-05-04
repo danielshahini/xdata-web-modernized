@@ -73,7 +73,7 @@ public class WriteFileAndUploadDatasets {
 						while(rs.next()){
 							datasetid=rs.getString(1);
 							int id=Integer.parseInt(datasetid.substring(2));
-//To be tested
+							//To be tested
 							if(id > maxid){
 							//	maxid=id;
 							}
@@ -82,7 +82,8 @@ public class WriteFileAndUploadDatasets {
 				}//try-with-resources - PreparedStatement smt closed
 				for(int i=0;i<dataSets.size();i++){
 					boolean dataExists = false;
-					String dsPath = Configuration.homeDir+"/temp_cvc"+gd.getFilePath()+"/"+dataSets.get(i);
+					//String dsPath = Configuration.homeDir+"/temp_cvc"+gd.getFilePath()+"/"+dataSets.get(i);
+					String dsPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/"+dataSets.get(i); // added by ram
 					ArrayList <String> copyFileList=new ArrayList<String>();
 					ArrayList <String> copyFilesWithFk = new ArrayList<String>();
 					Pattern pattern = Pattern.compile("^DS([0-9]+)$");
@@ -91,8 +92,9 @@ public class WriteFileAndUploadDatasets {
 					
 					if (matcher.find()) {
 						dsId = Integer.parseInt(matcher.group(1));
-					}					
-					String cvcPath = Configuration.homeDir+"/temp_cvc"+gd.getFilePath()+"/cvc3_"+dsId+".cvc";
+					}	
+					//String cvcPath = Configuration.homeDir+"/temp_cvc"+gd.getFilePath()+"/cvc3_"+dsId+".cvc";
+					String cvcPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/cvc3_"+dsId+".smt"; // added by ram
 					File ds=new File(dsPath);		 	
 					String copyFiles[] = ds.list();
 					String datasetvalue="",st="";
@@ -126,8 +128,9 @@ public class WriteFileAndUploadDatasets {
 					int size = tableMap.foreignKeyGraph.topSort().size();
 					for (int fg=(size-1);fg>=0;fg--){
 						String tableName = tableMap.foreignKeyGraph.topSort().get(fg).toString();
-							String del="delete from "+tableName;
-							try(PreparedStatement stmt=testCon.prepareStatement(del)){
+						//String del="delete from "+tableName;
+						String del="delete from "+tableName.toLowerCase(); // added by ram for mysql
+						try(PreparedStatement stmt=testCon.prepareStatement(del)){
 							try{
 								stmt.executeUpdate();
 								
@@ -138,7 +141,7 @@ public class WriteFileAndUploadDatasets {
 								
 								stmt.close();
 							}
-							}
+						}
 					}
 					//This part helps in identifying the order of foreign key dependence and helps in
 					//populating the data accordingly.
@@ -157,7 +160,8 @@ public class WriteFileAndUploadDatasets {
 							 
 							 while((st=br.readLine())!=null){
 								 	String row=st.replaceAll("\\|", "','");
-									String insert="insert into "+tableName+" Values ('"+row+"')";
+									//String insert="insert into "+tableName+" Values ('"+row+"')";
+								 	String insert="insert into "+tableName.toLowerCase()+" Values ('"+row+"')"; // added by ram for mysql
 									
 								try(PreparedStatement inst=testCon.prepareStatement(insert)){
 									try{
@@ -195,7 +199,8 @@ public class WriteFileAndUploadDatasets {
 							 while((st=br.readLine())!=null){
 								 
 								 String row=st.replaceAll("\\|", "','");
-									String insert="insert into "+tname+" Values ('"+row+"')";
+								//String insert="insert into "+tname+" Values ('"+row+"')";
+								 String insert="insert into "+tname.toLowerCase()+" Values ('"+row+"')"; // added by ram for mysql
 									
 										try(PreparedStatement inst=testCon.prepareStatement(insert)){
 											try{
@@ -218,8 +223,8 @@ public class WriteFileAndUploadDatasets {
 						}
 					}
 					  
-					Type listType =new TypeToken<ArrayList<DataSetValue>>() {
-		            }.getType();
+//					Type listType =new TypeToken<ArrayList<DataSetValue>>() {
+//		            }.getType();
 		          
 		            
 					String json = gson.toJson(dsList);
