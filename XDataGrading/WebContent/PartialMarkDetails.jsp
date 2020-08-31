@@ -502,7 +502,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
  	    </div>
  	     <%if(requestingPage != null && !requestingPage.equalsIgnoreCase("popUp")) {%>
       		  <a class="header" href ="javascript:history.go(-1)"> Back</a>
-        <%} %>
+        <%}}%>
 	</fieldset>
 		</div>
 	</div>
