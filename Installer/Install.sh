@@ -6,10 +6,10 @@ script_dir=$(dirname $0)
 
 defaultDbServer="localhost"
 defaultDbPort="5432"
-defaultDbName="xdata"
-defaultDbUser="xdataadmin"
-defaultDbPassword="xdataadmin"
-defaultSmtSolver="cvc3"
+defaultDbName="xdatadb"
+defaultDbUser="xdatauser"
+defaultDbPassword="Xdatauser@123"
+defaultSmtSolver="z3"
 defaultAdmin="admin"
 defaultAdminPassword="admin"
 defaultSysUser="www-data"
@@ -193,13 +193,21 @@ else
 fi
 
 echo "Deploying XData........."
+echo $script_dir
 
-cp $script_dir/XDataWeb.war "$tomcatDir/webapps/"
-chown $systemUser "$tomcatDir/webapps/XDataWeb.war"
-chmod 700 "$tomcatDir/webapps/XDataWeb.war"
+mkdir $tomcatDir/webapps/XDataGrading
+unzip -qq $script_dir/XDataGrading.war -d $tomcatDir/webapps/XDataGrading
+#unzip -c $script_dir/XDataGrading.war "$tomcatDir/webapps"
+#chown $systemUser $tomcatDir/webapps/XDataGrading.war
 
-cp $script_dir/cvc3/cvc3  /usr/local/bin/
-chmod 555 /usr/local/bin/cvc3
+chown -R $(whoami) $tomcatDir/webapps/XDataGrading
+chmod 700 -R $tomcatDir/webapps/XDataGrading
+
+sudo cp $script_dir/z3/z3  /usr/local/bin/z3
+sudo cp $script_dir/z3/libz3java.so  /usr/local/bin/libz3java.so
+sudo cp $script_dir/z3/libz3.so /usr/local/bin/libz3.so
+sudo cp $script_dir/z3/libz3.a /usr/local/bin/libz3.a
+sudo chmod 555 /usr/local/bin/z3
 
 sudo -u $systemUser "$tomcatDir/bin/shutdown.sh"  > /dev/null 2>&1
 sleep 2
@@ -223,8 +231,7 @@ databaseIP=$dbServer
 databasePort=$dbPort
 
 #Path to SMT Solver; update it to the location where you will be installing the cvc3 executable
-smtsolver=/usr/local/bin/cvc3
-
+smtsolver=/usr/local/bin/z3
 #Home directory; for temporary files Leave these as /tmp preferably
 homeDir=$tempPath
 #directory of scripts; created temporarily for application testing
@@ -245,7 +252,7 @@ callBackURL=$callBackURL
 #URL for accessing XDataWeb from moodle;required for authenticating LMS request
 XDataUrlFromLMS=$xdataUrlFromLMS
 
-" > "$tomcatDir/webapps/XDataWeb/XData.properties"
+" > "$tomcatDir/webapps/XDataGrading/XData.properties"
 
 
 sudo -u $systemUser "$tomcatDir/bin/shutdown.sh"  > /dev/null 2>&1
