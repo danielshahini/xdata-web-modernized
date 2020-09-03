@@ -9,7 +9,7 @@
 <%@page import = "org.apache.commons.fileupload.util.*" %>
 <%@page import = "org.apache.commons.fileupload.servlet.ServletFileUpload" %>
 <%@page import = "org.apache.commons.fileupload.disk.DiskFileItemFactory" %>
- <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+ <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head> 
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>
@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="css/form.css" type="text/css" />
 <link rel="stylesheet" href="css/theme.css" type="text/css" />
 
-<link rel="canonical" href="http://www.wufoo.com/gallery/designs/template.html">
+<link rel="canonical" href="https://www.wufoo.com/gallery/designs/template.html">
 
 <%
 	if (session.getAttribute("LOGIN_USER") == null || !session.getAttribute("LOGIN_USER").equals("ADMIN")) {

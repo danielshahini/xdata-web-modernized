@@ -7,7 +7,7 @@
 <%@page import="java.sql.*"%>
 <%@page import="database.DatabaseConnection"%>
 <%@page import="database.DatabaseProperties"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head> 
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>
@@ -106,7 +106,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					<legend>LMS Credentials</legend>	
 					<div>	
 						<label>Moodle Instance URL</label>
-						<input placeholder="Enter the moodle instance Url. Ex: http://www.aaa.com/moodle/mod/lti/service.php" id="ltiUrl" name="ltiUrl"
+						<input placeholder="Enter the moodle instance Url. Ex: https://www.aaa.com/moodle/mod/lti/service.php" id="ltiUrl" name="ltiUrl"
 							required/>
 					</div> 
 					<div>	

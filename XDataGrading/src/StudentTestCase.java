@@ -151,9 +151,9 @@ public class StudentTestCase extends HttpServlet {
        	response.setContentType("text/html");
 		PrintWriter out_assignment = response.getWriter();
 		out_assignment.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""+
-		"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
+		"\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
 
-		"<html xmlns=\"http://www.w3.org/1999/xhtml\">"+
+		"<html xmlns=\"https://www.w3.org/1999/xhtml\">"+
 		"<head>"+
 		"<title>"+
 		"XData &middot; Assignment"+
@@ -193,7 +193,7 @@ public class StudentTestCase extends HttpServlet {
 			+"}"
 		+"}"
 		+"</script>"+
-		"<link rel=\"canonical\" href=\"http://www.wufoo.com/gallery/designs/template.html\">"+
+		"<link rel=\"canonical\" href=\"https://www.wufoo.com/gallery/designs/template.html\">"+
 		"<style> html,body {background: #fff;} fieldset {background: #f2f2e6; padding: 10px;	border: 1px solid #fff;	border-color: #fff #666661 #666661 #fff;	margin-bottom: 36px;}"+
 		"#breadcrumbs{  position: absolute;  padding-left:10px;  padding-right:10px;  left: 5px;  top: 10px;  font: 13px/13px Arial, Helvetica, sans-serif;  background-color: #f0f0f0;  font-weight: bold;}</style>"+
 		"</head>"+

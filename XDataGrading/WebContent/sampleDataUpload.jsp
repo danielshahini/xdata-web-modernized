@@ -5,7 +5,7 @@
 <%@page import="database.DatabaseProperties"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html> 
 <head> 
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>
@@ -13,7 +13,7 @@
 <script type="text/javascript" src = "scripts/jquery.js"></script>
 <script type="text/javascript" src="scripts/wufoo.js"></script> 
 <link rel="canonical" 
-	href="http://www.wufoo.com/gallery/designs/template.html">
+	href="https://www.wufoo.com/gallery/designs/template.html">
 <title>Upload Sample Data</title>
 
 <script>

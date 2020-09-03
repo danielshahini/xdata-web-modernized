@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <%@ page import="javax.servlet.http.HttpServletRequest"%>
 <%@ page import="java.util.Enumeration"%>
 <%@ page import="net.oauth.OAuth"%> 
@@ -269,7 +269,7 @@
 <title>IMS Basic Learning Tools Interoperability</title>
 </head>
 <body style="font-family: sans-serif">
-	<img src="http://www.sun.com/images/l2/l2_duke_java.gif" align="right">
+	<img src="https://www.sun.com/images/l2/l2_duke_java.gif" align="right">
 	<p>
 		<b>IMS BasicLTI Java Provider</b>
 	</p>

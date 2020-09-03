@@ -1,7 +1,7 @@
 <%@page import="partialMarking.PartialMarkParameters"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <%@ page import="java.io.*"%>
 <%@ page import="java.util.*"%>
 <%@page import="java.sql.*"%>
@@ -33,7 +33,7 @@
 <link rel="stylesheet" href="scripts/rangeslider/rangeslider.css">
  
  
-<!-- <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'></script> -->
+<!-- <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'></script> -->
 <title>Details of the Question</title>
   
 <script>

@@ -5,7 +5,7 @@
 <%@page import="java.io.*"%>
 <%@page import="java.text.*"%>
 <%@page import="java.sql.*"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.sun.com/images/l2/l2_duke_java.gif">
 <html>
 <head> 
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>

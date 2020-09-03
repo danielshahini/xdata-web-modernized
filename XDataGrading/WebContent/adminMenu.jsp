@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -124,7 +124,7 @@ else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOG
 <!-- <li><a class="header" target="rightPage" href="ViewUsers.jsp">File Upload</a></li> -->
  		</ul> 		 
 		<div> 
-		<a href='http://www.cse.iitb.ac.in/infolab/xdata/' target='_blank'>About XData</a>
+		<a href='https://www.cse.iitb.ac.in/infolab/xdata/' target='_blank'>About XData</a>
 		<p class="copyright">© 2015 IIT Bombay. All rights reserved</p>
 		</div>
 	</div>

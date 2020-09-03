@@ -78,9 +78,9 @@ public class FailedTestCases extends HttpServlet {
 		response.setContentType("text/html");
 		PrintWriter out_assignment = response.getWriter();
 		out_assignment.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""+
-				"\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
+				"\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"+
 
-		"<html xmlns=\"http://www.w3.org/1999/xhtml\">"+
+		"<html xmlns=\"https://www.w3.org/1999/xhtml\">"+
 		"<head>"+ 
 
 		"<title>"+
@@ -123,7 +123,7 @@ public class FailedTestCases extends HttpServlet {
 		+"}"
 		+"}"
 		+"</script>"+
-		"<link rel=\"canonical\" href=\"http://www.wufoo.com/gallery/designs/template.html\">"+
+		"<link rel=\"canonical\" href=\"https://www.wufoo.com/gallery/designs/template.html\">"+
 		"<style> html,body {background: #fff;} "
 		+"fieldset.action {background: #9da2a6;	border-color: #e5e5e5 #797c80 #797c80 #e5e5e5;"
 		+"margin-top: -20px;}legend {background: -webkit-linear-gradient(top, #657B9E, #4E5663);background: -moz-linear-gradient(top, #657B9E, #4E5663);color: #fff;font: 17px/21px Calibri, Arial, Helvetica, sans-serif;padding: 0 10px;	margin: 0 0 0 -11px;"

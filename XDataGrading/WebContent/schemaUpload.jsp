@@ -6,7 +6,7 @@
 <%@page import="java.sql.*"%>
 <%@page import="database.DatabaseConnection"%>
 <%@page import="database.DatabaseProperties"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 
@@ -16,7 +16,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" href="css/structure.css" type="text/css" />
 <link rel="canonical"
-	href="http://www.wufoo.com/gallery/designs/template.html">
+	href="https://www.wufoo.com/gallery/designs/template.html">
 
 <title>Upload New Schema</title> 
  <script type="text/javascript" src="scripts/wufoo.js"></script> 

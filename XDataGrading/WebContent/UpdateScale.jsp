@@ -8,7 +8,7 @@
 <%@page import="database.DatabaseProperties"%>
 <%@page import="util.DatabaseHelper"%>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head> 
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>

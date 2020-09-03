@@ -94,7 +94,7 @@ public class UploadScore extends HttpServlet {
 
 			// Refer : http://www.imsglobal.org/LTI/v1p1/ltiIMGv1p1.html
 			String body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-					+ "<imsx_POXEnvelopeRequest xmlns = \"http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0\">"
+					+ "<imsx_POXEnvelopeRequest xmlns = \"https://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0\">"
 					+ "<imsx_POXHeader>" + "<imsx_POXRequestHeaderInfo>"
 					+ "<imsx_version>V1.0</imsx_version>"
 					+ "<imsx_messageIdentifier>1</imsx_messageIdentifier>"
@@ -187,7 +187,7 @@ public class UploadScore extends HttpServlet {
 	
 								// Refer : http://www.imsglobal.org/LTI/v1p1/ltiIMGv1p1.html
 								String body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-										+ "<imsx_POXEnvelopeRequest xmlns = \"http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0\">"
+										+ "<imsx_POXEnvelopeRequest xmlns = \"https://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0\">"
 										+ "<imsx_POXHeader>" + "<imsx_POXRequestHeaderInfo>"
 										+ "<imsx_version>V1.0</imsx_version>"
 										+ "<imsx_messageIdentifier>1</imsx_messageIdentifier>"

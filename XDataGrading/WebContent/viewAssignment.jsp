@@ -6,7 +6,7 @@
 <%@ page import="java.text.*"%>
 <%@page import="database.DatabaseConnection"%>
 <%@page import="database.DatabaseProperties"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head> 
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>
@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="css/theme.css" type="text/css" />
 
 <link rel="canonical"
-	href="http://www.wufoo.com/gallery/designs/template.html">
+	href="https://www.wufoo.com/gallery/designs/template.html">
 <%
 if (session.getAttribute("LOGIN_USER") == null) {
 	response.sendRedirect("index.jsp?TimeOut=true");
@@ -151,9 +151,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	//print data
 	/*
 	  out.println("  <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" ");
-	 	out.println( "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"> ");
+	 	out.println( "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"> ");
 
-	 	out.println(" <html xmlns=\"http://www.w3.org/1999/xhtml\"> ");
+	 	out.println(" <html xmlns=\"https://www.w3.org/1999/xhtml\"> ");
 	out.println("<head> 
  <link rel="stylesheet" href="css/structure.css" type="text/css"/>");
 	out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
@@ -171,7 +171,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	out.println("}");
 
 	
-	out.println("<link rel=\"canonical\" href=\"http://www.wufoo.com/gallery/designs/template.html\">");
+	out.println("<link rel=\"canonical\" href=\"https://www.wufoo.com/gallery/designs/template.html\">");
 	out.println("<title>View Assignment</title>");
 	 *///out.println("<script>");
 	out.println(" <script language=\"javascript\">");
