@@ -493,7 +493,7 @@ public class LoginChecker extends HttpServlet {
 					"	sampledata_id integer, \n" + 
 					"	schema_id integer, \n" + 
 					"	course_id varchar(20), \n" + 
-					"	sample_data_name text, \n" + 
+					"	sample_data_name text UNIQUE, \n" + 
 					"	sample_data text, \n" + 
 					"	primary key(sampledata_id));" ;
 		stmt.executeUpdate(query);
