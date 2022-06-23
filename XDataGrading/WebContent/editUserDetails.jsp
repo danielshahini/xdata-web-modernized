@@ -89,9 +89,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					<legend>Edit User Details</legend>
 					<%
 					String userId = request.getParameter("user_id");
-					Connection dbcon = null;
-					try{
-						dbcon = (new DatabaseConnection()).dbConnection();
+					//Connection dbcon = null;
+					try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+						//dbcon = (new DatabaseConnection()).dbConnection();
 						PreparedStatement stmt,stmt1;
 							
 						stmt = dbcon 
@@ -151,9 +151,10 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						//out.println("Error in getting list of assignments");
 						throw new ServletException(err);						
 					}
-					finally{
-						dbcon.close();
-					}%>
+					//finally{
+					//	dbcon.close();
+					//}
+					%>
 					
 				<!-- <input type="button" onclick="chkRoleSelected();"  value="Update"> -->
 				<input type="submit" value="Update">

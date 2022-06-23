@@ -76,9 +76,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 									"user_id");
  
 							//get connection
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
+							//Connection dbcon = (new DatabaseConnection()).dbConnection();
 
-							try {
+							try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 								PreparedStatement stmt;
 								stmt = dbcon
 										.prepareStatement("SELECT * FROM xdata_assignment where assignment_id = ? and course_id = ?");
@@ -126,10 +126,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 								err.printStackTrace();
 								throw new ServletException(err);
 							}
-							finally{
-								if(dbcon !=null)
-									dbcon.close();
-							}
+						//	finally{
+						//		if(dbcon !=null)
+						//			dbcon.close();
+						//	}
 				%>
 			</fieldset>
 		</div>

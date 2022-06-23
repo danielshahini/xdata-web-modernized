@@ -103,9 +103,9 @@ return;
 					<%
 					
 					String courseId = request.getParameter("course_id");
-					Connection dbcon = null;
-					try{
-						dbcon = (new DatabaseConnection()).dbConnection();
+					//Connection dbcon = null;
+					try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+						//dbcon = (new DatabaseConnection()).dbConnection();
 						PreparedStatement stmt,stmt1;
 							
 						stmt = dbcon 
@@ -155,9 +155,10 @@ return;
 						throw new ServletException(err);
 						
 					}
-					finally{
-						dbcon.close();
-					}%>
+					//finally{
+					//	dbcon.close();
+					//}
+					%>
 				<input type="button" onclick="chkYearSelected();"  value="Update">
 </fieldset>
 </div>

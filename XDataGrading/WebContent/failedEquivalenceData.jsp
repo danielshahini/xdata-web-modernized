@@ -82,13 +82,13 @@
 				return;
 			}
 				
-		Connection dbCon = null, testcon = null;
+		//Connection dbCon = null, testcon = null;
 		int assignment_id=Integer.parseInt(request.getParameter("assignment_id"));
 		int question_id=Integer.parseInt(request.getParameter("question_id"));
 		String course_id = (String) request.getSession().getAttribute("context_label");
-		testcon = ((new util.DatabaseConnection()).getTesterConnection(assignment_id)).getTesterConn();
+		try (Connection testcon = ((new util.DatabaseConnection()).getTesterConnection(assignment_id)).getTesterConn()){
 
-		dbCon=dbCon = (new DatabaseConnection()).dbConnection();
+		try(Connection dbCon = (new DatabaseConnection()).dbConnection()){
 		String sqlQuery = "";
 		int index = 0;
 		%>
@@ -973,7 +973,7 @@
 							
 							</div>
 							
-						<% 
+						<% }} //try blocks
 							}//For each equivalence Failed Dataset%>
 							
 							

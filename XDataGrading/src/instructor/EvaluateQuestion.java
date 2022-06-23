@@ -109,15 +109,16 @@ public class EvaluateQuestion extends HttpServlet {
 			//throw new ServletException(e1);
 		}
 
-		Connection dbcon = null;
-		try{
-			String s = null; 
+		//Connection dbcon=null;
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+			//dbcon = (new DatabaseConnection()).dbConnection();
+			//String s = null; 
 
 			String args[] = {assignment_id.trim(), question_id.trim(),courseID};
 			TestAssignment.entry(args);
 
 
-			dbcon = (new DatabaseConnection()).dbConnection();
+			
 
 			PreparedStatement updatestmt=dbcon.prepareStatement("update xdata_instructor_query set evaluationstatus = true where assignment_id=? and question_id=? and course_id=?");
 			updatestmt.setInt(1, Integer.parseInt(assignment_id));
@@ -129,20 +130,21 @@ public class EvaluateQuestion extends HttpServlet {
 //			updatestmt.setInt(1, Integer.parseInt(assignment_id));
 //			updatestmt.setString(2,courseID);
 //			updatestmt.execute();
-
+			
 		}catch(Exception e){
 			logger.log(Level.SEVERE,e.getMessage(),e);
 			//throw new ServletException(e);
-		}finally{
-			try {
-				if(dbcon != null){
-					dbcon.close();
-				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				logger.log(Level.SEVERE,e.getMessage(),e);
-			}
 		}
+//		finally{
+//			try {
+//				if(dbcon != null){
+//					dbcon.close();
+//				}
+//			} catch (SQLException e) {
+//				// TODO Auto-generated catch block
+//				logger.log(Level.SEVERE,e.getMessage(),e);
+//			}
+//		}
 	}
 
 }

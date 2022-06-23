@@ -16,7 +16,7 @@ public class DatabaseConnection {
 			System.exit(1);
 		}
 		try {
-			dbcon = DriverManager.getConnection(hostname, username, passwd);
+			 dbcon = DriverManager.getConnection(hostname, username, passwd);
 			
 
 			if (dbcon != null) {

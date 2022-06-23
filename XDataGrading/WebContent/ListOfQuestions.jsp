@@ -267,6 +267,23 @@ $( document ).ready(function() {
 	margin-left: 2px;
 }
 
+.btn-disable
+        {
+        cursor: not-allowed;
+        pointer-events: none;
+        border-right:1px solid black; 
+		margin:0px; 
+		float: right; 
+		margin-right: 3px;
+		width:1px;
+		margin-left: 2px;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+        background-color: #ffffff;
+
+        }
+
 #breadcrumbs
 {
   position: absolute;
@@ -337,12 +354,13 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			
 				<%
 							//get connection
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
+							//Connection dbcon = (new DatabaseConnection()).dbConnection();
 							String asgnName = "";
 							boolean asgnEvaluated = false;
 							Timestamp start = null;
 							Timestamp end = null;
-							try{
+							try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+								
 								PreparedStatement stmt1;
 								ResultSet rs1 = null;
 								stmt1 = dbcon
@@ -361,11 +379,23 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									//start=rs.getString("end_date");
 								}						
 								rs1.close(); 
-							} catch (Exception err) {
-								err.printStackTrace();
-								throw new ServletException(err);
-
-							}%>
+								
+								SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		       			  		formatter1.setLenient(false);
+		       			  		Calendar c1 = Calendar.getInstance();
+		       			  		
+		       			  		//get current time
+		       			  		String currenttime = formatter1.format(c1.getTime());
+		   			  			java.util.Date now = formatter1.parse(currenttime);
+		   			  			
+		   			  			//get end time
+		   			  			String ending = formatter1.format(end);
+		       			  		java.util.Date deadline = formatter1.parse(ending);
+								
+								
+								if(now.compareTo(deadline)>0){
+								
+							%>
 							<!-- Render Assignment Evaluation link -->
 							
 							<div id='asgnEvaluationStatus' style='display:none;'>
@@ -384,8 +414,15 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									</a>
 									</label>
 								</div>
+							<%}}else{%>
+							<div id='evaluateAssignment' style='display:block'>
+									<label>Assignment Evaluation: 
+									<a class='evaluateAssignment' href='<%=evaluateAsgn %>' id='<%=asgnEvalParams%>' style='cursor:not-allowed;pointer-events: none; color: #808080; opacity: 0.4; font-family:Helvetica;width:92%;height:25px;'>
+										Evaluate all questions
+									</a>
+									</label>
+								</div>
 							<%}%>
-							
 							<div id='asgnEvalStatus' style='display:none;float:right;color:red;font-family: Helvetica;font-size:13px;'><label>Error in assignment evaluation. Please check log files for details.</label></div>
 							</div>
 						<%	//System.out.println("Start :" + start);
@@ -406,7 +443,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 							int index=0;
 							int qIndexDisplay =0;
 							String output = "<table  cellspacing=\"20\"  class=\"authors-list\" id=\"queryTable\" align=\"center\"> <tr> <th >Question ID</th>       <th >Question Description</th>  <th >Correct Query</th> <th> </th></tr>";
-							try {
+							
 								
 								PreparedStatement stmt;
 								stmt = dbcon
@@ -459,24 +496,24 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						
 						<%/**Added for multiple queries**/
 						int question_id =qID;
-						PreparedStatement stmt1;
+						PreparedStatement stmt2;
 						boolean isQuestionEvaluated = false;
-						stmt1 = dbcon 
+						stmt2 = dbcon 
 								.prepareStatement("SELECT * FROM xdata_instructor_query  where assignment_id=? and course_id=? and question_id=? order by query_id");
-						stmt1.setInt(1, assignID);
-						stmt1.setString(2, courseID);
-						stmt1.setInt(3,question_id);
+						stmt2.setInt(1, assignID);
+						stmt2.setString(2, courseID);
+						stmt2.setInt(3,question_id);
 						
-						ResultSet rs1 = stmt1.executeQuery();%>
+						ResultSet rs2 = stmt2.executeQuery();%>
 							
 							 
-						<%while (rs1.next()) {
-						String queries = rs1.getString("sql");
+						<%while (rs2.next()) {
+						String queries = rs2.getString("sql");
 						String savedQuery = queries;
 						//System.out.println(" Saved Query = " + queries);
-						int query_id = rs1.getInt("query_id");
-						int marksPerQuery = rs1.getInt("marks");
-						isQuestionEvaluated = rs1.getBoolean("evaluationstatus");
+						int query_id = rs2.getInt("query_id");
+						int marksPerQuery = rs2.getInt("marks");
+						isQuestionEvaluated = rs2.getBoolean("evaluationstatus");
 						//Check if datasets are existing for the queries -reqd for showing 'show dataset' link
 						String datasets="Select datasetid from xdata_datasetvalue where assignment_id=? and question_id=? and query_id=? and course_id = ?";
 						PreparedStatement pstmt1=dbcon.prepareStatement(datasets);
@@ -654,13 +691,60 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
        			  		 </form> 
        			  		 
        			  		  <!-- Changes for adding Grade questions and Result start -->
-     			<div id="evaluate<%=qIndexDisplay %>" class="evaluate" 
+       			  		  <%
+       			  		// TEMP CODE: DIVYA
+       			  		//hiding evaluate button until assignment deadline   
+       			  		  
+       			  		//Connection db = (new DatabaseConnection()).dbConnection();
+       			  		//get assignment deadline
+       			  		
+       			  	   /*  Timestamp end1 = null;
+       			  		try(Connection db = (new DatabaseConnection()).dbConnection()) {
+       			  			PreparedStatement stmt3;
+       			  			ResultSet rs3;
+       			  			stmt3 = db.prepareStatement("SELECT * FROM xdata_assignment where assignment_id=? and course_id=?");
+       			  			stmt3.setInt(1, assignID);
+       			  			stmt3.setString(2, courseID);
+       			  			rs3 = stmt3.executeQuery();
+       			  			while (rs3.next()) {
+           			  		end1 = rs3.getTimestamp("endtime");
+           			  		}
+       			  			
+       			  		
+       			  		} catch (Exception err) {
+       			  			err.printStackTrace();
+       			  			throw new ServletException(err);
+       			  		}
+
+       			  		SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+       			  		formatter1.setLenient(false);
+       			  		Calendar c1 = Calendar.getInstance();
+       			  		
+       			  		//get current time
+       			  		String currenttime = formatter1.format(c1.getTime());
+   			  			java.util.Date now = formatter1.parse(currenttime);
+   			  			
+   			  			//get end time
+   			  			String ending = formatter1.format(end1);
+       			  		java.util.Date deadline = formatter1.parse(ending);
+ */       			  			
+   			  		
+       			  		//compare times
+       			  		  if(now.compareTo(deadline)>0){
+       			  		%>
+       			  		   <div id="evaluate<%=qIndexDisplay %>" class="evaluate" 
      	     		style='display:block;font-family:Helvetica;color:#353275;width:92%;height:25px;'>
 	  			  <span class = "separator">&nbsp;</span> 	
  			  			<a class="evaluateQ" name='<%=qIndexDisplay %>' href='<%=evaluate %>' id='<%=params%>'>
  			  			<%="Evaluate" %></a>
-				 
-				 
+ 			  			
+ 			  			<%}else{ %>
+ 			  			<div id="evaluate<%=qIndexDisplay %>" class="evaluate" 
+     	     			style='cursor:not-allowed;pointer-events: none; color: #808080; opacity: 0.4; font-family:Helvetica;width:92%;height:25px;'>
+	  			  		<span class = "separator">&nbsp;</span> 	
+ 			  			<a title="hello" class="evaluateQ" name='<%=qIndexDisplay %>' href='<%=evaluate %>' id='<%=params%>'>
+ 			  			<%="Evaluate" %></a>
+				         <%} %> 
 				 
        			  		 <%if(isQuestionEvaluated){ %>
 					<div id="status<%=qIndexDisplay %>" class="statusr" 
@@ -705,19 +789,20 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						<%						
 						rs.close();
 						output = "";
-					}  catch (Exception err) {
-						err.printStackTrace();
-						throw new ServletException(err);
-					}
-					finally{
-						dbcon.close();
-					}  
+					
+				//	finally{
+				//		dbcon.close();
+				//	}  
 					 
 					String add = "QuestionDetails.jsp?AssignmentID=" + assignID +"&&questionId=" + newQId + "&&courseId=" + courseID + "&&new=true&&assignmentName="+asgnName+ "'\"target = \"rightPage\"";
 					//output += "<input  type=\"button\" id=\"quer\" onClick=\"addRow(" + assignID + ",'queryTable')\" value=\"Add Question\" align=\"right\">";
 					output += "<input  type=\"button\" id=\"quer\" onClick=\"window.location.href='" + 
 						add + "value=\"Add Question\" align=\"right\">";
 					out.println(output); 
+					}  catch (Exception err) {
+						err.printStackTrace();
+						throw new ServletException(err);
+			 	}
 				%>
 			</fieldset>
 		</div>

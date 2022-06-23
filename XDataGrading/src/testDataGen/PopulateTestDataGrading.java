@@ -268,7 +268,7 @@ public class PopulateTestDataGrading {
 //		System.out.println("Driver Version: "+dbmd.getDriverVersion());  
 //		System.out.println("UserName: "+dbmd.getUserName());  
 		String dbType = dbmd.getDatabaseProductName(); 
-		System.out.println(dbType);
+		//System.out.println(dbType);
 //		System.out.println("Database Product Version: "+dbmd.getDatabaseProductVersion());
 		
 		// metadata details ends here:ram
@@ -293,7 +293,7 @@ public class PopulateTestDataGrading {
 			DatabaseMetaData dbm = conn.getMetaData();
 			// added by ram
 			String dbType = dbm.getDatabaseProductName(); 
-			System.out.println(dbType);
+			//System.out.println(dbType);
 			
 			if (dbType.equalsIgnoreCase("MySql"))
 			{
@@ -447,7 +447,7 @@ public class PopulateTestDataGrading {
 												temp = inst[i].trim().replaceAll("(?i)^\\s*create\\s+table\\s+", "create temporary table ");	
 											}
 											try(PreparedStatement stmt2 = conn.prepareStatement(temp)){
-												System.out.println(temp);// added by ram 
+											//	System.out.println(temp);// added by ram 
 												stmt2.executeUpdate();					
 											} catch (SQLException sqle){
 												logger.log(Level.SEVERE, sqle.getMessage());
@@ -473,7 +473,7 @@ public class PopulateTestDataGrading {
 
 	public void createTempTablesForDemoUI(Connection conn, int assignId, int questionId) throws Exception {
 		//Connection mainConn = MyConnection.getExistingDatabaseConnection();
-		Connection mainConn = conn;	
+		  Connection mainConn = conn;	
 			int schemaId = 0, optionalSchemaId=0;			
 
 			try(PreparedStatement stmt = mainConn.prepareStatement("select defaultschemaid from xdata_assignment where assignment_id = ?")){

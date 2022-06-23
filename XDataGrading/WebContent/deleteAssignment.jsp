@@ -49,10 +49,10 @@ if (session.getAttribute("LOGIN_USER") == null) {
  
 		String s = request.getParameter("assignmentid"); 
 		String courseID = (String) request.getSession().getAttribute("context_label");
-		Connection dbcon = null;
+		//Connection dbcon = null;
 		//get connection
-		try {
-			dbcon = (new DatabaseConnection()).dbConnection();
+		try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
+			//dbcon = (new DatabaseConnection()).dbConnection();
 			String output = "<table border=\"0\">";
 			PreparedStatement stmt,stmt1;
 		//	for(String s: checkedIds){
@@ -87,9 +87,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 				err.printStackTrace();
 				throw new ServletException(err);
 			} 			
-		finally{
-			dbcon.close();
-		}
+		//finally{
+		//	dbcon.close();
+		//}
 		PrintWriter out_print=response.getWriter();
 		response.sendRedirect("ListAllAssignments.jsp");
 		%>

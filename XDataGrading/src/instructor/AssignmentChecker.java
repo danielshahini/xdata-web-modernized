@@ -104,7 +104,7 @@ public class AssignmentChecker extends HttpServlet {
 			logger.log(Level.FINE,"Query :" + query);
 			String deldataset = "delete from xdata_datasetvalue where assignment_id=? and question_id = ? and query_id=? and course_id=?";
 			try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
-				
+				System.out.println("inside assignmentchecker dbcon try block");
 				try(PreparedStatement delstmt = dbcon.prepareStatement(deldataset)){
 					delstmt.setInt(1, assignment_id);
 					delstmt.setInt(2, question_id);

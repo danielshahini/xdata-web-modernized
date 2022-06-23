@@ -424,7 +424,6 @@ public class TestAnswer {
 					if(!outputEqual){
 						queryIds.add((String)Id);
 					}
-
 					pstmt1.close();
 					pstmt2.close();
 					rs1.close();
@@ -1296,6 +1295,7 @@ public class TestAnswer {
 								boolean flag=true;
 								Vector<String> cmismatch = new Vector<String>();
 								try{
+									logger.log(Level.INFO,"------------testanswer.java line:1298--------------- ");	
 									p.deleteAllTempTablesFromTestUser(testConn);
 								}catch(Exception e){
 									logger.log(Level.INFO,"Temporary Table does not exist",e);										
@@ -1433,8 +1433,10 @@ public class TestAnswer {
 				}
 				else{
 					status = QueryStatus.Incorrect;
-				}		
+				}
+		//	testConn.close(); //divya.	
 			}//close connection
+			//conn.close();  //divya.
 		}//close connection
 		return status;
 	}
@@ -1560,6 +1562,7 @@ public class TestAnswer {
 
 							if(defaultDSIdsPerQuestion != null){
 								try{
+									logger.log(Level.INFO,"------------testanswer.java line:1564--------------- ");	
 									p.deleteAllTempTablesFromTestUser(testConn);
 								}catch(Exception e){
 									logger.log(Level.INFO,"Temporary Table does not exist",e);
@@ -1603,9 +1606,11 @@ public class TestAnswer {
 									if(!(resultOfDatasetMatchForEachQuery.containsKey(queryId))){
 										resultOfDatasetMatchForEachQuery.put(queryId,true);
 									}
+									logger.log(Level.INFO,"------------testanswer.java line:1609--------------- ");	
 									p.deleteAllTablesFromTestUser(testConn);
 
 								}
+								logger.log(Level.INFO,"------------testanswer.java line:1613--------------- ");	
 								p.deleteAllTempTablesFromTestUser(testConn);
 							}
 							if((defaultDSIdsPerQuestion == null || (defaultDSIdsPerQuestion != null && defaultDSIdsPerQuestion.length == 0))
@@ -1642,9 +1647,10 @@ public class TestAnswer {
 									if(!(resultOfDatasetMatchForEachQuery.containsKey(queryId))){
 										resultOfDatasetMatchForEachQuery.put(queryId,true);
 									}
-
+									logger.log(Level.INFO,"------------testanswer.java line:1650--------------- ");	
 									p.deleteAllTablesFromTestUser(testConn);
 								}
+								logger.log(Level.INFO,"------------testanswer.java line:1653--------------- ");	
 								p.deleteAllTempTablesFromTestUser(testConn);
 							}
 							Map <Integer,Vector<String>>  datasetForQueryMap =  downloadDatasets(assignmentId,questionId, queryId,course_id, conn, filePath, false);
@@ -1655,6 +1661,7 @@ public class TestAnswer {
 								boolean flag=true;
 								Vector<String> cmismatch = new Vector<String>();
 								try{
+									logger.log(Level.INFO,"------------testanswer.java line:1664--------------- ");	
 									p.deleteAllTempTablesFromTestUser(testConn);
 								}catch(Exception e){
 									logger.log(Level.INFO,"Temporary Table does not exist",e);
@@ -1805,8 +1812,11 @@ public class TestAnswer {
 
 					}
 				}
+			testConn.close();    //divya.	
 			}//close connection try block
+		conn.close();	 //divya.
 		}//close connection try block
+		
 		return failedDataSets;
 
 
@@ -1952,7 +1962,8 @@ public class TestAnswer {
 						cvc.setCourseId(course_id);
 						preProcess.initializeConnectionDetails(cvc);
 						TableMap tm = cvc.getTableMap();
-						cvc.closeConn();	
+						cvc.closeConn();
+						//if(cvc.getConnection()!=null) System.out.println("CONNECTION STILL OPEN");   //divya 
 						try{
 							// Check for views in student query
 							int counter = 0;
@@ -2035,6 +2046,7 @@ public class TestAnswer {
 										}
 									}
 								}
+								logger.log(Level.INFO,"------------testanswer.java line:2042--------------- ");	
 								p.deleteAllTempTablesFromTestUser(testConn);								
 							}catch(Exception e){
 								logger.log(Level.SEVERE,"Exception caught here: "+e.getMessage(),e);
@@ -2070,6 +2082,7 @@ public class TestAnswer {
 											}
 										}
 									}
+									logger.log(Level.INFO,"------------testanswer.java line:2079--------------- ");	
 									p.deleteAllTempTablesFromTestUser(testConn);
 								}	
 							}catch(Exception e){
@@ -2233,7 +2246,9 @@ public class TestAnswer {
 						}
 					}
 				}//Match any else stmnt ends
+			//testConn.close();   //divya.	
 			}
+		//conn.close();  //divya.	
 		}
 		return finalFailedDsList;
 	}
@@ -2503,6 +2518,7 @@ public class TestAnswer {
 							index++;
 							System.out.println(">>>>>status2: "+failedDataSets.getStatus());
 							try{
+								logger.log(Level.INFO,"------------testanswer.java line:2514--------------- ");	
 								p.deleteAllTempTablesFromTestUser(testConn);
 							}catch(Exception e){
 								logger.log(Level.INFO,"Temporary Table does not exist",e);
@@ -2535,6 +2551,7 @@ public class TestAnswer {
 											resultOfDatasetMatchForEachQuery.put(queryId,true);
 										}						
 									}
+									logger.log(Level.INFO,"------------testanswer.java line:2547--------------- ");	
 									p.deleteAllTempTablesFromTestUser(testConn);
 									System.out.println(">>>>>status3: "+failedDataSets.getStatus());
 								}
@@ -2564,6 +2581,7 @@ public class TestAnswer {
 											resultOfDatasetMatchForEachQuery.put(queryId,true);
 										}
 									}
+									logger.log(Level.INFO,"------------testanswer.java line:2576--------------- ");	
 									p.deleteAllTempTablesFromTestUser(testConn);
 								}	
 							}catch(Exception e){
@@ -2629,10 +2647,12 @@ public class TestAnswer {
 				//Set Marks for the failedStudentQuery
 				failedDataSets = this.getMarkDetails(conn,failedDataSets, isQueryPass,studRole,assignmentId,questionId,course_id,query,user,isLateSubmission,maxMarks,reduceLateSubmissionMarks);
 				
-				return failedDataSets;
-
+				//return failedDataSets;
+			testConn.close();	     //divya.
 			}// try block for TestConn ends
+		conn.close();   	//divya.
 		}//try block for Conn ends 
+		return failedDataSets;
 	}
 
 	/**
@@ -2723,10 +2743,11 @@ public class TestAnswer {
 	private float lateSubmission_penalizer(Connection conn,int assignmentId, int questionId,String course_id,String user) throws Exception
 	{
 		float penalty=0;
-		try(Connection conn1= MyConnection.getDatabaseConnection()){
+		//(Connection conn1= MyConnection.getDatabaseConnection())
+		try{
 
 			String qry1 = "select * from xdata_student_queries where assignment_id = ? and question_id = ? and course_id= ? and rollnum = ?";
-			PreparedStatement pstmt1 = conn1.prepareStatement(qry1);
+			PreparedStatement pstmt1 = conn.prepareStatement(qry1);
 			pstmt1.setInt(1,assignmentId);
 			pstmt1.setInt(2,questionId);
 			pstmt1.setString(3,course_id);
@@ -2739,7 +2760,7 @@ public class TestAnswer {
 
 
 			String qry2="select * from xdata_assignment where assignment_id = ? and course_id= ?";
-			PreparedStatement pstmt2 = conn1.prepareStatement(qry2);
+			PreparedStatement pstmt2 = conn.prepareStatement(qry2);
 			pstmt2.setInt(1,assignmentId);
 			pstmt2.setString(2,course_id);	
 			ResultSet rs2 = pstmt2.executeQuery();
@@ -2790,7 +2811,7 @@ public class TestAnswer {
 			else
 				penalty=1;
 
-
+		//conn1.close(); //divya.	
 		}
 		catch(Exception ex){
 			logger.log(Level.SEVERE,ex.getMessage(), ex);
@@ -2856,6 +2877,7 @@ public class TestAnswer {
 					}		
 				}
 			}//close resultset try
+		conn.close();                //divya.	
 		}//close connection try
 	
 	Gson gson = new Gson();
@@ -2902,6 +2924,7 @@ public class TestAnswer {
 			float lateSub_factor=lateSubmission_penalizer(conn,assignmentId,questionId,course_id,user);
 			//System.out.println("fraction>>> "+ lateSub_factor);
 			if(isQueryPass){
+				System.out.println("ASSIGNING FULL MARKS TO CORRECT QUERY "+ user);
 				logger.log(Level.FINE,"Question passed the datasets expected");
 				if(studRole==null || !studRole.equals("guest")){
 					String qryUpdate = "update xdata_student_queries set verifiedcorrect = true where assignment_id ='"+assignmentId+"' and question_id = '"+questionId+"' and rollnum = '"+user+"' and course_id='"+course_id+"'";
@@ -2921,7 +2944,8 @@ public class TestAnswer {
 				failedDataSets.setMarks(markInfo.Marks);
 			}
 			else{
-
+				String debug="CALCULATING PARTIAL MARKS: "+user+"\t question: "+questionId;
+				logger.log(Level.FINE,debug);
 				if(studRole==null || !studRole.equals("guest")){
 					String qryUpdate = "update xdata_student_queries set verifiedcorrect = false where assignment_id ='"+ assignmentId+"' and question_id = '"+questionId+"' and rollnum = '"+user+"' and course_id='"+course_id+"'";		
 					try(PreparedStatement pstmt2 = conn.prepareStatement(qryUpdate)){
@@ -2976,6 +3000,7 @@ public class TestAnswer {
 							}		
 						}
 					}//close resultset try
+					
 				}//close connection try
 			}		
 			Gson gson = new Gson();
@@ -3094,6 +3119,7 @@ public class TestAnswer {
 						/********run the queries against defaut data set for the application ********/
 						if(defaultDSIdsPerQuestion != null){
 							try{
+								logger.log(Level.INFO,"------------testanswer.java line:3115--------------- ");	
 								p.deleteAllTempTablesFromTestUser(testConn);
 							}catch(Exception e){
 								logger.log(Level.INFO,"Temporary Table does not exist",e);
@@ -3140,15 +3166,18 @@ public class TestAnswer {
 								}
 								//listOfFailedDS.add(failedDataSets);
 								failedDataSetsPerQuery.put(0, failedDataSets);
+								logger.log(Level.INFO,"------------testanswer.java line:3162--------------- ");	
 								p.deleteAllTablesFromTestUser(testConn);
 
 							}
+							logger.log(Level.INFO,"------------testanswer.java line:3166--------------- ");	
 							p.deleteAllTempTablesFromTestUser(testConn);
 						}
 						/******Run each query against the default data set for the question **********/
 						if((defaultDSIdsPerQuestion == null || (defaultDSIdsPerQuestion != null && defaultDSIdsPerQuestion.length == 0))
 								&&  defaultDSIdsAssignment != null){
 							try{
+								logger.log(Level.INFO,"------------testanswer.java line:3173--------------- ");	
 								p.deleteAllTempTablesFromTestUser(testConn);
 							}catch(Exception e){
 								logger.log(Level.INFO,"Temporary Table does not exist",e);
@@ -3191,8 +3220,10 @@ public class TestAnswer {
 								}
 								//listOfFailedDS.add(failedDataSets);
 								failedDataSetsPerQuery.put(0, failedDataSets);
+								logger.log(Level.INFO,"------------testanswer.java line:3216--------------- ");	
 								p.deleteAllTablesFromTestUser(testConn);
 							}
+							logger.log(Level.INFO,"------------testanswer.java line:3219--------------- ");	
 							p.deleteAllTempTablesFromTestUser(testConn);
 						}	// Default data set for question level ends
 
@@ -3205,6 +3236,7 @@ public class TestAnswer {
 							boolean flag=true;
 							Vector<String> cmismatch = new Vector<String>();
 							try{
+								logger.log(Level.INFO,"------------testanswer.java line:3232--------------- ");	
 								p.deleteAllTempTablesFromTestUser(testConn);
 							}catch(Exception e){
 								logger.log(Level.INFO,"Temporary Table does not exist",e);
@@ -3216,6 +3248,7 @@ public class TestAnswer {
 								logger.log(Level.SEVERE,"Temp Table creation error. Table already exists",e);
 								throw e;
 							} 
+							
 							Vector<String> killedMutants = checkAgainstOriginalQuery(mutants, "DS_Default", instrQuery,"NoPath", true, cmismatch, testConn);
 							logger.log(Level.INFO,"******************");
 							logger.log(Level.INFO,"Default dataset Loaded : " + " " + killedMutants.size());
@@ -3342,8 +3375,9 @@ public class TestAnswer {
 				}else{
 					//return failedDataSets;
 				}
-
+			testConn.close(); //divya.	
 			}
+		conn.close();  //divya.	
 		}
 		return failedDataSetsPerQuery;
 	}
@@ -3448,7 +3482,10 @@ public class TestAnswer {
 			catch(Exception e){
 				e.printStackTrace();
 			}
+			
+			conn.close();  //divya.
 			return out;
+			
 		}//try block for connection ends
 
 	}
@@ -3577,7 +3614,9 @@ public class TestAnswer {
 						}
 					}//try block for resultset ends
 				}//try block for statement ends
+			testConn.close();  //divya.	
 			}//try bloak for testcon ends
+		conn.close();	 //divya.
 		}//try block for conn ends
 	}
 
@@ -3725,6 +3764,7 @@ public class TestAnswer {
 				bfrd.write(quesID + " Correct Queries :" + correct + " ");
 				bfrd.write(quesID + " Incorrect Queries :" + incorrect + "\n");
 			}
+			conn.close(); //divya.
 		}//try block for connection ends
 
 		//conn.close();
@@ -3816,6 +3856,7 @@ public class TestAnswer {
 								Vector<String> cmismatch = new Vector<String>();
 
 								try{
+									logger.log(Level.INFO,"------------testanswer.java line:3852--------------- ");	
 									p.deleteAllTempTablesFromTestUser(testConn);
 								}catch(Exception e){
 									logger.log(Level.INFO,"Temporary Table does not exist",e);

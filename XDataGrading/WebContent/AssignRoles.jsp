@@ -189,13 +189,13 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						<a href="#" class="assignRole" ><button>Submit</button></a>
 					</div>					
 						<%	
-						Connection dbcon = null;
+						//Connection dbcon = null;
 						String output="",roleDropDown = "";
 						int index=0,i=1;
 						String role = "",course="";
 					
-						try {
-							dbcon = (new DatabaseConnection()).dbConnection();
+						try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
+							//dbcon = (new DatabaseConnection()).dbConnection();
 							PreparedStatement stmt,statement;							
 							stmt = dbcon
 									.prepareStatement("SELECT * from xdata_course");
@@ -245,10 +245,10 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						err.printStackTrace();
 						throw new ServletException(err);					
 					}
-					finally{
-						dbcon.close();
+					//finally{
+					//	dbcon.close();
 						
-					}
+					//}
 						%>
 		</table>
 	</fieldset></div></form></div>

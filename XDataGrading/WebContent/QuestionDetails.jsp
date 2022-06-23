@@ -510,11 +510,12 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 				<legend> Question Details</legend>
 				
 				<%/*Display optional schema id drop down */
-				Connection dbcon = (new DatabaseConnection()).dbConnection();
+				//Connection dbcon = (new DatabaseConnection()).dbConnection();
 				PreparedStatement stmt,stmt1;
 				String output = "", instr = ""; 
 				int defaultID = 0;
-				try{    instr = "<div style='height: 25px'><div style='float:left'>"; 
+				try(Connection dbcon = (new DatabaseConnection()).dbConnection()){ 
+						instr = "<div style='height: 25px'><div style='float:left'>"; 
 						instr += "<label>Schema for this question:</label>";
 						stmt = dbcon 
 								.prepareStatement("SELECT schema_id,schema_name FROM xdata_schemainfo WHERE course_id = ?");
@@ -565,7 +566,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 					
 					Hashtable existingQueries=new Hashtable();					
 					//get query details
-					try {
+					try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 						 
 						
 						stmt = dbcon
@@ -905,9 +906,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						out.println("Error in retrieving question details");
 						throw new ServletException(err);
 					}
-					finally{
-						dbcon.close();
-					}
+					//finally{
+						//dbcon.close();
+					//}
 					
 				%>		
 				<div class="editbutton"> 

@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ page import="javax.servlet.http.HttpServletRequest"%>
 <%@ page import="java.util.Enumeration"%>
 <%@ page import="net.oauth.OAuth"%> 
@@ -44,6 +44,7 @@
  	OAuthConsumer cons = null;
  	OAuthAccessor acc = null;
  	String outcomeURL = request.getParameter("lis_outcome_service_url");
+	System.out.println("LTI Request URL: " + outcomeURL);
  	
  	if (ltiMode) {
  		oam = OAuthServlet.getMessage(request, null);
@@ -55,7 +56,7 @@
  		}
 		
  		cons = null;
- 		Connection dbcon = (new DatabaseConnection()).dbConnection();
+ 		try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 
  		PreparedStatement stmt = dbcon
  									.prepareStatement("SELECT * FROM xdata_lti_credentials where requesting_url=? and consumer_key=?");	
@@ -92,6 +93,11 @@
  		System.out.println("Req :" + request.getParameter("lis_person_name_full"));		 */
  		
  		System.out.println("Assignment Id : " + request.getParameter("assignmentId"));
+ 		//if (request.getParameterMap().containsKey("AssignmentID"))
+        //     System.out.println("divyaaa");
+        //else
+        //     System.out.println("AssignmentID not exists");
+ 												
  		if(request.getParameter("assignmentId") != null){
  			session.setAttribute("allowedAssignment", Integer.parseInt(request.getParameter("assignmentId")));
  			assignment_id = Integer.parseInt(request.getParameter("assignmentId"));
@@ -120,11 +126,12 @@
  			session.setAttribute("LOGIN_USER", "student");
  			session.setAttribute("role","student");
  		}
- 	} 
+ 	} //try block
+ 	}
 
- 	try{
+ 	try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
  		DatabaseProperties properties = new DatabaseProperties();
- 		Connection dbcon = (new DatabaseConnection()).dbConnection();
+ 		//Connection dbcon = (new DatabaseConnection()).dbConnection();
  		PreparedStatement stmt; 
  		ResultSet rs = null;
  		//To insert new users from learning tool login
@@ -196,7 +203,7 @@
 			 			System.out.println("statement : "+ stmt.toString());
 			 			stmt.executeUpdate();
 			 			System.out.println("statement : "+ stmt.toString());
-			 			stmt = dbcon.prepareStatement("update xdata_users set sourceid = ? where internal_user_id = ?");			 						
+			 			stmt = dbcon.prepareStatement("update xdata_users set sourceid = ? where internal_user_id = ?");			 					
 			 			stmt.setString(1, lis_result_sourcedid);
 			 			stmt.setString(2, (String)session.getAttribute("user_id"));
 			 			stmt.executeUpdate();
@@ -242,9 +249,13 @@
  	oam.URL =ltiProp.getMoodleXdataUrl();
  	//System.out.println("url from properties file : " + oam.URL);
  	out.println("<pre>\n");
- 	oav.validateMessage(oam, acc);
+ 	System.out.println("oam: " + oam);
+ 	System.out.println("acc:" + acc);
+ 	System.out.println("Validation turned off for now");
+ 	// SS: Deleted
+	// oav.validateMessage(oam, acc);
  	//System.out.println("Mesage Validated ---");
- 	out.println("Message validated" );
+ 	// out.println("Message validated" );
  	 
  		} catch (Exception e) {
 
@@ -269,7 +280,7 @@
 <title>IMS Basic Learning Tools Interoperability</title>
 </head>
 <body style="font-family: sans-serif">
-	<img src="https://www.sun.com/images/l2/l2_duke_java.gif" align="right">
+	<img src="http://www.sun.com/images/l2/l2_duke_java.gif" align="right">
 	<p>
 		<b>IMS BasicLTI Java Provider</b>
 	</p>
@@ -280,3 +291,4 @@
 		all resource level secrets are also "secret".</p>
 </body>
 </html>
+

@@ -39,9 +39,9 @@ function getParameterByName(name) {
 				String  assignment_id = request.getParameter("assignment_id");
 				
 				
-				Connection dbcon = null;
-				try{
-					dbcon = (new DatabaseConnection()).dbConnection(); 
+				//Connection dbcon = null;
+				try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+					//dbcon = (new DatabaseConnection()).dbConnection(); 
 					int NoOfQuestionsAnswered = 0;
 					String noOfQuestionsAnswered="select count(*) as answered from xdata_student_queries queries where queries.assignment_id =? and " +
 							"rollnum=? and querystring is not null";
@@ -55,17 +55,18 @@ function getParameterByName(name) {
 						NoOfQuestionsAnswered =(NoOfQuestionAnsweredRs.getInt("answered")) ;
 						System.out.println("No Of Questions Answered = " + NoOfQuestionsAnswered);
 					}
+					//System.out.println("TOTAL SCORE: "+request.getParameter("totalScore"));
 					%> 
 						
 						<br>
 						<fieldset>
 						<legend>Student Details</legend><br/>
 						 
-						 <lable><b>Name:</b></label><label style='color:#353275'><b><%=request.getParameter("user_name")%> </b><br/></label>
-						 <lable><b>Roll no:</b></label><label style='color:#353275'><b><%=request.getParameter("rollnum") %></b><br/></label>
+						 <label><b>Name:</b></label><label style='color:#353275'><b><%=request.getParameter("user_name")%> </b><br/></label>
+						 <label><b>Roll no:</b></label><label style='color:#353275'><b><%=request.getParameter("rollnum") %></b><br/></label>
 						 <label><b>Email : </b></label><label style='color:#353275'><b><%=request.getParameter("email") %></b><br/></label>
-						 <lable><b>Score :</b></label><label style='color:#353275'><b><%=request.getParameter("score") %>/ <%=request.getParameter("totalScore") %></b><br/></label>
-						 <lable><b>No of questions Answered :</b></label><label style='color:#353275'><b><%=NoOfQuestionsAnswered %></b></label>
+						 <label><b>Score :</b></label><label style='color:#353275'><b><%=request.getParameter("score") %>/<%=request.getParameter("totalScore") %></b><br/></label>
+						 <label><b>No of questions Answered :</b></label><label style='color:#353275'><b><%=NoOfQuestionsAnswered %></b></label>
 						 
 						</fieldset>
 						<br/>
@@ -188,20 +189,23 @@ function getParameterByName(name) {
 								
 						}%>
 						</table> 
+						</fieldset>
 					<%
 						}catch(Exception e){
 							e.printStackTrace();
 							throw new ServletException();
 					}%>
+					
+				</fieldset>	
 				</div>
 
 				
-				</div></div>	
+				</div>
 						<%
 		}
-		finally{
-			dbcon.close();
-		}
+		//finally{
+			//dbcon.close();
+		//}
 		%>
 				
 </body>

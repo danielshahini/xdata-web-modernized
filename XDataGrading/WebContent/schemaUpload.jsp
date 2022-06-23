@@ -296,8 +296,8 @@ else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOG
 					String courseID = (String) request.getSession().getAttribute("context_label");
 					System.out.println("**************************COURSE ID IN LOADING SCHEMA *********"+courseID);
 					//get connection
-					Connection dbcon = (new DatabaseConnection()).dbConnection();
-					try { 
+//					Connection dbcon = (new DatabaseConnection()).dbConnection();
+					try(Connection dbcon = (new DatabaseConnection()).dbConnection()) { 
 							PreparedStatement stmt,stmt1;
 							stmt = dbcon
 									.prepareStatement("SELECT schema_id,schema_name, octet_length(ddltext)  FROM xdata_schemainfo where course_id = ? order by schema_id");
@@ -383,9 +383,9 @@ else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOG
 							err.printStackTrace();
 							throw new ServletException(err); 
 						}
-						finally{
-							dbcon.close();
-						}		
+						//finally{
+						//	dbcon.close();
+						//}		
 					%>
 					
 					</fieldset>

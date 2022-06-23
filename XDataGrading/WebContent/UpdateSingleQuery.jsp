@@ -67,11 +67,11 @@
 			System.out.println("Correct: "+correctquery);
 			System.out.println("optional schema id"+ optId);  
 
-			Connection dbcon = null;
+			//Connection dbcon = null;
 
-			dbcon = (new DatabaseConnection()).dbConnection();
+			//dbcon = (new DatabaseConnection()).dbConnection();
 
-			try {
+			try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 
 		PreparedStatement stmt;
 		stmt = dbcon
@@ -124,9 +124,9 @@
 					throw new ServletException(sep); 
 		
 			}
-			finally{
-		dbcon.close();
-			}
+			//finally{
+		//dbcon.close();
+			//}
 	%>
 </body>
 </html>

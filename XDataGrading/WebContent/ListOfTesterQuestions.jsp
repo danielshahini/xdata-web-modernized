@@ -240,11 +240,11 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			
 				<%
 							//get connection
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
+							//Connection dbcon = (new DatabaseConnection()).dbConnection();
 							String asgnName = "";
 							boolean asgnEvaluated = false;
 						
-							try{
+							try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 								PreparedStatement stmt1;
 								ResultSet rs1 = null;
 								stmt1 = dbcon
@@ -258,12 +258,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 									//start=rs.getString("end_date");
 								}						
 								rs1.close(); 
-							} catch (Exception err) {
-								err.printStackTrace();
-								throw new ServletException(err);
-
-							}
-							//now check whether current time is less than start time.Then only assignment can be edited
+														//now check whether current time is less than start time.Then only assignment can be edited
 							boolean yes = false;
 							String matchOption = "";
 							boolean matchAll;
@@ -273,7 +268,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 							int index=0;
 							int qIndexDisplay =0;
 							String output = "<table  cellspacing=\"20\"  class=\"authors-list\" id=\"queryTable\" align=\"center\"> <tr> <th >Question ID</th>       <th >Question Description</th>  <th >Correct Query</th> <th> </th></tr>";
-							try {
+							
 								
 								PreparedStatement stmt;
 								stmt = dbcon
@@ -363,22 +358,22 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						<%//} %>
 						<%/**Added for multiple queries**/
 						int question_id =qID;
-						PreparedStatement stmt1;
+						PreparedStatement stmt2;
 						boolean isQuestionEvaluated = false;
-						stmt1 = dbcon 
+						stmt2 = dbcon 
 								.prepareStatement("SELECT * FROM xdata_instructor_query  where assignment_id=? and course_id=? and question_id=? order by query_id");
-						stmt1.setInt(1, assignID);
-						stmt1.setString(2, courseID);
-						stmt1.setInt(3,question_id);
+						stmt2.setInt(1, assignID);
+						stmt2.setString(2, courseID);
+						stmt2.setInt(3,question_id);
 						
-						ResultSet rs1 = stmt1.executeQuery();%>
+						ResultSet rs2 = stmt2.executeQuery();%>
 							
 							 
-						<%while (rs1.next()) {
-						String queries = rs1.getString("sql");
-						int query_id = rs1.getInt("query_id");
+						<%while (rs2.next()) {
+						String queries = rs2.getString("sql");
+						int query_id = rs2.getInt("query_id");
 						//int marksPerQuery = rs1.getInt("marks");
-						isQuestionEvaluated = rs1.getBoolean("evaluationstatus");
+						isQuestionEvaluated = rs2.getBoolean("evaluationstatus");
 						//Check if datasets are existing for the queries -reqd for showing 'show dataset' link
 						String datasets="Select datasetid from xdata_datasetvalue where assignment_id=? and question_id=? and query_id=? and course_id = ?";
 						PreparedStatement pstmt1=dbcon.prepareStatement(datasets);
@@ -548,7 +543,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					       index++;
         			  		/*************CHANGED FOR MULTIPLE QUERIES ENDS *********/
         			  	}
-							rs1.close();
+							rs2.close();
 						/**Added for multiple Queries Ends**/
 						%>	 	
 						</div>
@@ -567,19 +562,20 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						<%						
 						rs.close();
 						output = "";
-					}  catch (Exception err) {
-						err.printStackTrace();
-						throw new ServletException(err);
-					}
-					finally{
-						dbcon.close();
-					}  
+					
+					//finally{
+					//	dbcon.close();
+					//}  
 					 
 					String add = "TesterQuestionDetails.jsp?AssignmentID=" + assignID +"&&questionId=" + newQId + "&&courseId=" + courseID + "&&new=true&&assignmentName="+asgnName+ "'\"target = \"rightPage\"";
 					//output += "<input  type=\"button\" id=\"quer\" onClick=\"addRow(" + assignID + ",'queryTable')\" value=\"Add Question\" align=\"right\">";
 					output += "<input  type=\"button\" id=\"quer\" onClick=\"window.location.href='" + 
 						add + "value=\"Add Question\" align=\"right\">";
 					out.println(output); 
+					}  catch (Exception err) {
+						err.printStackTrace();
+						throw new ServletException(err);
+					}		
 				%>
 			</fieldset>
 		</div>

@@ -40,7 +40,6 @@ public class QueryStatus extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
 		HttpSession session = request.getSession();
 		String course_id = (String)session.getAttribute("context_label"); 
 		response.setContentType("text/html");
@@ -137,7 +136,6 @@ public class QueryStatus extends HttpServlet {
 			// pstmt.setInt(2, question_id);
 			try(ResultSet rs = pstmt.executeQuery()){
 			boolean present = false;
-			
 			out_assignment.println("<table>");
 
 			out_assignment
@@ -196,7 +194,7 @@ public class QueryStatus extends HttpServlet {
 							+ "<td> <pre><code class=\"sql\">"
 							+ rs.getString("querystring")
 							+ "</code></pre></td>" + "<td>" + "Correct"
-							+ "</td>" + "<td>" + Math.round(rs.getFloat("score"))
+							+ "</td>" + "<td>" + Math.round(rs.getFloat("totalmarks"))
 							+ "</td>" +
 							"<td>No error</td>"+
 							"<td>"
@@ -205,6 +203,7 @@ public class QueryStatus extends HttpServlet {
 							+ assignment_id + "&question_id=" + question_id
 							+ "\" target=\"_blank\" type=\"new_tab\"> Mark Details</a>"
 							+ "</td>" + "</tr>");
+					//
 				}
 				else{
 					out_assignment.println("<tr>" + "<td>"

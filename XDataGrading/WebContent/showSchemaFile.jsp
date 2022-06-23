@@ -54,7 +54,7 @@
 	System.out.println("SCHEMA ID = = "+ schemaID);
 	PrintWriter output = response.getWriter();
 	int i=Integer.parseInt(schemaID);
-	Connection conn= (new DatabaseConnection()).dbConnection();
+	try(Connection conn= (new DatabaseConnection()).dbConnection()){
 	PreparedStatement stmt = conn.prepareStatement("select schema_name,ddltext from xdata_schemainfo where schema_id = ?");
 	stmt.setInt(1, i);
 	ResultSet result = stmt.executeQuery();
@@ -69,7 +69,7 @@
 		//fileContent =result.getString("ddltext").replace("\t", "        ");
 		out.println(fileContent); 
 		out.println("</code></pre></div>"); 
-
+	}
 		  
 	}  
 %>			 

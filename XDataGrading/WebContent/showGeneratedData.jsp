@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
-<%@ page import="java.io.*"%> 
+	pageEncoding="UTF-8" errorPage="errorPage.jsp"%>
+<%@ page import="java.io.*"%>
 <%@ page import="java.util.*"%>
 <%@page import="java.sql.*"%>
 <%@ page import="java.text.*"%>
@@ -9,27 +9,27 @@
 <%@page import="java.lang.reflect.Type"%>
 <%@page import="com.google.gson.reflect.TypeToken"%>
 <%@page import="com.google.gson.JsonArray"%>
-<%@page import="evaluation.FailedDataSetValues" %>
-<%@page import="testDataGen.PopulateTestDataGrading" %>
+<%@page import="evaluation.FailedDataSetValues"%>
+<%@page import="testDataGen.PopulateTestDataGrading"%>
 <%@page import="java.util.logging.Logger"%>
 <%@page import="evaluation.TestAnswer"%>
 <%@page import="parsing.QueryParser"%>
 <%@page import="util.TesterDatasource"%>
 <%@page import="util.DataSetValue"%>
 <%@page import="java.io.PrintWriter"%>
- 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head> 
-<link rel="stylesheet" href="css/structure.css" type="text/css"/> 
-<link rel="stylesheet" href="css/form.css" type="text/css"/>
+<head>
+<link rel="stylesheet" href="css/structure.css" type="text/css" />
+<link rel="stylesheet" href="css/form.css" type="text/css" />
 <script type="text/javascript" src="scripts/wufoo.js"></script>
-<link rel="stylesheet" href="highlight/styles/xcode_white.css"/>  
-<link rel="stylesheet" href="highlight/styles/default_white.css"/> 
+<link rel="stylesheet" href="highlight/styles/xcode_white.css" />
+<link rel="stylesheet" href="highlight/styles/default_white.css" />
 
 <script src="highlight/highlight.pack.js"></script>
-  
-<script type="text/javascript" src = "scripts/jquery.js"></script>
+
+<script type="text/javascript" src="scripts/jquery.js"></script>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script type="text/javascript">
@@ -147,22 +147,21 @@ $( document ).ready(function() {
 });
 </script>
 <style>
-#breadcrumbs
-{
-  position: absolute;
-  padding-left:10px;
-  padding-right:10px;
-  left: 5px;
-  top: 10px;
-  font: 13px/13px Arial, Helvetica, sans-serif;
-  background-color: #f0f0f0;
-  font-weight: bold;
+#breadcrumbs {
+	position: absolute;
+	padding-left: 10px;
+	padding-right: 10px;
+	left: 5px;
+	top: 10px;
+	font: 13px/13px Arial, Helvetica, sans-serif;
+	background-color: #f0f0f0;
+	font-weight: bold;
 }
 </style>
 <title>XData &middot; Assignment</title>
 </head>
-<body > 
-<%
+<body>
+	<%
  	if (session.getAttribute("LOGIN_USER") == null) {
  	response.sendRedirect("index.jsp?TimeOut=true");
  	return;
@@ -177,35 +176,50 @@ $( document ).ready(function() {
 
  if(!((String)session.getAttribute("LOGIN_USER")).equalsIgnoreCase("tester")){
  if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
- %> 
-<div id="breadcrumbs"> 
-  <a style='color:#353275;text-decoration: none;' href="CourseHome.jsp" target="_top">Home</a> &nbsp; >> &nbsp;
-   <a href="InstructorHome.jsp?contextLabel=<%=(String) request.getSession().getAttribute("context_label")%>" style='color:#353275;text-decoration: none;' target="_top"><%=(String) request.getSession().getAttribute("context_label")%></a>&nbsp; >> &nbsp;
-   <a href="ListAllAssignments.jsp" style='color:#353275;text-decoration: none;' target="_self">Assignment List</a>&nbsp; >> &nbsp;
-   <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID")%>&&showQuestions=true" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;    
-  <!--  <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID")%>" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp; -->    
-   <a href="#" style='color:#0E0E0E;text-decoration: none;font-weight: normal;'>Generated Data</a>
- 
-  </div> 
-<%
+ %>
+	<div id="breadcrumbs">
+		<a style='color: #353275; text-decoration: none;'
+			href="CourseHome.jsp" target="_top">Home</a> &nbsp; >> &nbsp; <a
+			href="InstructorHome.jsp?contextLabel=<%=(String) request.getSession().getAttribute("context_label")%>"
+			style='color: #353275; text-decoration: none;' target="_top"><%=(String) request.getSession().getAttribute("context_label")%></a>&nbsp;
+		>> &nbsp; <a href="ListAllAssignments.jsp"
+			style='color: #353275; text-decoration: none;' target="_self">Assignment
+			List</a>&nbsp; >> &nbsp; <a
+			href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID")%>&&showQuestions=true"
+			target="_self" style='color: #353275; text-decoration: none;'>Assignment
+			Details</a>&nbsp; >> &nbsp;
+		<!--  <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID")%>" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp; -->
+		<a href="#"
+			style='color: #0E0E0E; text-decoration: none; font-weight: normal;'>Generated
+			Data</a>
+
+	</div>
+	<%
  	}else{
  %>
-<div id="breadcrumbs">  
-   <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID")%>&&showQuestions=true"" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;    
-  <!-- <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID")%>" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp;    -->
-   <a href="#" style='color:#0E0E0E;text-decoration: none;font-weight: normal;'>Generated Data</a>
- 
- </div> 
-<%
+	<div id="breadcrumbs">
+		<a
+			href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID")%>&&showQuestions=true"
+			" target="_self" style='color: #353275; text-decoration: none;'>Assignment
+			Details</a>&nbsp; >> &nbsp;
+		<!-- <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID")%>" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp;    -->
+		<a href="#"
+			style='color: #0E0E0E; text-decoration: none; font-weight: normal;'>Generated
+			Data</a>
+
+	</div>
+	<%
  	} 
  }
  %>
- 
-<br/>
-<div>
-		<div class="fieldset"><fieldset>
-		<legend>Generated Datasets</legend><br/>
- <div id="container">
+
+	<br />
+	<div>
+		<div class="fieldset">
+			<fieldset>
+				<legend>Generated Datasets</legend>
+				<br />
+				<div id="container">
 
 					<%
 						int assignment_id = Integer.parseInt(request.getParameter("AssignmentID"));
@@ -217,14 +231,15 @@ $( document ).ready(function() {
 
 									String loginUser = session.getAttribute("LOGIN_USER").toString();
 
-									Connection testcon = ((new util.DatabaseConnection()).getTesterConnection(assignment_id)).getTesterConn();
+									//Connection testcon = ((new util.DatabaseConnection()).getTesterConnection(assignment_id)).getTesterConn();
 
-									Connection dbcon = (new DatabaseConnection()).dbConnection();
+									//Connection dbcon = (new DatabaseConnection()).dbConnection();
 									out.println("<div class=\"info\">" + "<h2>Question: " + question_id + "</h2>"
 											+ "<h3><b>Question Text:</b></h3>");
 									out.println("<h3>" + question_text + "</h3>" + "<h4><b>SQL:</b></h4><pre><code class=\"sql\">" + query
 											+ "</code></pre></div>");
-									try {
+									try (Connection testcon = ((new util.DatabaseConnection()).getTesterConnection(assignment_id)).getTesterConn()){
+										try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 										String datasets = "Select datasetid,value,tag,isresultmatch from xdata_datasetvalue where assignment_id = ? and question_id = ? and query_id=? and course_id = ?";
 										PreparedStatement pstmt = dbcon.prepareStatement(datasets);
 										pstmt.setInt(1, assignment_id);
@@ -359,20 +374,22 @@ $( document ).ready(function() {
 													+ CommonFunctions.encodeURIComponent(query)+"&&datasetid="+rs.getString("datasetid");
 											if(loginUser.equalsIgnoreCase("Tester")){
 					%>
-									Enter Expected Result:<br/>
-									<textarea id='expectedResult<%=rs.getString("datasetid") %>' name="tester_result" rows="4" cols="40"> </textarea> <br/>
-									<input type='button' id='<%=rs.getString("datasetid") %>' class='checkMatch' 
-									name='<%=params %>' value='Compare With Query Result'></a>
-									
-									<div id='OutputMatch<%=rs.getString("datasetid") %>' style='display:none;font-family:Courier;color:green;'>
-										Expected result matches with query result.
-									</div>
-									<div id='OutputMismatch<%=rs.getString("datasetid") %>' style='display:none;font-family:Courier;color:red;'>
-										Expected result does not match with query result.
-									</div>
-									
-									<div style='margin-right: 0%;'>
-									<%
+					Enter Expected Result:<br />
+					<textarea id='expectedResult<%=rs.getString("datasetid") %>'
+						name="tester_result" rows="4" cols="40"> </textarea>
+					<br /> <input type='button' id='<%=rs.getString("datasetid") %>'
+						class='checkMatch' name='<%=params %>'
+						value='Compare With Query Result'></a>
+
+					<div id='OutputMatch<%=rs.getString("datasetid") %>'
+						style='display: none; font-family: Courier; color: green;'>
+						Expected result matches with query result.</div>
+					<div id='OutputMismatch<%=rs.getString("datasetid") %>'
+						style='display: none; font-family: Courier; color: red;'>
+						Expected result does not match with query result.</div>
+
+					<div style='margin-right: 0%;'>
+						<%
 								
 									
 									out.println("<a class='showhidelink' href = 'javascript:void(0);' onclick=\"toggleResult('#"
@@ -427,31 +444,35 @@ $( document ).ready(function() {
 								
 								if(loginUser.equalsIgnoreCase("Tester")){
 									%>
-									
-									<input type="checkbox" name='<%=params %>' id='<%=rs.getString("datasetid") %>' 
-									             class='resultMatch'
-									             <%if(rs.getBoolean("isresultmatch")){ %> checked <%}else{%><%}%>>
-									             Query result is same as expected</input>
-									</div>
-									</div>
-									<% 	
+
+						<input type="checkbox" name='<%=params %>'
+							id='<%=rs.getString("datasetid") %>' class='resultMatch'
+							<%if(rs.getBoolean("isresultmatch")){ %> checked <%}else{%> <%}%>>
+						Query result is same as expected</input>
+					</div>
+				</div>
+				<% 	
 								}		
 								out.println("<hr>");
 							}
 							rs.close();
-
+										}
 						} catch (SQLException e) {
 							e.printStackTrace();
 							throw new ServletException(e);
 						} catch (Exception e) {
 							e.printStackTrace();
 							throw new ServletException(e);
-						} finally {
-							dbcon.close();
-							testcon.close();
-						}
+						} 
+									//finally {
+							//dbcon.close();
+							//testcon.close();
+						//}
 					%>
-				</div></fieldset>
-				     </div></div>
+			
+		</div>
+		</fieldset>
+	</div>
+	</div>
 </body>
 </html>

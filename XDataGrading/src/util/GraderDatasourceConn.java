@@ -81,8 +81,7 @@ public abstract class GraderDatasourceConn {
         p.setRemoveAbandoned(true);
  
         p.setJdbcInterceptors("org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;"
-                + "org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer");
- 
+                + "org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer"); 
         datasource = new DataSource();
         datasource.setPoolProperties(p);
         return datasource;

@@ -82,7 +82,7 @@ public class AuthorizationFilter implements Filter {
 		 boolean isAuthorised = false;
 		 HttpSession session = req.getSession(false); 
 		 String path = ((HttpServletRequest) req).getServletPath();
-		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role").equals("admin")){
+		 if(session.getAttribute("LOGIN_USER") != null && session.getAttribute("role")!=null && session.getAttribute("role").equals("admin")){
 			 if(path.contains("LoginChecker") || path.contains("AssignmentOptions") || path.contains("InitAssignment")|| path.contains("FailedTestCases") || path.contains("DeleteLtiSetup") 
 					 || path.contains("AssignRole") ||  path.contains("CreateNewCourse")  ||  path.contains("EditCourse") || path.contains("NewLmsCredential") || path.contains("EditLmsCredential")
 					 || path.contains("CreateUser") || path.contains("EditUser") 

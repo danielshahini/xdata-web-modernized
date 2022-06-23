@@ -6,22 +6,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class Configuration implements ConfigurationInterface{
+public class Configuration implements ConfigurationInterface{ 
 	
 	private static Logger logger = Logger.getLogger(Configuration.class.getName());
 	public static String databaseName = getProperty("databaseName");
 	public static String existingDatabaseUser = getProperty("existingDatabaseUser");
 	public static String existingDatabaseUserPasswd = getProperty("existingDatabaseUserPasswd");
 	
-//	public static String testDatabaseUser = getProperty("testDatabaseUser");
-	//public static String testDatabaseUserPasswd = getProperty("testDatabaseUserPasswd");
+	public static String testDatabaseUser = getProperty("testDatabaseUser");
+	public static String testDatabaseUserPasswd = getProperty("testDatabaseUserPasswd");
 	public static String databaseIP = getProperty("databaseIP");
 	public static String databasePort = getProperty("databasePort");
 	public static String homeDir= getProperty("homeDir");
 	public static String smtsolver = getProperty("smtsolver");
+	public static String smtargs = getProperty("smtargs");
 	public static String logFile=getProperty("logFile");
 	public static String logLevel=getProperty("logLevel");
-	
+	public static String tempJoins=getProperty("tempJoins");	
+	public static String tempDatabaseType = getProperty("tempDatabaseType");
 	public static boolean calledFromApplicationTester = false;
 	
 	//public static String assignmentFolder= getProperty("assignmentFolder");
@@ -32,12 +34,12 @@ public class Configuration implements ConfigurationInterface{
 		} catch (Exception e) {
 			// Ignoring error
 		}
-//		try {
-//				object = new Configuration();
-//				InitLogger.initLogger();
-//		} catch (Exception e) {
-//			// Ignoring error
-//		}
+		try {
+				object = new Configuration();
+				InitLogger.initLogger();
+		} catch (Exception e) {
+			// Ignoring error
+		}
 	}
 	
 	public static String getProperty(String property)

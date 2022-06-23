@@ -152,10 +152,10 @@ public class TestAssignment {
 					for (int ind = 0; ind < corrAns.size(); ind++) {
 						logger.log(Level.INFO, "Result:" + corrAns.get(ind));
 					}
-				
+					dbcon.close(); //divya.
 					return corrAns;
-				} // try block for result set ends
-			} // try block to close donestmt ends
+				} // try block for result set ends	
+			} // try block to close donestmt ends	
 		} catch (SQLException ex) {
 			System.err.println("SQLEEException: " + ex.getMessage());
 			logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -171,7 +171,6 @@ public class TestAssignment {
 	 */
 	public boolean evaluateLateSubmission(Connection dbcon, Connection testCon, String[] args) throws SQLException {
 		boolean status = false;
-
 		int assignment_id = Integer.parseInt(args[0]);
 
 		String rollNum = args[1];
@@ -181,6 +180,8 @@ public class TestAssignment {
 		PopulateTestDataGrading populateTestData = new PopulateTestDataGrading();
 		TestAnswer test = new TestAnswer();
 		// int question_id = 1;
+		System.out.println("***************2222222222222222222222222222*********************");
+
 		try {
 			for (int ij = 1; ij < noOfQuestions; ij++) {
 				QueryStatus queryStatus = QueryStatus.Correct;
@@ -811,7 +812,8 @@ public class TestAssignment {
 										logger.log(Level.FINE,"FailedDs Status :: " + fdv.getStatus());
 										logger.log(Level.FINE,"***************************************************");
 										count++;
-								}}		
+								}}
+						//dbcon1.close(); //divya.
 						}catch (Exception e) {
 							logger.log(Level.SEVERE, "Exception caught here: " + e.getMessage(), e);
 							//upstmt.setBoolean(1, true);
@@ -1197,12 +1199,14 @@ public class TestAssignment {
 						// throw e;
 					}
 				} // try block for studQueries stmt ends
+			dbcon.close();   //divya.	
 			} // try block for testcon ends
 			catch (Exception e) {
 				logger.log(Level.SEVERE, "Exception caught at TestAssginment.evaluate method : " + e.getMessage(), e);
 				// e.printStackTrace();
 				// throw e;
 			}
+		testCon.close();   //divya.	
 		} // try block for dbcon ends
 		catch (Exception e) {
 			logger.log(Level.SEVERE, "Exception caught at end of TestAssignment.evaluate method: " + e.getMessage(), e);
@@ -1222,6 +1226,7 @@ public class TestAssignment {
 	 */
 	public QueryStatusData testQuery(String[] args) throws SQLException {
 		// test here
+		
 		QueryStatusData queryStatus = new QueryStatusData();
 		queryStatus.Status = QueryStatus.Correct;
 		boolean isQueryExists = false;
@@ -1356,6 +1361,7 @@ public class TestAssignment {
 			
 			try (Connection dbcon = MyConnection.getDatabaseConnection()) {
 				ta.newEvaluateAssignment(dbcon, args);
+			//	dbcon.close();  //divya.
 			} 
 			//ta.evaluateQuestion(assignment_id, question_id, course_id);
 		} catch (Exception e) {
@@ -1494,8 +1500,10 @@ public class TestAssignment {
 
 				}
 				p.deleteAllTempTablesFromTestUser(testCon);
-			} // try block for testcon ends
-		} // try block for dbcon ends
+				dbcon.close();   //divya.	
+			} // try block for dbcon ends
+		testCon.close();   //divya. 	
+		} // try block for testcon ends
 		return status;
 	}
 
@@ -1525,10 +1533,9 @@ public class TestAssignment {
 						String actualQuery = query.substring(query.indexOf(")") + 1, query.indexOf(";"));
 						Vector<String> columnmismatch = new Vector();
 						System.out.println(serialNum);
-						try {
+						try (Connection dbcon = getDBConnectionToTest()){
 							// ta.testQuery(args)
-							Connection dbcon = getDBConnectionToTest();
-							Connection testCon = getTesterConnectionToTest();
+							try(Connection testCon = getTesterConnectionToTest()){
 
 							HashMap<String, String> mutants = new HashMap<String, String>();
 							mutants.put("q2", actualQuery);
@@ -1543,6 +1550,9 @@ public class TestAssignment {
 								writer.println(serialNum + actualQuery);
 							} else {
 								System.out.println("good query " + serialNum + " : " + actualQuery);
+							}
+						dbcon.close();  //divya.
+						testCon.close(); //divya.
 							}
 						} catch (Exception e) {
 							System.out.println("Bad query " + serialNum + " : " + actualQuery);
@@ -1584,6 +1594,8 @@ public class TestAssignment {
 	 */
 	public QueryStatusData testThreadsForQuery(String[] args) throws Exception {
 		// test here
+		System.out.println("***************11111111111111111111*********************");
+
 		QueryStatusData queryStatus = new QueryStatusData();
 		queryStatus.Status = QueryStatus.Correct;
 		boolean isQueryExists = false;
@@ -1723,11 +1735,13 @@ public class TestAssignment {
 
 			Class.forName("org.postgresql.Driver");
 			conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/xdata", "testing1", "password");
+			
 		} catch (ClassNotFoundException ex) {
 			System.out.println("Error: unable to load driver class!");
 			System.exit(1);
 		}
 		return conn;
+		
 
 	}
 

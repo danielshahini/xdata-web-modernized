@@ -103,7 +103,8 @@ public class DatabaseHelper {
 	}
 	public static void InsertIntoScores(Connection conn, int assignmentId, int questionId, int queryId, String course_id, int maxMarks, String userId, String info, Float marks, Float raw_marks) throws SQLException{
 		//String insertquery="INSERT INTO score VALUES (?,?,?,?,?,?,?,?,?)";
-		 
+	//	System.out.println("***************OOOOOOOOOOOOOOOOOOOOOOOO*********************");
+		
 		try{
 			
 			float newmarks= calculate_score(conn,assignmentId,course_id,questionId, userId,marks);

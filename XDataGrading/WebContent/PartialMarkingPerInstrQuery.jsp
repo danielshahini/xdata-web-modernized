@@ -307,7 +307,7 @@ hljs.initHighlightingOnLoad();
    		       int questionID = Integer.parseInt(request.getParameter("question_id"));
    		       String requestingPage = request.getParameter("reqFrom");
    		       int queryId = Integer.parseInt(request.getParameter("query_id"));
-   		       Connection conn = (new DatabaseConnection()).dbConnection();
+   		       try(Connection conn = (new DatabaseConnection()).dbConnection()){
    		       %>
    		       	<p><h4>Assignment: <label id='assignId'><%= assignID %></label></h4></p>
    		        <p><h4>Question: <label id='questionId'><%= questionID %></label></h4></p>
@@ -530,6 +530,7 @@ hljs.initHighlightingOnLoad();
    		       stmt.close(); 
    		       rs.close();
    		       conn.close();
+   		       }
    		       %>
  	    </div>
 

@@ -89,9 +89,9 @@ int qIndexDisplay = 1;
 							name="marksToBeReduced" value = '0' required/> 
 					</div><br>
 							
-			<%Connection dbcon = (new DatabaseConnection()).dbConnection();		
+			<%//Connection dbcon = (new DatabaseConnection()).dbConnection();		
 			//Get list of question texts
-			try {
+			try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
 								
 								PreparedStatement stmt;
 								stmt = dbcon
@@ -152,7 +152,7 @@ int qIndexDisplay = 1;
 				<input class="button" name="LateSubmission" type="submit" id="LateSubmission" value="Save and Evaluate"></div>
 				<%				
 			}catch(Exception e){
-				dbcon.close();
+				//dbcon.close();
 			}
 		%>	
 		</fieldset>

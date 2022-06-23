@@ -80,7 +80,8 @@ String result = "select querystring, totalmarks, verifiedcorrect,qi.question_id 
 				" left outer join xdata_qinfo qi on ( q.assignment_id = qi.assignment_id"+
 				" and q.course_id = qi.course_id and q.question_id=qi.question_id) "+ 
 				"where q.assignment_id =? and q.course_id =? and q.rollnum= ? order by qi.question_id";
- 	Connection dbcon = (new DatabaseConnection()).dbConnection();
+ 	try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+ 		
 	PreparedStatement pstmt = dbcon.prepareStatement(result);
 	pstmt.setInt(1,assignment_id);
 	pstmt.setString(2,course_id);
@@ -123,9 +124,9 @@ String result = "select querystring, totalmarks, verifiedcorrect,qi.question_id 
 						<td><%= rs.getString("desc")%></td>
 						<td> <pre><code class="sql"> <%=rs.getString("querystring")%>
 								</code></pre></td>
-							<td>Wrong</td>"
-							<td><%=Math.round(rs.getFloat("score")) %></td>"							
-							<td>"					
+							<td>Wrong</td>
+							<td><%=Math.round(rs.getFloat("score")) %></td>							
+							<td>					
 							<a id="testCase" href="FailedTestCases?user_id='<%=rs.getString("rollnum")%>'&&assignment_id='<%=assignment_id%>'
 									&&question_id='<%=rs.getInt("id")%>' "  target="_blank" type="new_tab">Test Cases</a></td>												
 								<td>
@@ -170,7 +171,8 @@ String result = "select querystring, totalmarks, verifiedcorrect,qi.question_id 
 					<%}
 				}
 				
-				
+
+ 	} //try block
 				%> 
 					</table>
 					

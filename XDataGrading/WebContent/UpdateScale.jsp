@@ -76,8 +76,8 @@ a:hover {
 			
 		//get connection
 		
-		Connection dbcon = (new DatabaseConnection()).dbConnection();
-		try {
+		//Connection dbcon = (new DatabaseConnection()).dbConnection();
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 			//System.out.println("hey>>>>>>>>>>>");
 		PreparedStatement stmt; 
 	    
@@ -147,10 +147,10 @@ a:hover {
 		out.println("Error in uploading assignment");
 		throw new ServletException(sep);
 		}
-		finally
-		{
-			if(dbcon!=null) dbcon.close();
-		}
+		//finally
+		//{
+		//	if(dbcon!=null) dbcon.close();
+		//}
 	%>
 </body>
 </html>

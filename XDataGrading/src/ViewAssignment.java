@@ -205,7 +205,7 @@ public class ViewAssignment extends HttpServlet {
 			"<h2>Assignment: "+assignment_id+"</h2></div>");
 
 		String output = "";
-		try {
+		try(Connection dbCon=(new database.DatabaseConnection()).dbConnection()) {
 			String assignment="select * from xdata_student_queries queries natural join xdata_qinfo qinfo " +
 					" where queries.assignment_id =? and " +
 					"qinfo.assignment_id=? and queries.assignment_id=qinfo.assignment_id " +
@@ -358,8 +358,8 @@ public class ViewAssignment extends HttpServlet {
 		
 		DatabaseConnection db = new DatabaseConnection();
 		
-		try {
-			dbCon = db.dbConnection();
+		try (Connection dbCon = db.dbConnection()){
+			//dbCon = db.dbConnection();
 			if(dbCon!=null){
 				logger.log(Level.FINE,"Connected successfullly");
 			}
@@ -373,9 +373,9 @@ public class ViewAssignment extends HttpServlet {
 		String assgnid = request.getParameter("assignmentid");
 		String assignments="Select * from xdata_assignment";
 		//Connection dbCon=(Connection) session.getAttribute("dbConnection");
-		try {
-		if(dbCon==null)
-			dbCon=(new database.DatabaseConnection()).dbConnection();
+		try (Connection dbCon=(new database.DatabaseConnection()).dbConnection()){
+			//if(dbCon==null)
+				//dbCon=(new database.DatabaseConnection()).dbConnection();
 	
 			PreparedStatement pstmt=dbCon.prepareStatement(assignments);
 			ResultSet rs=pstmt.executeQuery();

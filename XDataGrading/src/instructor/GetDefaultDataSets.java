@@ -55,12 +55,12 @@ public class GetDefaultDataSets extends HttpServlet {
 			throw new ServletException("Please select the schema");
 		}
 		
-		Connection dbcon  = null;
+		//Connection dbcon  = null;
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 		String output = "";
-		try {
-			dbcon = (new DatabaseConnection()).dbConnection();
+		try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
+			//dbcon = (new DatabaseConnection()).dbConnection();
 	
 			PreparedStatement stmnt = dbcon.prepareStatement("select sampledata_id,sample_data_name from xdata_sampledata where course_id=? and schema_id=?");
 			stmnt.setString(1, courseId);
@@ -83,15 +83,15 @@ public class GetDefaultDataSets extends HttpServlet {
 			err.printStackTrace();
 			throw new ServletException(err);	
 		}
-		finally{
-			try {
-				dbcon.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new ServletException(e);	
-			}
-		}
+//		finally{
+//			try {
+//				dbcon.close();
+//			} catch (SQLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				throw new ServletException(e);	
+//			}
+//		}
 
 	}
 

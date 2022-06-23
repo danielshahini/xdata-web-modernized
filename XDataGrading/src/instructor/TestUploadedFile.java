@@ -300,13 +300,14 @@ public class TestUploadedFile extends HttpServlet {
 	 * @param dbPassword
 	 * @param dbName
 	 * @return
+	 * @throws SQLException 
 	 */
-	protected boolean testQueries(String script,String jdbc_url,String dbUser,String dbPassword,String dbName){
+	protected boolean testQueries(String script,String jdbc_url,String dbUser,String dbPassword,String dbName) throws SQLException{
 		
 		String tempFile = "/tmp/testScripts";
-		Connection givenConnection = null;
+		//Connection givenConnection = null;
 		
-		try{
+		try(Connection givenConnection = DriverManager.getConnection(jdbc_url, dbUser, dbPassword)){
 			FileOutputStream fos = new FileOutputStream(tempFile);
 			fos.write(script.getBytes());
 			fos.close(); 
@@ -322,17 +323,12 @@ public class TestUploadedFile extends HttpServlet {
 	    	//out.println("<p style=\"font-family:arial;color:red;font-size:20px;background-color:white;\">Could not find the JDBC driver!</p>");
 				System.exit(1);
 			}
-			try {
-				givenConnection = DriverManager.getConnection(jdbc_url, dbUser, dbPassword);
+			
+			//	givenConnection = DriverManager.getConnection(jdbc_url, dbUser, dbPassword);
 				if(givenConnection!=null){
 				}
-			}
-			catch (SQLException ex) {
-				
-				logger.log(Level.FINE,"SQLException: " + jdbc_url +" --"+ dbUser+"--"+dbPassword);
-				logger.log(Level.SEVERE,"SQLException: " + ex.toString(),ex);
-				throw ex;
-			}
+			
+			
 			PreparedStatement stmt;
 			
 			for (int j = 0; j < inst.length; j++) {
@@ -352,18 +348,27 @@ public class TestUploadedFile extends HttpServlet {
 					stmt.executeUpdate();						
 				}
 			}
-		}catch(Exception e){
+		}
+		
+		catch (SQLException ex) {
+			
+			logger.log(Level.FINE,"SQLException: " + jdbc_url +" --"+ dbUser+"--"+dbPassword);
+			logger.log(Level.SEVERE,"SQLException: " + ex.toString(),ex);
+			throw ex;
+		}
+		catch(Exception e){
 			logger.log(Level.SEVERE,e.getMessage(),e);
 			return false;
 		}
-		finally{
-			try {
-				givenConnection.close();
-			} catch (SQLException e) {
-				logger.log(Level.SEVERE,e.getMessage(),e);
-				return false;
-			}
-		}
+		
+//		finally{
+//			try {
+//				givenConnection.close();
+//			} catch (SQLException e) {
+//				logger.log(Level.SEVERE,e.getMessage(),e);
+//				return false;
+//			}
+//		}
 	
 		return true;
 	}

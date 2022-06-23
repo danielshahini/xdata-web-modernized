@@ -50,9 +50,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		System.exit(1);
 		} */
 
-		Connection dbcon=null;
+		//Connection dbcon=null;
 		
-	    dbcon=(new DatabaseConnection()).dbConnection();	
+	//    dbcon=(new DatabaseConnection()).dbConnection();	
 		
 		//insert the details into queryInfo table
 		//Its schema is assignID,queryID,queryText,correctQuery
@@ -60,7 +60,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		//assignID,queryID forms the primary key
 		int qID=1;
 		
-		try{
+		try(Connection  dbcon=(new DatabaseConnection()).dbConnection()){
 	PreparedStatement stmt;
 	ResultSet rs;
 	
@@ -124,7 +124,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		throw new ServletException(sep);
 		//	System.exit(1);
 		} 
-	dbcon.close();
+	//dbcon.close();
 %>
 </body>
 </html>

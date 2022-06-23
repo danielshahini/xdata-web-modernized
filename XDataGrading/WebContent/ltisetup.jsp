@@ -140,9 +140,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					<table style="border:'0';table-layout: fixed;" width="80%">
 					<!-- <tr><th>Instance URL</th><th>Consumer Key</th><th>Secret Key</th></tr> -->
 					
-					<%Connection dbcon = (new DatabaseConnection()).dbConnection();
+					<%//Connection dbcon = (new DatabaseConnection()).dbConnection();
 					int index = 0;
-					try {
+					try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 						PreparedStatement stmt1 = dbcon
 								.prepareStatement("SELECT * FROM xdata_lti_credentials");
 						
@@ -172,7 +172,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						}catch (Exception err) {
 							err.printStackTrace();
 							throw new ServletException(err);	
-						}finally{dbcon.close();}%>
+						}
+					//finally{dbcon.close();}
+					%>
 				</table>
 				</fieldset>
 </div>

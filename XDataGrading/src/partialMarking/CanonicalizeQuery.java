@@ -32,7 +32,7 @@ public class CanonicalizeQuery {
 	 * @param query
 	 */
 	public static void Canonicalize(QueryStructure queryStruct) throws Exception{		
-		if(queryStruct.setOperator!=null&&!queryStruct.setOperator.isEmpty()){
+		if(queryStruct.setOperator!=null && !(queryStruct.setOperator.isEmpty())){
 				Canonicalize(queryStruct.getLeftQuery());
 				Canonicalize(queryStruct.getRightQuery());			
 		}
@@ -131,7 +131,12 @@ public class CanonicalizeQuery {
 		if(!leftNode.getType().equals(Node.getColRefType())||!rightNode.getType().equals(Node.getColRefType()))
 			return false;
 		String leftTableName=leftNode.getTable().getTableName();
+		
+		System.out.println("GETTABLE: "+rightNode.getTable());
+		System.out.println("GETTABLENAME: "+rightNode.getTable().getTableName());
+		
 		String rightTableName=rightNode.getTable().getTableName();
+		
 		if(leftTableName.compareTo(rightTableName)>0)
 			return true;
 		else if(leftTableName.compareTo(rightTableName)==0){

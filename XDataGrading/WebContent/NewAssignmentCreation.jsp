@@ -241,8 +241,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						String courseId = (String) request.getSession().getAttribute(
 								"context_label");
 						//get the connection for testing1
-						Connection dbcon = (new DatabaseConnection()).dbConnection();
-						try {
+						//Connection dbcon = (new DatabaseConnection()).dbConnection();
+						try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 							//PreparedStatement stmnt = dbcon.prepareStatement("select sampledata_id,sample_data_name from xdata_sampledata where course_id=? and schema_id=?");
 							//stmnt.setString(1, courseId);
 							//stmnt.setString(2,schema_id);
@@ -296,9 +296,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 							throw new ServletException(err);
 							
 						}
-						finally{
-							dbcon.close();
-						}
+						//finally{
+						//	dbcon.close();
+						//}
 					%>
 					<div>
 						<label>Starts at: </label>

@@ -163,16 +163,17 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 
 <div id="breadcrumbs">
   <a style='color:#353275;text-decoration: none;' href="CourseHome.jsp" target="_top">Home</a> &nbsp; >> &nbsp;
-  <a href="InstructorHome.jsp?contextLabel=<%=(String) request.getSession().getAttribute("context_label")%>" style='color:#353275;text-decoration: none;' target="_top"><%=(String) request.getSession().getAttribute("context_label")%></a>&nbsp; >> &nbsp;
+  <a href="InstructorHome.jsp?contextLabel="<%=(String) request.getSession().getAttribute("context_label")%> style='color:#353275;text-decoration: none;' target="_top"><%=(String) request.getSession().getAttribute("context_label")%></a>&nbsp; >> &nbsp;
    <a href="ListAllAssignments.jsp" style='color:#353275;text-decoration: none;' target="_self">Assignment List</a>&nbsp; >> &nbsp;
-   <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID").trim()%>" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;    
-	<a href="#" style='color:#0E0E0E;text-decoration: none;font-weight: normal;'>View Scores</a></div>
-	 </div>							
- 
+   <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID").trim()%> style='color:#353275;text-decoration: none;' target="_self" >Assignment Details</a>&nbsp; >> &nbsp;   
+  <a href="#" style='color:#0E0E0E;text-decoration: none;font-weight: normal;'>View Scores</a></div>
+	 
+	  <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID").trim()%>" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp; 
+	 
 <%}else{%>
 <div id="breadcrumbs">
-  <a href="asgnmentList.jsp?assignmentId="<%=request.getParameter("AssignmentID").trim()%>" target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;
-  <!-- <a href="ListOfQuestions.jsp?AssignmentID="<%=request.getParameter("AssignmentID").trim()%>" target="_self" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp; -->
+  <a href="asgnmentList.jsp?assignmentId=<%=request.getParameter("AssignmentID").trim()%> target="_self" style='color:#353275;text-decoration: none;'>Assignment Details</a>&nbsp; >> &nbsp;
+  <!-- <a href="ListOfQuestions.jsp?AssignmentID=<%=request.getParameter("AssignmentID").trim()%>" target="_self" style='color:#353275;text-decoration: none;'>Question List</a>&nbsp; >> &nbsp; -->
   <a href="#" style='color:#0E0E0E;text-decoration: none;font-weight: normal;'>View Scores</a>
   </div> 
 <%}%> 
@@ -185,13 +186,13 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 		Boolean ltiIntegration = Boolean.parseBoolean(session.getAttribute(
 				"ltiIntegration").toString());
 		String assignment_id = request.getParameter("AssignmentID");
-		String total = "select sum(scale) total, count(*) as numberOfQuestions from xdata_qinfo where assignment_id = ? and course_id=?";
+		String total = "select sum(totalmarks) total, count(*) as numberOfQuestions from xdata_qinfo where assignment_id = ? and course_id=?"; //sum(scale) --> sum(totalmarks)
 		String result = "select sum(scaled_score) score, user_name, email, rollnum from xdata_users u left join xdata_student_queries s on u.internal_user_id = s.rollnum "
 				+"where assignment_id = ? group by user_name, email, rollnum order by rollnum";
 		String course_id = (String) request.getSession().getAttribute("context_label");
-		Connection dbcon = null;
-		try{
-			dbcon = (new DatabaseConnection()).dbConnection();
+		//Connection dbcon = null;
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+			//dbcon = (new DatabaseConnection()).dbConnection();
 			int noOfQuestions = 0;
 		
 			Float totalMarks = 100F;
@@ -260,6 +261,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 										+ totRoundedScores + "&max=" + totRoundedMarks+ "&singleUpload=true"
 										+ "&AssignmentID="+request.getParameter("AssignmentID")+"'>Upload</a></td>";
 							}
+							
+							//System.out.println("Total Score: "+request.getParameter("totalScore"));       //divya.
+							
 							String detailsLink= "<td class=\"wrapword\"> " +
 							"<a class='detailsLink' style='color: #00f;' href='viewAssignmentScoreDetails.jsp?assignment_id="+assignment_id+"&&user_name="+rs.getString("user_name")+"&&email="+rs.getString("email")+"&&rollnum="
 							+rs.getString("rollnum")+"&&rollnumindex ="+rollNumIndex+"&&score="+totRoundedScores+"&&totalScore="+totRoundedMarks+"&&noOfQuestions="+noOfQuestions+"' target='_blank' type='new_tab''> Details</a>"
@@ -326,6 +330,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 									stmt.setInt(2,Integer.parseInt(assignment_id));
 									stmt.setString(3,rs.getString("rollnum"));
 									//System.out.println(stmt.toString());
+									
 									ResultSet rset=stmt.executeQuery();
 									while(rset.next()){
 										float marksAwarded = 0.0f;
@@ -340,6 +345,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 											marksAwarded = Math.round(rs1.getFloat("score"));
 											
 										}
+										
 										if(rset.getString("verifiedcorrect") != null){
 											
 											String status="";
@@ -403,9 +409,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 						</div></div>	
 						<%
 		}
-		finally{
-			dbcon.close();
-		}
+		//finally{
+		//	dbcon.close();
+		//}
 		%>
 		<!-- MODAL CODE STARTS -->
 		<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModal" aria-hidden="true">

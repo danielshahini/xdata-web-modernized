@@ -116,12 +116,12 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			<!-- <a class="header" target="rightPage" href="ViewCourseList.jsp">View Courses</a></li> -->
 			<ul>
 			<%
-				Connection dbcon = null;
+			//	Connection dbcon = null;
 				String output = "";
 				boolean isCourseExist = false;
-				try{
+				try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 					
-					dbcon = (new DatabaseConnection()).dbConnection();
+					//dbcon = (new DatabaseConnection()).dbConnection();
 					PreparedStatement stmt;
 					//stmt = dbcon.prepareStatement("SELECT * FROM  xdata_course");
 					stmt = dbcon.prepareStatement("select instructor_course_id, year from xdata_course xc inner join xdata_roles xr on xc.instructor_course_id = xr.course_id where internal_user_id =? and role = ? order by year desc");
@@ -148,9 +148,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					throw new ServletException(err);
 					
 				}
-				finally{
-					dbcon.close();
-				}
+			//	finally{
+			//		dbcon.close();
+			//	}
 				%>
 			
 			<li></li>

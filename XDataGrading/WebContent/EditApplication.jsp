@@ -167,7 +167,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					+ "</label></label> <br/><br/>";
 
 			//get connection
-			Connection dbcon = (new DatabaseConnection()).dbConnection();
+			//Connection dbcon = (new DatabaseConnection()).dbConnection();
 
 			/**store details of assignment*/
 			String asDescription = "", dbType = "", jdbcUrl = "", dbUser = "", dbPassword = "", schemaId = "";
@@ -177,7 +177,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			String chk = null;
 			String dsSet="<div><div id=\"loadDefaultDataSets\" style='display:none;'>";
 			
-			try {
+			try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 				PreparedStatement stmt1 = dbcon
 						.prepareStatement("SELECT * FROM xdata_assignment where assignment_id=? and course_id=?");
 				stmt1.setInt(1, assignID);
@@ -286,8 +286,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			output += dsSet;
 			
 			database.CommonFunctions util = new database.CommonFunctions();
-			DateFormat df = new SimpleDateFormat("yyyy/MM/dd hh:mm");
-		     Calendar calobj = Calendar.getInstance();
+			DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+			 Calendar calobj = Calendar.getInstance();
 		     System.out.println(df.format(calobj.getTime()));
 		
 			output += "<input name = \"start\" type=\"hidden\" value='"+df.format(calobj.getTime()) +"' />";

@@ -271,8 +271,8 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 							output += listButton
 									+ "<table  cellspacing=\"10\"  class=\"authors-list\" id=\"queryTable\" align=\"center\"> <tr> <th >Question ID</th>       <th >Question Text</th>  <th >Correct Query</th> <th> </th></tr>";
 							//get query details
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
-							try {
+							//Connection dbcon = (new DatabaseConnection()).dbConnection();
+							try (Connection dbcon = (new DatabaseConnection()).dbConnection()){			//divya.
 								PreparedStatement stmt;
 								//stmt = dbcon.prepareStatement("SELECT * FROM  qinfo ,assignment where qinfo.assignment_id=? AND qinfo.assignment_id=assignment.assignment_id");
 	 							stmt = dbcon
@@ -372,10 +372,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){%>
 						err.printStackTrace();
 						throw new ServletException(err);
 					}
-					finally{
-						if(dbcon != null)
-							dbcon.close();
-					}
+					//finally{
+					//	if(dbcon != null)
+					//		dbcon.close();
+					//}
 							
 				%>
 			</fieldset>

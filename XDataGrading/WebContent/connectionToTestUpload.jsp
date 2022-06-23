@@ -112,8 +112,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					   }
 					   //String request_from = request.getParameter("requestingPage");
 									//get the connection for testing1
-									Connection dbcon = (new DatabaseConnection()).dbConnection();
-									try {
+									//Connection dbcon = (new DatabaseConnection()).dbConnection();
+									try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 
 										PreparedStatement stmt;
 										stmt = dbcon
@@ -149,9 +149,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 										throw new ServletException(err);
 										
 									}
-									finally{
-										dbcon.close();
-									}
+									//finally{
+									//	dbcon.close();
+									//}
 					%>
 					</form> 
 		</fieldset></div>

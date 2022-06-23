@@ -106,11 +106,11 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	}
 	int connectionId = Integer.parseInt(request.getParameter("dbConnection"));
 	int newAssignmentId = 1;
-	Connection dbcon = null;
+	//Connection dbcon = null;
 
-	dbcon = (new DatabaseConnection()).dbConnection();
+	//dbcon = (new DatabaseConnection()).dbConnection();
 
-	try {
+	try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 		PreparedStatement stmt;
 		
 		//Get assignment id 
@@ -127,8 +127,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			json = gson.toJson(defaultDSId);
 		}
 		
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
-	    Date parsedDate = dateFormat.parse(startDate);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+		Date parsedDate = dateFormat.parse(startDate);
 	    System.out.println(parsedDate.toString());
 	    Timestamp startTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
 	    
@@ -185,9 +185,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		throw new ServletException(sep);
 		//System.exit(1);
 	}
-	finally{
-		dbcon.close();
-	}
+	//finally{
+		//dbcon.close();
+	//}
 	String url = "";
 	if(!((String)request.getSession().getAttribute("LOGIN_USER")).equalsIgnoreCase("tester")){
 		url = "asgnmentList.jsp?assignmentId="+ newAssignmentId;

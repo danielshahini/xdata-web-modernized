@@ -37,8 +37,8 @@ public class DeleteLtiSetup extends HttpServlet {
 		String s = request.getParameter("instanceUrl");
 		String courseID = (String) request.getSession().getAttribute("context_label");
 		//get connection
-		try {
-			Connection dbcon = (new DatabaseConnection()).dbConnection();		
+		try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
+			//Connection dbcon = (new DatabaseConnection()).dbConnection();		
 			PreparedStatement stmt;
 		
 				 // int i=Integer.parseInt(s);

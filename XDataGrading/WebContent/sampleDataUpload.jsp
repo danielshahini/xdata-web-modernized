@@ -259,11 +259,11 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		
 		<%						
 					//get the connection for testing1
-					Connection dbcon = (new DatabaseConnection()).dbConnection();
+					//Connection dbcon = (new DatabaseConnection()).dbConnection();
 					String output = "";
 					int selectedSchemaId = 0;	
 					
-					try {
+					try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
  
 						PreparedStatement stmt;
 				 		stmt = dbcon
@@ -285,9 +285,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						out.println("<p style=\"color:red;font-size: 17px;\">Error in retrieving schema file details<p>");
 						//throw new ServletException(err); 
 					}
-					finally{
+					//finally{
 						//dbcon.close();
-					}
+					//}
 					%> 
 					<label style="text-align:left;float:left;"><strong>Schema Name</strong></label> <br/>
 					<p></p> 
@@ -355,7 +355,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					<%
 					String courseID = (String) request.getSession().getAttribute("context_label");
 					//get connection
-					try { 
+					try (Connection dbcon = (new DatabaseConnection()).dbConnection()){ 
 							PreparedStatement stmt,stmt1;
 							stmt = dbcon
 									.prepareStatement("SELECT schema_id,schema_name  FROM xdata_schemainfo where course_id = ? order by schema_id");
@@ -458,9 +458,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						err.printStackTrace();
 						throw new ServletException(err); 
 					}
-					finally{
-						dbcon.close();
-					}
+					//finally{
+						//dbcon.close();
+					//}
 					%> 
 				
 					

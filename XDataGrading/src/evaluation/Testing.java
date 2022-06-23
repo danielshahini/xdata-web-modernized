@@ -135,6 +135,7 @@ public class Testing {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			conn.close(); //divya.
 			}
 	}
 }

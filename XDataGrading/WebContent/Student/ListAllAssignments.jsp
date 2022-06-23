@@ -93,10 +93,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 									"user_id");
 							
 							//get connection
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
+							//Connection dbcon = (new DatabaseConnection()).dbConnection();
 							String output = "<ul>";
  
-							try {
+							try (Connection dbcon = (new DatabaseConnection()).dbConnection()){			//divya.
 								PreparedStatement stmt;
 								stmt = dbcon
 										.prepareStatement("SELECT * FROM xdata_assignment where course_id = ? AND assignment_id > 0");
@@ -127,10 +127,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								err.printStackTrace();
 								throw new ServletException(err);
 							}
-							finally{
-								if(dbcon != null)
-								dbcon.close();
-							}
+							//finally{
+							//	if(dbcon != null)
+							//	dbcon.close();
+							//}
 				%>
 			</fieldset>
 		</div>

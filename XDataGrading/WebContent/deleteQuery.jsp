@@ -34,10 +34,10 @@ String courseID = (String) request.getSession().getAttribute(
 int questionId =  Integer.parseInt(request.getParameter("question_id"));
 Hashtable <Integer,String> existingSQL = (Hashtable)session.getAttribute("existingSQL");
 ArrayList dataSetGeneratedList = (ArrayList)session.getAttribute("DataGenerationCompleted");
-Connection dbcon = null;
+//Connection dbcon = null;
  
-try{		
-	dbcon = (new DatabaseConnection()).dbConnection();
+try(Connection dbcon = (new DatabaseConnection()).dbConnection()){		
+	//dbcon = (new DatabaseConnection()).dbConnection();
 	PreparedStatement stmt; 
 	stmt = dbcon 
 			.prepareStatement("delete from xdata_instructor_query where course_id=? and assignment_id=? and question_id=? and query_id=?");

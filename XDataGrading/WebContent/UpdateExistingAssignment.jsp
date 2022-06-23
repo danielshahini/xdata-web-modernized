@@ -102,8 +102,8 @@ a:hover {
 			softdate=request.getParameter("end");
 			endDate=request.getParameter("soft");
 			penalty=request.getParameter("penalty");
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
-		    java.util.Date parsedDate = dateFormat.parse(softdate);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+			java.util.Date parsedDate = dateFormat.parse(softdate);
 		    softTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
 		}
 		else
@@ -113,18 +113,21 @@ a:hover {
 			penalty="10";
 		}
 		//get connection
-		Connection dbcon = (new DatabaseConnection()).dbConnection();
+		//Connection dbcon = (new DatabaseConnection()).dbConnection();
 
-		try {
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 		PreparedStatement stmt; 
 		
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm");
-	    java.util.Date parsedDate = dateFormat.parse(startDate);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+		java.util.Date parsedDate = dateFormat.parse(startDate);
 	    System.out.println(parsedDate.toString());
 	    Timestamp startTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
 	    
 	    parsedDate = dateFormat.parse(endDate);
 	    Timestamp endTimeStamp = new java.sql.Timestamp(parsedDate.getTime());
+	    //System.out.println("endDate: "+ endDate);
+	    //System.out.println("parsedDate: "+ parsedDate);
+	    //System.out.println("endTimeStamp: "+ endTimeStamp);
  		
 	    
 	    
@@ -162,7 +165,7 @@ a:hover {
 		out.println("Error in uploading assignment");
 		throw new ServletException(sep);
 		}
-			dbcon.close();
+			//dbcon.close();
 	%>
 </body>
 </html>

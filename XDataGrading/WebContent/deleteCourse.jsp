@@ -28,9 +28,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 }
 
 		String courseId = request.getParameter("courseId");
-		Connection dbcon = null;
-		try {
-			dbcon = (new DatabaseConnection()).dbConnection();
+		//Connection dbcon = null;
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
+			//dbcon = (new DatabaseConnection()).dbConnection();
 			PreparedStatement stmt,stmt1;
 			 int id=Integer.parseInt(courseId);
 				stmt = dbcon
@@ -44,9 +44,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 				err.printStackTrace();
 				throw new ServletException(err);
 			} 
-		finally{
-			dbcon.close();
-		}
+	//	finally{
+		//	dbcon.close();
+		//}
 		response.sendRedirect("ViewCourseList.jsp");
 		%>
 </body>

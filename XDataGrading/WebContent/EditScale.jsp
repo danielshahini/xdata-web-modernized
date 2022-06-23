@@ -97,8 +97,8 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 				</tr>
 				
 				<% 
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
-							try{
+							//Connection dbcon = (new DatabaseConnection()).dbConnection();
+							try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 							//get list of questions in assignment
 							String questions = "select * from xdata_qinfo where course_id = ? and assignment_id = ?"
 									+"order by assignment_id,question_id";
@@ -138,10 +138,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								out.println("Error in getting questions");
 								throw new ServletException(sep);
 								}
-							finally
-							{
-								if(dbcon!=null) dbcon.close();
-							}
+							//finally
+							//{
+							//	if(dbcon!=null) dbcon.close();
+							//}
 				%>	
 				</table>
 				<input type="button" onclick="checkValue()" value="Submit">

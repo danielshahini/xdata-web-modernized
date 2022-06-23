@@ -3,16 +3,16 @@ package util;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
+import instructor.LTIMessage;
 
 public abstract class TesterDataSourceConn {
 	
 	private DataSource datasource = null;
     private Object lock = new Object();
     private static Map<String, DataSource> connMapTester = new HashMap<String,DataSource>();
-   
+	   
     TesterDataSourceConn() {
     }
   
@@ -20,8 +20,8 @@ public abstract class TesterDataSourceConn {
         try {
         
         	Connection conn = null;
-        	String url = this.getConnectionUrl(dbDetails);;
-        	
+        	String url = this.getConnectionUrl(dbDetails);
+        	//System.out.println(url);
         	synchronized(lock){
         		//Initial request for a new DB type
         		if(connMapTester.isEmpty() || !(connMapTester.containsKey(url))){
@@ -77,8 +77,7 @@ public abstract class TesterDataSourceConn {
         p.setRemoveAbandoned(true);
  
         p.setJdbcInterceptors("org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;"
-                + "org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer");
- 
+                + "org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer"); 
         datasource = new DataSource();
         datasource.setPoolProperties(p);
         return datasource;

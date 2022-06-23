@@ -64,10 +64,10 @@ public class QueryDetails {
 			
 		
 	}
-	
+
 	public void InitializeStudentQuery(int aId, int qId, String rollNum, String guestStudentQuery) throws Exception{		
 		String qry = "select * from xdata_student_queries where assignment_id = ? and question_id = ? and rollnum = ?";		
-		if(guestStudentQuery == null){
+		if(guestStudentQuery == null || guestStudentQuery.isEmpty()){
 		//Connection conn = MyConnection.getExistingDatabaseConnection();
 		try(Connection conn = MyConnection.getDatabaseConnection()){
 			try(PreparedStatement pstmt = conn.prepareStatement(qry)){
@@ -80,7 +80,7 @@ public class QueryDetails {
 					if(rs.next()){	
 						sqlQuery = rs.getString("querystring");
 					}else{
-						sqlQuery = guestStudentQuery;
+						sqlQuery = guestStudentQuery; 
 					}
 					this.query = sqlQuery;
 					//this.initialize(aId, qId, sqlQuery);
@@ -120,8 +120,16 @@ public class QueryDetails {
 		qStructure=new QueryStructure(cvc.getTableMap());
 				
 		cvc.closeConn();
-
+		
+		try {
 		qStructure.buildQueryStructure("1",query);
+		}
+		catch(Exception e){
+			System.out.println(e);
+			System.out.println("*********************EXCEPTION******************************");
+			System.out.println(assignmentId+"\t"+questionId+"\t"+query);
+			System.out.println("************************************************************");
+		}
 		
 		
 	}

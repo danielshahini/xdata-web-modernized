@@ -90,8 +90,8 @@ public class PartialMarker {
 	public void setStudentQuery(String query){
 		this.studentId = query;
 	}
-	
-	
+
+
 	HashMap<String, Float> dp = new HashMap<>();
 
 	// Returns an instance of the partial marker
@@ -289,6 +289,7 @@ public class PartialMarker {
 		for(Pair<QueryStructure,Float> editedstudentqueries: edited_query_structure)
 		{
 			QueryStructure temp = (QueryStructure)Utilities.copy(editedstudentqueries);
+			System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>WORKING");
 			CanonicalizeQuery.Canonicalize(temp);
 			float result1 = Metric.LCS(temp, Instructor);
 			if(result1 > maxScore)
@@ -720,10 +721,10 @@ public class PartialMarker {
 		}
 		dp.put(Student.toString(), maxScore);
 		return maxScore;
-		
+
 	}  **/
-	
-	
+
+
 	private float editScoreExhaustiveIterative(QueryStructure CQ,QueryStructure SQ,float maxMarks, float deductMarks) throws Exception
 	{
 
@@ -758,14 +759,14 @@ public class PartialMarker {
 			else
 				return editScoreSetoperatorExhaustive(CQ,SQ,maxMarks,deductMarks);
 		}
-		
+
 		HashMap<QueryStructure, Float> eq = new HashMap<>();		
-		
+
 		eq.put(SQ, maxMarks);
-		
+
 		while(!eq.isEmpty()) {
-			
-			
+
+
 			float maxTempScore=Float.MIN_VALUE;
 			QueryStructure editedQuery=null;
 			for(QueryStructure key:eq.keySet()) {
@@ -776,24 +777,24 @@ public class PartialMarker {
 			}
 			eq.remove(editedQuery);
 			float curMarks=maxTempScore;
-			
-			
+
+
 			QueryStructure canonicalized_instructor = (QueryStructure)Utilities.copy(CQ);
 			CanonicalizeQuery.Canonicalize(canonicalized_instructor);
 			FULL_MARKS=totalNodes(canonicalized_instructor);
-			
+
 			QueryStructure canonicalized_student = (QueryStructure)Utilities.copy(editedQuery);
 			CanonicalizeQuery.Canonicalize(canonicalized_student);
 			MarkInfo result = calculateScore(canonicalized_instructor, canonicalized_student, 0);
 			if(result.Marks >= FULL_MARKS) {
 				return curMarks;
 			}
-			
+
 			float old_marks = curMarks;
-			
+
 			canonicalized_student.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
 			editedQuery.getQueryType().setType((canonicalized_instructor.getQueryType().getType()));
-			
+
 			canonicalized_student = (QueryStructure)Utilities.copy(editedQuery);
 			QueryStructure student_without_where_subq=(QueryStructure)Utilities.copy(editedQuery);
 			CanonicalizeQuery.Canonicalize(canonicalized_student);
@@ -824,19 +825,19 @@ public class PartialMarker {
 						curMarks -=deductMarks;
 				}
 			}
-			
-			
+
+
 			List<Pair<QueryStructure,Float> > single_edit_student = SingleEdit.single_edit(editedQuery, canonicalized_instructor);
 			Pair<QueryStructure,QueryStructure> BestMatch = new Pair<QueryStructure,QueryStructure> ();
-			
+
 			BestMatch.setFirst(canonicalized_instructor);
 			BestMatch.setSecond(canonicalized_student);
 			// If mismatch occurs only in distinct/querytype part
 			if(single_edit_student.size()==0 && old_marks != curMarks) 
 				return editScoreExhaustiveIterative(BestMatch.getFirst(),BestMatch.getSecond(),curMarks,deductMarks);
 			for(Pair<QueryStructure,Float> editedstudentqueries: single_edit_student) {
-				
-				
+
+
 				float genMarks=curMarks - editedstudentqueries.getSecond()*deductMarks;
 				if(genMarks<=0)
 					continue;
@@ -848,22 +849,22 @@ public class PartialMarker {
 				} else {
 					eq.put(curEditedQuery, genMarks);
 				}
-				
-				
+
+
 			}
-			
+
 		}
-		
+
 		return 0;
-		
+
 	}
 
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 
 	// Returns the marks corresponding to the query of the student in comparison to the instructor query
 	public MarkInfo getMarksForQueryStructures() throws Exception{
@@ -2698,8 +2699,8 @@ public class PartialMarker {
 			//ex.printStackTrace();
 		}
 	}
-	
-	
+
+
 	public static void main1(String args[]) throws Exception{		
 		//Connection conn = MyConnection.getExistingDatabaseConnection();
 		try(Connection conn = MyConnection.getDatabaseConnection()){
@@ -2768,7 +2769,7 @@ public class PartialMarker {
 			}
 		}
 	}
-	
+
 	public static void main(String args[]) throws Exception{
 		//int[] questionArr= {1,2,3,4,5,6};
 		int[] questionArr= {4};
@@ -2786,70 +2787,73 @@ public class PartialMarker {
 					String courseId="cs387_3874"; //2016
 					//String courseId="CS 387-2015-1"; //2015
 					List<Integer> queryIds=new ArrayList<>();
-					Connection conn = MyConnection.getDatabaseConnection();
+					try(Connection conn = MyConnection.getDatabaseConnection()){        //divya.
+						//Connection conn = MyConnection.getDatabaseConnection()
 
-					PreparedStatement pstmt=conn.prepareStatement("select query_id from xdata_instructor_query where assignment_id=? and question_id=? and course_id=? order by query_id");
-					pstmt.setInt(1, assignmentId);pstmt.setInt(2, questionId);pstmt.setString(3, courseId);
-					ResultSet rs=pstmt.executeQuery();
-					while(rs.next()) {
-						queryIds.add(rs.getInt(1));
-					}
-					pstmt.close();
-					rs.close();
-					
-					HashSet<String> blockRoll=new HashSet<>(); //blockRoll.add("cs3874606");
-					pstmt=conn.prepareStatement("select rollnum,querystring from xdata_student_queries "
-							+ "where assignment_id=? and question_id=? and course_id=? and raw_score<100 "
-							+ "order by rollnum");
-					pstmt.setInt(1, assignmentId);pstmt.setInt(2, questionId);pstmt.setString(3, courseId);
 
-					int studIter=0;
-					rs=pstmt.executeQuery();
-					
-					while(rs.next()) {
-						if(studIter++<=10)
-							continue;
-						String roll=rs.getString(1);
-						String query=rs.getString(2);
-						//System.out.println(roll);
-						if(blockRoll.contains(roll))
-							continue;
-						double maxMarks=0;
-						long startTime=System.currentTimeMillis();
-						for(int queryId:queryIds) {	
-							try {
-								
-								PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,courseId,roll,query);
-								MarkInfo result=marker.getMarksForQueryStructures();
-								maxMarks=Math.max(maxMarks, result.Marks); /* */
-								
-							}catch(NullPointerException e) {
-								exp++;
-							}catch(StringIndexOutOfBoundsException e) {
-								exp++;
-							}catch(IndexOutOfBoundsException e) {
-								exp++;
-							}
+						PreparedStatement pstmt=conn.prepareStatement("select query_id from xdata_instructor_query where assignment_id=? and question_id=? and course_id=? order by query_id");
+						pstmt.setInt(1, assignmentId);pstmt.setInt(2, questionId);pstmt.setString(3, courseId);
+						ResultSet rs=pstmt.executeQuery();
+						while(rs.next()) {
+							queryIds.add(rs.getInt(1));
 						}
-						long endTime=System.currentTimeMillis();
-						if(maxMarks!=100)
-							curTimeTaken+=(endTime-startTime);
-						if(i==0 && maxMarks!=100)
-							System.out.println(Math.round(maxMarks)); /* */
-					}
-					if(i==0) System.out.println(queryIds.size());
-					
-					timeTaken=Math.min(timeTaken, curTimeTaken);
+						pstmt.close();
+						rs.close();
 
-					pstmt.close();
-					rs.close();
-					conn.close();
-					System.out.println("Curri"+i);
+						HashSet<String> blockRoll=new HashSet<>(); //blockRoll.add("cs3874606");
+						pstmt=conn.prepareStatement("select rollnum,querystring from xdata_student_queries "
+								+ "where assignment_id=? and question_id=? and course_id=? and raw_score<100 "
+								+ "order by rollnum");
+						pstmt.setInt(1, assignmentId);pstmt.setInt(2, questionId);pstmt.setString(3, courseId);
 
-				} 
+						int studIter=0;
+						rs=pstmt.executeQuery();
 
-				System.out.println(timeTaken);
-				System.out.println(exp/maxIter);
+						while(rs.next()) {
+							if(studIter++<=10)
+								continue;
+							String roll=rs.getString(1);
+							String query=rs.getString(2);
+							//System.out.println(roll);
+							if(blockRoll.contains(roll))
+								continue;
+							double maxMarks=0;
+							long startTime=System.currentTimeMillis();
+							for(int queryId:queryIds) {	
+								try {
+
+									PartialMarker marker = new PartialMarker(assignmentId, questionId, queryId,courseId,roll,query);
+									MarkInfo result=marker.getMarksForQueryStructures();
+									maxMarks=Math.max(maxMarks, result.Marks); /* */
+
+								}catch(NullPointerException e) {
+									exp++;
+								}catch(StringIndexOutOfBoundsException e) {
+									exp++;
+								}catch(IndexOutOfBoundsException e) {
+									exp++;
+								}
+							}
+							long endTime=System.currentTimeMillis();
+							if(maxMarks!=100)
+								curTimeTaken+=(endTime-startTime);
+							if(i==0 && maxMarks!=100)
+								System.out.println(Math.round(maxMarks)); /* */
+						}
+						if(i==0) System.out.println(queryIds.size());
+
+						timeTaken=Math.min(timeTaken, curTimeTaken);
+
+						pstmt.close();
+						rs.close();
+						conn.close();
+						System.out.println("Curri"+i);
+
+					} 
+
+					System.out.println(timeTaken);
+					System.out.println(exp/maxIter);
+				}
 			}catch(Exception e) {
 				System.out.println("Error in processing question id:"+questionId);
 				e.printStackTrace();

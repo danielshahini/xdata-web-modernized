@@ -77,8 +77,10 @@ public class EvaluateDistinct {
 		cvc.setCourseId(course_id);
 		preProcess.initializeConnectionDetails(cvc);
 		
-		Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn();
-		Connection conn = MyConnection.getDatabaseConnection();
+		try(Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){       //divya.
+		try(Connection conn = MyConnection.getDatabaseConnection()){
+		//Connection testConn = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn();
+		//Connection conn = MyConnection.getDatabaseConnection();
 		Map <Integer,Vector<String>>  datasetForQueryMap =  
 				TestAnswer.downloadDatasets(assignmentId,questionId, queryId,course_id, conn, filePath, true);
 		
@@ -176,6 +178,8 @@ public class EvaluateDistinct {
 			
 		 }//For each query
 	}
+	}//try block conn
+}//try block testConn
 		/*************************************/
 		//run student query and instructor query against the datasets
 		//if same output - then we dont consider distinct

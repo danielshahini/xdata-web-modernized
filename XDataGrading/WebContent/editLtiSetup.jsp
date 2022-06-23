@@ -70,8 +70,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					<%					//String url = request.getParameter("instanceUrl");
 					int id= Integer.parseInt(request.getParameter("lti_id"));
 					//get the connection for testing1
-					Connection dbcon = (new DatabaseConnection()).dbConnection();
-					try {  
+					//Connection dbcon = (new DatabaseConnection()).dbConnection();
+					try (Connection dbcon = (new DatabaseConnection()).dbConnection()){  
 
 						PreparedStatement stmt;
 						stmt = dbcon
@@ -102,9 +102,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 					<input id="submitButton" type="submit" value="Update"></div>
 					<%} 
 					} 
-					finally{
-						dbcon.close();
-					}
+					//finally{
+					//	dbcon.close();
+					//}
 					 
 					%>			 
 					</fieldset>  

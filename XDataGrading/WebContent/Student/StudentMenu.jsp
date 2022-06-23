@@ -81,7 +81,7 @@ a:visited{
 						 !(((Integer)session.getAttribute("allowedAssignment") ) == 0 )){%>
 				<li> <a class="header" target="rightPage" href="ListOfQuestions.jsp?assignmentid=<%=session.getAttribute("allowedAssignment") %>&&studentId=<%=session.getAttribute("user_id")%>">Go to assignment</a> </li>
 				<%} %>
-			  <!--   <li> <a class="header" target="rightPage" href="ListAllAssignments.jsp">View All Assignments</a> </li> -->
+			    <li> <a class="header" target="rightPage" href="ListAllAssignments.jsp">View All Assignments</a> </li> 
 	 
 			<% } else { %>		
 				<li> <a class="header" target="rightPage" href="ListAllAssignments.jsp">View All Assignments</a> </li>
@@ -91,8 +91,9 @@ a:visited{
 			</ul>
 		<div> 
 		<a href='http://www.cse.iitb.ac.in/infolab/xdata/' target='_blank'>About XData</a>
-		<p class="copyright">© 2015 IIT Bombay. All rights reserved</p>
+		<p class="copyright"> (c) 2015-2021 IIT Bombay. All rights reserved</p>
 		</div>
 	</div>
 	
 </body></html>
+

@@ -75,12 +75,19 @@ a:hover {
 									"user_id");
 
 							//get connection
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
-							String output = "<ul>";
-							SimpleDateFormat formatter = new SimpleDateFormat(
-									"yyyy-MM-dd HH:mm:ss");
-							formatter.setLenient(false);
-							try{
+							
+							
+							//Connection dbcon = (new DatabaseConnection()).dbConnection();
+							//String output = "<ul>";
+							//SimpleDateFormat formatter = new SimpleDateFormat(
+							//		"yyyy-MM-dd HH:mm:ss");
+							//formatter.setLenient(false);
+							try(Connection dbcon = (new DatabaseConnection()).dbConnection()){	//divya.
+								
+								String output = "<ul>";
+								SimpleDateFormat formatter = new SimpleDateFormat(
+										"yyyy-MM-dd HH:mm:ss");
+								formatter.setLenient(false);
 								PreparedStatement stmt;
 								stmt = dbcon
 										.prepareStatement("SELECT * FROM xdata_assignment where course_id = ? AND assignment_id > 0");
@@ -134,10 +141,10 @@ a:hover {
 										err.printStackTrace();
 										throw new ServletException(err);
 									}
-							finally{
-								if(dbcon != null)
-									dbcon.close();
-							}
+							//finally{
+							//	if(dbcon != null)
+							//		dbcon.close();
+							//}
 							
 				%>
 			</fieldset>

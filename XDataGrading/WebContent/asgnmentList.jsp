@@ -109,7 +109,7 @@ if(session.getAttribute("ltiIntegration")!= null && ! Boolean.parseBoolean(sessi
 						String outcomeURL = (String)session.getAttribute("lis_outcome_service_url");
 						String consumerKey = "";
 						String secretKey = "";
-						Connection dbcon = (new DatabaseConnection()).dbConnection();
+						try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 
 				 		PreparedStatement ltiStmt = dbcon
 				 									.prepareStatement("SELECT * FROM xdata_lti_credentials where requesting_url=?");	
@@ -150,7 +150,7 @@ if(session.getAttribute("ltiIntegration")!= null && ! Boolean.parseBoolean(sessi
 								formatter.setLenient(false);
 								//String starting=formatter.format(start);
 
-								try {
+								
 									PreparedStatement stmt;
 									stmt = dbcon
 											.prepareStatement("SELECT * FROM xdata_assignment where assignment_id = ? and course_id = ?");
@@ -199,13 +199,15 @@ if(session.getAttribute("ltiIntegration")!= null && ! Boolean.parseBoolean(sessi
 												+ "<li><a href=\"ViewResults.jsp?AssignmentID="
 												+ assignID
 												+ "\" target = \"rightPage\"><span >Result Summary By Question</span> </a> </li>"
-												+ "<li>"
+												
+												+ "<li><a href=\"assignmentScores.jsp?AssignmentID="
+												+assignID
+												+ "\" target = \"rightPage\"><span > View Scores </span> "
+												+ "</a> </li></ul>";
+																							
 												//+"<a href=\"AssignmentScores?AssignmentID="+assignID
 												//+ "\" target = \"rightPage\">
-												+"<a href=\"assignmentScores.jsp?AssignmentID="+assignID
-												+ "\" target = \"rightPage\">"
-												+"<span > View Scores </span> "
-												+ "</a> </li></ul>";
+												
 				 
 										start = false;
 										
@@ -231,9 +233,9 @@ if(session.getAttribute("ltiIntegration")!= null && ! Boolean.parseBoolean(sessi
 									err.printStackTrace();
 									throw new ServletException(err);
 								}
-								finally{
-									dbcon.close();
-								}
+								//finally{
+									//dbcon.close();
+								//}
 						%>
 			</div>
 			<div id="loadPage" style='display:none;'></div>

@@ -55,10 +55,11 @@ public class UpdateDatabaseConnection extends HttpServlet {
 		dbData.setDbUser(dbuserName);
 		dbData.setJdbc_Url(jdbcurl);
 		dbData.setDbType(databaseType);
-		Connection dbcon = null; 
-		try {
-				new DatabaseConnection();
-				dbcon = DatabaseConnection.getConnection(dbData);
+		//Connection dbcon = null; 
+		new DatabaseConnection();
+		try(Connection dbcon = DatabaseConnection.getConnection(dbData)) {
+				//new DatabaseConnection();
+				//dbcon = DatabaseConnection.getConnection(dbData);
 				if(dbcon == null){ 
  					response.sendError(HttpServletResponse.SC_NOT_FOUND);
  				} 
@@ -66,12 +67,12 @@ public class UpdateDatabaseConnection extends HttpServlet {
 				dbData.setDbUser(testUserName);
 				dbData.setDbPwd(testPassword);
 				new DatabaseConnection();
-				dbcon = DatabaseConnection.getConnection(dbData);
+				try( Connection dbcon1 = DatabaseConnection.getConnection(dbData)){
 				
- 				if(dbcon == null){ 
+ 				if(dbcon1 == null){ 
  					response.sendError(HttpServletResponse.SC_NOT_FOUND);
  				} 
-			 
+				}
     		} 
 			catch (SQLException e) {
 				logger.log(Level.SEVERE,e.getMessage(),e);
@@ -79,13 +80,14 @@ public class UpdateDatabaseConnection extends HttpServlet {
 			} catch (Exception e) {
 				logger.log(Level.SEVERE,e.getMessage(),e);
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);				
-			}finally{
-				try {
-					dbcon.close();
-				} catch (SQLException e) {
-					logger.log(Level.SEVERE,e.getMessage(),e);
-				}
 			}
+//		finally{
+//				try {
+//					dbcon.close();
+//				} catch (SQLException e) {
+//					logger.log(Level.SEVERE,e.getMessage(),e);
+//				}
+//			}
 			 
 	}
 

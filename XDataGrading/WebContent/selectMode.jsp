@@ -13,14 +13,14 @@ String userId = (String)session.getAttribute("user_id");
 String course = (String)request.getParameter("contextLabel");
 session.setAttribute("context_label",course);
 //System.out.println("Data for forwarding request , userId = " + userId + " - course = "+course);		
-Connection dbcon = null;
+//Connection dbcon = null;
 String role = "";
 if(session.getAttribute("role") != null){
 	session.removeAttribute("role");
 }
 
-try{
-	dbcon = (new DatabaseConnection()).dbConnection();
+try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+	//dbcon = (new DatabaseConnection()).dbConnection();
 	PreparedStatement stmt;
 	stmt = dbcon 
 			.prepareStatement("SELECT * FROM  xdata_roles where internal_user_id =? and course_id = ?");
@@ -58,9 +58,10 @@ try{
 				throw new ServletException(err);
 				
 			}
-			finally{
-				dbcon.close();
-}%>
+			//finally{
+				//dbcon.close();
+//}
+%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>

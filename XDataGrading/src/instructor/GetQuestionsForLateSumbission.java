@@ -48,14 +48,14 @@ public class GetQuestionsForLateSumbission extends HttpServlet {
 		//String course_id=request.getParameter("course_id");
 		String assignment_id=request.getParameter("assignment_id");
 		String course_id="";
-		Connection dbcon = null;
+		//Connection dbcon = null;
 		String rollnum = "";
 		String user_name = "";
 		int cnt =0;
 		//Get student details from xdata_users table
 				//verify email
-		try {
-			dbcon = (new DatabaseConnection()).dbConnection();
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
+		//	dbcon = (new DatabaseConnection()).dbConnection();
 	
 			PreparedStatement stmnt = dbcon.prepareStatement("select user_name,internal_user_id,course_id from xdata_users where email=?");
 			//stmnt.setString(1, course_id);
@@ -78,15 +78,17 @@ public class GetQuestionsForLateSumbission extends HttpServlet {
 			}
 		}catch(Exception e){
 			response.sendRedirect("LateSubmission.jsp?value=error");
-		}finally{
-			try {
-				dbcon.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new ServletException(e); 
-			}
 		}
+		
+//		finally{
+//			try {
+//				dbcon.close();
+//			} catch (SQLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				throw new ServletException(e); 
+//			}
+//		}
 		
 	
 		//Then show the saved questions page with an evaluate button.

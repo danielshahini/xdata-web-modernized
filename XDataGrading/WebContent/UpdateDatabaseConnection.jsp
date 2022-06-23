@@ -41,11 +41,11 @@
 			//String port = (String)request.getParameter("port");
 			
 			
-			Connection dbcon = null;
+			//Connection dbcon = null;
 
-			dbcon = (new DatabaseConnection()).dbConnection();
+			//dbcon = (new DatabaseConnection()).dbConnection();
 
-		try {
+		try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
 		PreparedStatement stmt;
 		stmt = dbcon
 				.prepareStatement("INSERT INTO xdata_database_connection VALUES (?,DEFAULT,?,?,?,?,?,?,?,?)");
@@ -70,7 +70,7 @@
 		throw new ServletException(sep);
 		//System.exit(1);
 			}
-		dbcon.close();
+		//dbcon.close();
 	%>
 
 

@@ -31,7 +31,7 @@
 	return BigDecimal.valueOf(marks).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
 }
 %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>  
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -279,7 +279,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       int questionID = Integer.parseInt(request.getParameter("question_id"));
    		       String requestingPage = request.getParameter("reqFrom");
    		       String userId = request.getParameter("user_id");
-   		       Connection conn = (new DatabaseConnection()).dbConnection();
+   		       try(Connection conn = (new DatabaseConnection()).dbConnection()){
    		       %>
    		       	<p><h4>Assignment: <label id='assignId'><%= assignID %></label></h4></p>
    		        <p><h4>Question: <label id='questionId'><%= questionID %></label></h4></p>
@@ -486,9 +486,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			  		<%
 		  		}
 		  		%>
-		  		</div> -->
-		  		</fieldset></div>
 		  		</div> 
+		  		</fieldset> </div>
+		  		</div> -->
 		  		
 		  		
 		  		
@@ -498,6 +498,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       rs.close();
    		       conn.close();
    		       }
+   		       }//try block
    		       %>
  	    </div>
  	     <%if(requestingPage != null && !requestingPage.equalsIgnoreCase("popUp")) {%>

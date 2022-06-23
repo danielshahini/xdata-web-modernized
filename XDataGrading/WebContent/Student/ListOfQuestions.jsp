@@ -143,11 +143,11 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								studentId = (String) request.getSession().getAttribute(
 										"user_id");
 							//get connection
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
+							//Connection dbcon = (new DatabaseConnection()).dbConnection();
  
 							Timestamp start = null;
 							Timestamp end = null;
-							try {
+							try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
 								PreparedStatement stmt;
 								ResultSet rs = null;
 								stmt = dbcon
@@ -166,11 +166,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								schemaIdList.add(defaultSchemaID);
 								rs.close();
 								stmt.close();
-							} catch (Exception err) {
-								err.printStackTrace();
-								throw new ServletException(err);
-
-							}
+							
 							
 							
 							//now check whether current time is less than start time.Then only assignment can be edited
@@ -404,10 +400,16 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 						err.printStackTrace();
 						throw new ServletException(err);
 					}
-					finally{
-						if(dbcon != null)
-						dbcon.close();
-					}
+					//finally{
+					//	if(dbcon != null)
+					//	dbcon.close();
+					//}
+						} catch (Exception err) {
+							err.printStackTrace();
+							throw new ServletException(err);
+
+						}	
+					
 				%>
 			</fieldset>
 		</div>

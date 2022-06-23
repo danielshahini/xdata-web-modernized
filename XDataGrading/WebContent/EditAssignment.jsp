@@ -236,7 +236,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 					+ "</label></label> <br/><br/>";
 
 			//get connection
-			Connection dbcon = (new DatabaseConnection()).dbConnection();
+			//Connection dbcon = (new DatabaseConnection()).dbConnection();
 
 			/**store details of assignment*/
 			String asDescription = "", dbType = "", jdbcUrl = "", dbUser = "", dbPassword = "", schemaId = "";
@@ -248,7 +248,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			String penalty="";
 			String dsSet="<div><div id=\"loadDefaultDataSets\" style='display:none;'>";
 			Boolean showmarks = false;
-			try {
+			try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
 				PreparedStatement stmt1 = dbcon
 						.prepareStatement("SELECT * FROM xdata_assignment where assignment_id=? and course_id=?");
 				stmt1.setInt(1, assignID);
@@ -385,7 +385,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 			String formattedSoft="";
 			if(soft!=null)
 				formattedSoft = new SimpleDateFormat("yyyy/MM/dd HH:mm").format(soft);
-
+				 
 			output += "<div><label class='field'>Starts at:</label><input name = 'start' value ='" + formattedStart + "' id='startdatetimepicker' type='text'/></div><br/>";
 			
 			output +="</br></br></br>";

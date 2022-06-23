@@ -57,8 +57,8 @@ String ids =  request.getParameter("schema_id");
 		//System.out.println("SAMPLE DATA ID = " + sampledata_id);
 		String courseID = (String) request.getSession().getAttribute("context_label");
 		//get connection
-		try {
-			Connection dbcon = (new DatabaseConnection()).dbConnection();		
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
+			//Connection dbcon = (new DatabaseConnection()).dbConnection();		
 			PreparedStatement stmt,stmt1;
 			//for(String s: checkedIds){
 				  int i=Integer.parseInt(s);

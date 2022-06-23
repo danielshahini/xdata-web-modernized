@@ -66,10 +66,10 @@ if (session.getAttribute("LOGIN_USER") == null) {
 				<%
 						String courseID = (String) request.getSession().getAttribute("context_label");
 						//get connection
-						Connection dbcon = (new DatabaseConnection()).dbConnection();
+						//Connection dbcon = (new DatabaseConnection()).dbConnection();
 						 
 						String output = "";
-						try {
+						try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
 							PreparedStatement stmt;
 							stmt = dbcon
 									.prepareStatement("SELECT * FROM xdata_assignment where course_id = ? ORDER By endtime, assignment_id");
@@ -113,9 +113,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 								//out.println("Error in getting list of assignments");
 								throw new ServletException(err);
 							}
-							finally{
-								dbcon.close();
-							}
+							//finally{
+							//	dbcon.close();
+							//}
 				%>
 			</fieldset>
 		</div>

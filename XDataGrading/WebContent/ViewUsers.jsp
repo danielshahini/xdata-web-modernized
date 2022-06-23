@@ -68,11 +68,11 @@ else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOG
 				<legend>List of Users</legend>
 				<form name="form1" method="post" action="editUserDetails.jsp">
 				<div class="resetPwdSuccessMsg" style='color:green;display:none;'>Password reset successful</div>
-				<%Connection dbcon = null;
+				<%//Connection dbcon = null;
 				int index=0;  
 				String output = "";
-				try{
-				dbcon = (new DatabaseConnection()).dbConnection();
+				try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+				//dbcon = (new DatabaseConnection()).dbConnection();
 				PreparedStatement stmt;
 				stmt = dbcon 
 						.prepareStatement("SELECT * FROM xdata_users");
@@ -112,9 +112,10 @@ else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOG
 				throw new ServletException(err);
 				
 			}
-			finally{
-				dbcon.close();
-			}%>
+			//finally{
+				//dbcon.close();
+			//}
+			%>
 
 				
 	</fieldset></div></div>									

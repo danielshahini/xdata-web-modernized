@@ -69,7 +69,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 				<legend>Course List</legend>
 				<form name="form1" method="post" action="selectMode.jsp" target="_top">
 				<%
-				Connection dbcon = null;
+				//Connection dbcon = null;
 				boolean showAll = false;
 				if(request.getParameter("showAll") != null
 						&& request.getParameter("showAll").equals("true")){
@@ -81,8 +81,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 				String role = (String)session.getAttribute("role");
 				Calendar c = Calendar.getInstance();
 				int year = c.get(Calendar.YEAR);
-				try{
-				dbcon = (new DatabaseConnection()).dbConnection();
+				try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+				//dbcon = (new DatabaseConnection()).dbConnection();
 				PreparedStatement stmt;
 				//Select courses to display for the logged in user
 				if( role!= null && role.equalsIgnoreCase("admin")){
@@ -162,9 +162,10 @@ if (session.getAttribute("LOGIN_USER") == null) {
 				throw new ServletException(err);
 				
 			}
-			finally{
-				dbcon.close();
-			}%>
+			//finally{
+				//dbcon.close();
+			//}
+			%>
 
 				
 	</fieldset></div></div>									

@@ -70,8 +70,8 @@ public class CheckQueryEquivalence extends HttpServlet {
 		int qID = Integer.parseInt(questionId);
 		
 		boolean isDataSetExists = false;
-		try{
-		Connection dbcon = (new DatabaseConnection()).dbConnection();
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()){	//divya.
+		//Connection dbcon = (new DatabaseConnection()).dbConnection();
 		int queryWithoutDS = 0;
 		PreparedStatement stmt1 = dbcon 
 				.prepareStatement("SELECT * FROM xdata_instructor_query  where assignment_id=? and course_id=? and question_id=? order by query_id");

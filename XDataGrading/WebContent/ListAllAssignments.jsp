@@ -79,10 +79,10 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 				<%
 						String courseID = (String) request.getSession().getAttribute("context_label");
 						//get connection
-						Connection dbcon = (new DatabaseConnection()).dbConnection();
+						//Connection dbcon = (new DatabaseConnection()).dbConnection();
 						 
 						String output = "";
-						try {
+						try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 							PreparedStatement stmt;
 							stmt = dbcon
 									.prepareStatement("SELECT * FROM xdata_assignment where course_id = ? AND assignment_id >0 ORDER By endtime, assignment_id");
@@ -124,9 +124,9 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								//out.println("Error in getting list of assignments");
 								throw new ServletException(err);
 							}
-							finally{
-								dbcon.close();
-							}
+							//finally{
+							//	dbcon.close();
+							//}
 				%>
 			</fieldset>
 		</div>

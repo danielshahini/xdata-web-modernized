@@ -131,7 +131,7 @@ public class UploadScore extends HttpServlet {
 			
 		}
 		}
-		//Upload marks for assignment as a whole
+		//Upload marks for assignment as a whole  (singleupload=false)
 		else{
 			//Get student one by one and calculate total marks and send to moodle.
 			
@@ -161,12 +161,12 @@ public class UploadScore extends HttpServlet {
 								String lis_result_sourcedid = "";
 								// Score has to be in the range of 0.0 - 1.0
 								score = score / max;
-								try(PreparedStatement stmt1 = conn
-										.prepareStatement("select * from xdata_LTIResponseInfo where internal_user_id = ? and course_id = ? and assignment_id = ?")){
-								
+								//try(PreparedStatement stmt1 = conn.prepareStatement("select * from xdata_LTIResponseInfo where internal_user_id = ? and course_id = ? and assignment_id = ?")){
+								try(PreparedStatement stmt1 = conn.prepareStatement("select * from xdata_LTIResponseInfo where internal_user_id = ? and course_id = ? ")){
+
 									stmt1.setString(1, userId);
 									stmt1.setString(2,course_id);
-									stmt1.setInt(3,assignment_id);
+									//stmt1.setInt(3,assignment_id);
 									try(ResultSet rs2 = stmt1.executeQuery()){
 										if (rs2.next()) {
 											lis_result_sourcedid = rs2.getString("sourceid");
@@ -242,7 +242,7 @@ public class UploadScore extends HttpServlet {
 				logger.log(Level.SEVERE,e.getMessage(),e);
 			}
 			
-		}
+		} //else statement
 	}
 
 	/**

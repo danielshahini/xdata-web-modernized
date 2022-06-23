@@ -58,22 +58,31 @@ public class FailedTestCases extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		HttpSession session=request.getSession();
-		Connection dbCon = null, testcon = null;
+		//Connection dbCon = null, testcon = null;
 		logger.log(Level.FINE,"Request is from Pop-Up Modal : "+request.getParameter("fromPopup"));
 		int assignment_id=Integer.parseInt(request.getParameter("assignment_id"));
 		int question_id=Integer.parseInt(request.getParameter("question_id"));
 		int query_id=1;
 		String course_id = (String) request.getSession().getAttribute("context_label");
 		String user_id=request.getParameter("user_id");
+		
+		DatabaseConnectionDetails dbConnDetails;
 		try {
-			DatabaseConnectionDetails dbConnDetails =(new util.DatabaseConnection()).getTesterConnection(assignment_id);
-			testcon = dbConnDetails.getTesterConn();
-			dbCon = (new DatabaseConnection()).dbConnection();
+		dbConnDetails = (new util.DatabaseConnection()).
+		 getTesterConnection(assignment_id);
+		 
+		
+		//DatabaseConnectionDetails dbConnDetails =(new util.DatabaseConnection()).getTesterConnection(assignment_id);		//divya.
+		try (Connection testcon = dbConnDetails.getTesterConn()){
+			try(Connection dbCon = (new DatabaseConnection()).dbConnection()){
+			//DatabaseConnectionDetails dbConnDetails =(new util.DatabaseConnection()).getTesterConnection(assignment_id);
+			//testcon = dbConnDetails.getTesterConn();
+			//dbCon = (new DatabaseConnection()).dbConnection();
 
-		}catch (Exception ex) {
-			logger.log(Level.SEVERE,"SQLException: " + ex.getMessage());
-			throw new ServletException(ex);
-		}	
+//		catch (Exception ex) {
+//			logger.log(Level.SEVERE,"SQLException: " + ex.getMessage());
+//			throw new ServletException(ex);
+//		}	
 
 		response.setContentType("text/html");
 		PrintWriter out_assignment = response.getWriter();
@@ -635,6 +644,17 @@ public class FailedTestCases extends HttpServlet {
 			}
 
 		}
+		} //try block dbCon
+		} //try block testConn
+		catch (Exception ex) {
+			logger.log(Level.SEVERE,"SQLException: " + ex.getMessage());
+			throw new ServletException(ex);
+		}
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			}
+		
 	}
 
 	/**

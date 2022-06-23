@@ -276,7 +276,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       int questionID = Integer.parseInt(request.getParameter("question_id"));
    		       String requestingPage = request.getParameter("reqFrom");
    		       String userId = request.getParameter("user_id");
-   		       Connection conn = (new DatabaseConnection()).dbConnection();
+   		       try(Connection conn = (new DatabaseConnection()).dbConnection()){
    		       %>
    		       	<p><h4>Assignment: <label id='assignId'><%= assignID %></label></h4></p>
    		        <p><h4>Question: <label id='questionId'><%= questionID %></label></h4></p>
@@ -593,7 +593,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
    		       stmt.close();
    		       rs.close();
    		       conn.close();
-   		       
+   		       }
    		       %>
  	    </div>
  	     <%if(requestingPage != null && !requestingPage.equalsIgnoreCase("popUp")) {%>

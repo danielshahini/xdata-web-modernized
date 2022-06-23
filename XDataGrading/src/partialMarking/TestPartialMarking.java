@@ -127,12 +127,19 @@ public class TestPartialMarking {
 		Properties prop=new Properties();
 		prop.setProperty("user", "testing1");
 		prop.setProperty("password", "password");
-		Connection srcConn=DriverManager.getConnection("jdbc:postgresql://10.129.22.35:5432/xdata?searchpath=testing1", prop);
-		Connection tarConn=DriverManager.getConnection("jdbc:postgresql://localhost:5432/xdata?searchpath=testing1", prop);
+		try(Connection srcConn=DriverManager.getConnection("jdbc:postgresql://10.129.22.35:5432/xdata?searchpath=testing1", prop)){    //divya.
+			try(Connection tarConn=DriverManager.getConnection("jdbc:postgresql://localhost:5432/xdata?searchpath=testing1", prop)){
+				
+		//Connection srcConn=DriverManager.getConnection("jdbc:postgresql://10.129.22.35:5432/xdata?searchpath=testing1", prop);
+		//Connection tarConn=DriverManager.getConnection("jdbc:postgresql://localhost:5432/xdata?searchpath=testing1", prop);
+		
 		//Util.copyDatabaseTables(srcConn, tarConn);
 		Util.copyDatabaseTables(srcConn, tarConn, "xdata_database_connection");
 		srcConn.close();
 		tarConn.close();
+		
+			}
+		}
 	}
 	
 	
@@ -152,7 +159,8 @@ public class TestPartialMarking {
 		Properties prop=new Properties();
 		prop.setProperty("user", "testing1");
 		prop.setProperty("password", "password");
-		Connection conn=DriverManager.getConnection("jdbc:postgresql://localhost:5432/xdatat?searchpath=testing1", prop);
+		try(Connection conn=DriverManager.getConnection("jdbc:postgresql://localhost:5432/xdatat?searchpath=testing1", prop)){   //divya.
+		//Connection conn=DriverManager.getConnection("jdbc:postgresql://localhost:5432/xdatat?searchpath=testing1", prop);
 		
 		String selQuery="select  distinct rollnum, querystring, course_id, assignment_id, question_id, queryid from xdata_student_queries where querystring!='' AND rollnum like 'cs%' order by question_id";
 		PreparedStatement selStmt=conn.prepareStatement(selQuery);
@@ -190,6 +198,7 @@ public class TestPartialMarking {
 		conn.close();
 		writer.close();
 		goodWriter.close();
+		}
 	}
 	
 	/* method for testing parsing in batch. Assumption: queries are stored in file <srcFileName>, the non-parsing queries are

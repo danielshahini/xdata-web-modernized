@@ -65,11 +65,11 @@ public class MatchResult extends HttpServlet {
 		boolean error = false;
 		String datasetid = request.getParameter("datasetid");
 		String isUpdate = request.getParameter("isUpdate");
-		Connection dbcon = null;
+		//Connection dbcon = null;
 		
-		try{
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 			
-				 dbcon = (new DatabaseConnection()).dbConnection();
+				 //dbcon = (new DatabaseConnection()).dbConnection();
 				 String datasets = "update xdata_datasetvalue set isResultMatch=? where assignment_id = ? and question_id = ? and query_id=? and course_id = ? and datasetid=?";
 				 PreparedStatement pstmt = dbcon.prepareStatement(datasets);
 					
@@ -88,14 +88,15 @@ public class MatchResult extends HttpServlet {
 				
 		}catch(Exception e){
 			throw new ServletException("Query results match, but error in updating database. Please check log file.");
-		}finally{
-			try {
-				dbcon.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				throw new ServletException(e);
-			}
 		}
+//		finally{
+//			try {
+//				dbcon.close();
+//			} catch (SQLException e) {
+//				// TODO Auto-generated catch block
+//				throw new ServletException(e);
+//			}
+//		}
 		
 	}
 
@@ -204,10 +205,10 @@ public class MatchResult extends HttpServlet {
 			throw new ServletException("Expected and Original query output mismatch.");
 		}
 		else if(!error){
-			Connection dbcon = null;
-			try{
+			//Connection dbcon = null;
+			try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 			//Update the dataset Table with dataset as matched.
-			dbcon = (new DatabaseConnection()).dbConnection();
+			//dbcon = (new DatabaseConnection()).dbConnection();
 			String datasets = "update xdata_datasetvalue set isResultMatch=true where assignment_id = ? and question_id = ? and query_id=? and course_id = ? and datasetid=?";
 			PreparedStatement pstmt = dbcon.prepareStatement(datasets);
 			pstmt.setInt(1, assignment_id);
@@ -219,14 +220,15 @@ public class MatchResult extends HttpServlet {
 			 
 			}catch(Exception e){
 				throw new ServletException("Query results match, but error in updating database." + e);
-			}finally{
-				try {
-					dbcon.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					throw new ServletException(e);
-				}
 			}
+//			finally{
+//				try {
+//					dbcon.close();
+//				} catch (SQLException e) {
+//					// TODO Auto-generated catch block
+//					throw new ServletException(e);
+//				}
+//			}
 		}
 		/*}catch(Exception e){
 			e.printStackTrace();

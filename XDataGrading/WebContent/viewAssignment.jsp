@@ -40,11 +40,11 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	"context_label");
 	
 	//get connection
-	Connection dbcon = (new DatabaseConnection()).dbConnection();
+	//Connection dbcon = (new DatabaseConnection()).dbConnection();
 	
 	Timestamp start = null;
 	Timestamp end = null;
-	try {
+	try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
 		PreparedStatement stmt1;
 		ResultSet rs1;
 		stmt1 = dbcon
@@ -91,7 +91,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 	String output = "";
 	output += "<table  cellspacing=\"10\"  class=\"authors-list\" id=\"queryTable\" align=\"center\"> <tr> <th style=\"font-family:arial;color:red;font-size:20px;\">Question ID</th>       <th style=\"font-family:arial;color:red;font-size:20px;\">Question Text</th>  <th style=\"font-family:arial;color:red;font-size:20px;\">Correct Query</th> <th> </th></tr>";
 	//get query details
-	try {
+	try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
 		PreparedStatement stmt;
 		//stmt = dbcon.prepareStatement("SELECT * FROM xdata_qinfo ,assignment where qinfo.assignment_id=? AND qinfo.assignment_id=assignment.assignment_id");
 		stmt = dbcon
@@ -146,7 +146,7 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		throw new ServletException(err);
 	}
 
-	dbcon.close();
+	//dbcon.close();
 	//out.println(output);
 	//print data
 	/*

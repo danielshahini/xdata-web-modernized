@@ -57,12 +57,12 @@ public class UpdateSingleQuery extends HttpServlet {
 		int qId = Integer.parseInt(questionId);
 		int asID = Integer.parseInt(request.getParameter("assignment_id"));
 		int optId = Integer.parseInt(optionalSchemaId);
-		try{
+		try(Connection graderConn = new util.DatabaseConnection().getGraderConnection(asID)){		//divya.
 		//Get queries as request parameters
 		String queryToSave = "";
 		//queryToSave=get first query
 		PopulateTestDataGrading p = new PopulateTestDataGrading();
-		Connection graderConn = new util.DatabaseConnection().getGraderConnection(asID);
+		//Connection graderConn = new util.DatabaseConnection().getGraderConnection(asID);
 		p.deleteAllTempTablesFromTestUser(graderConn);
 		p.createTempTables(graderConn, asID, qId);
 		

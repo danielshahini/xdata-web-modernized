@@ -93,7 +93,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 					boolean matchAll;
 					String matchOption = "";
  
-							Connection dbcon = (new DatabaseConnection()).dbConnection();
+							try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
 
 							//get list of questions in assignment
 							String questions = "select * from xdata_qinfo where course_id = ? and assignment_id = ?"
@@ -101,7 +101,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 							PreparedStatement stmt = dbcon.prepareStatement(questions);
 							stmt.setString(1, courseId);
 							stmt.setInt(2, assignId);
-
+							
 							ResultSet rs = stmt.executeQuery();
 							while (rs.next()) {
 								int queryindex = 1;
@@ -176,6 +176,7 @@ if(! Boolean.parseBoolean(session.getAttribute("ltiIntegration").toString())){
 								
 							rs.close();
 							dbcon.close();
+							}
 				%>
 			</fieldset>
 		</div>

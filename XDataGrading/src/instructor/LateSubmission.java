@@ -56,12 +56,12 @@ public class LateSubmission extends HttpServlet {
 		String email = request.getParameter("email");
 		int noOfQuestions = Integer.parseInt(request.getParameter("noOfQuestions")); 
 		int marksToBeReduced = Integer.parseInt(request.getParameter("marksToBeReduced"));
-		Connection dbcon = null;
-		Connection testConn = null;
+		//Connection dbcon = null;
+		//Connection testConn = null;
 		
 
-		try {
-			dbcon = (new DatabaseConnection()).dbConnection();
+		try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
+			//dbcon = (new DatabaseConnection()).dbConnection();
 			PreparedStatement stmt;
 			ResultSet rs;
 		for(int i=1; i< noOfQuestions; i++){
@@ -117,27 +117,28 @@ public class LateSubmission extends HttpServlet {
 
 		TestAssignment ta = new TestAssignment();
 		DatabaseConnectionDetails dbConnDetails = (new util.DatabaseConnection()).getTesterConnection(assignment_id);
-		testConn = dbConnDetails.getTesterConn();
+		try(Connection testConn = dbConnDetails.getTesterConn()){
 		
 		String args[] = {String.valueOf(assignment_id), rollnum,course_id, String.valueOf(noOfQuestions), String.valueOf(marksToBeReduced)};
 		 
 		ta.evaluateLateSubmission(dbcon,testConn,args);
 				
 		response.sendRedirect("evaluationResultsOfLateSubmission.jsp?assignment_id="+assignment_id+"&&course_id="+course_id+"&&rollnum="+rollnum+"&&user_name="+username+"&&email="+email);
-		 
+		}
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new ServletException(e); 
-		}finally{
-			try {
-				dbcon.close();
-				testConn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new ServletException(e); 
-			}
 		}
+//		finally{
+//			try {
+//				dbcon.close();
+//				testConn.close();
+//			} catch (SQLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				throw new ServletException(e); 
+//			}
+//		}
 		
 			
 			

@@ -28,9 +28,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 }
 
 		String userId = request.getParameter("userId");
-		Connection dbcon = null;
-		try {
-			dbcon = (new DatabaseConnection()).dbConnection();
+		//Connection dbcon = null;
+		try (Connection dbcon = (new DatabaseConnection()).dbConnection()){
+			//dbcon = (new DatabaseConnection()).dbConnection();
 			PreparedStatement stmt,stmt1;
 			stmt = dbcon
 						.prepareStatement("delete from xdata_users where internal_user_id = ?");
@@ -47,9 +47,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 				err.printStackTrace();
 				throw new ServletException(err);
 			} 
-		finally{
-			dbcon.close();
-		}
+		//finally{
+		//	dbcon.close();
+		//}
 		response.sendRedirect("ViewUsers.jsp");
 		%>
 </body>

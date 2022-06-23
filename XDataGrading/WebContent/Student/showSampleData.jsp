@@ -54,8 +54,8 @@ String sampleDataID = (String)request.getParameter("sampledata_id");
 //	System.out.println("SCHEMA ID = = "+ schemaID); 
 	PrintWriter output = response.getWriter();
 	int i=Integer.parseInt(schemaID);
-	Connection conn= (new DatabaseConnection()).dbConnection();
-	try{
+	//Connection conn= (new DatabaseConnection()).dbConnection();
+	try(Connection conn= (new DatabaseConnection()).dbConnection()){		//divya.
 	PreparedStatement stmt = conn.prepareStatement("select sample_data_name, sample_data from xdata_sampledata where course_id=? and schema_id = ?");
 	stmt.setString(1, courseId);
 	stmt.setInt(2, i); 
@@ -91,10 +91,10 @@ String sampleDataID = (String)request.getParameter("sampledata_id");
 		err.printStackTrace();
 		throw new ServletException(err);
 	}
-finally{
-if(conn != null)
-	conn.close();
-}
+//finally{
+//if(conn != null)
+//	conn.close();
+//}
 	
 %>
 <input type="button" onclick="javascript:history.go(-1)" value="Back"> </div></fieldset></div>

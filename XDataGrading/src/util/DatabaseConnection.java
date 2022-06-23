@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -172,8 +173,9 @@ public class DatabaseConnection {
 			 * 
 			 * @param assignment_id
 			 * @return
+		 * @throws SQLException 
 			 */
-			 public DatabaseConnectionDetails getTesterConnection(int assignment_id){
+			 public DatabaseConnectionDetails getTesterConnection(int assignment_id) throws SQLException{
 				   Connection testerConn = null; 
 				   DatabaseConnectionDetails dbDetails = new DatabaseConnectionDetails();
 				   
@@ -191,12 +193,12 @@ public class DatabaseConnection {
 							   ResultSet rSet = smt.executeQuery();
 							   if(rSet.next()){
 								   
-								  	String jdbc = rSet.getString("jdbcdata");
-									String dbUser = rSet.getString("test_user");
-									String dbPassword = rSet.getString("test_password");
+								  	//String jdbc = rSet.getString("jdbcdata");
+									//String dbUser = rSet.getString("test_user");
+									//String dbPassword = rSet.getString("test_password");
 								 	
 									
-									DatabaseConnection dbConnection = new DatabaseConnection();
+									//DatabaseConnection dbConnection = new DatabaseConnection();
 									dbDetails.setConnName(rSet.getString("connection_name"));
 									dbDetails.setDbName(rSet.getString("database_name"));
 									dbDetails.setDbType(rSet.getString("database_type"));
@@ -208,20 +210,25 @@ public class DatabaseConnection {
 									//alternate db access
 									if(course_id.equalsIgnoreCase("AutomatedTesting")){
 									   testerConn = this.alternateDBAccess(dbDetails);
-									}else{
-										testerConn = dataSource.getConnection(dbDetails);
-									}
+									  }
+									else{
+									   testerConn = dataSource.getConnection(dbDetails);
+									  }
+									
 									
 									dbDetails.setTesterConn(testerConn);
 							   }	   
 						   }
 					   }//end result set try
 					   }//end statement try
+					//   testerConn.close();  //divya
 				   }//end connection try
 				   catch(Exception e){
 					   logger.log(Level.SEVERE, "Tester Connection Error:", e);
-				    // e.printStackTrace(); 
-			   }
+				   }
+//				   finally {
+//					   testerConn.close();	//divya.
+//				   }
 				  return dbDetails;
 			 }
 			 /*

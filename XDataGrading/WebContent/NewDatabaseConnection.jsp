@@ -276,8 +276,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 			<p></p> 
 			<%						 
 					//get the connection for testing1
-					Connection dbcon = (new DatabaseConnection()).dbConnection(); 		
-					try {
+					//Connection dbcon = (new DatabaseConnection()).dbConnection(); 		
+					try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
  
 						PreparedStatement stmt;
 						stmt = dbcon
@@ -347,9 +347,9 @@ if (session.getAttribute("LOGIN_USER") == null) {
 						err.printStackTrace();
 						throw new ServletException(err); 
 					}
-					finally{
-						dbcon.close();
-					}
+					//finally{
+					//	dbcon.close();
+					//}
 					%> 
 				</fieldset>
 			</div>

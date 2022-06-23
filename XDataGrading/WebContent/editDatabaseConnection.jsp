@@ -163,10 +163,10 @@ return;
 					String dbType=null;
 					//System.out.println("CONNECTION ID + = "+connectionID);
 					//get the connection for testing1
-					Connection dbcon = (new DatabaseConnection()).dbConnection();
+					//Connection dbcon = (new DatabaseConnection()).dbConnection();
 					int conId = Integer.parseInt(connectionID);
 					String courseId = (String) (String) request.getSession().getAttribute("context_label"); 
-					try {  
+					try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {  
 
 						PreparedStatement stmt;
 						stmt = dbcon
@@ -232,9 +232,9 @@ return;
 					</div>
 					<%} 
 					}
-					finally{
-						dbcon.close();
-					}
+					//finally{
+					//	dbcon.close();
+					//}
 					 
 					%>			 
 					<div class="testc" id="testc" style='display:block'>

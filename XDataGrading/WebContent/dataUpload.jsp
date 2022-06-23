@@ -61,20 +61,20 @@
 			  }
 			}
 			
-			Connection dbcon = (new DatabaseConnection()).dbConnection();
+			/*Connection dbcon = (new DatabaseConnection()).dbConnection();
 	
 			PreparedStatement stmt;
 			
 			//Get schema id
-			/*
+			
 			stmt =  dbcon.prepareStatement("insert into xdata_sampledata(sample_data) values (?) where course_id = ? and schema_id = ?");
 			
 			stmt.setString(2, courseId);
 			stmt.setInt(3, schemaId);
 			stmt.setBytes(1, dataBytes);
 			
-			stmt.executeUpdate();*/
-			dbcon.close();		
+			stmt.executeUpdate();
+			dbcon.close();		*/
 	}
 		catch(Exception err){
 			//err.printStackTrace();

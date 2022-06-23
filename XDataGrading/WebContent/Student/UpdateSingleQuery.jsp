@@ -52,7 +52,7 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 		return;
 	}
 	
-		Boolean interactiveMode = false;
+		//Boolean interactiveMode = false;
 			String questionID = (String) request.getParameter("questionId");
 			int asID = Integer.parseInt(request.getParameter("assignmentId"));
 			String courseID = (String) request.getSession().getAttribute(
@@ -63,21 +63,29 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 			//correctquery = correctquery;
 			//.replaceAll("[ ;]+$", "");
 			//System.out.println("Student Query" + correctquery);
-			Connection dbcon = null;
+			
+			//Connection dbcon = null;
 
-			dbcon = (new DatabaseConnection()).dbConnection();
+			//dbcon = (new DatabaseConnection()).dbConnection();
 			
 			
-			Connection testConn = ((new util.DatabaseConnection()).getTesterConnection(asID)).getTesterConn();
+			//Connection testConn = ((new util.DatabaseConnection()).getTesterConnection(asID)).getTesterConn();
 			
-	try{
-			PreparedStatement stmt;
-			ResultSet rs = null;
+
+			//PreparedStatement stmt;
+			//ResultSet rs = null;
 			
-			Timestamp start = null;
-			Timestamp end = null;
-	 
-	try {
+			//Timestamp start = null;
+			//Timestamp end = null;
+	 //divya.
+	try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
+		try(Connection testConn = ((new util.DatabaseConnection()).getTesterConnection(asID)).getTesterConn()){
+		Boolean interactiveMode = false;
+		PreparedStatement stmt;
+		ResultSet rs = null;
+		
+		Timestamp start = null;
+		Timestamp end = null;
 		stmt = dbcon.prepareStatement("SELECT * FROM xdata_assignment where assignment_id=? and course_id=?");
 		stmt.setInt(1, asID);
 		stmt.setString(2, courseID.trim());
@@ -88,10 +96,7 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 			interactiveMode = rs.getBoolean("learning_mode");
 		}
 	
-	} catch (Exception err) {
-		err.printStackTrace();
-		throw new ServletException(err);
-			}
+	 
 	
 			
 			//System.out.println("Start :" + start);
@@ -117,7 +122,7 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 			}
 		String role = (String)session.getAttribute("LOGIN_USER");
 			
-		if(role.equalsIgnoreCase("guest") ){//&& interactiveMode){
+		if(role.equalsIgnoreCase("guest") ){//&& interactiveMode)
 			if(expired){
 				
 				String remoteLink = request.getContextPath()+ "/ListOfQuestions.jsp?AssignmentID=" + asID + "&&studentId=" + studentID
@@ -132,8 +137,8 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 				failedDSValue = ta.evaluateGuestAnswer(dbcon, testConn, args);
 			    String status = failedDSValue.getStatus();
 			    if(interactiveMode){ 
-					session.setAttribute("dbConn", dbcon);
-					session.setAttribute("testConn", testConn);	
+					//session.setAttribute("dbConn", dbcon);
+					//session.setAttribute("testConn", testConn);	
 					session.setAttribute("displayTestCase", true);
 				} 
 				else{
@@ -270,15 +275,16 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 				//System.out.println("TestQueryOuput" + status.Status.toString());
 				String remoteLink = "";
 				if(interactiveMode){ 
-					session.setAttribute("dbConn", dbcon);
-					session.setAttribute("testConn", testConn);	
+					//session.setAttribute("dbConn", dbcon);
+					//session.setAttribute("testConn", testConn);	
 					session.setAttribute("displayTestCase", true);
 				} 
 				else{
 					session.setAttribute("displayTestCase", false);						
 				}
 				
-				remoteLink = request.getContextPath() + "/StudentTestCase?user_id=" + studentID +"&assignment_id=" + asID 
+				// SS: Fixed remoteLink = request.getContextPath() + "/StudentTestCase?user_id=" + studentID +"&assignment_id=" + asID 
+				remoteLink = "../StudentTestCase?user_id=" + studentID +"&assignment_id=" + asID 
 						+ "&question_id=" + questionID +"&query=" + CommonFunctions.encodeURIComponent(correctquery) + "&status=" + status.Status.toString();
 				
 				if(status.Status == QueryStatus.Error){
@@ -301,13 +307,11 @@ public void logStore(Connection dbcon,String courseID,int assignmentID,String qu
 						
 			}
 		}
-		}
-		finally{
-			if(dbcon != null)
-				dbcon.close();
-			if(testConn != null)
-				testConn.close();
-		}
+		
+		} //try block testconn
+	}//try block dbconn
+		
 	%>
 </body>
 </html>
+

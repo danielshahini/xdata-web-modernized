@@ -58,13 +58,13 @@ else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOG
 				<legend>Course List</legend>
 				<form name="form1" method="post" action="selectMode.jsp" target="_top">
 				<%
-				Connection dbcon = null;
+			//	Connection dbcon = null;
 				int index=0; 
 				String output = "";
 				String userId = (String)session.getAttribute("user_id");
 				String role = (String)session.getAttribute("role");
-				try{
-				dbcon = (new DatabaseConnection()).dbConnection();
+				try(Connection dbcon = (new DatabaseConnection()).dbConnection()){
+				//dbcon = (new DatabaseConnection()).dbConnection();
 				PreparedStatement stmt;
 				//Select courses to display for the logged in user
 				if( role!= null && role.equalsIgnoreCase("admin")){
@@ -119,9 +119,10 @@ else if(session.getAttribute("LOGIN_USER") != null && !session.getAttribute("LOG
 				throw new ServletException(err);
 				
 			}
-			finally{
-				dbcon.close();
-			}%>
+			//finally{
+				//dbcon.close();
+			//}
+			%>
 
 				
 	</fieldset></div></div>									

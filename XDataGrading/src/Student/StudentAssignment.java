@@ -64,14 +64,15 @@ public class StudentAssignment extends HttpServlet {
 	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		try {
-			dbCon = (new DatabaseConnection()).dbConnection();
+		try(Connection dbCon = (new DatabaseConnection()).dbConnection()){
+			//dbCon = (new DatabaseConnection()).dbConnection();
 			if(dbCon!=null){
 				logger.log(Level.FINE,"Connected successfully");
 			}
 		}catch (Exception ex) {
 			logger.log(Level.SEVERE,"SQLException: " + ex.getMessage(),ex);
 			throw new ServletException(ex);
+		
 		}
 		
 		/**Get assignment id and course id*/

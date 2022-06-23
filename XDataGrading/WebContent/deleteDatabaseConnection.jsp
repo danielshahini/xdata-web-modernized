@@ -54,8 +54,8 @@ if (session.getAttribute("LOGIN_USER") == null) {
 		String s = request.getParameter("connection_id");
 		String courseID = (String) request.getSession().getAttribute("context_label");
 		//get connection
-		try {
-			Connection dbcon = (new DatabaseConnection()).dbConnection();		
+		try(Connection dbcon = (new DatabaseConnection()).dbConnection()) {
+			//Connection dbcon = (new DatabaseConnection()).dbConnection();		
 			PreparedStatement stmt,stmt1;
 		//	for(String s: checkedIds){
 				  int i=Integer.parseInt(s);

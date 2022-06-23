@@ -94,7 +94,7 @@ public class WriteFileAndUploadDatasets {
 						dsId = Integer.parseInt(matcher.group(1));
 					}	
 					//String cvcPath = Configuration.homeDir+"/temp_cvc"+gd.getFilePath()+"/cvc3_"+dsId+".cvc";
-					String cvcPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/cvc3_"+dsId+".smt"; // added by ram
+					String cvcPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/z3_"+dsId+".smt"; // added by ram
 					File ds=new File(dsPath);		 	
 					String copyFiles[] = ds.list();
 					String datasetvalue="",st="";
