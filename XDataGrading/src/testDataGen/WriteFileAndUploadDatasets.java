@@ -60,9 +60,7 @@ public class WriteFileAndUploadDatasets {
 		try(Connection conn = MyConnection.getDatabaseConnection()){
 			try(Connection testCon = (new DatabaseConnection().getTesterConnection(assignmentId)).getTesterConn()){
 
-				PopulateTestDataGrading p = new PopulateTestDataGrading();
-				p.deleteAllTempTablesFromTestUser(testCon);
-				p.createTempTables(testCon, assignmentId, questionId);
+				
 				Gson gson = new Gson();
 				FailedDataSetValues instrDs = new FailedDataSetValues();
 				
@@ -77,6 +75,9 @@ public class WriteFileAndUploadDatasets {
 					}
 				}
 				for(int i=0;i<dataSets.size();i++){
+					PopulateTestDataGrading p = new PopulateTestDataGrading();
+					p.deleteAllTempTablesFromTestUser(testCon);
+					p.createTempTables(testCon, assignmentId, questionId);
 					boolean dataExists = false;
 					String dsPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/"+dataSets.get(i); 
 					Pattern pattern = Pattern.compile("^DS([0-9]+)$");

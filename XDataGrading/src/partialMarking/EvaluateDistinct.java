@@ -22,9 +22,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SubSelect;
 import parsing.AggregateFunction;
 import testDataGen.GenerateCVC1;
 import testDataGen.PopulateTestDataGrading;
@@ -260,14 +258,14 @@ public class EvaluateDistinct {
 		//Distinct in aggregate in projected columns
 		else if(plainSelect.getSelectItems() != null && plainSelect.getSelectItems().size() > 0){
 				//If Distinct is in aggregate of select items
-			List<SelectItem> rcList = plainSelect.getSelectItems();
+			List<SelectItem<?>> rcList = plainSelect.getSelectItems();
 			Vector<AggregateFunction> tempAggFunc=new Vector<AggregateFunction>();
 			AggregateFunction aggFunc = new AggregateFunction();
 			for(int i=0;i<rcList.size();i++){
 
-				if(rcList.get(i) instanceof SelectExpressionItem){
+				if(rcList.get(i) instanceof SelectItem){
 
-					SelectExpressionItem rc = (SelectExpressionItem)rcList.get(i);
+					SelectItem rc = (SelectItem)rcList.get(i);
 					if(rc.getExpression() instanceof Function){
 						Function an = (Function)rc.getExpression();
 						if(an.isDistinct() && !isSelectDistinct){
@@ -325,16 +323,16 @@ public class EvaluateDistinct {
 					
 					
 					if((binSelectedExp.getLeftExpression() != null 
-							&& binSelectedExp.getLeftExpression() instanceof SubSelect)){
-						PlainSelect sel = (PlainSelect)((SubSelect)binSelectedExp.getLeftExpression()).getSelectBody();
+							&& binSelectedExp.getLeftExpression() instanceof PlainSelect)){
+						PlainSelect sel = (PlainSelect)((PlainSelect)binSelectedExp.getLeftExpression());
 						if(sel.getDistinct() != null){
 							isSubqWithDistinct = true;
 							sel.setDistinct(null);
 						}
 					}		 
 					else if((binSelectedExp.getRightExpression() != null 
-							&& binSelectedExp.getRightExpression() instanceof SubSelect)){
-						PlainSelect sel = (PlainSelect)((SubSelect)binSelectedExp.getRightExpression()).getSelectBody();
+							&& binSelectedExp.getRightExpression() instanceof PlainSelect)){
+						PlainSelect sel = (PlainSelect)((PlainSelect)binSelectedExp.getRightExpression());
 						if(sel.getDistinct() != null){
 							isSubqWithDistinct = true;
 							sel.setDistinct(null);
@@ -349,8 +347,8 @@ public class EvaluateDistinct {
 					binSelectedExp = ((BinaryExpression)binExp2);
 					
 					if((binSelectedExp.getLeftExpression() != null 
-							&& binSelectedExp.getLeftExpression() instanceof SubSelect)){
-						PlainSelect sel = (PlainSelect)((SubSelect)binSelectedExp.getLeftExpression()).getSelectBody();
+							&& binSelectedExp.getLeftExpression() instanceof PlainSelect)){
+						PlainSelect sel = (PlainSelect)((PlainSelect)binSelectedExp.getLeftExpression()).getSelectBody();
 						if(sel.getDistinct() != null){
 							isSubqWithDistinct = true;
 							sel.setDistinct(null);
@@ -361,8 +359,8 @@ public class EvaluateDistinct {
 						}
 					}		 
 					else if((binSelectedExp.getRightExpression() != null 
-							&& binSelectedExp.getRightExpression() instanceof SubSelect)){
-						PlainSelect sel = (PlainSelect)((SubSelect)binSelectedExp.getRightExpression()).getSelectBody();
+							&& binSelectedExp.getRightExpression() instanceof PlainSelect)){
+						PlainSelect sel = (PlainSelect)((PlainSelect)binSelectedExp.getRightExpression()).getSelectBody();
 						if(sel.getDistinct() != null){
 							isSubqWithDistinct = true;
 							sel.setDistinct(null);
