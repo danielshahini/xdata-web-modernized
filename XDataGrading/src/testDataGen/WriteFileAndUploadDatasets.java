@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.lang.reflect.Type;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -66,108 +67,116 @@ public class WriteFileAndUploadDatasets {
 				FailedDataSetValues instrDs = new FailedDataSetValues();
 				
 				String datasetid="";
-				int maxid=0;
 				String json1="";
 				try(PreparedStatement smt = conn.prepareStatement(prevDatasets)){
 					try(ResultSet rs =smt.executeQuery()){
 						while(rs.next()){
 							datasetid=rs.getString(1);
 							int id=Integer.parseInt(datasetid.substring(2));
-							//To be tested
-							if(id > maxid){
-							//	maxid=id;
-							}
 						}
-					}//try-with-resources - PreparedStatement rs closed
-				}//try-with-resources - PreparedStatement smt closed
+					}
+				}
 				for(int i=0;i<dataSets.size();i++){
 					boolean dataExists = false;
-					//String dsPath = Configuration.homeDir+"/temp_cvc"+gd.getFilePath()+"/"+dataSets.get(i);
-					String dsPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/"+dataSets.get(i); // added by ram
-					ArrayList <String> copyFileList=new ArrayList<String>();
-					ArrayList <String> copyFilesWithFk = new ArrayList<String>();
+					String dsPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/"+dataSets.get(i); 
 					Pattern pattern = Pattern.compile("^DS([0-9]+)$");
 					Matcher matcher = pattern.matcher(dataSets.get(i));
-					int dsId = 1;
+					int dsId = i;
 					
 					if (matcher.find()) {
 						dsId = Integer.parseInt(matcher.group(1));
 					}	
-					//String cvcPath = Configuration.homeDir+"/temp_cvc"+gd.getFilePath()+"/cvc3_"+dsId+".cvc";
-					String cvcPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/z3_"+dsId+".smt"; // added by ram
+					String cvcPath = Configuration.homeDir+"/temp_smt"+gd.getFilePath()+"/z3_"+dsId+".smt"; 
 					File ds=new File(dsPath);		 	
-					String copyFiles[] = ds.list();
-					String datasetvalue="",st="";
-					if(copyFiles != null && copyFiles.length==0){
-						continue;
-					}else if(copyFiles == null){
-						continue;
-					} 
-					ArrayList <DataSetValue> dsList = new ArrayList<DataSetValue>();
 					String line="";
 					String tag="";
+					
 					try(BufferedReader b = new BufferedReader(new FileReader(cvcPath))){
 						
-						String substr = "%MUTATION TYPE:";
+						String substr = ";MUTATION TYPE:";
 						while ((line = b.readLine()) != null) {
+								line = line.trim(); 
 							   if(line.startsWith(substr)){
 								   tag=line.substring(line.lastIndexOf(substr) + substr.length()).trim();
 								   break;
 							   }
 						}
-					}
+					} // found the tag that is the mutation type
+				
+					ArrayList <DataSetValue> dsList = new ArrayList<DataSetValue>();
 					
-					for(int j=0;j<copyFiles.length;j++){
-					//	if(copyFiles[j].contains(".ref")){
-						//	copyFileList.add(copyFiles[j].substring(0,copyFiles[j].indexOf(".ref")));
-						//}else{
-							copyFileList.add(copyFiles[j].substring(0,copyFiles[j].indexOf(".copy")));
-						//}
-					}
-					 /**Delete existing entries in Temp tables **/
-					int size = tableMap.foreignKeyGraph.topSort().size();
-					for (int fg=(size-1);fg>=0;fg--){
-						String tableName = tableMap.foreignKeyGraph.topSort().get(fg).toString();
-						//String del="delete from "+tableName;
-						String del="delete from "+tableName.toLowerCase(); // added by ram for mysql
-						try(PreparedStatement stmt=testCon.prepareStatement(del)){
-							try{
-								stmt.executeUpdate();
-								
-							}catch(Exception e){
-								logger.log(Level.FINE," Contraint violated ERROR:" + del+"/n while inserting datasets");
-								//e.printStackTrace();
-							}finally{
-								
-								stmt.close();
-							}
-						}
-					}
-					//This part helps in identifying the order of foreign key dependence and helps in
-					//populating the data accordingly.
-					for(int f=0;f<tableMap.foreignKeyGraph.topSort().size();f++){
-						String tableName = tableMap.foreignKeyGraph.topSort().get(f).toString();
-						String tName="";
-						if(copyFileList.contains(tableName) || copyFileList.contains(tableName+".ref")){
-							if(copyFileList.contains(tableName+".ref")){
-								tName = tableName+".ref";
-							}else
-								tName = tableName;
-							 DataSetValue dsValue = new DataSetValue();
-							 dsValue.setFilename(tName+".copy");
-							 copyFilesWithFk.add(tName+".copy");
-							 BufferedReader br = new BufferedReader(new FileReader(dsPath+"/"+tName+".copy"));
-							 
-							 while((st=br.readLine())!=null){
-								 	String row=st.replaceAll("\\|", "','");
-									//String insert="insert into "+tableName+" Values ('"+row+"')";
-								 	String insert="insert into "+tableName.toLowerCase()+" Values ('"+row+"')"; // added by ram for mysql
-									
-								try(PreparedStatement inst=testCon.prepareStatement(insert)){
+					
+					// start inserting DS* inside the table
+					try(BufferedReader b = new BufferedReader(new FileReader(dsPath))){
+						
+						while ((line = b.readLine()) != null) {
+								line = line.trim();
+								try(PreparedStatement inst=testCon.prepareStatement(line)){
 									try{
-										inst.executeUpdate();
-										//If constraint not violated, that means the record is encountered first time
-										dsValue.addData(st);	
+										if(line.startsWith("--"))
+											continue;
+										else
+										{
+											if(!line.startsWith("delete"))
+											{
+												int flagForExist=0;
+												String tableName ="";
+												String dataToBeInserted="";
+										        String regex = "(?i)INSERT\\s+INTO\\s+([`\"]?)([a-zA-Z_][a-zA-Z0-9_\\$]*)\\1";
+										        pattern = Pattern.compile(regex);
+										        matcher = pattern.matcher(line);
+										        if (matcher.find())
+										            tableName = matcher.group(2); // getting the table name from the query
+										        
+										        regex = "(?i)VALUES\\s*\\(([^)]+)\\)";
+										        pattern = Pattern.compile(regex);
+										        matcher = pattern.matcher(line);
+										        if (matcher.find())
+										        {
+										        	dataToBeInserted = matcher.group(1);
+										        	dataToBeInserted = dataToBeInserted.replace("'", "").replace(",", "|");
+										        }
+										        
+										        //check if the table name is already inserted
+										        for(int j=0 ; j<dsList.size(); j++)
+										        {
+										        	if(dsList.get(j).getTablename().equalsIgnoreCase(tableName))
+										        	{
+										        		flagForExist=1;
+										        		dsList.get(j).addData(dataToBeInserted);
+										        		break;
+										        	}
+										        }
+										        
+										        //otherwise create the table name and add the data
+										        if(flagForExist==0)
+										        {
+										        	DataSetValue dsValue = new DataSetValue();
+										        	dsValue.setTableName(tableName);
+										        	dsValue.addData(dataToBeInserted);
+										        	
+										        	//getting the column name by writing a dummy query
+								        	
+										        	 DatabaseMetaData metaData = conn.getMetaData();
+
+										             // Get columns for the specified table
+										             ResultSet columns = metaData.getColumns(null, null, tableName, "%");
+										             while (columns.next()) {
+										                 String columnName = columns.getString("COLUMN_NAME");
+										                 dsValue.addColumnName(columnName);
+										             }
+										             										                
+										             dsList.add(dsValue);
+										            
+										          }
+												}
+											
+									            // now we have an array list 
+									            inst.executeUpdate();
+											
+									        
+											}
+												
 									}catch(Exception e){
 										//If exception occurs, then this is duplicate column
 										logger.log(Level.FINE," Contraint violated ERROR:" + inst+"/n while inserting datasets");
@@ -176,59 +185,14 @@ public class WriteFileAndUploadDatasets {
 										inst.close();
 									}
 									}
-							 } 
-							 dsList.add(dsValue);
-							 br.close();
-						}
-						
-					} 
-					
-					for(int j=0;j<copyFiles.length;j++){
-						//If the copy file (table name) is not in foreign key graph
-						
-						String copyFileName = copyFiles[j];
-						if(copyFilesWithFk.contains(copyFileName)){
-							continue;
-						}else{
-							//Check for primary keys constraint and add the data to avoid duplicates
-							DataSetValue dsValue = new DataSetValue();
-							dsValue.setFilename(copyFileName);
-							String tname =copyFileName.substring(0,copyFileName.indexOf(".copy"));
-							 
-							 BufferedReader br = new BufferedReader(new FileReader(dsPath+"/"+copyFileName));
-							 while((st=br.readLine())!=null){
-								 
-								 String row=st.replaceAll("\\|", "','");
-								//String insert="insert into "+tname+" Values ('"+row+"')";
-								 String insert="insert into "+tname.toLowerCase()+" Values ('"+row+"')"; // added by ram for mysql
-									
-										try(PreparedStatement inst=testCon.prepareStatement(insert)){
-											try{
-												inst.executeUpdate();
-												//If constraint not violated, that means the record is encountered first time
-												//or table has no primary key
-												dsValue.addData(st);	
-											}catch(Exception e){
-												//If exception occurs, then this is duplicate column
-												logger.log(Level.FINE," Contraint violated ERROR:" + inst+"/n while inserting datasets");
-												//e.printStackTrace();
-											} finally{
-												inst.close();
-											}
-										}
-								// dsValue.addData(st);
-							 }
-							  dsList.add(dsValue);
-								br.close();
+								
+							   
 						}
 					}
-					  
-//					Type listType =new TypeToken<ArrayList<DataSetValue>>() {
-//		            }.getType();
-		          
+					//end of insertions inside the temp tables
 		            
 					String json = gson.toJson(dsList);
-					datasetid="DS"+(dsId +maxid);
+					datasetid="DS"+ dsId;
 					
 					//Save this to DB and process this in show data generated
 				
@@ -254,6 +218,8 @@ public class WriteFileAndUploadDatasets {
 						}
 						
 					}
+					
+					//getting the query and saving it in instrQuery
 					if(instrQuery != null){
 						//TestAnswer testAns = new TestAnswer();
 			

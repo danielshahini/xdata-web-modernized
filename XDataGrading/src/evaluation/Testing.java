@@ -57,7 +57,7 @@ public class Testing {
 					}
 					//quesID=qID.substring(8);
 					quesID = "A8" + quesID;
-					filePath = "4/" + quesID;
+					filePath = "/" + quesID;
 				}
 				//quesID=""+quesID.charAt(2);// + quesID.charAt(3);
 				

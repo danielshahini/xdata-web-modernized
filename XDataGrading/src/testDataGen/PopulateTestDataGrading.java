@@ -45,11 +45,7 @@ public class PopulateTestDataGrading {
 				for(int i = 0 ; i < dsList.size();i++ ){
 					DataSetValue dsValue = dsList.get(i);
 					String tname,values; 
-					if(dsValue.getFilename().contains(".ref.")){
-						tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref.copy"));
-					}else{
-						tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".copy"));
-					}
+					tname = dsValue.getTablename();
 					logger.log(Level.FINE,"table String:::::::::::::::::::::::::::"+tname);
 					//for(String dsv: dsValue.getDataForColumn()){
 					tables.put(tname, dsValue.getDataForColumn());	
@@ -82,6 +78,7 @@ public class PopulateTestDataGrading {
 						{
 							String row=column.replaceAll("\\|", "','");
 							String insert="insert into "+tableName+" Values ('"+row+"')";
+							//insert="";
 							logger.log(Level.FINE,"Insert statement:::::::::::::::::::::::"+insert);
 
 							PreparedStatement inst=testCon.prepareStatement(insert);

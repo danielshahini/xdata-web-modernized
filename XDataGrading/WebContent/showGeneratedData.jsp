@@ -277,44 +277,40 @@ $( document ).ready(function() {
 											for (int i = 0; i < dsList.size(); i++) {
 												DataSetValue dsValue = (DataSetValue) dsList.get(i);
 												String tname = "", values;
-												//if(dsValue.getFilename().contains(".ref")){
-												//	tname = dsValue.getFilename().substring(0,dsValue.getFilename().indexOf(".ref"));
-												//}
-												if (dsValue.getFilename().contains(".ref")) {
-													refTableExists = true;
-												}
-												if (!(dsValue.getFilename().contains(".ref"))) {
-													//tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".copy"));
-													tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".copy")).toLowerCase(); //added by ram
-
-													PreparedStatement detailStmt = testcon
-															.prepareStatement("select * from " + tname + " where 1 = 0");
-													ResultSetMetaData columnDetail = detailStmt.executeQuery().getMetaData();
-
+												refTableExists = true;
+												
+												
 													
-														out.println("<table border=\"1\">");
-														out.println("<caption>" + tname + "</caption>");
+												tname = dsValue.getTablename();
+
+												PreparedStatement detailStmt = testcon
+														.prepareStatement("select * from " + tname + " where 1 = 0");
+												ResultSetMetaData columnDetail = detailStmt.executeQuery().getMetaData();
+
+												
+													out.println("<table border=\"1\">");
+													out.println("<caption>" + tname + "</caption>");
+													out.println("<tr>");
+													//Column names get from metadata
+													for (int cl = 1; cl <= columnDetail.getColumnCount(); cl++) {
+														out.println("<th>" + columnDetail.getColumnLabel(cl) + "</th>");
+													}
+													out.println("</tr>");
+													//Get Column values
+													for (String dsv : dsValue.getDataForColumn()) {
+														String columns[] = dsv.split("\\|");
 														out.println("<tr>");
-														//Column names get from metadata
-														for (int cl = 1; cl <= columnDetail.getColumnCount(); cl++) {
-															out.println("<th>" + columnDetail.getColumnLabel(cl) + "</th>");
+														for (String column : columns) {
+															out.println("<td>" + column + "</td>");
 														}
 														out.println("</tr>");
-														//Get Column values
-														for (String dsv : dsValue.getDataForColumn()) {
-															String columns[] = dsv.split("\\|");
-															out.println("<tr>");
-															for (String column : columns) {
-																out.println("<td>" + column + "</td>");
-															}
-															out.println("</tr>");
-														}
-														out.println("</table>");
 													}
+													out.println("</table>");
+													
 												
 											}
 											/**Code to toggle Reference Tables - START**/
-											if (refTableExists) {
+											/* if (refTableExists) {
 												out.println("<p></p><div style='margin-right: 0%;'>");
 												out.println("<a class='showhidelink' href = 'javascript:void(0);' onclick=\"toggleRefTables('#"
 														+ rs.getString("datasetid") + "')\">View Referenced Tables</a>");
@@ -325,9 +321,7 @@ $( document ).ready(function() {
 													DataSetValue dsValue = (DataSetValue) dsList.get(i);
 													String tname = "", values;
 													
-													if (dsValue.getFilename().contains(".ref")) {
-														//tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".ref"));
-														tname = dsValue.getFilename().substring(0, dsValue.getFilename().indexOf(".ref")).toLowerCase(); // added by ram
+														tname = dsValue.getTablename();
 
 														PreparedStatement detailStmt = testcon
 																.prepareStatement("select * from " + tname + " where 1 = 0");
@@ -350,12 +344,12 @@ $( document ).ready(function() {
 															out.println("</tr>");
 														}
 														out.println("</table>");
-													}
+													
 												}
 												out.println("</div>");
 											}
 											out.println("<p></p>");
-											/**Code to toggle Reference Tables - End**/
+ */											/**Code to toggle Reference Tables - End**/
 											String getResults = "Select resultondataset from xdata_instructor_query where assignment_id = ? and question_id = ? and query_id=? and course_id = ?";
 											PreparedStatement stmnt = dbcon.prepareStatement(getResults);
 											stmnt.setInt(1, assignment_id);

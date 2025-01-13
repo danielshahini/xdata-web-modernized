@@ -9,15 +9,30 @@ import java.util.ArrayList;
  *
  */
 public class DataSetValue {
-
-	/*This variable holds the TableName*/
-	private String filename;
+	
+	//new and required
+	//stores the table name
+	private String tableName;
 	/*This variable holds the column names in the table*/
 	private ArrayList <String> columnNames = new ArrayList<String>();
 	/*This variable holds the data generated for the specific column.*/
 	private ArrayList <String> dataForColumn = new ArrayList<String>();
 	/*This list holds list of DataSetValue for the table that contains columnName and data for column*/
 	private ArrayList<DataSetValue> dsvList = new ArrayList<DataSetValue>();
+
+	
+	//this is not required now
+	/*This variable holds the TableName*/
+	private String filename;
+	
+	public String getTablename() {
+		return tableName;
+	}
+	
+	public void setTableName(String tablename) {
+		this.tableName = tablename;
+	}
+	
 	public String getFilename() {
 		return filename;
 	}

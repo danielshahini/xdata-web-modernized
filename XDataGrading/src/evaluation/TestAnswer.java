@@ -3095,7 +3095,7 @@ public class TestAnswer {
 							String sqlQuery=rs.getString("sql");
 							queryId = rs.getInt("query_id");
 							qId = "A"+assignmentId +"Q"+questionId+"S"+queryId;
-							filePath="4/"+course_id+"/"+qId;
+							filePath="/"+course_id+"/"+qId;
 							if(index ==0){
 								instrQuery = sqlQuery;
 							}else{
@@ -3279,7 +3279,7 @@ public class TestAnswer {
 							for(Integer id : datasetForQueryMap.keySet()){
 								failedDataSets  = new FailedDataSetValues();
 								Vector<String> datasets = datasetForQueryMap.get(id);
-								filePath = "4/"+course_id+"/A"+assignmentId+"Q"+questionId+"S"+id;
+								filePath = "/"+course_id+"/A"+assignmentId+"Q"+questionId+"S"+id;
 								failedDataSets.setQuery_id(id);
 								for(int i=0;i<datasets.size();i++){
 
@@ -3690,7 +3690,7 @@ public class TestAnswer {
 		//Connection conn = MyConnection.getExistingDatabaseConnection();
 		try(Connection conn = MyConnection.getDatabaseConnection()){
 
-			String filePath = "4/";			
+			String filePath = "/";			
 			//String fileName="OldAssignment/Assign"+file;
 			//String fileName="Assignment/Assign"+file;
 			String fileName="NewAssignment/Assign"+file;
@@ -3774,7 +3774,7 @@ public class TestAnswer {
 
 		int assignmentId = 8;
 		int questionId = 14;
-		String filePath = "4/A" + assignmentId + "Q" + questionId;
+		String filePath = "/A" + assignmentId + "Q" + questionId;
 		long startTime = System.currentTimeMillis();
 		(new TestAnswer()).test(filePath, assignmentId, questionId, 1,"CS631");
 		long endTime   = System.currentTimeMillis();

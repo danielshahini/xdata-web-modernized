@@ -26,7 +26,26 @@ public class Configuration implements ConfigurationInterface{
 	public static String tempDatabaseType = getProperty("tempDatabaseType");
 	public static boolean calledFromApplicationTester = false;
 	
+	
+	public static String testDir= getProperty("testDir");
+	public static String existsUnrollFlag=getProperty("existsUnrollFlag");
+	public static String outerSQ=getProperty("outerSQ");
+	public static String isEnumInt=getProperty("isEnumInt");
+	public static String enumArrayIndex=getProperty("enumArrayIndex");
+	public static String enumIndexVar=getProperty("enumIndexVar");
+	public static String regressDS0=getProperty("regressDS0");
+	public static String sampleDataJson=getProperty("sampleDataJson");
+	
+	public static String dataset = getProperty("dataset");
+	public static String queries = getProperty("queries");
+	public static String mutants = getProperty("mutants");
+	public static String sample = getProperty("sample");
+	public static String base = getProperty("base");
+	public static String primarykey = getProperty("primarykey");
+	public static String project = getProperty("project");
 	//public static String assignmentFolder= getProperty("assignmentFolder");
+	
+	
 	public static ConfigurationInterface object;
 	static void getObject(){
 		try {
@@ -58,6 +77,7 @@ public class Configuration implements ConfigurationInterface{
 		
 		try{
         properties.load(Configuration.class.getResourceAsStream("XData.properties"));
+        
 		
 	          
 		}catch(IOException e){

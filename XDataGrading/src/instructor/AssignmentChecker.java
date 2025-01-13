@@ -1,6 +1,8 @@
 package instructor;
 
+
 import java.io.IOException;
+
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,6 +25,10 @@ import javax.servlet.http.HttpSession;
 import database.CommonFunctions;
 import database.DatabaseConnection;
 import testDataGen.preProcessForDataGeneration;
+import testDataGen.GenerateDataSet;
+
+
+
 
 //import testDataGen.TestAssignment;
 
@@ -76,12 +82,13 @@ public class AssignmentChecker extends HttpServlet {
 			int question_id = Integer.parseInt(request
 					.getParameter("question_id"));
 			int query_id = Integer.parseInt(request.getParameter("query_id"));
+		
 
 			String query = CommonFunctions.decodeURIComponent(request
 					.getParameter("query"));
 			loginUsr = (String) session.getAttribute("LOGIN_USER");
 			
-
+			
 			Long id = Thread.currentThread().getId();
 
 			String uniqueID = loginUsr + "&" + assignment_id + "&"

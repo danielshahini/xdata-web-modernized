@@ -249,9 +249,9 @@ public class TestAssignment {
 										// FailedDataSetValues failedDs =
 										// test.testAnswerMatchAllOption(assignment_id,question_id,courseId,
 										// OriginalQry, rollNum,
-										// "4/"+courseId+"/"+queryId);
+										// "/"+courseId+"/"+queryId);
 										FailedDataSetValues failedDs = test.testAnswer(assignment_id, question_id,
-												courseId, testQuery, rollNum, "4/" + courseId + "/" + queryId,
+												courseId, testQuery, rollNum, "/" + courseId + "/" + queryId,
 												isLateSubmission,null);
 
 										if (failedDs.getStatus().equalsIgnoreCase("Failed")) {
@@ -449,7 +449,7 @@ public class TestAssignment {
 			try {
 				String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 				failedDs = test.testAnswer(assignment_id, question_id, courseId,
-						StudQueryString, rollNum, "4/" + courseId + "/" + queryId, false,studRole);
+						StudQueryString, rollNum, "/" + courseId + "/" + queryId, false,studRole);
 				GenerateCVC1 cvc = new GenerateCVC1();											
 				preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
 				
@@ -608,7 +608,7 @@ public class TestAssignment {
 								try {
 									String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 									FailedDataSetValues failedDs = test.testAnswer(assignment_id, question_id, courseId,
-											OriginalQry, rollNum, "4/" + courseId + "/" + queryId, false,null);
+											OriginalQry, rollNum, "/" + courseId + "/" + queryId, false,null);
 									GenerateCVC1 cvc = new GenerateCVC1();											
 									preProcessForDataGeneration preProcess = new preProcessForDataGeneration();
 									
@@ -789,7 +789,7 @@ public class TestAssignment {
 						}//Got all student queries and rollnumbers				
 						String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 						ArrayList<FailedDataSetValues> failedList = test.newTestAnswer(assignment_id, question_id, courseId,
-								studentQueries,studentRollNums,"4/" + courseId + "/" + queryId,"");				
+								studentQueries,studentRollNums,"/" + courseId + "/" + queryId,"");				
 						// Get failedDataSets list - iterate on the list, get stud id and update xdata_students_queries table with the json obj and marks
 					 	 // update student table accordingly
 						String updateStudentTableString = "update xdata_student_queries set tajudgement=?, result = ?  where assignment_id=? and question_id = ? and rollnum=? and course_id=?";
@@ -1089,7 +1089,7 @@ public class TestAssignment {
 
 											FailedDataSetValues failedDs = test.testAnswer(assignment_id, question_id,
 													course_Id, OriginalQry, StudQueries.getString("rollnum"),
-													"4/" + course_Id + "/" + oldQueryId, isLateSubmission,null);
+													"/" + course_Id + "/" + oldQueryId, isLateSubmission,null);
 											logger.log(Level.INFO, "Answer is :" + ans);
 
 											if (failedDs.getStatus().equalsIgnoreCase("Failed")) {
@@ -1295,7 +1295,7 @@ public class TestAssignment {
 									try {
 										String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 										status = test.testQueryAnswer(assignment_id, question_id, courseId, OriginalQry,
-												rollnum, "4/" + courseId + "/" + queryId);
+												rollnum, "/" + courseId + "/" + queryId);
 										// status = QueryStatus.Correct;
 									} catch (Exception e) {
 										logger.log(Level.SEVERE, "Exception caught here:" + e.getStackTrace(), e);
@@ -1668,7 +1668,7 @@ public class TestAssignment {
 									try {
 										String queryId = "A" + assignment_id + "Q" + question_id + "S" + 1;
 										status = test.testQueryAnswerForTestThreads(assignment_id, question_id,
-												courseId, OriginalQry, rollnum, "4/" + courseId + "/" + queryId);
+												courseId, OriginalQry, rollnum, "/" + courseId + "/" + queryId);
 										// status = QueryStatus.Correct;
 									} catch (Exception e) {
 										logger.log(Level.SEVERE, "Exception caught here:" + e.getStackTrace(), e);

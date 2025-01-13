@@ -6,7 +6,7 @@ script_dir=$(dirname $0)
 
 defaultDbServer="localhost"
 defaultDbPort="5432"
-defaultDbName="xdatadb"
+defaultDbName="xdata2021"
 defaultDbUser="xdatauser"
 defaultDbPassword="Xdatauser@123"
 defaultSmtSolver="z3"

@@ -64,7 +64,7 @@ public class EvaluateDistinct {
 		//String studentQueryMutation = mutateForDistinct(instrQuery);
 		//String studentQueryMutation = mutateForDistinct(studentQuery);
 		String qId = "A"+assignmentId +"Q"+questionId+"S"+queryId;
-		String filePath = "4/"+course_id+"/"+qId;
+		String filePath = "/"+course_id+"/"+qId;
 		//get connection to populate temp tables with data for running inst and student queries
 		HashMap<String,String> mutants = new HashMap<String,String>();
 		mutants.put(qId, studentQuery);
