@@ -21,11 +21,14 @@ import {
   Target,
   BarChart2,
   MessageSquare,
-  Award as AwardIcon
+  Award as AwardIcon,
+  Database,
+  XCircle
 } from 'lucide-react';
 import { Assignment, Question, Submission, Announcement } from '../types';
 import Skeleton from './common/Skeleton';
 import MarkInfoDisplay from './MarkInfoDisplay';
+import SchemaVisualizer from './SchemaVisualizer';
 
 interface DashboardData {
   studentName: string;
@@ -58,6 +61,7 @@ const StudentDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
+  const [showSchema, setShowSchema] = useState(false);
   const [schemaMetadata, setSchemaMetadata] = useState<any>(null);
 
   const { user } = useAuth();
@@ -67,10 +71,14 @@ const StudentDashboard: React.FC = () => {
       api.get(`/schemas/${selectedQuestion.assignment.defaultSchemaId}/metadata`)
         .then(res => setSchemaMetadata(res.data))
         .catch(() => setSchemaMetadata(null));
+    } else if (selectedAssignment?.defaultSchemaId) {
+       api.get(`/schemas/${selectedAssignment.defaultSchemaId}/metadata`)
+        .then(res => setSchemaMetadata(res.data))
+        .catch(() => setSchemaMetadata(null));
     } else {
       setSchemaMetadata(null);
     }
-  }, [selectedQuestion]);
+  }, [selectedQuestion, selectedAssignment]);
 
   useEffect(() => {
     let provider: any = null;
@@ -308,7 +316,7 @@ const StudentDashboard: React.FC = () => {
                     loadQuestions(a.assignmentId);
                   }}
                   className={`w-full text-left p-5 rounded-3xl border transition-all relative overflow-hidden group ${
-                    selectedAssignment?.id === a.assignmentId 
+                    selectedAssignment?.id === a.assignmentId || selectedAssignment?.assignmentId === a.assignmentId
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-4 ring-blue-500/10' 
                     : 'border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800'
                   }`}
@@ -348,10 +356,10 @@ const StudentDashboard: React.FC = () => {
                    </h3>
                    <div className="flex items-center gap-2">
                      <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase">
-                       {selectedAssignment.totalQuestions} Aufgaben
+                       {(selectedAssignment as any).totalQuestions || questions.length} Aufgaben
                      </span>
                      <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase">
-                       {selectedAssignment.totalMarks} Punkte Gesamt
+                       {(selectedAssignment as any).totalMarks || questions.reduce((acc, q) => acc + q.marks, 0)} Punkte Gesamt
                      </span>
                    </div>
                 </div>
@@ -417,12 +425,28 @@ const StudentDashboard: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                    <button 
-                       onClick={() => setShowCheatSheet(!showCheatSheet)}
-                       className="flex items-center text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-5 py-3 rounded-2xl border border-indigo-100 dark:indigo-800 hover:bg-indigo-100 transition-all"
-                    >
-                       <Code size={16} className="mr-2" /> {showCheatSheet ? 'Vorschau schließen' : 'SQL Cheat Sheet'}
-                    </button>
+                    <div className="flex gap-3">
+                      <button 
+                         onClick={() => { setShowSchema(!showSchema); setShowCheatSheet(false); }}
+                         className={`flex items-center text-xs font-black px-5 py-3 rounded-2xl border transition-all ${
+                           showSchema 
+                           ? 'bg-blue-600 text-white border-blue-700 shadow-lg shadow-blue-500/30' 
+                           : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border-blue-100 dark:border-blue-800 hover:bg-blue-100'
+                         }`}
+                      >
+                         <Database size={16} className="mr-2" /> {showSchema ? 'Schema ausblenden' : 'Datenbank-Schema'}
+                      </button>
+                      <button 
+                         onClick={() => { setShowCheatSheet(!showCheatSheet); setShowSchema(false); }}
+                         className={`flex items-center text-xs font-black px-5 py-3 rounded-2xl border transition-all ${
+                            showCheatSheet 
+                            ? 'bg-indigo-600 text-white border-indigo-700 shadow-lg shadow-indigo-500/30' 
+                            : 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100'
+                         }`}
+                      >
+                         <Code size={16} className="mr-2" /> {showCheatSheet ? 'Cheat Sheet ausblenden' : 'SQL Cheat Sheet'}
+                      </button>
+                    </div>
                   </div>
 
                   {showCheatSheet && (
@@ -434,6 +458,13 @@ const StudentDashboard: React.FC = () => {
                             <p className="text-[9px] font-mono bg-white dark:bg-gray-800 p-2 rounded-xl border dark:border-gray-700 mt-2 shadow-sm text-gray-500">{hint.example}</p>
                          </div>
                        ))}
+                    </div>
+                  )}
+
+                  {showSchema && schemaMetadata && (
+                    <div className="mb-8 p-6 rounded-3xl bg-blue-50/30 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 animate-fadeIn">
+                       <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-4">Schema: {schemaMetadata.schemaName}</h4>
+                       <SchemaVisualizer metadata={schemaMetadata} />
                     </div>
                   )}
 
@@ -590,21 +621,3 @@ const StudentDashboard: React.FC = () => {
 };
 
 export default StudentDashboard;
-
-const XCircle = ({ size, className }: { size?: number, className?: string }) => (
-  <svg 
-    width={size || 24} 
-    height={size || 24} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2.5" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="m15 9-6 6" />
-    <path d="m9 9 6 6" />
-  </svg>
-);

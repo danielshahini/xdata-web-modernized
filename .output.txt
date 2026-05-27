@@ -1,0 +1,52 @@
+Command finished with exit code 0.
+Command output:
+WARNING: java.lang.System::load has been called by org.apache.tomcat.jni.Library in an unnamed module (jar:nested:/Users/Daniel/IdeaProjects/xdata-web/xdata-web/backend/target/xdata-backend-0.0.1-SNAPSHOT.jar/!BOOT-INF/lib/tomcat-embed-core-10.1.20.jar!/)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-05-26T22:32:46.200-07:00  INFO 12241 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-05-26T22:32:46.214-07:00  INFO 12241 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-05-26T22:32:46.214-07:00  INFO 12241 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-05-26T22:32:46.252-07:00  INFO 12241 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-05-26T22:32:46.253-07:00  INFO 12241 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2088 ms
+2026-05-26T22:32:46.400-07:00  INFO 12241 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-26T22:32:46.651-07:00  INFO 12241 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5b48f0f4
+2026-05-26T22:32:46.653-07:00  INFO 12241 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-26T22:32:46.751-07:00  INFO 12241 --- [           main] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 9.22.3 by Redgate
+2026-05-26T22:32:46.752-07:00  INFO 12241 --- [           main] o.f.c.internal.license.VersionPrinter    : See release notes here: https://rd.gt/416ObMi
+2026-05-26T22:32:46.752-07:00  INFO 12241 --- [           main] o.f.c.internal.license.VersionPrinter    : 
+2026-05-26T22:32:46.783-07:00  INFO 12241 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/xdatadb (PostgreSQL 17.10)
+2026-05-26T22:32:46.814-07:00  WARN 12241 --- [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: PostgreSQL 17.10 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 15.
+2026-05-26T22:32:46.878-07:00  INFO 12241 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 12
+2026-05-26T22:32:46.881-07:00  INFO 12241 --- [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-05-26T22:32:46.992-07:00  INFO 12241 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-26T22:32:47.051-07:00  INFO 12241 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-05-26T22:32:47.097-07:00  INFO 12241 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-26T22:32:47.350-07:00  INFO 12241 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-26T22:32:47.740-07:00  INFO 12241 --- [           main] com.xdata.util.EncryptionConverter       : Encryption secret has been initialized.
+2026-05-26T22:32:48.709-07:00  INFO 12241 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-26T22:32:48.750-07:00  INFO 12241 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-26T22:32:49.124-07:00  INFO 12241 --- [           main] com.xdata.util.EncryptionConverter       : Encryption secret has been initialized.
+2026-05-26T22:32:49.305-07:00  WARN 12241 --- [           main] com.xdata.service.SmtSolverService       : Could not load native Z3 library from java.library.path. SMT functions might be limited.
+2026-05-26T22:32:50.233-07:00  INFO 12241 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@75c8855e, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@4d5aeea7, org.springframework.security.web.context.SecurityContextHolderFilter@35f59dfe, org.springframework.security.web.header.HeaderWriterFilter@38007ead, org.springframework.web.filter.CorsFilter@3453cf27, org.springframework.security.web.authentication.logout.LogoutFilter@5545c42, com.xdata.security.JwtAuthenticationFilter@67201eeb, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@1633962a, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@2afd8972, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@6ecf239d, org.springframework.security.web.session.SessionManagementFilter@2f7e2481, org.springframework.security.web.access.ExceptionTranslationFilter@22599048, org.springframework.security.web.access.intercept.AuthorizationFilter@2d12a71f]
+2026-05-26T22:32:50.530-07:00  INFO 12241 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2026-05-26T22:32:50.532-07:00  INFO 12241 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2026-05-26T22:32:50.532-07:00  INFO 12241 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2f2e75ae]]
+2026-05-26T22:32:50.533-07:00  INFO 12241 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2026-05-26T22:32:50.541-07:00  INFO 12241 --- [           main] com.xdata.XDataBackendApplication        : Started XDataBackendApplication in 6.963 seconds (process running for 7.449)
+Hibernate: select xu1_0.internal_user_id,xu1_0.created_at,xu1_0.email,xu1_0.enabled,xu1_0.login_user_id,xu1_0.password,xu1_0.role,xu1_0.updated_at,xu1_0.user_name,xu1_0.xp from xdata_users xu1_0 where upper(xu1_0.login_user_id)=upper(?)
+Hibernate: select c1_0.user_id,c1_1.course_id,c1_1.created_at,c1_1.course_description,c1_1.instructor_course_id,c1_1.course_name,c1_1.course_semester,c1_1.updated_at,c1_1.course_year from xdata_user_courses c1_0 join xdata_course c1_1 on c1_1.course_id=c1_0.course_id where c1_0.user_id=?
+Hibernate: select xu1_0.internal_user_id,c1_0.user_id,c1_1.course_id,c1_1.created_at,c1_1.course_description,c1_1.instructor_course_id,c1_1.course_name,c1_1.course_semester,c1_1.updated_at,c1_1.course_year,xu1_0.created_at,xu1_0.email,xu1_0.enabled,xu1_0.login_user_id,xu1_0.password,xu1_0.role,xu1_0.updated_at,xu1_0.user_name,xu1_0.xp from xdata_users xu1_0 left join xdata_user_courses c1_0 on xu1_0.internal_user_id=c1_0.user_id left join xdata_course c1_1 on c1_1.course_id=c1_0.course_id where xu1_0.internal_user_id=?
+Hibernate: update xdata_users set created_at=?,email=?,enabled=?,login_user_id=?,password=?,role=?,updated_at=?,user_name=?,xp=? where internal_user_id=?
+2026-05-26T22:32:50.904-07:00  INFO 12241 --- [           main] com.xdata.config.DataInitializer         : [DEBUG_LOG] Admin-Daten fuer admin1 wurden aktualisiert
+Hibernate: select xu1_0.internal_user_id,xu1_0.created_at,xu1_0.email,xu1_0.enabled,xu1_0.login_user_id,xu1_0.password,xu1_0.role,xu1_0.updated_at,xu1_0.user_name,xu1_0.xp from xdata_users xu1_0 where upper(xu1_0.login_user_id)=upper(?)
+Hibernate: select c1_0.user_id,c1_1.course_id,c1_1.created_at,c1_1.course_description,c1_1.instructor_course_id,c1_1.course_name,c1_1.course_semester,c1_1.updated_at,c1_1.course_year from xdata_user_courses c1_0 join xdata_course c1_1 on c1_1.course_id=c1_0.course_id where c1_0.user_id=?
+2026-05-26T22:32:50.971-07:00  INFO 12241 --- [           main] com.xdata.config.DataInitializer         : [DEBUG_LOG] Verifikation in DB fuer admin1: Match=true, Role=ADMIN
+Hibernate: select xu1_0.internal_user_id,xu1_0.created_at,xu1_0.email,xu1_0.enabled,xu1_0.login_user_id,xu1_0.password,xu1_0.role,xu1_0.updated_at,xu1_0.user_name,xu1_0.xp from xdata_users xu1_0 where upper(xu1_0.login_user_id)=upper(?)
+Hibernate: select c1_0.user_id,c1_1.course_id,c1_1.created_at,c1_1.course_description,c1_1.instructor_course_id,c1_1.course_name,c1_1.course_semester,c1_1.updated_at,c1_1.course_year from xdata_user_courses c1_0 join xdata_course c1_1 on c1_1.course_id=c1_0.course_id where c1_0.user_id=?
+Hibernate: select xu1_0.internal_user_id,c1_0.user_id,c1_1.course_id,c1_1.created_at,c1_1.course_description,c1_1.instructor_course_id,c1_1.course_name,c1_1.course_semester,c1_1.updated_at,c1_1.course_year,xu1_0.created_at,xu1_0.email,xu1_0.enabled,xu1_0.login_user_id,xu1_0.password,xu1_0.role,xu1_0.updated_at,xu1_0.user_name,xu1_0.xp from xdata_users xu1_0 left join xdata_user_courses c1_0 on xu1_0.internal_user_id=c1_0.user_id left join xdata_course c1_1 on c1_1.course_id=c1_0.course_id where xu1_0.internal_user_id=?
+Hibernate: update xdata_users set created_at=?,email=?,enabled=?,login_user_id=?,password=?,role=?,updated_at=?,user_name=?,xp=? where internal_user_id=?
+2026-05-26T22:32:51.044-07:00  INFO 12241 --- [           main] com.xdata.config.DataInitializer         : [DEBUG_LOG] Admin-Daten fuer alex wurden aktualisiert
+Hibernate: select xu1_0.internal_user_id,xu1_0.created_at,xu1_0.email,xu1_0.enabled,xu1_0.login_user_id,xu1_0.password,xu1_0.role,xu1_0.updated_at,xu1_0.user_name,xu1_0.xp from xdata_users xu1_0 where upper(xu1_0.login_user_id)=upper(?)
+Hibernate: select c1_0.user_id,c1_1.course_id,c1_1.created_at,c1_1.course_description,c1_1.instructor_course_id,c1_1.course_name,c1_1.course_semester,c1_1.updated_at,c1_1.course_year from xdata_user_courses c1_0 join xdata_course c1_1 on c1_1.course_id=c1_0.course_id where c1_0.user_id=?
+2026-05-26T22:32:51.109-07:00  INFO 12241 --- [           main] com.xdata.config.DataInitializer         : [DEBUG_LOG] Verifikation in DB fuer alex: Match=true, Role=INSTRUCTOR

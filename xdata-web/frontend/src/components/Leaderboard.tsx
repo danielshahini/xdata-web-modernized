@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
-import { Trophy, Medal, Star, Filter, BookOpen } from 'lucide-react';
+import { Trophy, Medal, Star, Filter, BookOpen, Zap } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 interface LeaderboardEntry {
   username: string;
-  points: number;
+  loginId: string;
+  totalMarks: number;
+  xp: number;
 }
 
 interface Course {
@@ -20,7 +22,8 @@ const Leaderboard: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string | null>(searchParams.get('courseId'));
   const [loading, setLoading] = useState(true);
   
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const userJson = localStorage.getItem('user');
+  const currentUser = userJson ? JSON.parse(userJson) : {};
   const isPrivileged = currentUser.role === 'ADMIN' || currentUser.role === 'INSTRUCTOR';
 
   useEffect(() => {
@@ -54,7 +57,7 @@ const Leaderboard: React.FC = () => {
   }, [selectedCourse, setSearchParams]);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+    <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn p-4 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="text-center md:text-left space-y-2">
           <div className="flex items-center justify-center md:justify-start gap-3">
@@ -90,7 +93,7 @@ const Leaderboard: React.FC = () => {
                 <div className="p-20 text-center text-gray-400 italic font-medium">Noch keine Daten für diesen Kurs vorhanden.</div>
               ) : (
                 entries.map((entry, index) => (
-                  <div key={entry.username} className={`flex items-center p-6 transition-all hover:bg-gray-50 dark:hover:bg-gray-700/50 ${index === 0 ? 'bg-yellow-50/30 dark:bg-yellow-900/10' : ''}`}>
+                  <div key={entry.loginId} className={`flex items-center p-6 transition-all hover:bg-gray-50 dark:hover:bg-gray-700/50 ${index === 0 ? 'bg-yellow-50/30 dark:bg-yellow-900/10' : ''}`}>
                     <div className="w-16 flex justify-center items-center">
                       {index === 0 ? <Medal className="text-yellow-500 drop-shadow-sm" size={32} /> : 
                        index === 1 ? <Medal className="text-gray-400" size={28} /> :
@@ -105,13 +108,13 @@ const Leaderboard: React.FC = () => {
                     <div className="flex-grow">
                       <div className="text-lg font-black text-gray-800 dark:text-gray-200 tracking-tight">{entry.username}</div>
                       <div className="flex items-center text-[10px] text-gray-400 dark:text-gray-500 font-black uppercase tracking-[0.2em] mt-1">
-                        <Star size={10} className={`mr-1.5 ${index < 3 ? 'text-yellow-500 fill-yellow-500' : 'fill-current'}`} /> 
-                        {index === 0 ? 'Meister-Entwickler' : index < 3 ? 'Top Performer' : 'SQL-Aspirant'}
+                        <Zap size={10} className="mr-1.5 text-yellow-500 fill-yellow-500" />
+                        {entry.xp} XP • {index === 0 ? 'Meister-Entwickler' : index < 3 ? 'Top Performer' : 'SQL-Aspirant'}
                       </div>
                     </div>
     
                     <div className="text-right px-4">
-                      <div className="text-3xl font-black text-blue-600 tabular-nums">{(entry.points || 0).toFixed(1)}</div>
+                      <div className="text-3xl font-black text-blue-600 tabular-nums">{(entry.totalMarks || 0).toFixed(1)}</div>
                       <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mt-1">Punkte</div>
                     </div>
                   </div>

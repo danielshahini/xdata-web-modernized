@@ -10,6 +10,7 @@ import com.xdata.repository.AssignmentRepository;
 import com.xdata.repository.QuestionRepository;
 import com.xdata.repository.SubmissionRepository;
 import com.xdata.repository.UserRepository;
+import com.xdata.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,6 @@ import com.xdata.service.DatabaseService;
 import com.xdata.service.SqlValidationService;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +35,7 @@ public class AssignmentService {
     private final QuestionRepository questionRepository;
     private final SubmissionRepository submissionRepository;
     private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
     private final SqlValidationService sqlValidationService;
     private final com.xdata.service.SqlSandboxService sqlSandboxService;
     private final DatabaseService databaseService;
@@ -60,6 +61,17 @@ public class AssignmentService {
         } catch (Exception e) {
             throw new Exception("Fehler beim Verbindungsaufbau: " + e.getMessage());
         }
+    }
+
+    @Transactional
+    public Assignment createAssignment(Assignment assignment, String courseId) throws Exception {
+        com.xdata.model.Course course = courseRepository.findByInstructorCourseId(courseId)
+                .orElseThrow(() -> new Exception("Kurs nicht gefunden: " + courseId));
+        
+        assignment.setCourse(course);
+        validateConnection(assignment.getConnection());
+        
+        return assignmentRepository.save(assignment);
     }
 
     public List<Assignment> getAllAssignments() {
@@ -100,9 +112,8 @@ public class AssignmentService {
         com.xdata.model.DbConnection connection = assignment.getConnection();
 
         try (Connection conn = databaseService.getConnection(connection)) {
-            // Validierung mittels prepareStatement
             try (java.sql.PreparedStatement pstmt = conn.prepareStatement(query)) {
-                // Erfolgreich geparst
+                // Erfolgreich
             }
         } catch (Exception e) {
             throw new Exception("SQL-Validierung fehlgeschlagen: " + e.getMessage());
@@ -215,7 +226,7 @@ public class AssignmentService {
                 (int) uniqueStudents,
                 (float) avgMarks,
                 (int) perfect,
-                new ArrayList<>() // Common errors placeholder
+                new ArrayList<>()
             );
         }).collect(Collectors.toList());
         

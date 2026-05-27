@@ -72,6 +72,7 @@ public class SubmissionService {
             String loginId = student.getLoginId();
             String anonymousId = loginId.length() > 3 ? loginId.substring(0, 2) + "***" + loginId.substring(loginId.length() - 1) : "***";
             entry.put("loginId", anonymousId);
+            entry.put("xp", student.getXp() != null ? student.getXp() : 0);
             entry.put("totalMarks", totalMarks);
             return entry;
         }).sorted((a, b) -> Double.compare((Double) b.get("totalMarks"), (Double) a.get("totalMarks")))

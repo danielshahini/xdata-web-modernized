@@ -1,29 +1,23 @@
 package com.xdata.controller;
 
 import com.xdata.model.Assignment;
-import com.xdata.model.Course;
-import com.xdata.model.DbConnection;
 import com.xdata.model.Question;
 import com.xdata.model.Submission;
-import com.xdata.repository.CourseRepository;
-import com.xdata.repository.DbConnectionRepository;
-import com.xdata.repository.SubmissionRepository;
+import com.xdata.model.XDataUser;
 import com.xdata.repository.QuestionRepository;
-import com.xdata.repository.UserRepository;
-import com.xdata.service.AccessControlService;
+import com.xdata.repository.SubmissionRepository;
 import com.xdata.service.core.AssignmentService;
+import com.xdata.service.AccessControlService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.Comparator;
 
 @RestController
 @RequestMapping("/api/v1/assignments")
@@ -33,86 +27,53 @@ import java.util.Comparator;
 public class AssignmentController {
 
     private final AssignmentService assignmentService;
-    private final CourseRepository courseRepository;
     private final AccessControlService accessControlService;
-    private final SubmissionRepository submissionRepository;
-    private final DbConnectionRepository dbConnectionRepository;
     private final QuestionRepository questionRepository;
-    private final UserRepository userRepository;
+    private final SubmissionRepository submissionRepository;
 
     @GetMapping
-    public ResponseEntity<List<Assignment>> getAllAssignments() {
-        if (accessControlService.isAdmin()) {
-            return ResponseEntity.ok(assignmentService.getAllAssignments());
+    public ResponseEntity<List<Assignment>> getAssignments(@RequestParam(required = false) String courseId) {
+        if (courseId != null) {
+            return ResponseEntity.ok(assignmentService.getAssignmentsByCourse(courseId));
         }
-        List<String> courseIds = accessControlService.getUserCourseIds();
-        return ResponseEntity.ok(assignmentService.getAssignmentsByCourses(courseIds));
+        return ResponseEntity.ok(assignmentService.getAllAssignments());
     }
 
     @PostMapping
     public ResponseEntity<?> createAssignment(@RequestBody Assignment assignment, @RequestParam String courseId) {
-        log.info("Request to create assignment: {} for course: {}", assignment, courseId);
+        log.info("Request to create assignment: {} for course: {}", assignment.getName(), courseId);
         if (!accessControlService.canAccessCourse(courseId)) {
-            return ResponseEntity.status(403).build();
-        }
-
-        if (assignment.getConnection() == null || assignment.getConnection().getId() == null) {
-            return ResponseEntity.badRequest().body("Eine Datenbankverbindung ist für neue Aufgaben zwingend erforderlich.");
-        }
-
-        Optional<DbConnection> dbConnOpt = dbConnectionRepository.findById(assignment.getConnection().getId());
-        if (!dbConnOpt.isPresent()) {
-            return ResponseEntity.badRequest().body("Die angegebene Datenbankverbindung wurde nicht gefunden.");
-        }
-        DbConnection dbConn = dbConnOpt.get();
-
-        if (!accessControlService.canAccessCourse(dbConn.getCourse() != null ? dbConn.getCourse().getInstructorCourseId() : null)) {
-            return ResponseEntity.status(403).body("Keine Berechtigung für diese Datenbankverbindung.");
-        }
-
-        Optional<Course> courseOpt = courseRepository.findByInstructorCourseId(courseId);
-        if (!courseOpt.isPresent()) {
-            return ResponseEntity.notFound().build();
+            log.warn("Permission denied for course: {}", courseId);
+            return ResponseEntity.status(403).body("Keine Berechtigung für diesen Kurs.");
         }
         
-        assignment.setCourse(courseOpt.get());
-        assignment.setConnection(dbConn);
+        if (assignment.getConnection() == null || assignment.getConnection().getId() == null) {
+            return ResponseEntity.badRequest().body("Eine Datenbankverbindung ist zwingend erforderlich.");
+        }
+
         try {
-            assignmentService.validateConnection(dbConn);
-            return ResponseEntity.ok(assignmentService.saveAssignment(assignment));
+            return ResponseEntity.ok(assignmentService.createAssignment(assignment, courseId));
         } catch (Exception e) {
-            return ResponseEntity.status(400).body("Verbindungsfehler zur Ziel-Datenbank: " + e.getMessage());
+            log.error("Error creating assignment: {}", e.getMessage());
+            return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAssignment(@PathVariable Integer id, @RequestBody Assignment assignmentData) {
+        log.info("Request to update assignment ID: {}", id);
         return assignmentService.getAssignmentById(id).map(existing -> {
-            if (!accessControlService.canAccessCourse(existing.getCourseId())) {
+            if (!accessControlService.canAccessCourse(existing.getCourse().getInstructorCourseId())) {
                 return ResponseEntity.status(403).build();
             }
-
-            if (assignmentData.getConnection() != null && assignmentData.getConnection().getId() != null) {
-                Optional<DbConnection> dbConnOpt = dbConnectionRepository.findById(assignmentData.getConnection().getId());
-                if (dbConnOpt.isPresent()) {
-                    DbConnection dbConn = dbConnOpt.get();
-                    if (!accessControlService.canAccessCourse(dbConn.getCourse() != null ? dbConn.getCourse().getInstructorCourseId() : null)) {
-                        return ResponseEntity.status(403).body("Keine Berechtigung für diese Datenbankverbindung.");
-                    }
-                    try {
-                        assignmentService.validateConnection(dbConn);
-                        existing.setConnection(dbConn);
-                    } catch (Exception e) {
-                        return ResponseEntity.status(400).body("Verbindungsfehler zur Ziel-Datenbank: " + e.getMessage());
-                    }
-                }
-            }
-
             existing.setName(assignmentData.getName());
-            existing.setDefaultSchemaId(assignmentData.getDefaultSchemaId());
             existing.setDeadline(assignmentData.getDeadline());
-            existing.setPenaltyPercentage(assignmentData.getPenaltyPercentage());
+            existing.setDefaultSchemaId(assignmentData.getDefaultSchemaId());
+            if (assignmentData.getConnection() != null) {
+                existing.setConnection(assignmentData.getConnection());
+            }
             existing.setLateSubmissionAllowed(assignmentData.getLateSubmissionAllowed());
+            existing.setPenaltyPercentage(assignmentData.getPenaltyPercentage());
             existing.setPublishedDate(assignmentData.getPublishedDate());
 
             return ResponseEntity.ok(assignmentService.saveAssignment(existing));
@@ -139,28 +100,25 @@ public class AssignmentController {
         List<Question> questions = questionRepository.findByAssignment_Id(id);
         List<Submission> allSubmissions = submissionRepository.findByQuestion_Assignment_Id(id);
         
-        StringBuilder csv = new StringBuilder("StudentId,Username,TotalMarksPercentage,");
-        csv.append(questions.stream().map(Question::getName).collect(Collectors.joining(","))).append("\n");
+        StringBuilder csv = new StringBuilder("StudentId,Username,TotalMarksPercentage,XP,");
+        for (Question q : questions) {
+            String cleanName = q.getName().replace(",", " ");
+            csv.append(cleanName).append(" (Score),");
+            csv.append(cleanName).append(" (Attempts),");
+            csv.append(cleanName).append(" (Last Submission),");
+        }
+        csv.append("\n");
         
         Map<String, List<Submission>> subsByUser = allSubmissions.stream()
                 .collect(Collectors.groupingBy(s -> s.getUser().getLoginId()));
         
         for (Map.Entry<String, List<Submission>> entry : subsByUser.entrySet()) {
             String loginId = entry.getKey();
-            String username = entry.getValue().get(0).getUser().getUsername();
+            XDataUser user = entry.getValue().get(0).getUser();
+            String username = user.getUsername();
+            Integer xp = user.getXp();
             
-            double totalAchieved = 0;
             double totalPossible = questions.stream().mapToDouble(Question::getMarks).sum();
-            
-            StringBuilder row = new StringBuilder(String.format("%s,%s,", loginId, username));
-            List<String> qMarks = questions.stream().map(q -> {
-                double best = entry.getValue().stream()
-                        .filter(s -> s.getQuestion().getId().equals(q.getId()))
-                        .mapToDouble(Submission::getMarks)
-                        .max().orElse(0.0);
-                return String.format("%.2f", best * 100);
-            }).collect(Collectors.toList());
-            
             double achievedPoints = questions.stream().mapToDouble(q -> {
                  return entry.getValue().stream()
                         .filter(s -> s.getQuestion().getId().equals(q.getId()))
@@ -169,8 +127,23 @@ public class AssignmentController {
             }).sum();
             
             double percentage = totalPossible > 0 ? (achievedPoints / totalPossible) * 100 : 0;
-            row.append(String.format("%.2f%%,", percentage));
-            row.append(String.join(",", qMarks)).append("\n");
+            
+            StringBuilder row = new StringBuilder(String.format("%s,%s,%.2f%%,%d,", loginId, username, percentage, xp != null ? xp : 0));
+            
+            for (Question q : questions) {
+                List<Submission> qSubs = entry.getValue().stream()
+                        .filter(s -> s.getQuestion().getId().equals(q.getId()))
+                        .collect(Collectors.toList());
+                
+                double best = qSubs.stream().mapToDouble(Submission::getMarks).max().orElse(0.0);
+                long attempts = qSubs.size();
+                String lastSub = qSubs.stream()
+                        .map(s -> s.getSubmissionTime().toString())
+                        .max(String::compareTo).orElse("-");
+                
+                row.append(String.format("%.2f%%,%d,%s,", best * 100, attempts, lastSub));
+            }
+            row.append("\n");
             csv.append(row);
         }
         
