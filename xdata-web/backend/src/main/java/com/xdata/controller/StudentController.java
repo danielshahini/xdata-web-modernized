@@ -53,7 +53,8 @@ public class StudentController {
             
             List<Map<String, Object>> assignmentData = assignments.stream().map(a -> {
                 Map<String, Object> data = new HashMap<>();
-                data.put("assignmentId", a.getId());
+                data.put("id", a.getId());
+                data.put("assignmentId", a.getId()); // Behalte assignmentId zur Sicherheit vorerst bei
                 data.put("name", a.getName());
                 data.put("deadline", a.getDeadline());
                 

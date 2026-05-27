@@ -16,9 +16,18 @@ public class SqlSchemaParser {
         SchemaDTO schema = new SchemaDTO();
         schema.setTables(new ArrayList<>());
 
-        try {
-            Statements statements = CCJSqlParserUtil.parseStatements(sql);
-            for (Statement stmt : statements.getStatements()) {
+        if (sql == null || sql.trim().isEmpty()) {
+            return schema;
+        }
+
+        // Split by semicolon to be more robust against mixed DML/DDL or syntax errors in some statements
+        String[] statements = sql.split(";");
+        for (String sqlStmt : statements) {
+            String trimmed = sqlStmt.trim();
+            if (trimmed.isEmpty()) continue;
+            
+            try {
+                net.sf.jsqlparser.statement.Statement stmt = CCJSqlParserUtil.parse(trimmed);
                 if (stmt instanceof CreateTable) {
                     CreateTable createTable = (CreateTable) stmt;
                     TableDTO table = new TableDTO();
@@ -35,13 +44,11 @@ public class SqlSchemaParser {
                     }
                     schema.getTables().add(table);
                 }
+            } catch (Throwable e) {
+                // Ignore statements that we can't parse or that are not CREATE TABLE
+                // But log it for debugging
+                System.err.println("[DEBUG_LOG] Could not parse statement in schema: " + trimmed + " - Error: " + e.getMessage());
             }
-        } catch (Throwable e) {
-            String errorMsg = e.getMessage();
-            if (e.getClass().getName().contains("TokenMgrException")) {
-                errorMsg = "Lexical error: " + e.getMessage();
-            }
-            throw new Exception("Error parsing Schema SQL: " + errorMsg);
         }
 
         return schema;

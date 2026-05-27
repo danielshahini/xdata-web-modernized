@@ -2,6 +2,7 @@ package com.xdata.partialmarking.core;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -150,6 +151,7 @@ public class PartialMarkParameters implements Serializable {
         this.orderBy = orderBy;
     }
 
+    @JsonIgnore
     public Double getValue() {
         return (this.relation + this.projection + this.predicate + this.joins + this.whereSubQueries + this.fromSubQueries + this.outerQuery + this.groupBy + this.havingClause
                 + this.subQConnective + this.aggregates + this.setOperators + this.distinct + this.orderBy);

@@ -27,7 +27,7 @@ public class Question extends BaseAuditEntity {
     @Column(name = "query_id")
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "assignment_id")
     @JsonIgnore
     private Assignment assignment;

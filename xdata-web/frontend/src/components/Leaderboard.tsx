@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
-import { Trophy, Medal, Star, Filter, BookOpen, Zap } from 'lucide-react';
+import { Trophy, Medal, Filter, BookOpen, Zap } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 interface LeaderboardEntry {

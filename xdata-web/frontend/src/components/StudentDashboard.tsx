@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../api';
 import Editor from '@monaco-editor/react';
 import { toast } from 'react-hot-toast';
@@ -38,6 +38,7 @@ interface DashboardData {
   nextLevelXp: number;
   currentLevelXp: number;
   assignments: {
+    id: number;
     assignmentId: number;
     name: string;
     deadline: string;
@@ -63,6 +64,7 @@ const StudentDashboard: React.FC = () => {
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [showSchema, setShowSchema] = useState(false);
   const [schemaMetadata, setSchemaMetadata] = useState<any>(null);
+  const completionProviderRef = useRef<any>(null);
 
   const { user } = useAuth();
 
@@ -81,11 +83,15 @@ const StudentDashboard: React.FC = () => {
   }, [selectedQuestion, selectedAssignment]);
 
   useEffect(() => {
-    let provider: any = null;
+    let isCancelled = false;
     if (schemaMetadata) {
       import('@monaco-editor/react').then(({ loader }) => {
         loader.init().then(monaco => {
-          provider = monaco.languages.registerCompletionItemProvider('sql', {
+          if (isCancelled) return;
+          if (completionProviderRef.current) {
+            completionProviderRef.current.dispose();
+          }
+          completionProviderRef.current = monaco.languages.registerCompletionItemProvider('sql', {
             triggerCharacters: ['.', ' '],
             provideCompletionItems: (model, position) => {
               const word = model.getWordUntilPosition(position);
@@ -125,9 +131,25 @@ const StudentDashboard: React.FC = () => {
       });
     }
     return () => {
-      if (provider) provider.dispose();
+      isCancelled = true;
+      if (completionProviderRef.current) {
+        completionProviderRef.current.dispose();
+        completionProviderRef.current = null;
+      }
     };
   }, [schemaMetadata]);
+
+  const handleEditorMount = (editor: any) => {
+    const textarea = editor.getDomNode()?.querySelector('textarea');
+    if (textarea) {
+      textarea.setAttribute('autocomplete', 'off');
+      textarea.setAttribute('autocorrect', 'off');
+      textarea.setAttribute('autocapitalize', 'off');
+      textarea.setAttribute('spellcheck', 'false');
+      textarea.setAttribute('data-lpignore', 'true');
+      textarea.setAttribute('data-form-type', 'other');
+    }
+  };
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -309,14 +331,14 @@ const StudentDashboard: React.FC = () => {
             <div className="space-y-4">
               {dashboard.assignments.map(a => (
                 <button
-                  key={a.assignmentId}
+                  key={a.id}
                   onClick={() => {
                     setSelectedAssignment(a as any);
                     setSelectedQuestion(null);
-                    loadQuestions(a.assignmentId);
+                    loadQuestions(a.id);
                   }}
                   className={`w-full text-left p-5 rounded-3xl border transition-all relative overflow-hidden group ${
-                    selectedAssignment?.id === a.assignmentId || selectedAssignment?.assignmentId === a.assignmentId
+                    selectedAssignment?.id === a.id
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-4 ring-blue-500/10' 
                     : 'border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800'
                   }`}
@@ -356,10 +378,10 @@ const StudentDashboard: React.FC = () => {
                    </h3>
                    <div className="flex items-center gap-2">
                      <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase">
-                       {(selectedAssignment as any).totalQuestions || questions.length} Aufgaben
+                       {selectedAssignment.totalQuestions || questions.length} Aufgaben
                      </span>
                      <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase">
-                       {(selectedAssignment as any).totalMarks || questions.reduce((acc, q) => acc + q.marks, 0)} Punkte Gesamt
+                       {selectedAssignment.totalMarks || questions.reduce((acc, q) => acc + q.marks, 0)} Punkte Gesamt
                      </span>
                    </div>
                 </div>
@@ -478,6 +500,7 @@ const StudentDashboard: React.FC = () => {
                       theme="vs-dark"
                       value={sql}
                       onChange={(v) => setSql(v || '')}
+                      onMount={handleEditorMount}
                       loading={<div className="flex items-center justify-center h-full dark:bg-gray-900 dark:text-gray-400 font-black uppercase tracking-widest text-xs animate-pulse">Initialisiere SQL Editor...</div>}
                       options={{
                         minimap: { enabled: false },

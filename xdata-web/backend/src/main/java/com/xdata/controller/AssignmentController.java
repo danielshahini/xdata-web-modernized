@@ -4,6 +4,7 @@ import com.xdata.model.Assignment;
 import com.xdata.model.Question;
 import com.xdata.model.Submission;
 import com.xdata.model.XDataUser;
+import com.xdata.repository.DbConnectionRepository;
 import com.xdata.repository.QuestionRepository;
 import com.xdata.repository.SubmissionRepository;
 import com.xdata.service.core.AssignmentService;
@@ -30,6 +31,7 @@ public class AssignmentController {
     private final AccessControlService accessControlService;
     private final QuestionRepository questionRepository;
     private final SubmissionRepository submissionRepository;
+    private final DbConnectionRepository dbConnectionRepository;
 
     @GetMapping
     public ResponseEntity<List<Assignment>> getAssignments(@RequestParam(required = false) String courseId) {
@@ -51,12 +53,16 @@ public class AssignmentController {
             return ResponseEntity.badRequest().body("Eine Datenbankverbindung ist zwingend erforderlich.");
         }
 
-        try {
-            return ResponseEntity.ok(assignmentService.createAssignment(assignment, courseId));
-        } catch (Exception e) {
-            log.error("Error creating assignment: {}", e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
-        }
+        // Resolve connection from DB
+        return dbConnectionRepository.findById(assignment.getConnection().getId()).map(conn -> {
+            assignment.setConnection(conn);
+            try {
+                return ResponseEntity.ok(assignmentService.createAssignment(assignment, courseId));
+            } catch (Exception e) {
+                log.error("Error creating assignment: {}", e.getMessage());
+                return ResponseEntity.status(400).body(e.getMessage());
+            }
+        }).orElse(ResponseEntity.badRequest().body("Die gewählte Datenbankverbindung wurde nicht gefunden."));
     }
 
     @PutMapping("/{id}")
@@ -69,9 +75,11 @@ public class AssignmentController {
             existing.setName(assignmentData.getName());
             existing.setDeadline(assignmentData.getDeadline());
             existing.setDefaultSchemaId(assignmentData.getDefaultSchemaId());
-            if (assignmentData.getConnection() != null) {
-                existing.setConnection(assignmentData.getConnection());
+            
+            if (assignmentData.getConnection() != null && assignmentData.getConnection().getId() != null) {
+                dbConnectionRepository.findById(assignmentData.getConnection().getId()).ifPresent(existing::setConnection);
             }
+            
             existing.setLateSubmissionAllowed(assignmentData.getLateSubmissionAllowed());
             existing.setPenaltyPercentage(assignmentData.getPenaltyPercentage());
             existing.setPublishedDate(assignmentData.getPublishedDate());

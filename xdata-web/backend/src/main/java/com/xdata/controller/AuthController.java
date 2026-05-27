@@ -41,6 +41,7 @@ public class AuthController {
     private final AuditService auditService;
 
     @PostMapping("/login")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         String loginIdInput = request.getLoginId() != null ? request.getLoginId().trim() : "";
         String passwordInput = request.getPassword();

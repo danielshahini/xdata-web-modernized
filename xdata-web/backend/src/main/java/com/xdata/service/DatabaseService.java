@@ -33,8 +33,14 @@ public class DatabaseService {
         if (dbConn == null || dbConn.getUrl() == null) {
             throw new SQLException("Datenbankverbindung oder URL ist null");
         }
+        log.info("Versuche Verbindung zu {} mit User {}...", dbConn.getUrl(), dbConn.getUser());
         loadDriver(dbConn.getUrl());
-        return DriverManager.getConnection(dbConn.getUrl(), dbConn.getUser(), dbConn.getPassword());
+        try {
+            return DriverManager.getConnection(dbConn.getUrl(), dbConn.getUser(), dbConn.getPassword());
+        } catch (SQLException e) {
+            log.error("Verbindungsfehler zu {}: {}", dbConn.getUrl(), e.getMessage());
+            throw e;
+        }
     }
 
     public boolean testConnection(DbConnection dbConn) {

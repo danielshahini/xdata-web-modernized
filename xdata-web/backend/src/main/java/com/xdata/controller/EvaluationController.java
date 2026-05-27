@@ -11,6 +11,7 @@ import com.xdata.service.PlagiarismService;
 import com.xdata.partialmarking.core.MarkInfo;
 import com.xdata.partialmarking.core.PartialMarkParameters;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/evaluation")
 @RequiredArgsConstructor
+@Slf4j
 public class EvaluationController {
     private final EvaluationService evaluationService;
     private final QuestionRepository questionRepository;
@@ -88,7 +90,8 @@ public class EvaluationController {
             MarkInfo markInfo = (MarkInfo) evaluationService.calculatePartialMarksLive(instructorQuery, studentQuery, schemaId, params);
             return ResponseEntity.ok(markInfo);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Fehler bei der Simulation: " + e.getMessage());
+            log.error("Simulation error: ", e);
+            return ResponseEntity.status(400).body(Map.of("message", "Fehler bei der Simulation: " + e.getMessage()));
         }
     }
 

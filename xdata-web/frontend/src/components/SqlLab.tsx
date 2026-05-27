@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../api';
 import Editor, { loader } from '@monaco-editor/react';
 import { toast } from 'react-hot-toast';
-import { Play, CheckCircle, XCircle, Info, Database, BarChart3, Settings, ChevronDown, ChevronUp, Beaker } from 'lucide-react';
+import { CheckCircle, XCircle, Info, Database, BarChart3, Settings, ChevronDown, ChevronUp, Beaker } from 'lucide-react';
 import MarkInfoDisplay from './MarkInfoDisplay';
 import InfoTip from './common/InfoTip';
 import { PartialMarkParameters, MarkInfo } from '../types';
@@ -33,8 +33,8 @@ const defaultParams: PartialMarkParameters = {
 const SqlLab: React.FC = () => {
   const [schemas, setSchemas] = useState<Schema[]>([]);
   const [selectedSchema, setSelectedSchema] = useState<number | null>(null);
-  const [queryPattern, setQueryPattern] = useState('SELECT username FROM xdata_users WHERE internal_user_id > 1;');
-  const [queryStudent, setQueryStudent] = useState('SELECT username FROM xdata_users WHERE internal_user_id >= 2;');
+  const [queryPattern, setQueryPattern] = useState('SELECT user_name FROM xdata_users WHERE internal_user_id = \'admin-uuid-admin1\';');
+  const [queryStudent, setQueryStudent] = useState('SELECT user_name FROM xdata_users;');
   const [params, setParams] = useState<PartialMarkParameters>(defaultParams);
   
   const [loadingEquivalence, setLoadingEquivalence] = useState(false);
@@ -44,6 +44,7 @@ const SqlLab: React.FC = () => {
   const [markInfo, setMarkInfo] = useState<MarkInfo | null>(null);
   const [showParams, setShowParams] = useState(false);
   const [schemaMetadata, setSchemaMetadata] = useState<any>(null);
+  const completionProviderRef = useRef<any>(null);
 
   useEffect(() => {
     if (selectedSchema) {
@@ -56,10 +57,14 @@ const SqlLab: React.FC = () => {
   }, [selectedSchema]);
 
   useEffect(() => {
-    let provider: any = null;
+    let isCancelled = false;
     if (schemaMetadata) {
       loader.init().then(monaco => {
-        provider = monaco.languages.registerCompletionItemProvider('sql', {
+        if (isCancelled) return;
+        if (completionProviderRef.current) {
+          completionProviderRef.current.dispose();
+        }
+        completionProviderRef.current = monaco.languages.registerCompletionItemProvider('sql', {
           triggerCharacters: ['.', ' '],
           provideCompletionItems: (model, position) => {
             const word = model.getWordUntilPosition(position);
@@ -95,9 +100,25 @@ const SqlLab: React.FC = () => {
       });
     }
     return () => {
-      if (provider) provider.dispose();
+      isCancelled = true;
+      if (completionProviderRef.current) {
+        completionProviderRef.current.dispose();
+        completionProviderRef.current = null;
+      }
     };
   }, [schemaMetadata]);
+
+  const handleEditorMount = (editor: any) => {
+    const textarea = editor.getDomNode()?.querySelector('textarea');
+    if (textarea) {
+      textarea.setAttribute('autocomplete', 'off');
+      textarea.setAttribute('autocorrect', 'off');
+      textarea.setAttribute('autocapitalize', 'off');
+      textarea.setAttribute('spellcheck', 'false');
+      textarea.setAttribute('data-lpignore', 'true');
+      textarea.setAttribute('data-form-type', 'other');
+    }
+  };
 
   useEffect(() => {
     api.get('/schemas')
@@ -108,44 +129,40 @@ const SqlLab: React.FC = () => {
       .catch(() => toast.error('Fehler beim Laden der Schemata.'));
   }, []);
 
-  const handleCheckEquivalence = async () => {
+  const handleFullAnalysis = async () => {
     setLoadingEquivalence(true);
+    setLoadingGrading(true);
     setIsEquivalent(null);
+    setMarkInfo(null);
+
     try {
-      const res = await api.post('/evaluation/playground/smt-check', { 
-        query1: queryPattern, 
-        query2: queryStudent,
-        schemaId: selectedSchema
-      });
-      setIsEquivalent(res.data.equivalent);
-      
-      if (res.data.equivalent) {
-        toast.success('Abfragen sind logisch äquivalent!');
+      const [equivRes, markRes] = await Promise.all([
+        api.post('/evaluation/playground/smt-check', { 
+          query1: queryPattern, 
+          query2: queryStudent,
+          schemaId: selectedSchema
+        }),
+        api.post('/evaluation/playground/partial-marking', { 
+          patternQuery: queryPattern, 
+          studentQuery: queryStudent,
+          schemaId: selectedSchema,
+          params
+        })
+      ]);
+
+      setIsEquivalent(equivRes.data.equivalent);
+      setMarkInfo(markRes.data);
+
+      if (equivRes.data.equivalent) {
+        toast.success('Analyse abgeschlossen: Abfragen sind äquivalent!');
       } else {
-        toast.error('Abfragen sind NICET äquivalent (auf Basis der generierten Testdaten).');
+        toast.error('Abfragen sind NICHT äquivalent.');
       }
-    } catch (err) {
-      toast.error('Fehler bei der Prüfung.');
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.response?.data || 'Fehler bei der Analyse.';
+      toast.error(typeof msg === 'string' ? msg : 'Fehler bei der Analyse.');
     } finally {
       setLoadingEquivalence(false);
-    }
-  };
-
-  const handleSimulateGrading = async () => {
-    setLoadingGrading(true);
-    setMarkInfo(null);
-    try {
-      const res = await api.post('/evaluation/playground/partial-marking', { 
-        patternQuery: queryPattern, 
-        studentQuery: queryStudent,
-        schemaId: selectedSchema,
-        params
-      });
-      setMarkInfo(res.data);
-      toast.success('Bewertung simuliert.');
-    } catch (err) {
-      toast.error('Fehler bei der Simulation.');
-    } finally {
       setLoadingGrading(false);
     }
   };
@@ -188,17 +205,6 @@ const SqlLab: React.FC = () => {
                {schemas.map(s => <option key={s.id} value={s.id}>{s.schemaName}</option>)}
              </select>
           </div>
-          <button 
-            onClick={() => {
-              handleCheckEquivalence();
-              handleSimulateGrading();
-            }}
-            disabled={loadingEquivalence || loadingGrading}
-            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-black shadow-lg shadow-blue-500/25 flex items-center transition-all"
-          >
-            <Beaker className={`mr-2 ${loadingEquivalence || loadingGrading ? 'animate-spin' : ''}`} size={20} />
-            Alles prüfen
-          </button>
         </div>
       </div>
 
@@ -250,6 +256,7 @@ const SqlLab: React.FC = () => {
               theme={document.documentElement.classList.contains('dark') ? 'vs-dark' : 'light'}
               value={queryPattern}
               onChange={(val) => setQueryPattern(val || '')}
+              onMount={handleEditorMount}
               loading={<div className="flex items-center justify-center h-full dark:bg-gray-900 dark:text-gray-400">Lade Editor...</div>}
               options={{ 
                 minimap: { enabled: false }, 
@@ -285,6 +292,7 @@ const SqlLab: React.FC = () => {
               theme={document.documentElement.classList.contains('dark') ? 'vs-dark' : 'light'}
               value={queryStudent}
               onChange={(val) => setQueryStudent(val || '')}
+              onMount={handleEditorMount}
               loading={<div className="flex items-center justify-center h-full dark:bg-gray-900 dark:text-gray-400">Lade Editor...</div>}
               options={{ 
                 minimap: { enabled: false }, 
@@ -303,61 +311,64 @@ const SqlLab: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col gap-4">
           <button 
-            onClick={handleCheckEquivalence}
-            disabled={loadingEquivalence}
-            className="flex-1 py-4 bg-gray-900 dark:bg-blue-600 text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-gray-800 dark:hover:bg-blue-500 transition-all shadow-xl shadow-gray-200 dark:shadow-blue-900/20 disabled:opacity-50"
+            onClick={handleFullAnalysis}
+            disabled={loadingEquivalence || loadingGrading}
+            className="w-full py-6 bg-blue-600 text-white rounded-[32px] font-black flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-500/25 disabled:opacity-50 group"
           >
-            {loadingEquivalence ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" /> : <Play size={20} />}
-            Logik prüfen
-          </button>
-          <button 
-            onClick={handleSimulateGrading}
-            disabled={loadingGrading}
-            className="flex-1 py-4 bg-white dark:bg-gray-700 border-2 border-gray-900 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all shadow-xl disabled:opacity-50"
-          >
-            {loadingGrading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" /> : <BarChart3 size={20} />}
-            Bewertung simulieren
+            {loadingEquivalence || loadingGrading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+            ) : (
+              <Beaker className="group-hover:rotate-12 transition-transform" size={24} />
+            )}
+            <span className="text-xl">Vollständige Analyse & Bewertung durchführen</span>
           </button>
       </div>
 
-      {isEquivalent !== null && (
-        <div className="animate-slideIn">
-          <div className={`p-8 rounded-[40px] border flex items-center shadow-xl ${
-            isEquivalent 
-              ? 'bg-green-50 border-green-100 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
-              : 'bg-red-50 border-red-100 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
-          }`}>
-            <div className={`p-4 rounded-3xl mr-6 ${isEquivalent ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-              {isEquivalent ? <CheckCircle size={40} /> : <XCircle size={40} />}
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Diagnose Ergebnis</p>
-              <h4 className="text-3xl font-black">{isEquivalent ? 'Äquivalent' : 'Nicht Äquivalent'}</h4>
-              <div className="mt-2 flex items-center text-sm font-bold opacity-80 italic">
-                <Info size={14} className="mr-2" />
-                {isEquivalent 
-                  ? 'Beide Queries liefern auf allen relevanten Testdatensätzen identische Ergebnismengen.' 
-                  : 'Auf den generierten Testdaten liefern die Abfragen unterschiedliche Resultate.'}
+      {(isEquivalent !== null || markInfo) && (
+        <div className="space-y-6 animate-slideIn">
+          {isEquivalent !== null && (
+            <div className={`p-8 rounded-[40px] border flex items-center shadow-xl ${
+              isEquivalent 
+                ? 'bg-green-50 border-green-100 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
+                : 'bg-red-50 border-red-100 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
+            }`}>
+              <div className={`p-4 rounded-3xl mr-6 ${isEquivalent ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                {isEquivalent ? <CheckCircle size={40} /> : <XCircle size={40} />}
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Diagnose Ergebnis</p>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-3xl font-black">{isEquivalent ? 'Äquivalent' : 'Nicht Äquivalent'}</h4>
+                  {markInfo && (
+                    <div className="text-right bg-white/50 dark:bg-black/20 px-6 py-2 rounded-2xl border border-current opacity-80">
+                      <span className="text-2xl font-black">{(markInfo.percentage || 0).toFixed(0)}%</span>
+                      <span className="text-[10px] font-black uppercase ml-1">Score</span>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2 flex items-center text-sm font-bold opacity-80 italic">
+                  <Info size={14} className="mr-2" />
+                  {isEquivalent 
+                    ? 'Beide Queries liefern auf allen relevanten Testdatensätzen identische Ergebnismengen.' 
+                    : 'Auf den generierten Testdaten liefern die Abfragen unterschiedliche Resultate. Siehe strukturelle Analyse unten für Details.'}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {markInfo && (
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-[40px] border border-gray-100 dark:border-gray-700 shadow-xl space-y-6 transition-colors animate-slideIn">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-black flex items-center dark:text-white">
-              <BarChart3 className="text-blue-600 mr-2" /> Strukturelle <span className="text-blue-600 ml-1">Analyse</span>
-            </h3>
-            <div className="text-center bg-blue-50 dark:bg-blue-900/30 px-6 py-2 rounded-2xl border border-blue-100 dark:border-blue-800">
-               <span className="text-2xl font-black text-blue-600">{(markInfo.percentage || 0).toFixed(0)}%</span>
-               <span className="text-[10px] font-black text-gray-400 uppercase ml-1">Punkte Score</span>
+          {markInfo && (
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-[40px] border border-gray-100 dark:border-gray-700 shadow-xl space-y-6 transition-colors">
+              <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-700/50 pb-6">
+                <h3 className="text-xl font-black flex items-center dark:text-white uppercase tracking-wider">
+                  <BarChart3 className="text-blue-600 mr-3" size={24} /> 
+                  Strukturelle <span className="text-blue-600 ml-2">Analyse & Feedback</span>
+                </h3>
+              </div>
+              <MarkInfoDisplay data={markInfo} />
             </div>
-          </div>
-          <MarkInfoDisplay data={markInfo} />
+          )}
         </div>
       )}
     </div>

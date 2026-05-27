@@ -29,12 +29,12 @@ public class Assignment extends BaseAuditEntity {
     @Column(name = "assignment_id")
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "course_id")
     @JsonIgnoreProperties({"users", "updatedAt", "createdAt"})
     private Course course;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "connection_id")
     @JsonIgnoreProperties({"course", "password", "updatedAt", "createdAt"})
     private DbConnection connection;
@@ -73,6 +73,7 @@ public class Assignment extends BaseAuditEntity {
     @Builder.Default
     private List<Question> questions = new ArrayList<>();
 
+    @JsonProperty("courseId")
     public String getCourseId() {
         return course != null ? course.getInstructorCourseId() : null;
     }

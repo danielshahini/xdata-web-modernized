@@ -19,6 +19,7 @@ export interface Course {
 
 export interface Assignment {
   id: number;
+  assignmentId?: number;
   name: string;
   deadline: string;
   courseId: string;
