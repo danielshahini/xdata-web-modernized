@@ -117,16 +117,35 @@
 		<dependency>
 			<groupId>com.github.jsqlparser</groupId>
 			<artifactId>jsqlparser</artifactId>
-			<version>4.9</version>
+			<version>5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>10.15.2.0</version>
+			<version>10.8</version>
+		</dependency>
+		<dependency>
+			<groupId>dk.brics.automaton</groupId>
+			<artifactId>automaton</artifactId>
+			<version>1.11-8</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.healthmarketscience.sqlbuilder</groupId>
+			<artifactId>sqlbuilder</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>31.1-jre</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
