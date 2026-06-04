@@ -10,29 +10,44 @@ interface AuthContextType {
   isAdmin: boolean;
   isInstructor: boolean;
   isStudent: boolean;
+  isDark: boolean;
+  toggleTheme: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const savedToken = localStorage.getItem('token');
+  const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedToken && savedUser) {
-      setToken(savedToken);
+    if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
-        // Handle both old and new user object structures
-        const userData = parsed.user || parsed;
-        setUser(userData);
+        return parsed.user || parsed;
       } catch (e) {
         console.error("Error parsing user from localStorage", e);
+        return null;
       }
     }
-  }, []);
+    return null;
+  });
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark(!isDark);
 
   const login = (newToken: string, loginResponse: any) => {
     setToken(newToken);
@@ -62,7 +77,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isAuthenticated: !!token,
       isAdmin,
       isInstructor,
-      isStudent
+      isStudent,
+      isDark,
+      toggleTheme
     }}>
       {children}
     </AuthContext.Provider>
