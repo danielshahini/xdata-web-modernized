@@ -5,6 +5,7 @@ import com.xdata.repository.SchemaRepository;
 import com.xdata.partialmarking.service.SqlSchemaParser;
 import com.xdata.partialmarking.service.TableMapBuilder;
 import com.xdata.partialmarking.dto.SchemaDTO;
+import com.xdata.util.TableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,12 +30,12 @@ public class MetadataService {
     private final SchemaRepository schemaRepository;
 
     /**
-     * Erstellt eine Legacy-TableMap (util.TableMap) für ein gegebenes Schema oder die Standard-DB.
+     * Erstellt eine Legacy-TableMap (com.xdata.util.TableMap) für ein gegebenes Schema oder die Standard-DB.
      */
-    public util.TableMap getLegacyTableMap(Integer schemaId) throws SQLException {
+    public TableMap getLegacyTableMap(Integer schemaId) throws SQLException {
         if (schemaId == null) {
             try (Connection conn = dataSource.getConnection()) {
-                return util.TableMap.getInstances(conn, 1);
+                return TableMap.getInstances(conn, 1);
             }
         }
         
@@ -52,7 +53,7 @@ public class MetadataService {
         String dbUrl = "jdbc:derby:memory:tempDB_legacy_" + schemaId + "_" + System.currentTimeMillis() + ";create=true";
         try (Connection conn = DriverManager.getConnection(dbUrl)) {
             executeDDL(conn, ddl);
-            return util.TableMap.getInstances(conn, 1);
+            return TableMap.getInstances(conn, 1);
         } finally {
             dropDerbyDB(dbUrl);
         }

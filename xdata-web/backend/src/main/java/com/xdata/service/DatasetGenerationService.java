@@ -6,8 +6,8 @@ import com.xdata.model.SchemaInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import parsing.QueryParser;
-import testDataGen.GenerateCVC1;
+import com.xdata.legacy.parsing.QueryParser;
+import com.xdata.legacy.testDataGen.GenerateCVC1;
 import com.xdata.util.TableMap;
 
 import java.net.URLDecoder;
@@ -42,11 +42,11 @@ public class DatasetGenerationService {
     public List<String> generateDatasetFromQuery(String query, Integer schemaId) {
         List<String> insertStatements = new ArrayList<>();
         try {
-            util.TableMap tableMap = metadataService.getLegacyTableMap(schemaId);
-            parsing.QueryParser qp = new parsing.QueryParser(tableMap);
+            TableMap tableMap = metadataService.getLegacyTableMap(schemaId);
+            QueryParser qp = new QueryParser(tableMap);
             qp.parseQuery("Q1", query, null);
 
-            testDataGen.GenerateCVC1 cvc = new testDataGen.GenerateCVC1();
+            GenerateCVC1 cvc = new GenerateCVC1();
             cvc.setTableMap(tableMap);
             cvc.setQuery(qp.getQuery());
             cvc.setQueryString(query);
@@ -66,13 +66,21 @@ public class DatasetGenerationService {
         return insertStatements;
     }
 
+    public List<String> generateDatasetFromQuery(String query, String mutantQuery, Integer schemaId, List<String> mutationTypes) {
+        // Falls ein Mutant Query angegeben ist, könnte man hier Logik hinzufügen, um 
+        // gezielt "Killing Data" zu generieren. Für den Playground nutzen wir 
+        // aktuell die Basis-Abfrage als Grundlage.
+        log.info("Playground: Generating dataset for query. Mutant query and mutation types are currently ignored in this simplified version.");
+        return generateDatasetFromQuery(query, schemaId);
+    }
+
     public String generateEquivalenceConstraints(String query1, String query2, Integer schemaId) {
         try {
-            util.TableMap tableMap = metadataService.getLegacyTableMap(schemaId);
-            parsing.QueryParser qp1 = new parsing.QueryParser(tableMap);
+            TableMap tableMap = metadataService.getLegacyTableMap(schemaId);
+            QueryParser qp1 = new QueryParser(tableMap);
             qp1.parseQuery("Q1", query1, null);
             
-            testDataGen.GenerateCVC1 cvc = new testDataGen.GenerateCVC1();
+            GenerateCVC1 cvc = new GenerateCVC1();
             cvc.setTableMap(tableMap);
             cvc.setQuery(qp1.getQuery());
             cvc.setQueryString(query1);
@@ -87,7 +95,7 @@ public class DatasetGenerationService {
         }
     }
 
-    private List<String> extractInsertsFromModel(String model, util.TableMap tableMap) {
+    private List<String> extractInsertsFromModel(String model, TableMap tableMap) {
         List<String> inserts = new ArrayList<>();
         try {
             // Wir nutzen hier einen robusten Regex-Ansatz, um TupleType-Zuweisungen zu finden
