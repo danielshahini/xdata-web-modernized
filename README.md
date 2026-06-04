@@ -42,9 +42,12 @@ The system can be customized via environment variables in the `docker-compose.ym
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SPRING_DATASOURCE_URL` | JDBC URL for PostgreSQL | `jdbc:postgresql://db:5432/xdatadb` |
-| `SPRING_DATASOURCE_USERNAME` | Database User | `postgres` |
-| `SPRING_DATASOURCE_PASSWORD` | Database Password | `1709` |
+| `XDATA_DB_HOST` | Database Host | `db` (Docker) / `localhost` (Local) |
+| `XDATA_DB_PORT` | Database Port | `5432` |
+| `XDATA_DB_NAME` | Database Name | `xdatadb` |
+| `XDATA_DB_USER` | Database User | `postgres` |
+| `XDATA_DB_PASS` | Database Password | `1709` |
+| `HIBERNATE_DDL_AUTO` | Hibernate DDL mode | `update` (Docker) / `validate` (Local) |
 | `JWT_SECRET` | Secret key for JWT | (Random default provided) |
 | `ALLOWED_ORIGINS` | CORS allowed origins | `http://localhost:3000, http://localhost:80` |
 

@@ -13,10 +13,12 @@ services:
   backend:
     build: ./xdata-web/backend
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/xdatadb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 1709
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      XDATA_DB_HOST: db
+      XDATA_DB_PORT: 5432
+      XDATA_DB_NAME: xdatadb
+      XDATA_DB_USER: postgres
+      XDATA_DB_PASS: 1709
+      HIBERNATE_DDL_AUTO: update
       XDATA_SMTSOLVER: /usr/bin/z3
     ports:
       - "8080:8080"
