@@ -19,8 +19,8 @@ public class DataInitializer implements CommandLineRunner {
         // Ensure admin1 exists
         initializeUser("admin1", "admin1", "ADMIN", "Administrator");
         
-        // Ensure instructor alex exists for testing
-        initializeUser("alex", "alex", "INSTRUCTOR", "Alex Instructor");
+        // Ensure instructor daniel exists for testing
+        initializeUser("daniel", "daniel", "INSTRUCTOR", "Daniel Instructor");
     }
 
     private void initializeUser(String loginId, String password, String role, String name) {
