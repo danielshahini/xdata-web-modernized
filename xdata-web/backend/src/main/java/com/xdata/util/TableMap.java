@@ -27,8 +27,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.xdata.legacy.database.Configuration;
-import util.Graph;
-import parsing.*;
+import com.xdata.legacy.util.Graph;
+import com.xdata.legacy.parsing.*;
 
 /**
  *
