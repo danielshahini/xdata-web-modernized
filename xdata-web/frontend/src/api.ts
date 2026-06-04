@@ -19,13 +19,19 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('API Error:', error.response?.status, error.response?.data);
-    if (error.response && (error.response.status === 401)) {
-      // Bei 401 (Unauthorized) oder 403 (Forbidden) loggen wir den User sicherheitshalber aus
-      // Da ein 403 oft bedeutet, dass das Token ungültig wurde (durch Backend-Neustart)
+    
+    // Bei 401 (Unauthorized) loggen wir den User aus (Token abgelaufen)
+    if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
+    
+    // Bei 403 (Forbidden) werfen wir den Fehler nur weiter, damit die Komponente ihn fangen kann
+    // Ein Redirect an dieser Stelle ist oft zu aggressiv und führt zu Endlosschleifen
+    
     return Promise.reject(error);
   }
 );

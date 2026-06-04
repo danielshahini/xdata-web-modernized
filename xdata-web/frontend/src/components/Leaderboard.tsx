@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
+import { useAuth } from '../context/AuthContext';
 import { Trophy, Medal, Filter, BookOpen, Zap } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -16,15 +17,14 @@ interface Course {
 }
 
 const Leaderboard: React.FC = () => {
+  const { user: currentUser, isAdmin, isInstructor } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(searchParams.get('courseId'));
   const [loading, setLoading] = useState(true);
   
-  const userJson = localStorage.getItem('user');
-  const currentUser = userJson ? JSON.parse(userJson) : {};
-  const isPrivileged = currentUser.role === 'ADMIN' || currentUser.role === 'INSTRUCTOR';
+  const isPrivileged = isAdmin || isInstructor;
 
   useEffect(() => {
     if (isPrivileged) {
@@ -36,10 +36,10 @@ const Leaderboard: React.FC = () => {
           }
         })
         .catch(err => console.error('Error loading courses', err));
-    } else {
-        setSelectedCourse(currentUser.courseId);
+    } else if (currentUser) {
+        setSelectedCourse(currentUser.courseId || null);
     }
-  }, [isPrivileged, currentUser.courseId, selectedCourse]);
+  }, [isPrivileged, currentUser, selectedCourse]);
 
   useEffect(() => {
     if (!selectedCourse) return;
@@ -71,7 +71,7 @@ const Leaderboard: React.FC = () => {
           <div className="relative w-full md:w-64">
             <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <select 
-              className="pl-12 pr-10 py-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none w-full shadow-lg shadow-black/5"
+              className="pl-12 pr-10 py-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none w-full shadow-lg shadow-black/5 dark:shadow-none"
               value={selectedCourse || ''}
               onChange={e => setSelectedCourse(e.target.value)}
             >
@@ -82,7 +82,7 @@ const Leaderboard: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl overflow-hidden transition-colors relative">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl dark:shadow-none overflow-hidden transition-colors relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
         
         {loading ? (

@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Database, User as UserIcon, LogOut, Sun, Moon, LayoutDashboard, Trophy, Menu, X, Beaker, FlaskConical } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, logout, isDark, toggleTheme } = useAuth();
+  const { user, logout, isDark, toggleTheme, isAdmin, isInstructor } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,18 +55,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <Beaker size={16} />
               <span>SQL Diagnose Labor</span>
             </Link>
-            {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+            {(isAdmin || isInstructor) && (
               <Link to="/dataset-playground" className={getLinkClasses("/dataset-playground")}>
                 <FlaskConical size={16} />
                 <span>Dataset Playground</span>
               </Link>
             )}
-            {user?.role !== 'ADMIN' && (
-              <Link to="/leaderboard" className={getLinkClasses("/leaderboard")}>
-                <Trophy size={16} />
-                <span>Bestenliste</span>
-              </Link>
-            )}
+            <Link to="/leaderboard" className={getLinkClasses("/leaderboard")}>
+              <Trophy size={16} />
+              <span>Bestenliste</span>
+            </Link>
           </div>
         </div>
 
@@ -123,7 +121,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Beaker size={20} className={isActive("/playground") ? "" : "text-blue-500"} />
             <span>SQL Diagnose Labor</span>
           </Link>
-          {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+          {(isAdmin || isInstructor) && (
             <Link 
               to="/dataset-playground" 
               className={getMobileLinkClasses("/dataset-playground")}
@@ -133,16 +131,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <span>Dataset Playground</span>
             </Link>
           )}
-          {user?.role !== 'ADMIN' && (
-            <Link 
-              to="/leaderboard" 
-              className={getMobileLinkClasses("/leaderboard")}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <Trophy size={20} className={isActive("/leaderboard") ? "" : "text-yellow-500"} />
-              <span>Bestenliste</span>
-            </Link>
-          )}
+          <Link 
+            to="/leaderboard" 
+            className={getMobileLinkClasses("/leaderboard")}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <Trophy size={20} className={isActive("/leaderboard") ? "" : "text-yellow-500"} />
+            <span>Bestenliste</span>
+          </Link>
           <div className="h-[1px] bg-gray-100 dark:bg-gray-700 my-2"></div>
           <button 
             onClick={handleLogout}

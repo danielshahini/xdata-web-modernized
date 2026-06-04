@@ -64,9 +64,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('user');
   };
 
-  const isAdmin = user?.role === 'ADMIN';
-  const isInstructor = user?.role === 'INSTRUCTOR';
-  const isStudent = user?.role === 'STUDENT';
+  const isAdmin = user?.role?.trim().toUpperCase() === 'ADMIN';
+  const isInstructor = user?.role?.trim().toUpperCase() === 'INSTRUCTOR';
+  const isStudent = user?.role?.trim().toUpperCase() === 'STUDENT';
 
   return (
     <AuthContext.Provider value={{ 

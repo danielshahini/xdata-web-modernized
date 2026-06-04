@@ -18,17 +18,16 @@ import {
   ToggleRight
 } from 'lucide-react';
 import { User, Course } from '../types';
+import { useAuth } from '../context/AuthContext';
 import ConfirmationModal from './common/ConfirmationModal';
 import InfoTip from './common/InfoTip';
 
 const UserManager: React.FC = () => {
+  const { user: currentUser, isAdmin, isInstructor } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [unassignedUsers, setUnassignedUsers] = useState<User[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [showAddExistingModal, setShowAddExistingModal] = useState(false);
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAdmin = currentUser.role?.trim().toUpperCase() === 'ADMIN';
-  const isInstructor = currentUser.role?.trim().toUpperCase() === 'INSTRUCTOR';
 
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -238,7 +237,7 @@ const UserManager: React.FC = () => {
 
     const formData = new FormData();
     formData.append('file', file);
-    if (isInstructor && currentUser.courseId) {
+    if (isInstructor && currentUser && currentUser.courseId) {
         formData.append('courseId', currentUser.courseId);
     }
 
@@ -509,8 +508,8 @@ const UserManager: React.FC = () => {
                   </td>
                   <td className="px-8 py-4">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-tight ${
-                      u.role === 'ADMIN' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 
-                      u.role === 'INSTRUCTOR' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 
+                      u.role?.trim().toUpperCase() === 'ADMIN' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 
+                      u.role?.trim().toUpperCase() === 'INSTRUCTOR' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 
                       'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                     }`}>
                       {u.role}
@@ -525,7 +524,7 @@ const UserManager: React.FC = () => {
                       >
                         {u.enabled !== false ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                       </button>
-                      {isAdmin && u.loginId !== currentUser.loginId && (
+                      {isAdmin && u.loginId !== currentUser?.loginId && (
                         <button 
                           onClick={() => handleImpersonate(u.loginId, u.username)} 
                           className="p-2 text-gray-300 dark:text-gray-600 hover:text-purple-500 dark:hover:text-purple-400 transition-colors"
@@ -596,7 +595,7 @@ const UserManager: React.FC = () => {
                         <td className="px-4 py-3 font-mono text-sm text-gray-500 dark:text-gray-400">{u.loginId}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex flex-wrap gap-2 justify-end">
-                            {courses.filter(c => isAdmin || (isInstructor && currentUser.courseIds?.includes(c.instructorCourseId))).map(c => (
+                            {courses.filter(c => isAdmin || (isInstructor && currentUser?.courseIds?.includes(c.instructorCourseId))).map(c => (
                                 <button 
                                     key={c.instructorCourseId}
                                     onClick={() => assignCourse(u.loginId, c.instructorCourseId)}
@@ -664,7 +663,7 @@ const UserManager: React.FC = () => {
               <div className="space-y-1 md:col-span-2">
                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs Zuweisung</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-[200px] overflow-y-auto custom-scrollbar">
-                  {courses.filter(c => isAdmin || (isInstructor && currentUser.courseIds?.includes(c.instructorCourseId))).map(c => (
+                  {courses.filter(c => isAdmin || (isInstructor && currentUser?.courseIds?.includes(c.instructorCourseId))).map(c => (
                     <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-blue-300 transition-all">
                       <input 
                         type="checkbox" 

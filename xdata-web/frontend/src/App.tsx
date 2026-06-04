@@ -10,6 +10,7 @@ const StudentDashboard = lazy(() => import('./components/StudentDashboard'));
 const InstructorDashboard = lazy(() => import('./components/InstructorDashboard'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const SqlLab = lazy(() => import('./components/SqlLab'));
+const DatasetPlayground = lazy(() => import('./components/DatasetPlayground'));
 const Leaderboard = lazy(() => import('./components/Leaderboard'));
 
 const LoadingFallback = () => (
@@ -24,7 +25,8 @@ const App: React.FC = () => {
   const getDefaultRoute = () => {
     if (!user) return <Navigate to="/login" replace />;
     
-    switch (user.role) {
+    const userRole = user.role?.trim().toUpperCase();
+    switch (userRole) {
       case 'ADMIN': return <Navigate to="/admin" replace />;
       case 'INSTRUCTOR': return <Navigate to="/instructor" replace />;
       default: return <Navigate to="/student" replace />;
@@ -36,6 +38,25 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" replace />} />
         
+        {/* Specific exact routes should come before splat routes */}
+        <Route path="/dataset-playground" element={
+          <ProtectedRoute allowedRoles={['ADMIN', 'INSTRUCTOR']}>
+            <Layout><DatasetPlayground /></Layout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/playground" element={
+          <ProtectedRoute>
+            <Layout><SqlLab /></Layout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/leaderboard" element={
+          <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']}>
+            <Layout><Leaderboard /></Layout>
+          </ProtectedRoute>
+        } />
+
         <Route path="/admin/*" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <Layout><AdminDashboard /></Layout>
@@ -51,18 +72,6 @@ const App: React.FC = () => {
         <Route path="/student/*" element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <Layout><StudentDashboard /></Layout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/playground" element={
-          <ProtectedRoute>
-            <Layout><SqlLab /></Layout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/leaderboard" element={
-          <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR']}>
-            <Layout><Leaderboard /></Layout>
           </ProtectedRoute>
         } />
 

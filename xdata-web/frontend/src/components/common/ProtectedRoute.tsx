@@ -8,16 +8,25 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isAdmin, isInstructor, isStudent } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    // Redirect to their default dashboard if role not allowed
-    return <Navigate to="/" replace />;
+  if (allowedRoles) {
+    const roles = allowedRoles.map(r => r.toUpperCase());
+    let isAllowed = false;
+    
+    if (roles.includes('ADMIN') && isAdmin) isAllowed = true;
+    if (roles.includes('INSTRUCTOR') && isInstructor) isAllowed = true;
+    if (roles.includes('STUDENT') && isStudent) isAllowed = true;
+
+    if (!isAllowed) {
+      // Redirect to their default dashboard if role not allowed
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <>{children}</>;

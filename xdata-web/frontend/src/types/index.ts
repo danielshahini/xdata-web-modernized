@@ -5,6 +5,7 @@ export interface User {
   email?: string;
   role: string;
   courseIds?: string[];
+  courseId?: string;
   enabled?: boolean;
 }
 

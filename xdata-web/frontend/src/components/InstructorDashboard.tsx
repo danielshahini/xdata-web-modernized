@@ -7,6 +7,7 @@ import DbConnectionManager from './DbConnectionManager';
 import LmsManager from './LmsManager';
 import AssignmentStats from './AssignmentStats';
 import TestDataViewer from './TestDataViewer';
+import { useAuth } from '../context/AuthContext';
 import { 
   ClipboardList, 
   Database, 
@@ -26,11 +27,8 @@ import { toast } from 'react-hot-toast';
 import { Course, Announcement } from '../types';
 
 const InstructorDashboard: React.FC = () => {
+  const { user, isAdmin } = useAuth();
   const [tab, setTab] = useState<'assignments' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'lms' | 'stats' | 'testdata' | 'announcements'>('assignments');
-  const userStr = localStorage.getItem('user') || '{}';
-  const user = JSON.parse(userStr);
-  const role = user.role?.trim().toUpperCase();
-  const isAdmin = role === 'ADMIN';
   
   const [courses, setCourses] = useState<Course[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -177,7 +175,7 @@ const InstructorDashboard: React.FC = () => {
           
           {tab === 'announcements' && (
             <div className="space-y-6">
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors">
                 <h3 className="text-xl font-black dark:text-white mb-6 flex items-center">
                   <Plus className="mr-2 text-blue-500" /> Neue Ankündigung erstellen
                 </h3>
@@ -210,7 +208,7 @@ const InstructorDashboard: React.FC = () => {
                 </button>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors">
                 <h3 className="text-xl font-black dark:text-white mb-6">Bestehende Ankündigungen</h3>
                 <div className="space-y-4">
                   {announcements.map(a => (
@@ -235,7 +233,7 @@ const InstructorDashboard: React.FC = () => {
 
           {tab === 'courses' && (
             <div className="space-y-8">
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors">
                 <h3 className="text-xl font-black dark:text-white mb-6">Neuen Kurs erstellen</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <input 
