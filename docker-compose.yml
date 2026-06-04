@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: xdatadb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1709
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./xdata-web/backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/xdatadb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1709
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      XDATA_SMTSOLVER: /usr/bin/z3
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/app/uploads
+
+  frontend:
+    build: ./xdata-web/frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
