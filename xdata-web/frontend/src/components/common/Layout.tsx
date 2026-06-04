@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Database, User as UserIcon, LogOut, Sun, Moon, LayoutDashboard, Trophy, Menu, X, Beaker } from 'lucide-react';
+import { Database, User as UserIcon, LogOut, Sun, Moon, LayoutDashboard, Trophy, Menu, X, Beaker, FlaskConical } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isDark, toggleTheme } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
@@ -28,17 +27,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return `${baseClasses} ${isActive(path) ? activeClasses : inactiveClasses}`;
   };
 
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark:text-white');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark:text-white');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
 
   const handleLogout = () => {
     logout();
@@ -67,6 +55,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <Beaker size={16} />
               <span>SQL Diagnose Labor</span>
             </Link>
+            {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+              <Link to="/dataset-playground" className={getLinkClasses("/dataset-playground")}>
+                <FlaskConical size={16} />
+                <span>Dataset Playground</span>
+              </Link>
+            )}
             {user?.role !== 'ADMIN' && (
               <Link to="/leaderboard" className={getLinkClasses("/leaderboard")}>
                 <Trophy size={16} />
@@ -78,7 +72,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
         <div className="flex items-center space-x-3">
           <button 
-            onClick={() => setIsDark(!isDark)}
+            onClick={toggleTheme}
             className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hidden sm:block"
             title={isDark ? "Hellmodus" : "Dunkelmodus"}
           >
@@ -129,6 +123,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Beaker size={20} className={isActive("/playground") ? "" : "text-blue-500"} />
             <span>SQL Diagnose Labor</span>
           </Link>
+          {(user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR') && (
+            <Link 
+              to="/dataset-playground" 
+              className={getMobileLinkClasses("/dataset-playground")}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <FlaskConical size={20} className={isActive("/dataset-playground") ? "" : "text-purple-500"} />
+              <span>Dataset Playground</span>
+            </Link>
+          )}
           {user?.role !== 'ADMIN' && (
             <Link 
               to="/leaderboard" 
