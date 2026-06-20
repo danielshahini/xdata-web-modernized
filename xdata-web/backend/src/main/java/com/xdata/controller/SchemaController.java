@@ -97,23 +97,4 @@ public class SchemaController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    @GetMapping("/datasets")
-    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR', 'STUDENT')")
-    public ResponseEntity<List<String>> getDefaultDataSets() {
-        // Dummy-Implementierung, da die Datensätze im Dateisystem oder einer speziellen Tabelle liegen könnten
-        return ResponseEntity.ok(java.util.Arrays.asList("Dataset1", "Dataset2", "Dataset3"));
-    }
-
-    @PostMapping("/sample-data/upload")
-    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
-    public ResponseEntity<?> uploadSampleData(
-            @RequestParam("schemaName") String schemaName,
-            @RequestParam("file") MultipartFile file) throws IOException {
-        
-        // Logik zum Hochladen von Beispieldaten in das Schema
-        String content = new String(file.getBytes(), StandardCharsets.UTF_8);
-        // Hier würde normalerweise ein Service aufgerufen, der die Daten in die DB schreibt
-        return ResponseEntity.ok("Sample data uploaded to " + schemaName);
-    }
 }

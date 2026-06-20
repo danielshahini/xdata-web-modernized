@@ -2,32 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 import UserManager from './UserManager';
 import ConfirmationModal from './common/ConfirmationModal';
-import { 
-  Server, 
-  Database, 
-  Cpu, 
-  HardDrive, 
-  Activity, 
-  Clock, 
-  CheckCircle, 
-  XCircle,
-  RefreshCw,
+import {
   Plus,
   Trash2,
   ChevronDown,
   ChevronUp,
   Users
 } from 'lucide-react';
-import { Course, SystemStatus, User } from '../types';
+import { Course, User } from '../types';
 import { toast } from 'react-hot-toast';
 
 const AdminDashboard: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'courses' | 'system'>('users');
-  const [dbStatus, setDbStatus] = useState<string | null>(null);
-  const [testingDb, setTestingDb] = useState(false);
-  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
-  
+  const [activeTab, setActiveTab] = useState<'users' | 'courses'>('users');
+
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [courseMembers, setCourseMembers] = useState<Record<number, User[]>>({});
   const [loadingMembers, setLoadingMembers] = useState<Record<number, boolean>>({});
@@ -63,35 +51,9 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const loadSystemStatus = useCallback(async () => {
-    try {
-      const res = await api.get('/system/status');
-      setSystemStatus(res.data);
-    } catch (e) {
-      console.error("System-Status konnte nicht geladen werden");
-    }
-  }, []);
-
   useEffect(() => {
     loadCourses();
-    if (activeTab === 'system') {
-      loadSystemStatus();
-    }
-  }, [loadCourses, activeTab, loadSystemStatus]);
-
-  const testConnection = async () => {
-    setTestingDb(true);
-    try {
-      const res = await api.get('/db-connections/test');
-      setDbStatus(res.data);
-      toast.success("Verbindungstest abgeschlossen");
-    } catch (e: any) {
-      setDbStatus("Fehler: " + (e.response?.data || e.message));
-      toast.error("Verbindungstest fehlgeschlagen");
-    } finally {
-      setTestingDb(false);
-    }
-  };
+  }, [loadCourses]);
 
   const handleCreateCourse = async () => {
     try {
@@ -129,7 +91,7 @@ const AdminDashboard: React.FC = () => {
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Systemweite Verwaltung &amp; Monitoring.</p>
         </div>
         <div role="tablist" aria-label="Ansicht" className="flex gap-1 bg-slate-100 dark:bg-ink-soft p-1 rounded-xl border border-slate-200 dark:border-ink-border">
-          {([['users','Benutzer'],['courses','Kurse'],['system','System']] as const).map(([id,label]) => (
+          {([['users','Benutzer'],['courses','Kurse']] as const).map(([id,label]) => (
             <button key={id} role="tab" aria-selected={activeTab === id}
               onClick={() => setActiveTab(id)}
               className={`x-tab ${activeTab === id ? 'x-tab-active' : ''}`}>
@@ -229,54 +191,6 @@ const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {activeTab === 'system' && (
-        <div className="space-y-6 animate-slideUp">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: Cpu, tint: 'text-brand-500', label: 'CPU & Last', value: `${systemStatus?.availableProcessors ?? '–'} Kerne · ${systemStatus?.systemLoad?.toFixed(2) ?? '0.00'}` },
-              { icon: Activity, tint: 'text-violet-500', label: 'RAM', value: `${systemStatus?.memoryUsed ?? 0} / ${systemStatus?.memoryMax ?? 0} MB` },
-              { icon: HardDrive, tint: 'text-xp-500', label: 'Speicher', value: `${systemStatus?.diskFree ?? 0} / ${systemStatus?.diskTotal ?? 0} GB` },
-              { icon: Clock, tint: 'text-easy', label: 'Uptime', value: `${(systemStatus?.uptime ? systemStatus.uptime / 3600 : 0).toFixed(1)} h` },
-            ].map(s => (
-              <div key={s.label} className="x-card p-5">
-                <s.icon className={`${s.tint} mb-3`} size={22} />
-                <p className="kicker">{s.label}</p>
-                <p className="mt-1 text-lg font-display font-bold text-slate-900 dark:text-white tabular-nums">{s.value}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <section className="x-card p-6 sm:p-8">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="section-title flex items-center gap-2"><Server size={20} className="text-brand-500" /> SMT-Solver (Z3)</h3>
-                {systemStatus?.z3Available
-                  ? <span className="badge-success"><CheckCircle size={13} /> Aktiv</span>
-                  : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={13} /> Inaktiv</span>}
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5">
-                Der Z3-Solver prüft die mathematische Äquivalenz von SQL-Queries.
-              </p>
-              <button onClick={loadSystemStatus} className="btn-secondary"><RefreshCw size={15} /> Status aktualisieren</button>
-            </section>
-
-            <section className="x-card p-6 sm:p-8">
-              <h3 className="section-title flex items-center gap-2 mb-4"><Database size={20} className="text-brand-500" /> Datenbank-Test</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-                Prüft die Verbindung zu allen konfigurierten Kurs-Datenbanken.
-              </p>
-              <button onClick={testConnection} disabled={testingDb} className="btn-primary">
-                {testingDb ? <RefreshCw className="animate-spin" size={16} /> : <Database size={16} />} Verbindungen prüfen
-              </button>
-              {dbStatus && (
-                <pre className={`mt-5 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap border ${
-                  dbStatus.includes('ERFOLGREICH') ? 'bg-easy/5 text-easy border-easy/20' : 'bg-hard/5 text-hard border-hard/20'
-                }`}>{dbStatus}</pre>
-              )}
-            </section>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -44,8 +44,6 @@ const SchemaManager: React.FC = () => {
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
   const [newSchemaName, setNewSchemaName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [sampleFile, setSampleFile] = useState<File | null>(null);
-  const [uploadingSample, setUploadingSample] = useState(false);
   const [loading, setLoading] = useState(false);
   const [viewingMetadata, setViewingMetadata] = useState<SchemaMetadata | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: number | null }>({
@@ -106,25 +104,6 @@ const SchemaManager: React.FC = () => {
       toast.error('Fehler beim Hochladen des Schemas');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const uploadSampleData = async (schemaName: string) => {
-    if (!sampleFile) return;
-    setUploadingSample(true);
-    const formData = new FormData();
-    formData.append('schemaName', schemaName);
-    formData.append('file', sampleFile);
-    try {
-      await api.post('/schemas/sample-data/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      toast.success('Beispieldaten hochgeladen für ' + schemaName);
-      setSampleFile(null);
-    } catch (e) {
-      toast.error('Fehler beim Hochladen der Beispieldaten');
-    } finally {
-      setUploadingSample(false);
     }
   };
 
@@ -242,29 +221,6 @@ const SchemaManager: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center justify-end space-x-4 w-full md:w-auto">
-                    <div className="flex items-center space-x-2 bg-gray-50 dark:bg-ink-soft/50 border border-slate-200 dark:border-ink-border p-1.5 rounded-xl">
-                      <input 
-                        type="file" 
-                        className="text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-brand-50 dark:file:bg-blue-900/40 file:text-brand-600 dark:file:text-brand-400"
-                        onChange={e => setSampleFile(e.target.files?.[0] || null)}
-                      />
-                      <button 
-                        onClick={() => uploadSampleData(s.schemaName)}
-                        disabled={!sampleFile || uploadingSample}
-                        className="px-2 py-1 bg-green-600 text-white rounded-md font-bold text-[10px] uppercase disabled:opacity-50 hover:bg-green-700 transition-colors"
-                      >
-                        Sample Data
-                      </button>
-                      <InfoTip 
-                        title="Beispieldaten hochladen"
-                        content={
-                          <div className="space-y-2">
-                            <p>Laden Sie eine SQL-Datei mit <code>INSERT</code> Statements hoch, um Beispieldaten für dieses Schema bereitzustellen.</p>
-                            <p>Diese Daten werden verwendet, um die Abfragen der Studenten gegen eine reale Datenbank zu testen.</p>
-                          </div>
-                        }
-                      />
-                    </div>
                     <div className="flex items-center space-x-1">
                       <button 
                         className="p-3 text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"

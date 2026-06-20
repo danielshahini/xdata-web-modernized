@@ -15,8 +15,6 @@ const DatasetPlayground: React.FC = () => {
   const { isDark } = useAuth();
   const [selectedSchema, setSelectedSchema] = useState<number | null>(null);
   const [query, setQuery] = useState('SELECT * FROM students WHERE age > 20;');
-  const [mutantQuery, setMutantQuery] = useState('SELECT * FROM students WHERE age >= 20;');
-  const [showMutantEditor, setShowMutantEditor] = useState(false);
   const [mutationTypes, setMutationTypes] = useState<string[]>(['SELECTION', 'EQUIVALENCE', 'AGG']);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -67,7 +65,6 @@ const DatasetPlayground: React.FC = () => {
     try {
       const response = await api.post('/playground/generate-killing-data', {
         query,
-        mutantQuery: showMutantEditor ? mutantQuery : null,
         schemaId: selectedSchema,
         mutationTypes
       });
@@ -199,17 +196,6 @@ const DatasetPlayground: React.FC = () => {
           <div className="bg-white dark:bg-ink-card rounded-2xl shadow-xl dark:shadow-none border border-slate-100 dark:border-ink-border overflow-hidden transition-colors">
             <div className="p-5 border-b border-slate-50 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/50 flex justify-between items-center">
               <span className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Referenz-Abfrage (SQL)</span>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 text-[10px] text-brand-600 dark:text-brand-400 font-bold uppercase tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
-                    <input 
-                        type="checkbox" 
-                        checked={showMutantEditor} 
-                        onChange={(e) => setShowMutantEditor(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 dark:bg-ink-soft"
-                    />
-                    Eigene Mutante (experimentell)
-                </label>
-              </div>
             </div>
             <div className="h-48 border-b dark:border-ink-border relative"
                  data-lpignore="true"
@@ -231,34 +217,6 @@ const DatasetPlayground: React.FC = () => {
               />
             </div>
 
-            {showMutantEditor && (
-                <div className="border-t border-slate-50 dark:border-ink-border">
-                    <div className="p-3 px-5 bg-amber-50/50 dark:bg-amber-900/20 border-b border-slate-50 dark:border-ink-border">
-                        <span className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-[0.2em]">Eigene Mutanten-Abfrage</span>
-                        <p className="text-[11px] text-amber-700/80 dark:text-amber-500/80 mt-1 normal-case tracking-normal">Hinweis: wird derzeit noch nicht in die Generierung einbezogen.</p>
-                    </div>
-                    <div className="h-48 relative"
-                         data-lpignore="true"
-                         data-form-type="other"
-                         data-ignore-autofill="true">
-                        <Editor
-                            height="100%"
-                            defaultLanguage="sql"
-                            theme={isDark ? 'vs-dark' : 'light'}
-                            value={mutantQuery}
-                            onChange={(val) => setMutantQuery(val || '')}
-                            onMount={handleEditorMount}
-                            options={{
-                                minimap: { enabled: false },
-                                fontSize: 14,
-                                fontWeight: '700',
-                                padding: { top: 12 }
-                            }}
-                        />
-                    </div>
-                </div>
-            )}
-            
             <div className="bg-white dark:bg-ink-card p-6 border-t border-slate-50 dark:border-ink-border">
                 <h3 className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-4 ml-1">Mutationstypen</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

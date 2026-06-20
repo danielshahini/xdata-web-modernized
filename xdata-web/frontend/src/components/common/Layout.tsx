@@ -15,7 +15,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const navItems: NavItem[] = [
     { to: '/', label: 'Dashboard', icon: <LayoutDashboard size={16} />, show: true },
-    { to: '/playground', label: 'SQL-Labor', icon: <Beaker size={16} />, show: true },
+    { to: '/playground', label: 'SQL-Labor', icon: <Beaker size={16} />, show: isAdmin || isInstructor },
     { to: '/dataset-playground', label: 'Dataset-Playground', icon: <FlaskConical size={16} />, show: isAdmin || isInstructor },
   ];
 

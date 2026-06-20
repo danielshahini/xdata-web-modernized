@@ -45,7 +45,7 @@ const App: React.FC = () => {
         } />
 
         <Route path="/playground" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['ADMIN', 'INSTRUCTOR']}>
             <Layout><SqlLab /></Layout>
           </ProtectedRoute>
         } />

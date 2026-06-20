@@ -45,13 +45,16 @@ public class SecurityConfiguration {
                         .requestMatchers("/ws-grading/**").permitAll()
                         .requestMatchers("/api/v1/admin/users/**").hasAnyRole("ADMIN", "INSTRUCTOR")
                         .requestMatchers("/api/v1/admin/courses/**").hasAnyRole("ADMIN", "INSTRUCTOR")
-                        .requestMatchers("/api/v1/admin/audit-logs/**").hasAnyRole("ADMIN", "INSTRUCTOR")
+                        // Audit logs contain system-wide security events (failed logins, password
+                        // resets, impersonations) -> ADMIN only, not instructors.
+                        .requestMatchers("/api/v1/admin/audit-logs/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/assignments/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/schemas/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/student/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/evaluation/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/instructor/**").hasAnyRole("ADMIN", "INSTRUCTOR")
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // API docs require authentication (no anonymous exposure on the school server).
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
