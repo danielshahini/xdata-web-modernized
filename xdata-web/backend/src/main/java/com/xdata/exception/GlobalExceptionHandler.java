@@ -6,11 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -53,10 +55,16 @@ public class GlobalExceptionHandler {
         return respond(HttpStatus.BAD_REQUEST, "Ungültiger Parameter '" + ex.getName() + "'.", null);
     }
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Object> handleNotFound(NoSuchElementException ex, WebRequest request) {
+    @ExceptionHandler({NoSuchElementException.class, NoResourceFoundException.class})
+    public ResponseEntity<Object> handleNotFound(Exception ex, WebRequest request) {
         log.warn("Ressource nicht gefunden bei {}: {}", request.getDescription(false), ex.getMessage());
         return respond(HttpStatus.NOT_FOUND, "Die angeforderte Ressource wurde nicht gefunden.", null);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Object> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, WebRequest request) {
+        log.warn("Methode nicht erlaubt bei {}: {}", request.getDescription(false), ex.getMessage());
+        return respond(HttpStatus.METHOD_NOT_ALLOWED, "Diese HTTP-Methode wird für die Ressource nicht unterstützt.", null);
     }
 
     @ExceptionHandler(RuntimeException.class)
