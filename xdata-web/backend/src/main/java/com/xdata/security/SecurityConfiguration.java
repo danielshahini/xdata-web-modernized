@@ -39,6 +39,10 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        // SockJS/STOMP handshake (/ws-grading, /ws-grading/info, /ws-grading/**) cannot
+                        // carry the JWT in an Authorization header, so it must be permitted at the HTTP
+                        // layer; otherwise the handshake falls through to anyRequest().authenticated() -> 403.
+                        .requestMatchers("/ws-grading/**").permitAll()
                         .requestMatchers("/api/v1/admin/users/**").hasAnyRole("ADMIN", "INSTRUCTOR")
                         .requestMatchers("/api/v1/admin/courses/**").hasAnyRole("ADMIN", "INSTRUCTOR")
                         .requestMatchers("/api/v1/admin/audit-logs/**").hasAnyRole("ADMIN", "INSTRUCTOR")

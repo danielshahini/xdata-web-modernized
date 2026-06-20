@@ -41,6 +41,9 @@ public class XDataUser extends BaseAuditEntity {
 
     @Column(name = "password")
     @NotBlank
+    // Accept a password on input (create/update) but never serialize the stored
+    // BCrypt hash back to clients.
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column(name = "role")
@@ -72,8 +75,12 @@ public class XDataUser extends BaseAuditEntity {
     @Transient
     private Set<String> tempCourseIds;
 
+    // Serialize the derived ids out (READ_ONLY) but deserialize incoming ids via
+    // the setter (WRITE_ONLY). Without splitting the access, Jackson treats this
+    // as a setterless collection and writes incoming values into the throwaway
+    // collection returned by the getter, so courseIds from the client were lost.
     @Transient
-    @JsonProperty("courseIds")
+    @JsonProperty(value = "courseIds", access = JsonProperty.Access.READ_ONLY)
     public Set<String> getCourseIds() {
         if (courses != null && !courses.isEmpty()) {
             return courses.stream()
@@ -84,7 +91,7 @@ public class XDataUser extends BaseAuditEntity {
     }
 
     @Transient
-    @JsonProperty("courseIds")
+    @JsonProperty(value = "courseIds", access = JsonProperty.Access.WRITE_ONLY)
     public void setCourseIds(Set<String> courseIds) {
         this.tempCourseIds = courseIds;
     }

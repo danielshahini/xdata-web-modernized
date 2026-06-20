@@ -140,6 +140,11 @@ public class DatasetGenerationService {
         ENGINE_LOCK.lock();
         String prevHome = com.xdata.legacy.util.Configuration.homeDir;
         try {
+            // The legacy Z3 context is static and accumulates declarations across runs
+            // (enum sorts are named after columns) -> "enumeration sort name is already
+            // declared" on the second generation. Start every run from a fresh context.
+            com.xdata.legacy.generateConstraints.ConstraintGenerator.resetContext();
+
             execAdmin("CREATE DATABASE " + tempDb);
             String tempUrl = datasourceUrl.substring(0, datasourceUrl.lastIndexOf('/') + 1) + tempDb;
 

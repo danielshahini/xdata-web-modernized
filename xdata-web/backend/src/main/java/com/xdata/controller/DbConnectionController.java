@@ -9,6 +9,7 @@ import com.xdata.service.AuditService;
 import com.xdata.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,9 @@ public class DbConnectionController {
     private final CourseAccessGuard courseAccessGuard;
     private final AuditService auditService;
     private final DatabaseService databaseService;
+
+    @Value("${spring.datasource.url}")
+    private String systemDbUrl;
 
     @GetMapping
     public ResponseEntity<List<DbConnection>> getAllConnections() {
@@ -194,6 +198,11 @@ public class DbConnectionController {
         }
         if (conn.getUrl() == null || conn.getUrl().trim().isEmpty()) {
             return "Datenbank-URL darf nicht leer sein.";
+        }
+        // Reject the application's own system database here (at save time) instead of
+        // only failing later when the connection is used for an assignment.
+        if (systemDbUrl != null && conn.getUrl().trim().equalsIgnoreCase(systemDbUrl.trim())) {
+            return "Die System-Datenbank darf aus Sicherheitsgründen nicht als Verbindung verwendet werden.";
         }
         if (conn.getUser() == null || conn.getUser().trim().isEmpty()) {
             return "Datenbank-Benutzer darf nicht leer sein.";

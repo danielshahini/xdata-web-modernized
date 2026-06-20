@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -78,9 +80,22 @@ public class StudentController {
                     questionId,
                     query
             );
-            
-            evaluationService.evaluateSubmissionAsync(submission.getId());
-            
+
+            // Trigger async grading only AFTER this transaction commits — otherwise the
+            // async thread (separate transaction) cannot see the just-saved submission
+            // and fails with "Submission not found".
+            final Integer submissionId = submission.getId();
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        evaluationService.evaluateSubmissionAsync(submissionId);
+                    }
+                });
+            } else {
+                evaluationService.evaluateSubmissionAsync(submissionId);
+            }
+
             return ResponseEntity.ok(submission);
         }).orElse(ResponseEntity.notFound().build());
     }

@@ -111,11 +111,25 @@ public class UserController {
     }
 
     @PutMapping("/{loginId}")
-    public ResponseEntity<?> updateUser(@PathVariable String loginId, @RequestBody XDataUser userData) {
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<?> updateUser(@PathVariable String loginId, @RequestBody Map<String, Object> body) {
+        // Read fields explicitly from the JSON body. (Binding to the XDataUser
+        // entity dropped the incoming courseIds because of its derived transient
+        // property, which silently wiped a user's course assignments on save.)
+        final String newUsername = body.get("username") != null ? body.get("username").toString() : null;
+        final String newEmail = body.get("email") != null ? body.get("email").toString() : null;
+        final String newRole = body.get("role") != null ? body.get("role").toString() : null;
+        final String newPassword = body.get("password") != null ? body.get("password").toString() : null;
+        final Boolean newEnabled = body.get("enabled") instanceof Boolean ? (Boolean) body.get("enabled") : null;
+        final boolean courseIdsProvided = body.containsKey("courseIds") && body.get("courseIds") instanceof List;
+        final List<String> newCourseIds = courseIdsProvided
+                ? ((List<Object>) body.get("courseIds")).stream().map(String::valueOf).toList()
+                : null;
+
         return userRepository.findByLoginIdIgnoreCase(loginId).map(user -> {
             boolean isSelf = accessControlService.getCurrentUserLoginId().equalsIgnoreCase(loginId);
 
-            if (isSelf && !userData.isEnabled() && user.isEnabled()) {
+            if (isSelf && newEnabled != null && !newEnabled && user.isEnabled()) {
                 return ResponseEntity.badRequest().body("Man kann sich nicht selbst deaktivieren.");
             }
 
@@ -125,17 +139,17 @@ public class UserController {
                 }
                 List<String> instructorCourses = accessControlService.getUserCourseIds();
                 boolean hasAccess = isSelf || user.getCourses().stream().anyMatch(c -> instructorCourses.contains(c.getInstructorCourseId()));
-                
+
                 if (!hasAccess && !"STUDENT".equalsIgnoreCase(user.getRole())) {
                     return ResponseEntity.status(403).body("Keine Berechtigung für diesen Benutzer.");
                 }
-                
-                user.setUsername(userData.getUsername());
-                user.setEmail(userData.getEmail());
-                user.setEnabled(userData.isEnabled());
-                
-                if (userData.getCourseIds() != null) {
-                    Set<String> targetIds = new HashSet<>(userData.getCourseIds());
+
+                if (newUsername != null) user.setUsername(newUsername);
+                if (newEmail != null) user.setEmail(newEmail);
+                if (newEnabled != null) user.setEnabled(newEnabled);
+
+                if (newCourseIds != null) {
+                    Set<String> targetIds = new HashSet<>(newCourseIds);
                     targetIds.removeIf(cid -> !instructorCourses.contains(cid));
                     user.getCourses().removeIf(c -> instructorCourses.contains(c.getInstructorCourseId()));
                     for (String cid : targetIds) {
@@ -143,24 +157,24 @@ public class UserController {
                     }
                 }
             } else {
-                user.setUsername(userData.getUsername());
-                user.setEmail(userData.getEmail());
-                user.setRole(userData.getRole());
-                user.setEnabled(userData.isEnabled());
-                
-                if (userData.getCourseIds() != null) {
+                if (newUsername != null) user.setUsername(newUsername);
+                if (newEmail != null) user.setEmail(newEmail);
+                if (newRole != null) user.setRole(newRole);
+                if (newEnabled != null) user.setEnabled(newEnabled);
+
+                if (newCourseIds != null) {
                     user.setCourses(new HashSet<>());
-                    for (String cid : userData.getCourseIds()) {
+                    for (String cid : newCourseIds) {
                         courseRepository.findByInstructorCourseId(cid).ifPresent(user.getCourses()::add);
                     }
                 }
             }
-            
-            if (userData.getPassword() != null && !userData.getPassword().isEmpty()) {
-                if (!isValidPassword(userData.getPassword())) {
+
+            if (newPassword != null && !newPassword.isEmpty()) {
+                if (!isValidPassword(newPassword)) {
                     return ResponseEntity.badRequest().body("Passwort muss mindestens 8 Zeichen lang sein.");
                 }
-                user.setPassword(passwordEncoder.encode(userData.getPassword()));
+                user.setPassword(passwordEncoder.encode(newPassword));
             }
 
             XDataUser updated = userRepository.saveAndFlush(user);
@@ -220,8 +234,17 @@ public class UserController {
                 return ResponseEntity.status(403).build();
             }
 
+            if (targetIds.isEmpty()) {
+                return ResponseEntity.badRequest().body("Keine gültige Kurs-ID angegeben.");
+            }
             for (String cid : targetIds) {
-                courseRepository.findByInstructorCourseId(cid).ifPresent(user.getCourses()::add);
+                var course = courseRepository.findByInstructorCourseId(cid);
+                if (course.isEmpty()) {
+                    // Fail loudly instead of silently no-op'ing (e.g. when a numeric DB id
+                    // is passed instead of the instructorCourseId).
+                    return ResponseEntity.badRequest().body("Kurs nicht gefunden: " + cid);
+                }
+                user.getCourses().add(course.get());
             }
             userRepository.saveAndFlush(user);
             return ResponseEntity.ok(user);

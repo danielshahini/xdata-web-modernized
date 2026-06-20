@@ -466,7 +466,7 @@ const AssignmentManager: React.FC = () => {
 
               <div className="col-span-full pt-10 flex justify-end">
                  <button 
-                  onClick={() => { saveAssignment(); setWizardStep(2); }}
+                  onClick={async () => { const saved = await saveAssignment(); if (saved) setWizardStep(2); }}
                   className="bg-blue-600 text-white px-12 py-5 rounded-2xl font-black shadow-2xl shadow-blue-500/20 flex items-center gap-3 hover:bg-blue-700 transition-all group"
                  >
                     Nächster Schritt <ChevronRight className="group-hover:translate-x-2 transition-transform" />
@@ -582,7 +582,7 @@ const AssignmentManager: React.FC = () => {
                   <ChevronLeft size={20} /> Metadaten anpassen
                 </button>
                 <button 
-                  onClick={() => { saveAssignment(); setEditingAssignment(null); }}
+                  onClick={async () => { const saved = await saveAssignment(); if (saved) setEditingAssignment(null); }}
                   className="bg-green-600 text-white px-12 py-5 rounded-2xl font-black shadow-2xl shadow-green-500/20 flex items-center gap-3 hover:bg-green-700 active:scale-95 transition-all"
                 >
                   <CheckCircle2 size={24} /> Fertigstellen & Speichern

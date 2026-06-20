@@ -17,7 +17,8 @@ import {
   Briefcase,
   Bell,
   Trash2,
-  Plus
+  Plus,
+  Info
 } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-hot-toast';
@@ -29,7 +30,6 @@ const InstructorDashboard: React.FC = () => {
   
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', courseId: '' });
   
-  const [newCourse, setNewCourse] = useState({ courseName: '', instructorCourseId: '' });
 
   const { data: announcementsData, retry: reloadAnnouncements } = useAsyncData<Announcement[]>(
     () => api.get('/announcements').then(res => res.data || []),
@@ -37,7 +37,7 @@ const InstructorDashboard: React.FC = () => {
   );
   const announcements = announcementsData ?? [];
 
-  const { data: coursesData, retry: reloadCourses } = useAsyncData<Course[]>(
+  const { data: coursesData } = useAsyncData<Course[]>(
     () => api.get('/admin/courses').then(res => res.data || []),
     []
   );
@@ -79,20 +79,6 @@ const InstructorDashboard: React.FC = () => {
     }
   };
 
-  const handleCreateCourse = async () => {
-    if (!newCourse.courseName || !newCourse.instructorCourseId) {
-      toast.error("Bitte alle Felder ausfüllen");
-      return;
-    }
-    try {
-      await api.post('/admin/courses', newCourse);
-      toast.success('Kurs erfolgreich erstellt');
-      setNewCourse({ courseName: '', instructorCourseId: '' });
-      reloadCourses();
-    } catch (err) {
-      toast.error('Fehler beim Erstellen des Kurses');
-    }
-  };
 
   const menuItems = [
     { id: 'assignments', label: 'Aufgaben', icon: ClipboardList },
@@ -111,21 +97,6 @@ const InstructorDashboard: React.FC = () => {
         <div>
           <h1 className="text-3xl font-black dark:text-white tracking-tight">Dozenten-Panel</h1>
           <p className="text-gray-400 font-bold uppercase tracking-widest text-xs mt-1">Verwalten Sie Ihre Kurse und Studenten</p>
-        </div>
-        <div className="flex gap-2 bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border dark:border-gray-700">
-          {menuItems.slice(0, 3).map(item => (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id as any)}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
-                tab === item.id 
-                ? 'bg-blue-600 text-white shadow-lg' 
-                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
-              }`}
-            >
-              <item.icon size={16} className="mr-2" /> {item.label}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -215,25 +186,12 @@ const InstructorDashboard: React.FC = () => {
 
           {tab === 'courses' && (
             <div className="space-y-8">
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors">
-                <h3 className="text-xl font-black dark:text-white mb-6">Neuen Kurs erstellen</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <input 
-                    placeholder="Kursname" 
-                    className="w-full px-5 py-3 rounded-2xl border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 font-bold dark:text-white"
-                    value={newCourse.courseName}
-                    onChange={e => setNewCourse({...newCourse, courseName: e.target.value})}
-                  />
-                  <input 
-                    placeholder="Kurs ID (z.B. CS101)" 
-                    className="w-full px-5 py-3 rounded-2xl border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 font-bold dark:text-white"
-                    value={newCourse.instructorCourseId}
-                    onChange={e => setNewCourse({...newCourse, instructorCourseId: e.target.value})}
-                  />
+              <div className="bg-blue-50/60 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30 flex items-start gap-3">
+                <Info className="text-blue-500 shrink-0 mt-0.5" size={20} />
+                <div>
+                  <h3 className="text-sm font-black dark:text-white uppercase tracking-widest mb-1">Ihre Kurse</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Neue Kurse werden von einem Administrator angelegt und Ihnen zugewiesen. Hier sehen Sie Ihre zugewiesenen Kurse.</p>
                 </div>
-                <button onClick={handleCreateCourse} className="mt-6 bg-blue-600 text-white px-8 py-3 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-lg">
-                  Kurs erstellen
-                </button>
               </div>
 
               <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border dark:border-gray-700">
@@ -242,7 +200,6 @@ const InstructorDashboard: React.FC = () => {
                     <tr>
                       <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Kursname</th>
                       <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">ID</th>
-                      <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Aktion</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -250,11 +207,6 @@ const InstructorDashboard: React.FC = () => {
                       <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                         <td className="px-6 py-4 font-bold dark:text-white">{c.courseName}</td>
                         <td className="px-6 py-4 font-mono text-sm text-blue-500">{c.instructorCourseId}</td>
-                        <td className="px-6 py-4 text-right">
-                          <button className="text-gray-300 hover:text-red-500 transition-colors">
-                            <Trash2 size={18} />
-                          </button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>

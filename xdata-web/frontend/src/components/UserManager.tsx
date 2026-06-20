@@ -68,7 +68,15 @@ const UserManager: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
 
   const { data: usersData, retry: reloadUsers } = useAsyncData<User[]>(
-    () => api.get('/admin/users').then(res => res.data || []),
+    // The backend returns each user's enrolled `courses` (objects), not a flat
+    // `courseIds` array. Normalize so the course column and the edit modal's
+    // checkboxes reflect the actual assignments.
+    () => api.get('/admin/users').then(res => (res.data || []).map((u: any) => ({
+      ...u,
+      courseIds: (u.courseIds && u.courseIds.length)
+        ? u.courseIds
+        : (u.courses || []).map((c: any) => c.instructorCourseId),
+    }))),
     []
   );
   const users = usersData ?? [];

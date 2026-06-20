@@ -75,24 +75,73 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
 
   const { data, loading, retry: reloadAll } = useAsyncData(
     async () => {
-      if (!assignmentId) {
-        return { summary: null as SummaryData | null, analytics: null as AnalyticsData | null, plagiarism: [] as PlagiarismResult[], allSubmissions: [] as Submission[] };
-      }
-      const [sumRes, anaRes, plagRes] = await Promise.all([
-        api.get(`/assignments/${assignmentId}/summary`),
-        api.get(`/assignments/${assignmentId}/analytics`),
-        api.get(`/evaluation/plagiarism/${assignmentId}?threshold=0.8`)
-      ]);
+      const empty = { summary: null as SummaryData | null, analytics: null as AnalyticsData | null, plagiarism: [] as PlagiarismResult[], allSubmissions: [] as Submission[] };
+      if (!assignmentId) return empty;
+
+      // The backend exposes per-question stats and per-question submissions; the
+      // former /summary and /analytics endpoints don't exist (they returned 500).
+      // We aggregate summary + analytics on the client from the submissions.
       const questionsRes = await api.get(`/assignments/${assignmentId}/questions`);
+      const questions: any[] = questionsRes.data || [];
+
+      const plagRes = await api
+        .get(`/evaluation/plagiarism/${assignmentId}?threshold=0.8`)
+        .catch(() => ({ data: [] as PlagiarismResult[] }));
+
       const allSubs: Submission[] = [];
-      for (const q of questionsRes.data) {
-        const subs = await api.get(`/evaluation/submissions/${q.id}`);
-        allSubs.push(...subs.data);
+      for (const q of questions) {
+        const subs = await api.get(`/evaluation/submissions/${q.id}`).catch(() => ({ data: [] }));
+        allSubs.push(...((subs.data || []) as Submission[]));
       }
+
+      const sid = (s: any) => s.studentId ?? s.user?.loginId ?? 'unbekannt';
+      const sname = (s: any) => s.user?.username ?? s.studentId ?? 'Unbekannt';
+      const qOf = (s: any) => s.questionId ?? s.question?.id;
+
+      // Per-question analytics, based on each student's best attempt.
+      const questionAnalytics = questions.map((q: any) => {
+        const qSubs = allSubs.filter(s => qOf(s) === q.id);
+        const bestByStudent = new Map<string, number>();
+        qSubs.forEach(s => {
+          const cur = bestByStudent.get(sid(s)) ?? -1;
+          if (((s as any).marks ?? 0) > cur) bestByStudent.set(sid(s), (s as any).marks ?? 0);
+        });
+        const fractions = Array.from(bestByStudent.values());
+        const maxPts = q.marks ?? 0;
+        const avgFraction = fractions.length ? fractions.reduce((a, b) => a + b, 0) / fractions.length : 0;
+        return {
+          questionId: q.id,
+          questionName: q.name,
+          totalSubmissions: qSubs.length,
+          uniqueStudents: bestByStudent.size,
+          averageMarks: +(avgFraction * maxPts).toFixed(2),
+          perfectScores: fractions.filter(f => f >= 1).length,
+          commonErrors: [] as { errorType: string; count: number }[],
+        };
+      });
+
+      // Per-student summary (best attempt per question).
+      const byStudent = new Map<string, any>();
+      allSubs.forEach(s => {
+        const id = sid(s);
+        const q = questions.find((qq: any) => qq.id === qOf(s));
+        const awarded = ((s as any).marks ?? 0) * (q?.marks ?? 0);
+        if (!byStudent.has(id)) byStudent.set(id, { studentId: id, studentName: sname(s), qm: new Map() });
+        const e = byStudent.get(id);
+        const prev = e.qm.get(qOf(s));
+        if (!prev || awarded > prev.marks) e.qm.set(qOf(s), { questionId: qOf(s), questionName: q?.name ?? '', marks: awarded });
+      });
+      const results = Array.from(byStudent.values()).map(e => ({
+        studentId: e.studentId,
+        studentName: e.studentName,
+        questionMarks: Array.from(e.qm.values()),
+        totalMarks: Array.from(e.qm.values()).reduce((a: number, x: any) => a + x.marks, 0),
+      }));
+
       return {
-        summary: sumRes.data as SummaryData,
-        analytics: anaRes.data as AnalyticsData,
-        plagiarism: plagRes.data as PlagiarismResult[],
+        summary: { assignmentId, assignmentName: '', results } as SummaryData,
+        analytics: { assignmentId, questionAnalytics } as AnalyticsData,
+        plagiarism: (plagRes.data || []) as PlagiarismResult[],
         allSubmissions: allSubs,
       };
     },
@@ -141,7 +190,8 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
   if (!summary || !analytics) return (
     <div className="p-10 text-center bg-gray-50 dark:bg-gray-900 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
       <Search className="mx-auto mb-4 opacity-20 dark:text-white" size={48} />
-      <p className="text-gray-400 font-bold italic">Keine Assignment-Daten ausgewählt oder verfügbar.</p>
+      <p className="text-gray-400 font-bold italic">Keine Aufgabe ausgewählt.</p>
+      <p className="text-gray-400 text-sm mt-2">Öffne die Statistik über das Diagramm-Symbol einer Aufgabe in der Aufgaben-Liste.</p>
     </div>
   );
 

@@ -87,6 +87,7 @@ public class AuthController {
         return ResponseEntity.ok(LoginResponse.builder()
                 .token(jwtToken)
                 .username(user.getUsername())
+                .loginId(user.getLoginId())
                 .role(role.trim().toUpperCase())
                 .courseId(user.getCourseId())
                 .courseIds(user.getCourseIds())
