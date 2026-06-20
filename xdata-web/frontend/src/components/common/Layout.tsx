@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Database, User as UserIcon, LogOut, Sun, Moon, LayoutDashboard, Trophy, Menu, X, Beaker, FlaskConical } from 'lucide-react';
+import { Database, User as UserIcon, LogOut, Sun, Moon, LayoutDashboard, Menu, X, Beaker, FlaskConical } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout, isDark, toggleTheme, isAdmin, isInstructor } = useAuth();
@@ -61,10 +61,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <span>Dataset Playground</span>
               </Link>
             )}
-            <Link to="/leaderboard" className={getLinkClasses("/leaderboard")}>
-              <Trophy size={16} />
-              <span>Bestenliste</span>
-            </Link>
           </div>
         </div>
 
@@ -131,14 +127,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <span>Dataset Playground</span>
             </Link>
           )}
-          <Link 
-            to="/leaderboard" 
-            className={getMobileLinkClasses("/leaderboard")}
-            onClick={() => setIsMenuOpen(false)}
-          >
-            <Trophy size={20} className={isActive("/leaderboard") ? "" : "text-yellow-500"} />
-            <span>Bestenliste</span>
-          </Link>
           <div className="h-[1px] bg-gray-100 dark:bg-gray-700 my-2"></div>
           <button 
             onClick={handleLogout}

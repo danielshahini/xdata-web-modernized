@@ -9,6 +9,11 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d xdatadb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./xdata-web/backend
@@ -18,21 +23,31 @@ services:
       XDATA_DB_NAME: xdatadb
       XDATA_DB_USER: postgres
       XDATA_DB_PASS: 1709
-      HIBERNATE_DDL_AUTO: update
+      # validate (not update): Flyway owns the schema, Hibernate only checks it matches the entities.
+      HIBERNATE_DDL_AUTO: validate
       XDATA_SMTSOLVER: /usr/bin/z3
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./uploads:/app/uploads
+    healthcheck:
+      # No curl/wget in the JRE image — probe the port with bash's /dev/tcp instead.
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   frontend:
     build: ./xdata-web/frontend
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:

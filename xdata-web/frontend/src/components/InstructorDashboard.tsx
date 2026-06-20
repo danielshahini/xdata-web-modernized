@@ -1,23 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAsyncData } from '../hooks/useAsyncData';
 import SchemaManager from './SchemaManager';
 import AssignmentManager from './AssignmentManager';
 import UserManager from './UserManager';
 import AuditLogViewer from './AuditLogViewer';
 import DbConnectionManager from './DbConnectionManager';
-import LmsManager from './LmsManager';
 import AssignmentStats from './AssignmentStats';
-import TestDataViewer from './TestDataViewer';
 import { useAuth } from '../context/AuthContext';
 import { 
   ClipboardList, 
   Database, 
   Users, 
   Plug, 
-  BarChart3, 
-  FlaskConical, 
+  BarChart3,
   GraduationCap,
   Briefcase,
-  Layers,
   Bell,
   Trash2,
   Plus
@@ -27,41 +24,30 @@ import { toast } from 'react-hot-toast';
 import { Course, Announcement } from '../types';
 
 const InstructorDashboard: React.FC = () => {
-  const { user, isAdmin } = useAuth();
-  const [tab, setTab] = useState<'assignments' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'lms' | 'stats' | 'testdata' | 'announcements'>('assignments');
+  const { isAdmin } = useAuth();
+  const [tab, setTab] = useState<'assignments' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
   
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', courseId: '' });
   
   const [newCourse, setNewCourse] = useState({ courseName: '', instructorCourseId: '' });
 
-  const loadAnnouncements = useCallback(async () => {
-    try {
-      const res = await api.get('/announcements');
-      setAnnouncements(res.data || []);
-    } catch (e) {
-      console.error('Fehler beim Laden der Ankündigungen');
-    }
-  }, []);
+  const { data: announcementsData, retry: reloadAnnouncements } = useAsyncData<Announcement[]>(
+    () => api.get('/announcements').then(res => res.data || []),
+    []
+  );
+  const announcements = announcementsData ?? [];
 
-  const loadCourses = useCallback(async () => {
-    try {
-      const res = await api.get('/admin/courses');
-      const courseData = res.data || [];
-      setCourses(courseData);
-      if (courseData.length > 0) {
-        setNewAnnouncement(prev => ({ ...prev, courseId: courseData[0].instructorCourseId }));
-      }
-    } catch (e: any) {
-      console.error('Fehler beim Laden der Kurse');
-    }
-  }, []);
+  const { data: coursesData, retry: reloadCourses } = useAsyncData<Course[]>(
+    () => api.get('/admin/courses').then(res => res.data || []),
+    []
+  );
+  const courses = coursesData ?? [];
 
   useEffect(() => {
-    loadCourses();
-    loadAnnouncements();
-  }, [loadCourses, loadAnnouncements]);
+    if (coursesData && coursesData.length > 0) {
+      setNewAnnouncement(prev => prev.courseId ? prev : { ...prev, courseId: coursesData[0].instructorCourseId });
+    }
+  }, [coursesData]);
 
   const handleCreateAnnouncement = async () => {
     if (!newAnnouncement.title || !newAnnouncement.content || !newAnnouncement.courseId) {
@@ -75,7 +61,7 @@ const InstructorDashboard: React.FC = () => {
       });
       toast.success("Ankündigung erstellt");
       setNewAnnouncement({ ...newAnnouncement, title: '', content: '' });
-      loadAnnouncements();
+      reloadAnnouncements();
     } catch (e) {
       toast.error("Fehler beim Erstellen");
     }
@@ -85,7 +71,7 @@ const InstructorDashboard: React.FC = () => {
     if (window.confirm("Ankündigung löschen?")) {
       try {
         await api.delete(`/announcements/${id}`);
-        loadAnnouncements();
+        reloadAnnouncements();
         toast.success("Gelöscht");
       } catch (e) {
         toast.error("Fehler beim Löschen");
@@ -102,7 +88,7 @@ const InstructorDashboard: React.FC = () => {
       await api.post('/admin/courses', newCourse);
       toast.success('Kurs erfolgreich erstellt');
       setNewCourse({ courseName: '', instructorCourseId: '' });
-      loadCourses();
+      reloadCourses();
     } catch (err) {
       toast.error('Fehler beim Erstellen des Kurses');
     }
@@ -116,8 +102,6 @@ const InstructorDashboard: React.FC = () => {
     { id: 'users', label: 'Studenten', icon: Users },
     { id: 'courses', label: 'Kurse', icon: GraduationCap },
     { id: 'connections', label: 'Datenbanken', icon: Plug },
-    { id: 'testdata', label: 'Testdaten', icon: FlaskConical },
-    { id: 'lms', label: 'LMS Sync', icon: Layers },
     ...(isAdmin ? [{ id: 'audit', label: 'Audit Logs', icon: Briefcase }] : [])
   ];
 
@@ -169,10 +153,8 @@ const InstructorDashboard: React.FC = () => {
           {tab === 'users' && <UserManager />}
           {tab === 'audit' && <AuditLogViewer />}
           {tab === 'connections' && <DbConnectionManager />}
-          {tab === 'lms' && <LmsManager />}
           {tab === 'stats' && <AssignmentStats />}
-          {tab === 'testdata' && <TestDataViewer />}
-          
+
           {tab === 'announcements' && (
             <div className="space-y-6">
               <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors">

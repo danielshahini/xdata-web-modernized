@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import api from '../api';
 import Editor, { loader } from '@monaco-editor/react';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, XCircle, Info, Database, BarChart3, Settings, ChevronDown, ChevronUp, Beaker } from 'lucide-react';
+import { Database, BarChart3, Settings, ChevronDown, ChevronUp, Beaker } from 'lucide-react';
 import MarkInfoDisplay from './MarkInfoDisplay';
 import InfoTip from './common/InfoTip';
 import { PartialMarkParameters, MarkInfo } from '../types';
+import { createSqlCompletionProvider } from '../utils/sqlCompletion';
+import { useAsyncData } from '../hooks/useAsyncData';
 
 interface Schema {
   id: number;
@@ -37,24 +39,16 @@ const SqlLab: React.FC = () => {
   const [queryStudent, setQueryStudent] = useState('SELECT user_name FROM xdata_users;');
   const [params, setParams] = useState<PartialMarkParameters>(defaultParams);
   
-  const [loadingEquivalence, setLoadingEquivalence] = useState(false);
   const [loadingGrading, setLoadingGrading] = useState(false);
-  
-  const [isEquivalent, setIsEquivalent] = useState<boolean | null>(null);
   const [markInfo, setMarkInfo] = useState<MarkInfo | null>(null);
   const [showParams, setShowParams] = useState(false);
-  const [schemaMetadata, setSchemaMetadata] = useState<any>(null);
+  const { data: schemaMetadata } = useAsyncData<any>(
+    () => selectedSchema
+      ? api.get(`/schemas/${selectedSchema}/metadata`).then(res => res.data).catch(() => null)
+      : Promise.resolve(null),
+    [selectedSchema]
+  );
   const completionProviderRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (selectedSchema) {
-      api.get(`/schemas/${selectedSchema}/metadata`)
-        .then(res => setSchemaMetadata(res.data))
-        .catch(() => setSchemaMetadata(null));
-    } else {
-      setSchemaMetadata(null);
-    }
-  }, [selectedSchema]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -64,39 +58,8 @@ const SqlLab: React.FC = () => {
         if (completionProviderRef.current) {
           completionProviderRef.current.dispose();
         }
-        completionProviderRef.current = monaco.languages.registerCompletionItemProvider('sql', {
-          triggerCharacters: ['.', ' '],
-          provideCompletionItems: (model, position) => {
-            const word = model.getWordUntilPosition(position);
-            const range = {
-              startLineNumber: position.lineNumber,
-              endLineNumber: position.lineNumber,
-              startColumn: word.startColumn,
-              endColumn: word.endColumn,
-            };
-
-            const suggestions: any[] = [];
-            schemaMetadata.tables.forEach((table: any) => {
-              suggestions.push({
-                label: table.tableName,
-                kind: monaco.languages.CompletionItemKind.Class,
-                insertText: table.tableName,
-                detail: 'Tabelle',
-                range
-              });
-              table.columns.forEach((col: any) => {
-                suggestions.push({
-                  label: col.columnName,
-                  kind: monaco.languages.CompletionItemKind.Field,
-                  insertText: col.columnName,
-                  detail: `${table.tableName} (${col.dataType})`,
-                  range
-                });
-              });
-            });
-            return { suggestions };
-          }
-        });
+        completionProviderRef.current = monaco.languages.registerCompletionItemProvider(
+          'sql', createSqlCompletionProvider(monaco, schemaMetadata));
       });
     }
     return () => {
@@ -130,39 +93,22 @@ const SqlLab: React.FC = () => {
   }, []);
 
   const handleFullAnalysis = async () => {
-    setLoadingEquivalence(true);
     setLoadingGrading(true);
-    setIsEquivalent(null);
     setMarkInfo(null);
 
     try {
-      const [equivRes, markRes] = await Promise.all([
-        api.post('/evaluation/playground/smt-check', { 
-          query1: queryPattern, 
-          query2: queryStudent,
-          schemaId: selectedSchema
-        }),
-        api.post('/evaluation/playground/partial-marking', { 
-          patternQuery: queryPattern, 
-          studentQuery: queryStudent,
-          schemaId: selectedSchema,
-          params
-        })
-      ]);
-
-      setIsEquivalent(equivRes.data.equivalent);
+      const markRes = await api.post('/evaluation/playground/partial-marking', {
+        patternQuery: queryPattern,
+        studentQuery: queryStudent,
+        schemaId: selectedSchema,
+        params
+      });
       setMarkInfo(markRes.data);
-
-      if (equivRes.data.equivalent) {
-        toast.success('Analyse abgeschlossen: Abfragen sind äquivalent!');
-      } else {
-        toast.error('Abfragen sind NICHT äquivalent.');
-      }
+      toast.success('Strukturelle Bewertung abgeschlossen.');
     } catch (err: any) {
       const msg = err.response?.data?.message || err.response?.data || 'Fehler bei der Analyse.';
       toast.error(typeof msg === 'string' ? msg : 'Fehler bei der Analyse.');
     } finally {
-      setLoadingEquivalence(false);
       setLoadingGrading(false);
     }
   };
@@ -181,16 +127,12 @@ const SqlLab: React.FC = () => {
               title="Was ist das SQL Diagnose Labor?"
               content={
                 <div className="space-y-2">
-                  <p>Dieses Labor bietet zwei Arten der Analyse:</p>
-                  <ul className="list-disc ml-4 space-y-1">
-                    <li><strong>Logik prüfen:</strong> Vergleicht zwei Abfragen mathematisch auf Basis von automatisch generierten Testdaten.</li>
-                    <li><strong>Bewertung simulieren:</strong> Führt eine strukturelle Teilbewertung durch, um zu sehen, wie viele Punkte eine studentische Lösung erzielen würde.</li>
-                  </ul>
+                  <p><strong>Bewertung simulieren:</strong> Führt eine strukturelle Teilbewertung der studentischen Lösung gegen die Musterlösung durch (Projektionen, Prädikate, Joins, Group-By, …) und zeigt, wie viele Punkte sie erzielen würde.</p>
                 </div>
               }
             />
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">Das universelle Tool für Logik-Prüfung und Bewertungs-Simulation.</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">Strukturelle Bewertungs-Simulation für SQL-Lösungen.</p>
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
@@ -314,50 +256,20 @@ const SqlLab: React.FC = () => {
       <div className="flex flex-col gap-4">
           <button 
             onClick={handleFullAnalysis}
-            disabled={loadingEquivalence || loadingGrading}
+            disabled={loadingGrading}
             className="w-full py-6 bg-blue-600 text-white rounded-[32px] font-black flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-500/25 disabled:opacity-50 group"
           >
-            {loadingEquivalence || loadingGrading ? (
+            {loadingGrading ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
             ) : (
               <Beaker className="group-hover:rotate-12 transition-transform" size={24} />
             )}
-            <span className="text-xl">Vollständige Analyse & Bewertung durchführen</span>
+            <span className="text-xl">Strukturelle Bewertung durchführen</span>
           </button>
       </div>
 
-      {(isEquivalent !== null || markInfo) && (
+      {markInfo && (
         <div className="space-y-6 animate-slideIn">
-          {isEquivalent !== null && (
-            <div className={`p-8 rounded-[40px] border flex items-center shadow-xl ${
-              isEquivalent 
-                ? 'bg-green-50 border-green-100 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
-                : 'bg-red-50 border-red-100 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
-            }`}>
-              <div className={`p-4 rounded-3xl mr-6 ${isEquivalent ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                {isEquivalent ? <CheckCircle size={40} /> : <XCircle size={40} />}
-              </div>
-              <div className="flex-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Diagnose Ergebnis</p>
-                <div className="flex items-center justify-between">
-                  <h4 className="text-3xl font-black">{isEquivalent ? 'Äquivalent' : 'Nicht Äquivalent'}</h4>
-                  {markInfo && (
-                    <div className="text-right bg-white/50 dark:bg-black/20 px-6 py-2 rounded-2xl border border-current opacity-80">
-                      <span className="text-2xl font-black">{(markInfo.percentage || 0).toFixed(0)}%</span>
-                      <span className="text-[10px] font-black uppercase ml-1">Score</span>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-2 flex items-center text-sm font-bold opacity-80 italic">
-                  <Info size={14} className="mr-2" />
-                  {isEquivalent 
-                    ? 'Beide Queries liefern auf allen relevanten Testdatensätzen identische Ergebnismengen.' 
-                    : 'Auf den generierten Testdaten liefern die Abfragen unterschiedliche Resultate. Siehe strukturelle Analyse unten für Details.'}
-                </div>
-              </div>
-            </div>
-          )}
-
           {markInfo && (
             <div className="bg-white dark:bg-gray-800 p-8 rounded-[40px] border border-gray-100 dark:border-gray-700 shadow-xl space-y-6 transition-colors">
               <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-700/50 pb-6">

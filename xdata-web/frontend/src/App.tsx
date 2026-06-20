@@ -11,7 +11,6 @@ const InstructorDashboard = lazy(() => import('./components/InstructorDashboard'
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const SqlLab = lazy(() => import('./components/SqlLab'));
 const DatasetPlayground = lazy(() => import('./components/DatasetPlayground'));
-const Leaderboard = lazy(() => import('./components/Leaderboard'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -48,12 +47,6 @@ const App: React.FC = () => {
         <Route path="/playground" element={
           <ProtectedRoute>
             <Layout><SqlLab /></Layout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/leaderboard" element={
-          <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']}>
-            <Layout><Leaderboard /></Layout>
           </ProtectedRoute>
         } />
 

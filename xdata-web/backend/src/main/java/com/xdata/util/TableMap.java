@@ -187,7 +187,11 @@ public class TableMap implements Serializable {
 				if (tableName.contains("sqlite"))
 					continue;
 				if (tables.get(tableName.toUpperCase()) == null) { // modified by rambabu for mysql
-					Table table = new Table(tableName);
+					// Use the upper-cased name as the Table's own name: the legacy parser/datagen
+					// resolves tables via getFromTables().get(name.toUpperCase()), but addFromTable
+					// keys by table.getTableName(). PostgreSQL folds unquoted identifiers to
+					// lowercase, so without this every column lookup misses and parsing fails.
+					Table table = new Table(tableName.toUpperCase());
 					tables.put(tableName.toUpperCase(), table);
 					tables.put(tableName.toLowerCase(), table);
 					indexMap.put(tableName.toUpperCase(), table);

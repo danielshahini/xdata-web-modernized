@@ -4,9 +4,8 @@ import com.xdata.model.Question;
 import com.xdata.model.Submission;
 import com.xdata.repository.QuestionRepository;
 import com.xdata.repository.SubmissionRepository;
-import com.xdata.service.AccessControlService;
+import com.xdata.security.CourseAccessGuard;
 import com.xdata.service.core.EvaluationService;
-import com.xdata.service.core.GradingService;
 import com.xdata.service.PlagiarismService;
 import com.xdata.partialmarking.core.MarkInfo;
 import com.xdata.partialmarking.core.PartialMarkParameters;
@@ -27,15 +26,12 @@ public class EvaluationController {
     private final EvaluationService evaluationService;
     private final QuestionRepository questionRepository;
     private final SubmissionRepository submissionRepository;
-    private final AccessControlService accessControlService;
-    private final GradingService gradingService;
+    private final CourseAccessGuard courseAccessGuard;
     private final PlagiarismService plagiarismService;
 
     @PostMapping("/start/{questionId}")
     public ResponseEntity<String> startEvaluation(@PathVariable Integer questionId) {
-        if (!accessControlService.isInstructor() && !accessControlService.isAdmin()) {
-            return ResponseEntity.status(403).build();
-        }
+        courseAccessGuard.requireInstructorOrAdmin();
         return questionRepository.findById(questionId).map(q -> {
             evaluationService.evaluateQuestionAsync(q.getAssignment().getId(), q.getId(), q.getAssignment().getCourseId());
             return ResponseEntity.ok("Bewertung gestartet");
@@ -45,19 +41,6 @@ public class EvaluationController {
     @GetMapping("/submissions/{questionId}")
     public ResponseEntity<List<Submission>> getSubmissions(@PathVariable Integer questionId) {
         return ResponseEntity.ok(submissionRepository.findByQuestion_Id(questionId));
-    }
-
-    @PostMapping("/playground/smt-check")
-    public ResponseEntity<?> checkSmt(@RequestBody Map<String, Object> body) {
-        String q1 = (String) body.get("query1");
-        String q2 = (String) body.get("query2");
-        Integer schemaId = getInteger(body, "schemaId");
-        
-        boolean equivalent = evaluationService.verifyEquivalence(q1, q2, schemaId);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("equivalent", equivalent);
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/playground/partial-marking")
@@ -115,17 +98,13 @@ public class EvaluationController {
 
     @GetMapping("/plagiarism/{assignmentId}")
     public ResponseEntity<?> checkPlagiarism(@PathVariable Integer assignmentId, @RequestParam(defaultValue = "0.8") double threshold) {
-        if (!accessControlService.isInstructor() && !accessControlService.isAdmin()) {
-            return ResponseEntity.status(403).body("Nur Dozenten können Plagiate prüfen.");
-        }
+        courseAccessGuard.requireInstructorOrAdmin();
         return ResponseEntity.ok(plagiarismService.checkAssignment(assignmentId, threshold));
     }
     
     @PostMapping("/submissions/{submissionId}/feedback")
     public ResponseEntity<?> addFeedback(@PathVariable Integer submissionId, @RequestBody Map<String, String> body) {
-        if (!accessControlService.isInstructor() && !accessControlService.isAdmin()) {
-            return ResponseEntity.status(403).build();
-        }
+        courseAccessGuard.requireInstructorOrAdmin();
         return submissionRepository.findById(submissionId).map(s -> {
             s.setInstructorFeedback(body.get("feedback"));
             submissionRepository.save(s);

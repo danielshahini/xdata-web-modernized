@@ -55,27 +55,4 @@ public class SubmissionService {
         return 0.0f;
     }
 
-    public List<Map<String, Object>> getLeaderboard(String courseId, UserRepository userRepository) {
-        List<XDataUser> students = userRepository.findDistinctByCourses_InstructorCourseId(courseId);
-        return students.stream().map(student -> {
-            List<Submission> studentSubs = submissionRepository.findByUser_LoginId(student.getLoginId());
-            double totalMarks = studentSubs.stream()
-                    .filter(s -> s.getQuestion() != null)
-                    .collect(Collectors.groupingBy(s -> s.getQuestion().getId(),
-                            Collectors.maxBy(Comparator.comparing(Submission::getMarks))))
-                    .values().stream()
-                    .mapToDouble(opt -> opt.map(Submission::getMarks).orElse(0.0f))
-                    .sum();
-            
-            Map<String, Object> entry = new HashMap<>();
-            entry.put("username", student.getUsername());
-            String loginId = student.getLoginId();
-            String anonymousId = loginId.length() > 3 ? loginId.substring(0, 2) + "***" + loginId.substring(loginId.length() - 1) : "***";
-            entry.put("loginId", anonymousId);
-            entry.put("xp", student.getXp() != null ? student.getXp() : 0);
-            entry.put("totalMarks", totalMarks);
-            return entry;
-        }).sorted((a, b) -> Double.compare((Double) b.get("totalMarks"), (Double) a.get("totalMarks")))
-        .collect(Collectors.toList());
-    }
 }

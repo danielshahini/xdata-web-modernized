@@ -5,9 +5,8 @@ import {
   ChevronRight,
   Save, 
   Copy,
-  Trash2, 
-  Eye, 
-  Edit, 
+  Trash2,
+  Edit,
   Check, 
   ClipboardList,
   Settings,
@@ -24,7 +23,6 @@ import {
 import api from '../api';
 import { toast } from 'react-hot-toast';
 import AssignmentStats from './AssignmentStats';
-import TestDataViewer from './TestDataViewer';
 import ConfirmationModal from './common/ConfirmationModal';
 import InfoTip from './common/InfoTip';
 import { Course, Assignment, Question, PartialMarkParameters } from '../types';
@@ -55,7 +53,6 @@ const AssignmentManager: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [dbConnections, setDbConnections] = useState<any[]>([]);
   const [showQuestionParams, setShowQuestionParams] = useState<number | null>(null);
-  const [showTestData, setShowTestData] = useState<number | null>(null);
   const [showStats, setShowStats] = useState<number | null>(null);
   const [wizardStep, setWizardStep] = useState<number>(1);
   const [assignmentStats, setAssignmentStats] = useState<Record<number, any[]>>({});
@@ -554,12 +551,6 @@ const AssignmentManager: React.FC = () => {
                       >
                         <Settings size={14} /> Gewichte {showQuestionParams === idx ? 'ausblenden' : 'anpassen'}
                       </button>
-                      <button 
-                        onClick={() => setShowTestData(showTestData === idx ? null : idx)}
-                        className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all ${showTestData === idx ? 'bg-indigo-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-400 border dark:border-gray-700 hover:text-indigo-500'}`}
-                      >
-                        <Eye size={14} /> Testdaten {showTestData === idx ? 'verbergen' : 'anzeigen'}
-                      </button>
                     </div>
 
                     {showQuestionParams === idx && (
@@ -579,11 +570,6 @@ const AssignmentManager: React.FC = () => {
                       </div>
                     )}
 
-                    {showTestData === idx && q.id && (
-                       <div className="mt-8 p-8 rounded-[1.5rem] bg-white dark:bg-gray-800 border-2 border-indigo-50 dark:border-indigo-900/30 animate-fadeIn">
-                          <TestDataViewer questionId={q.id} />
-                       </div>
-                    )}
                   </div>
                 ))}
               </div>

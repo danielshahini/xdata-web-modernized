@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useAsyncData } from '../hooks/useAsyncData';
 import api from '../api';
 import Editor from '@monaco-editor/react';
 import { toast } from 'react-hot-toast';
@@ -12,7 +13,6 @@ interface Schema {
 
 const DatasetPlayground: React.FC = () => {
   const { isDark } = useAuth();
-  const [schemas, setSchemas] = useState<Schema[]>([]);
   const [selectedSchema, setSelectedSchema] = useState<number | null>(null);
   const [query, setQuery] = useState('SELECT * FROM students WHERE age > 20;');
   const [mutantQuery, setMutantQuery] = useState('SELECT * FROM students WHERE age >= 20;');
@@ -24,27 +24,21 @@ const DatasetPlayground: React.FC = () => {
   const [message, setMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchSchemas = useCallback(async () => {
-    try {
-      const res = await api.get('/schemas');
-      setSchemas(res.data);
-      return res.data;
-    } catch (err) {
+  const { data: schemasData, retry: reloadSchemas } = useAsyncData<Schema[]>(
+    () => api.get('/schemas').then(res => res.data).catch(err => {
       console.error('Failed to fetch schemas', err);
       toast.error('Could not load schemas');
       return [];
-    }
-  }, []);
+    }),
+    []
+  );
+  const schemas = schemasData ?? [];
 
   useEffect(() => {
-    fetchSchemas().then(data => {
-      if (data && data.length > 0 && selectedSchema === null) {
-        setSelectedSchema(data[0].id);
-      }
-    });
-    // We only want to fetch once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchSchemas]);
+    if (schemasData && schemasData.length > 0 && selectedSchema === null) {
+      setSelectedSchema(schemasData[0].id);
+    }
+  }, [schemasData, selectedSchema]);
 
   const handleEditorMount = (editor: any) => {
     const textarea = editor.getDomNode()?.querySelector('textarea');
@@ -78,13 +72,19 @@ const DatasetPlayground: React.FC = () => {
         mutationTypes
       });
 
-      if (response.data.success) {
-        setResults(response.data.inserts || []);
+      const inserts = response.data.inserts || [];
+      if (response.data.success && inserts.length > 0) {
+        setResults(inserts);
         setMessage(response.data.message);
-        toast.success('Dataset generated successfully');
+        toast.success('Testdaten generiert');
+      } else if (response.data.success) {
+        // success flag but no rows — the generator produced nothing (see message)
+        setResults([]);
+        setMessage(response.data.message || 'Es konnten keine Testdaten generiert werden.');
+        toast('Keine Testdaten generiert', { icon: 'ℹ️' });
       } else {
         setMessage(response.data.message || 'Generation failed');
-        toast.error('Failed to generate dataset');
+        toast.error('Datengenerierung fehlgeschlagen');
       }
     } catch (err: any) {
       console.error('Generation error', err);
@@ -110,7 +110,7 @@ const DatasetPlayground: React.FC = () => {
 
       if (response.data.success) {
         toast.success('File uploaded successfully');
-        await fetchSchemas();
+        reloadSchemas();
         if (response.data.schemaId) {
            setSelectedSchema(response.data.schemaId);
         }
@@ -187,7 +187,7 @@ const DatasetPlayground: React.FC = () => {
               <button 
                 className="p-3 text-blue-600 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-2xl transition-all" 
                 title="Refresh list"
-                onClick={() => fetchSchemas()}
+                onClick={() => reloadSchemas()}
               >
                 <RefreshCw className="w-5 h-5" />
               </button>

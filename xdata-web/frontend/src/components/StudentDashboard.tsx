@@ -4,6 +4,8 @@ import Editor from '@monaco-editor/react';
 import { toast } from 'react-hot-toast';
 import WebSocketService from '../services/WebSocketService';
 import { useAuth } from '../context/AuthContext';
+import { createSqlCompletionProvider } from '../utils/sqlCompletion';
+import { useAsyncData } from '../hooks/useAsyncData';
 import { 
   BookOpen, 
   CheckCircle, 
@@ -63,24 +65,19 @@ const StudentDashboard: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [showSchema, setShowSchema] = useState(false);
-  const [schemaMetadata, setSchemaMetadata] = useState<any>(null);
   const completionProviderRef = useRef<any>(null);
 
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (selectedQuestion?.assignment?.defaultSchemaId) {
-      api.get(`/schemas/${selectedQuestion.assignment.defaultSchemaId}/metadata`)
-        .then(res => setSchemaMetadata(res.data))
-        .catch(() => setSchemaMetadata(null));
-    } else if (selectedAssignment?.defaultSchemaId) {
-       api.get(`/schemas/${selectedAssignment.defaultSchemaId}/metadata`)
-        .then(res => setSchemaMetadata(res.data))
-        .catch(() => setSchemaMetadata(null));
-    } else {
-      setSchemaMetadata(null);
-    }
-  }, [selectedQuestion, selectedAssignment]);
+  const { data: schemaMetadata } = useAsyncData<any>(
+    () => {
+      const schemaId = selectedQuestion?.assignment?.defaultSchemaId ?? selectedAssignment?.defaultSchemaId;
+      return schemaId
+        ? api.get(`/schemas/${schemaId}/metadata`).then(res => res.data).catch(() => null)
+        : Promise.resolve(null);
+    },
+    [selectedQuestion, selectedAssignment]
+  );
 
   useEffect(() => {
     let isCancelled = false;
@@ -91,42 +88,8 @@ const StudentDashboard: React.FC = () => {
           if (completionProviderRef.current) {
             completionProviderRef.current.dispose();
           }
-          completionProviderRef.current = monaco.languages.registerCompletionItemProvider('sql', {
-            triggerCharacters: ['.', ' '],
-            provideCompletionItems: (model, position) => {
-              const word = model.getWordUntilPosition(position);
-              const range = {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: word.startColumn,
-                endColumn: word.endColumn,
-              };
-
-              const suggestions: any[] = [];
-              
-              schemaMetadata.tables.forEach((table: any) => {
-                suggestions.push({
-                  label: table.tableName,
-                  kind: monaco.languages.CompletionItemKind.Class,
-                  insertText: table.tableName,
-                  detail: 'Tabelle',
-                  range
-                });
-                
-                table.columns.forEach((col: any) => {
-                  suggestions.push({
-                    label: col.columnName,
-                    kind: monaco.languages.CompletionItemKind.Field,
-                    insertText: col.columnName,
-                    detail: `${table.tableName} (${col.dataType})`,
-                    range
-                  });
-                });
-              });
-
-              return { suggestions };
-            }
-          });
+          completionProviderRef.current = monaco.languages.registerCompletionItemProvider(
+            'sql', createSqlCompletionProvider(monaco, schemaMetadata));
         });
       });
     }

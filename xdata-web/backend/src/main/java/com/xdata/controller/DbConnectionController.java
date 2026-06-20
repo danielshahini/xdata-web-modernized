@@ -3,6 +3,7 @@ package com.xdata.controller;
 import com.xdata.model.DbConnection;
 import com.xdata.repository.DbConnectionRepository;
 import com.xdata.repository.CourseRepository;
+import com.xdata.security.CourseAccessGuard;
 import com.xdata.service.AccessControlService;
 import com.xdata.service.AuditService;
 import com.xdata.service.DatabaseService;
@@ -28,6 +29,7 @@ public class DbConnectionController {
     private final DbConnectionRepository dbConnectionRepository;
     private final CourseRepository courseRepository;
     private final AccessControlService accessControlService;
+    private final CourseAccessGuard courseAccessGuard;
     private final AuditService auditService;
     private final DatabaseService databaseService;
 
@@ -55,10 +57,7 @@ public class DbConnectionController {
         String courseId = connection.getCourseId();
         log.info("Request to create connection '{}' for course '{}'", connection.getName(), courseId);
 
-        if (!accessControlService.canAccessCourse(courseId)) {
-            log.warn("Permission denied for course '{}'", courseId);
-            return ResponseEntity.status(403).body("Keine Berechtigung für diesen Kurs.");
-        }
+        courseAccessGuard.requireCourseAccess(courseId);
 
         // Normalize URL
         connection.setUrl(normalizeUrl(connection.getUrl()));
@@ -104,10 +103,9 @@ public class DbConnectionController {
             
             log.info("Request to update connection ID {} ('{}'). Course: {} -> {}", id, existing.getName(), existingCourseId, newCourseId);
 
-            if (!accessControlService.canAccessCourse(existingCourseId) || 
-                (newCourseId != null && !accessControlService.canAccessCourse(newCourseId))) {
-                log.warn("Permission denied for updating connection ID {}", id);
-                return ResponseEntity.status(403).body("Keine Berechtigung.");
+            courseAccessGuard.requireCourseAccess(existingCourseId);
+            if (newCourseId != null) {
+                courseAccessGuard.requireCourseAccess(newCourseId);
             }
 
             // Update fields
@@ -145,9 +143,7 @@ public class DbConnectionController {
     public ResponseEntity<Void> deleteConnection(@PathVariable Integer id) {
         return dbConnectionRepository.findById(id).map(existing -> {
             String courseId = existing.getCourse() != null ? existing.getCourse().getInstructorCourseId() : null;
-            if (!accessControlService.canAccessCourse(courseId)) {
-                return ResponseEntity.status(403).<Void>build();
-            }
+            courseAccessGuard.requireCourseAccess(courseId);
             dbConnectionRepository.deleteById(id);
             auditService.log("DB_CONNECTION_DELETED", "ID: " + id, "");
             return ResponseEntity.ok().<Void>build();
@@ -156,10 +152,8 @@ public class DbConnectionController {
 
     @GetMapping("/test")
     public ResponseEntity<String> testAllConnections() {
-        if (!accessControlService.isAdmin()) {
-            return ResponseEntity.status(403).body("Nur Administratoren können alle Verbindungen testen.");
-        }
-        
+        courseAccessGuard.requireAdmin();
+
         List<DbConnection> connections = dbConnectionRepository.findAll();
         StringBuilder results = new StringBuilder();
         int success = 0;
@@ -183,9 +177,7 @@ public class DbConnectionController {
     public ResponseEntity<String> testConnection(@PathVariable Integer id) {
         return dbConnectionRepository.findById(id).map(conn -> {
             String courseId = conn.getCourse() != null ? conn.getCourse().getInstructorCourseId() : null;
-            if (!accessControlService.canAccessCourse(courseId)) {
-                return ResponseEntity.status(403).body("Keine Berechtigung.");
-            }
+            courseAccessGuard.requireCourseAccess(courseId);
 
             String testError = testConnectionInternal(conn);
             if (testError == null) {

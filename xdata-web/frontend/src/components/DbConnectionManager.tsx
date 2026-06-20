@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import api from '../api';
+import { useAsyncData } from '../hooks/useAsyncData';
 import { Database, Plus, Plug, FlaskConical, Edit, Trash2, Save, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ConfirmationModal from './common/ConfirmationModal';
@@ -16,44 +17,27 @@ interface DbConnection {
 }
 
 const DbConnectionManager: React.FC = () => {
-  const [connections, setConnections] = useState<DbConnection[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
   const [editingConnection, setEditingConnection] = useState<DbConnection | null>(null);
-  const [loading, setLoading] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: number | null }>({
     isOpen: false,
     id: null
   });
 
-  useEffect(() => {
-    loadCourses();
-    loadConnections();
-  }, []);
+  const { data: coursesData } = useAsyncData<Course[]>(
+    () => api.get('/admin/courses').then(res => res.data || []),
+    []
+  );
+  const courses = coursesData ?? [];
 
-  const loadCourses = async () => {
-    try {
-      const res = await api.get('/admin/courses');
-      setCourses(res.data || []);
-    } catch (e) {
-      console.error("Error loading courses", e);
-    }
-  };
-
-  const loadConnections = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/instructor/connections');
-      setConnections(res.data || []);
-    } catch (e) {
-      console.error("Error loading connections", e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: connectionsData, loading: connectionsLoading, retry: reloadConnections } =
+    useAsyncData<DbConnection[]>(
+      () => api.get('/instructor/connections').then(res => res.data || []),
+      []
+    );
+  const connections = connectionsData ?? [];
 
   const handleTest = async (id?: number) => {
     if (!id) return;
-    setLoading(true);
     try {
       const res = await api.get(`/instructor/connections/${id}/test`);
       if (res.data === true || res.data === "Connection successful") {
@@ -63,8 +47,6 @@ const DbConnectionManager: React.FC = () => {
       }
     } catch (e: any) {
       toast.error("Fehler beim Testen: " + (e.response?.data || e.message));
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -82,7 +64,7 @@ const DbConnectionManager: React.FC = () => {
         await api.post('/instructor/connections', editingConnection);
       }
       setEditingConnection(null);
-      loadConnections();
+      reloadConnections();
       toast.success("Verbindung erfolgreich gespeichert");
     } catch (e) {
       toast.error("Fehler beim Speichern der Verbindung");
@@ -94,7 +76,7 @@ const DbConnectionManager: React.FC = () => {
     try {
       await api.delete(`/instructor/connections/${deleteModal.id}`);
       toast.success("Verbindung gelöscht");
-      loadConnections();
+      reloadConnections();
     } catch (e) {
       toast.error("Fehler beim Löschen");
     }
@@ -218,7 +200,7 @@ const DbConnectionManager: React.FC = () => {
               </div>
             </div>
           ))}
-          {connections.length === 0 && !loading && (
+          {connections.length === 0 && !connectionsLoading && (
             <div className="col-span-full py-20 text-center text-gray-400 italic bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 transition-colors">
               Noch keine Datenbankverbindungen konfiguriert.
             </div>

@@ -73,7 +73,7 @@ public class DatasetPlaygroundController {
                 response.setMessage(errorMsg.get());
             } else if (inserts.isEmpty()) {
                 response.setSuccess(true);
-                response.setMessage("No data could be generated. This might happen if the query result is naturally empty for the given constraints.");
+                response.setMessage("Es konnten keine Testdaten generiert werden. Die automatische SMT-Datengenerierung ist derzeit nicht verfügbar (siehe docs/dataset-playground-analysis.md).");
             } else {
                 response.setSuccess(true);
                 response.setMessage("Successfully generated " + (int)inserts.stream().filter(s -> !s.startsWith("--")).count() + " insert statements.");

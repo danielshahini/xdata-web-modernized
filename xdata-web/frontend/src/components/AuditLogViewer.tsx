@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import api from '../api';
+import { useAsyncData } from '../hooks/useAsyncData';
 
 interface AuditLog {
   id: number;
@@ -11,7 +12,6 @@ interface AuditLog {
 }
 
 const AuditLogViewer: React.FC = () => {
-  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [filters, setFilters] = useState({
     username: '',
     action: '',
@@ -19,17 +19,15 @@ const AuditLogViewer: React.FC = () => {
     to: ''
   });
 
-  useEffect(() => {
+  const { data } = useAsyncData<AuditLog[]>(() => {
     const params = new URLSearchParams();
     if (filters.username) params.append('username', filters.username);
     if (filters.action) params.append('action', filters.action);
     if (filters.from) params.append('from', new Date(filters.from).toISOString());
     if (filters.to) params.append('to', new Date(filters.to).toISOString());
-
-    api.get(`/admin/audit-logs?${params.toString()}`)
-      .then(res => setLogs(res.data))
-      .catch(() => {});
+    return api.get(`/admin/audit-logs?${params.toString()}`).then(res => res.data);
   }, [filters]);
+  const logs = data ?? [];
 
   return (
     <div className="space-y-6">

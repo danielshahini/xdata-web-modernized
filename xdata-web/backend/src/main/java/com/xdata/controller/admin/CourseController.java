@@ -4,6 +4,7 @@ import com.xdata.model.Course;
 import com.xdata.model.XDataUser;
 import com.xdata.repository.CourseRepository;
 import com.xdata.repository.UserRepository;
+import com.xdata.security.CourseAccessGuard;
 import com.xdata.service.AccessControlService;
 import com.xdata.service.AuditService;
 import lombok.RequiredArgsConstructor;
@@ -29,16 +30,15 @@ public class CourseController {
         log.info("[DEBUG] getCourseMembers called for course id: {}", id);        Course course = courseRepository.findById(id).orElse(null);
         if (course == null) return ResponseEntity.notFound().build();
         
-        if (!accessControlService.isAdmin() && !accessControlService.getUserCourseIds().contains(course.getInstructorCourseId())) {
-            return ResponseEntity.status(403).build();
-        }
-        
+        courseAccessGuard.requireCourseAccess(course.getInstructorCourseId());
+
         return ResponseEntity.ok(userRepository.findDistinctByCourses_Id(id));
     }
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final AccessControlService accessControlService;
+    private final CourseAccessGuard courseAccessGuard;
     private final AuditService auditService;
 
     @GetMapping
@@ -56,9 +56,7 @@ public class CourseController {
 
     @PostMapping
     public ResponseEntity<Course> createCourse(@RequestBody Course course) {
-        if (!accessControlService.isAdmin()) {
-            return ResponseEntity.status(403).build();
-        }
+        courseAccessGuard.requireAdmin();
         Course savedCourse = courseRepository.save(course);
         auditService.log("COURSE_CREATED", savedCourse.getInstructorCourseId(), "Name: " + savedCourse.getName());
         
@@ -77,11 +75,11 @@ public class CourseController {
     @PutMapping("/{id}")
     public ResponseEntity<Course> updateCourse(@PathVariable Integer id, @RequestBody Course course) {
         if (!accessControlService.isAdmin()) {
-            // Check if instructor owns this course
             Course existing = courseRepository.findById(id).orElse(null);
-            if (existing == null || !accessControlService.getUserCourseIds().contains(existing.getInstructorCourseId())) {
+            if (existing == null) {
                 return ResponseEntity.status(403).build();
             }
+            courseAccessGuard.requireCourseAccess(existing.getInstructorCourseId());
         }
         course.setId(id);
         Course saved = courseRepository.save(course);
@@ -93,11 +91,12 @@ public class CourseController {
     public ResponseEntity<Void> deleteCourse(@PathVariable Integer id) {
         if (!accessControlService.isAdmin()) {
             Course existing = courseRepository.findById(id).orElse(null);
-            if (existing == null || !accessControlService.getUserCourseIds().contains(existing.getInstructorCourseId())) {
+            if (existing == null) {
                 return ResponseEntity.status(403).build();
             }
+            courseAccessGuard.requireCourseAccess(existing.getInstructorCourseId());
         }
-        courseRepository.findById(id).ifPresent(c -> 
+        courseRepository.findById(id).ifPresent(c ->
             auditService.log("COURSE_DELETED", c.getInstructorCourseId(), "Name: " + c.getName())
         );
         courseRepository.deleteById(id);

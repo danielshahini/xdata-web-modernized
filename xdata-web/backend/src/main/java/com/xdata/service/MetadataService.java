@@ -1,5 +1,7 @@
 package com.xdata.service;
 
+import com.xdata.db.ScratchDatabase;
+import com.xdata.db.ScratchDatabaseFactory;
 import com.xdata.model.SchemaInfo;
 import com.xdata.repository.SchemaRepository;
 import com.xdata.partialmarking.service.SqlSchemaParser;
@@ -12,9 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Optional;
 
 /**
@@ -28,6 +28,7 @@ public class MetadataService {
 
     private final DataSource dataSource;
     private final SchemaRepository schemaRepository;
+    private final ScratchDatabaseFactory scratchDatabaseFactory;
 
     /**
      * Erstellt eine Legacy-TableMap (com.xdata.util.TableMap) für ein gegebenes Schema oder die Standard-DB.
@@ -50,12 +51,8 @@ public class MetadataService {
         }
 
         log.info("Creating Legacy TableMap from DDL for schema ID: {}", schemaId);
-        String dbUrl = "jdbc:derby:memory:tempDB_legacy_" + schemaId + "_" + System.currentTimeMillis() + ";create=true";
-        try (Connection conn = DriverManager.getConnection(dbUrl)) {
-            executeDDL(conn, ddl);
-            return TableMap.getInstances(conn, 1);
-        } finally {
-            dropDerbyDB(dbUrl);
+        try (ScratchDatabase db = scratchDatabaseFactory.create(ddl)) {
+            return TableMap.getInstances(db.connection(), 1);
         }
     }
 
@@ -105,26 +102,4 @@ public class MetadataService {
         return tableMap;
     }
 
-    private void executeDDL(Connection conn, String ddl) throws SQLException {
-        try (Statement stmt = conn.createStatement()) {
-            String[] statements = ddl.split(";");
-            for (String sql : statements) {
-                if (!sql.trim().isEmpty()) {
-                    try {
-                        stmt.execute(sql.trim());
-                    } catch (SQLException e) {
-                        log.warn("Error executing DDL statement: {} - {}", sql.trim(), e.getMessage());
-                    }
-                }
-            }
-        }
-    }
-
-    private void dropDerbyDB(String dbUrl) {
-        try {
-            DriverManager.getConnection(dbUrl + ";drop=true");
-        } catch (SQLException e) {
-            // Ignore drop error
-        }
-    }
 }

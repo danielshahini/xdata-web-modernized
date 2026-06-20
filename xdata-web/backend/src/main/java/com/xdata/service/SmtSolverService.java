@@ -16,13 +16,13 @@ public class SmtSolverService {
     private static boolean z3Available = false;
 
     static {
-        try {
-            // Versuche Z3 native Bibliothek zu laden
-            System.loadLibrary("z3");
+        // z3-turnkey bundles + loads the native library itself on first Context use,
+        // so probe by actually creating a Context rather than System.loadLibrary("z3").
+        try (Context probe = new Context()) {
             z3Available = true;
-            log.info("Native Z3 library loaded successfully.");
-        } catch (UnsatisfiedLinkError e) {
-            log.warn("Could not load native Z3 library from java.library.path. SMT functions might be limited.");
+            log.info("Native Z3 (z3-turnkey) loaded successfully.");
+        } catch (Throwable e) {
+            log.warn("Could not load native Z3 library; falling back to the z3 CLI. {}", e.getMessage());
         }
     }
 

@@ -153,7 +153,7 @@ public class WhereClauseVectorJSQL {
 		if(whereSubquery) queryType = 2;
 
 
-		if (rsNode.getGroupBy().getGroupByExpressionList() != null) {
+		if (rsNode.getGroupBy() != null && rsNode.getGroupBy().getGroupByExpressionList() != null) {
 			List<Expression> gbl = rsNode.getGroupBy().getGroupByExpressionList();
 			for (int i = 0; i < gbl.size(); i++) {
 				Column gbc;
@@ -1172,8 +1172,8 @@ public class WhereClauseVectorJSQL {
 				}
 			}
 
-			if(((EqualsTo) clause).getRightExpression() instanceof Expression ||
-					((EqualsTo) clause).getLeftExpression() instanceof Expression){
+			if(((EqualsTo) clause).getRightExpression() instanceof AnyComparisonExpression ||
+					((EqualsTo) clause).getLeftExpression() instanceof AnyComparisonExpression){
 				Node sqNode = new Node();
 				/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
 				 * Node.getAllNodeType() in the following statement added by mathew on 27 June 2016
@@ -1249,8 +1249,8 @@ public class WhereClauseVectorJSQL {
 				}
 			}
 			
-			if(((GreaterThan) clause).getRightExpression() instanceof Expression ||
-					((GreaterThan) clause).getLeftExpression() instanceof Expression){
+			if(((GreaterThan) clause).getRightExpression() instanceof AnyComparisonExpression ||
+					((GreaterThan) clause).getLeftExpression() instanceof AnyComparisonExpression){
 
 				Node sqNode = new Node();
 				/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
@@ -1330,8 +1330,8 @@ public class WhereClauseVectorJSQL {
 				}
 			}
 			
-			if(((GreaterThanEquals) clause).getRightExpression() instanceof Expression ||
-					((GreaterThanEquals) clause).getLeftExpression() instanceof Expression){
+			if(((GreaterThanEquals) clause).getRightExpression() instanceof AnyComparisonExpression ||
+					((GreaterThanEquals) clause).getLeftExpression() instanceof AnyComparisonExpression){
 				Node sqNode = new Node();
 				/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
 				 * Node.getAllNodeType() in the following statement added by mathew on 27 June 2016
@@ -1407,8 +1407,8 @@ public class WhereClauseVectorJSQL {
 				}
 			}
 			
-			if(((MinorThan) clause).getRightExpression() instanceof Expression ||
-					((MinorThan) clause).getLeftExpression() instanceof Expression){
+			if(((MinorThan) clause).getRightExpression() instanceof AnyComparisonExpression ||
+					((MinorThan) clause).getLeftExpression() instanceof AnyComparisonExpression){
 				Node sqNode = new Node();
 				/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
 				 * Node.getAllNodeType() in the following statement added by mathew on 27 June 2016
@@ -1481,8 +1481,8 @@ public class WhereClauseVectorJSQL {
 				n.getRight().getSubQueryConds().clear();
 				}
 			}
-			if(((MinorThanEquals) clause).getRightExpression() instanceof Expression ||
-					((MinorThanEquals) clause).getLeftExpression() instanceof Expression){
+			if(((MinorThanEquals) clause).getRightExpression() instanceof AnyComparisonExpression ||
+					((MinorThanEquals) clause).getLeftExpression() instanceof AnyComparisonExpression){
 				Node sqNode = new Node();
 				/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
 				 * Node.getAllNodeType() in the following statement added by mathew on 27 June 2016
@@ -2714,8 +2714,8 @@ public class WhereClauseVectorJSQL {
 					}
 				}
 				
-				if(((GreaterThan) clause).getRightExpression() instanceof Expression ||
-						((GreaterThan) clause).getLeftExpression() instanceof Expression){
+				if(((GreaterThan) clause).getRightExpression() instanceof AnyComparisonExpression ||
+						((GreaterThan) clause).getLeftExpression() instanceof AnyComparisonExpression){
 
 					Node sqNode = new Node();
 					/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
@@ -2790,8 +2790,8 @@ public class WhereClauseVectorJSQL {
 					}
 				}
 				
-				if(((GreaterThanEquals) clause).getRightExpression() instanceof Expression ||
-						((GreaterThanEquals) clause).getLeftExpression() instanceof Expression){
+				if(((GreaterThanEquals) clause).getRightExpression() instanceof AnyComparisonExpression ||
+						((GreaterThanEquals) clause).getLeftExpression() instanceof AnyComparisonExpression){
 					Node sqNode = new Node();
 					/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
 					 * Node.getAllNodeType() in the following statement added by mathew on 27 June 2016
@@ -2862,8 +2862,8 @@ public class WhereClauseVectorJSQL {
 					}
 				}
 				
-				if(((MinorThan) clause).getRightExpression() instanceof Expression ||
-						((MinorThan) clause).getLeftExpression() instanceof Expression){
+				if(((MinorThan) clause).getRightExpression() instanceof AnyComparisonExpression ||
+						((MinorThan) clause).getLeftExpression() instanceof AnyComparisonExpression){
 					Node sqNode = new Node();
 					/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
 					 * Node.getAllNodeType() in the following statement added by mathew on 27 June 2016
@@ -2930,8 +2930,8 @@ public class WhereClauseVectorJSQL {
 					n.getRight().getSubQueryConds().clear();
 					}
 				}
-				if(((MinorThanEquals) clause).getRightExpression() instanceof Expression ||
-						((MinorThanEquals) clause).getLeftExpression() instanceof Expression){
+				if(((MinorThanEquals) clause).getRightExpression() instanceof AnyComparisonExpression ||
+						((MinorThanEquals) clause).getLeftExpression() instanceof AnyComparisonExpression){
 					Node sqNode = new Node();
 					/* the expression: Node.getAllAnyNodeType() from the statement below removed, and 
 					 * Node.getAllNodeType() in the following statement added by mathew on 27 June 2016

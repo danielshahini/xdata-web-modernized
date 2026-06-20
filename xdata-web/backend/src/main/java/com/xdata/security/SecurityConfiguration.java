@@ -41,7 +41,6 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/admin/users/**").hasAnyRole("ADMIN", "INSTRUCTOR")
                         .requestMatchers("/api/v1/admin/courses/**").hasAnyRole("ADMIN", "INSTRUCTOR")
-                        .requestMatchers("/api/v1/admin/lms/**").hasAnyRole("ADMIN", "INSTRUCTOR")
                         .requestMatchers("/api/v1/admin/audit-logs/**").hasAnyRole("ADMIN", "INSTRUCTOR")
                         .requestMatchers("/api/v1/assignments/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/schemas/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")

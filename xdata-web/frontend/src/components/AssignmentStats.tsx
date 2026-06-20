@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
+import { useAsyncData } from '../hooks/useAsyncData';
 import api from '../api';
 import { 
   BarChart as RechartsBarChart, 
@@ -68,46 +69,39 @@ interface StatsProps {
 }
 
 const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
-  const [summary, setSummary] = useState<SummaryData | null>(null);
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  const [plagiarism, setPlagiarism] = useState<PlagiarismResult[]>([]);
-  const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
-  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'plagiarism'>('overview');
   const [feedbackText, setFeedbackText] = useState('');
   const [editingFeedbackId, setEditingFeedbackId] = useState<number | null>(null);
 
-  const loadAll = useCallback(async () => {
-    if (!assignmentId) return;
-    setLoading(true);
-    try {
+  const { data, loading, retry: reloadAll } = useAsyncData(
+    async () => {
+      if (!assignmentId) {
+        return { summary: null as SummaryData | null, analytics: null as AnalyticsData | null, plagiarism: [] as PlagiarismResult[], allSubmissions: [] as Submission[] };
+      }
       const [sumRes, anaRes, plagRes] = await Promise.all([
         api.get(`/assignments/${assignmentId}/summary`),
         api.get(`/assignments/${assignmentId}/analytics`),
         api.get(`/evaluation/plagiarism/${assignmentId}?threshold=0.8`)
       ]);
-      setSummary(sumRes.data);
-      setAnalytics(anaRes.data);
-      setPlagiarism(plagRes.data);
-
       const questionsRes = await api.get(`/assignments/${assignmentId}/questions`);
       const allSubs: Submission[] = [];
       for (const q of questionsRes.data) {
         const subs = await api.get(`/evaluation/submissions/${q.id}`);
         allSubs.push(...subs.data);
       }
-      setAllSubmissions(allSubs);
-
-    } catch (e) {
-      console.error("Fehler beim Laden der Daten", e);
-    } finally {
-      setLoading(false);
-    }
-  }, [assignmentId]);
-
-  useEffect(() => {
-    loadAll();
-  }, [loadAll]);
+      return {
+        summary: sumRes.data as SummaryData,
+        analytics: anaRes.data as AnalyticsData,
+        plagiarism: plagRes.data as PlagiarismResult[],
+        allSubmissions: allSubs,
+      };
+    },
+    [assignmentId]
+  );
+  const summary = data?.summary ?? null;
+  const analytics = data?.analytics ?? null;
+  const plagiarism = data?.plagiarism ?? [];
+  const allSubmissions = data?.allSubmissions ?? [];
 
   const handleFeedback = async (submissionId: number) => {
     try {
@@ -115,7 +109,7 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
       toast.success("Feedback gespeichert");
       setEditingFeedbackId(null);
       setFeedbackText('');
-      loadAll();
+      reloadAll();
     } catch (e) {
       toast.error("Fehler beim Speichern");
     }

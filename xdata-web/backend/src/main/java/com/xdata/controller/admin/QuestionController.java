@@ -2,7 +2,7 @@ package com.xdata.controller.admin;
 
 import com.xdata.model.Question;
 import com.xdata.service.core.AssignmentService;
-import com.xdata.service.AccessControlService;
+import com.xdata.security.CourseAccessGuard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class QuestionController {
 
     private final AssignmentService assignmentService;
-    private final AccessControlService accessControlService;
+    private final CourseAccessGuard courseAccessGuard;
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR', 'STUDENT')")
@@ -28,9 +28,7 @@ public class QuestionController {
                 .map(question -> {
                     String courseId = question.getAssignment().getCourse() != null ? 
                                      question.getAssignment().getCourse().getInstructorCourseId() : null;
-                    if (!accessControlService.canAccessCourse(courseId)) {
-                        return ResponseEntity.status(403).<Question>build();
-                    }
+                    courseAccessGuard.requireCourseAccess(courseId);
                     return ResponseEntity.ok(question);
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -54,9 +52,7 @@ public class QuestionController {
 
         return assignmentService.getAssignmentById(actualAssignmentId).map(assignment -> {
             String courseId = assignment.getCourse() != null ? assignment.getCourse().getInstructorCourseId() : null;
-            if (!accessControlService.canAccessCourse(courseId)) {
-                return ResponseEntity.status(403).build();
-            }
+            courseAccessGuard.requireCourseAccess(courseId);
             question.setAssignment(assignment);
             try {
                 assignmentService.validateQuestionQuery(question);
@@ -77,9 +73,7 @@ public class QuestionController {
                 .map(existing -> {
                     String courseId = existing.getAssignment().getCourse() != null ? 
                                      existing.getAssignment().getCourse().getInstructorCourseId() : null;
-                    if (!accessControlService.canAccessCourse(courseId)) {
-                        return ResponseEntity.status(403).build();
-                    }
+                    courseAccessGuard.requireCourseAccess(courseId);
                     
                     existing.setName(questionData.getName());
                     existing.setInstructorQuery(questionData.getInstructorQuery());
@@ -105,9 +99,7 @@ public class QuestionController {
                 .map(question -> {
                     String courseId = question.getAssignment().getCourse() != null ? 
                                      question.getAssignment().getCourse().getInstructorCourseId() : null;
-                    if (!accessControlService.canAccessCourse(courseId)) {
-                        return ResponseEntity.status(403).<Void>build();
-                    }
+                    courseAccessGuard.requireCourseAccess(courseId);
                     assignmentService.deleteQuestion(id);
                     return ResponseEntity.ok().<Void>build();
                 })

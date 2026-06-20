@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import api from '../api';
+import { useAsyncData } from '../hooks/useAsyncData';
 import { 
   Database, 
   Upload, 
@@ -40,9 +41,7 @@ interface SchemaMetadata {
 }
 
 const SchemaManager: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
-  const [schemas, setSchemas] = useState<SchemaInfo[]>([]);
   const [newSchemaName, setNewSchemaName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [sampleFile, setSampleFile] = useState<File | null>(null);
@@ -63,23 +62,19 @@ const SchemaManager: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    // Ideally, get only courses where user is instructor
-    api.get('/admin/courses')
-      .then(res => setCourses(res.data || []))
-      .catch(err => {
-        console.error('Fehler beim Laden der Kurse:', err);
-      });
-  }, []);
+  const { data: coursesData } = useAsyncData<Course[]>(
+    () => api.get('/admin/courses').then(res => res.data || []),
+    []
+  );
+  const courses = coursesData ?? [];
 
-  const loadSchemas = (courseId: string) => {
-    setSelectedCourseId(courseId);
-    if (courseId) {
-      api.get(`/schemas/course/${courseId}`).then(res => setSchemas(res.data));
-    } else {
-      setSchemas([]);
-    }
-  };
+  const { data: schemasData, retry: reloadSchemas } = useAsyncData<SchemaInfo[]>(
+    () => selectedCourseId
+      ? api.get(`/schemas/course/${selectedCourseId}`).then(res => res.data)
+      : Promise.resolve([]),
+    [selectedCourseId]
+  );
+  const schemas = schemasData ?? [];
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -104,7 +99,7 @@ const SchemaManager: React.FC = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       toast.success('Schema erfolgreich hochgeladen');
-      loadSchemas(selectedCourseId);
+      reloadSchemas();
       setNewSchemaName('');
       setSelectedFile(null);
     } catch (err) {
@@ -138,7 +133,7 @@ const SchemaManager: React.FC = () => {
     try {
       await api.delete(`/schemas/${deleteModal.id}`);
       toast.success("Schema gelöscht");
-      loadSchemas(selectedCourseId);
+      reloadSchemas();
     } catch (err) {
       toast.error('Fehler beim Löschen des Schemas');
     }
@@ -163,7 +158,7 @@ const SchemaManager: React.FC = () => {
           <select 
             className="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-200 shadow-sm"
             value={selectedCourseId}
-            onChange={(e) => loadSchemas(e.target.value)}
+            onChange={(e) => setSelectedCourseId(e.target.value)}
           >
             <option value="">-- Kurs auswählen --</option>
             {courses.map(c => (

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
+import { useAsyncData } from '../hooks/useAsyncData';
 import api from '../api';
 import { toast } from 'react-hot-toast';
 import { 
@@ -24,9 +25,6 @@ import InfoTip from './common/InfoTip';
 
 const UserManager: React.FC = () => {
   const { user: currentUser, isAdmin, isInstructor } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [unassignedUsers, setUnassignedUsers] = useState<User[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
   const [showAddExistingModal, setShowAddExistingModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -69,34 +67,25 @@ const UserManager: React.FC = () => {
   const [resettingUser, setResettingUser] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState('');
 
-  const loadUsers = useCallback(() => api.get('/admin/users')
-    .then(res => setUsers(res.data || []))
-    .catch(err => {
-      console.error('Failed to load users', err);
-      setUsers([]);
-    }), []);
+  const { data: usersData, retry: reloadUsers } = useAsyncData<User[]>(
+    () => api.get('/admin/users').then(res => res.data || []),
+    []
+  );
+  const users = usersData ?? [];
 
-  const loadUnassignedUsers = useCallback(() => api.get('/admin/users/unassigned')
-    .then(res => setUnassignedUsers(res.data || []))
-    .catch(err => {
-      console.error('Failed to load unassigned users', err);
-      setUnassignedUsers([]);
-    }), []);
+  const { data: unassignedData, retry: reloadUnassigned } = useAsyncData<User[]>(
+    () => (isInstructor || isAdmin)
+      ? api.get('/admin/users/unassigned').then(res => res.data || [])
+      : Promise.resolve([]),
+    [isInstructor, isAdmin]
+  );
+  const unassignedUsers = unassignedData ?? [];
 
-  const loadCourses = useCallback(() => api.get('/admin/courses')
-    .then(res => setCourses(res.data || []))
-    .catch(err => {
-      console.error('Failed to load courses', err);
-      setCourses([]);
-    }), []);
-
-  useEffect(() => {
-    loadUsers();
-    loadCourses();
-    if (isInstructor || isAdmin) {
-      loadUnassignedUsers();
-    }
-  }, [loadUsers, loadCourses, loadUnassignedUsers, isInstructor, isAdmin]);
+  const { data: coursesData } = useAsyncData<Course[]>(
+    () => api.get('/admin/courses').then(res => res.data || []),
+    []
+  );
+  const courses = coursesData ?? [];
 
   const createUser = async () => {
     setLoading(true);
@@ -111,8 +100,8 @@ const UserManager: React.FC = () => {
         password: '', 
         courseIds: []
       });
-      loadUsers();
-      loadUnassignedUsers();
+      reloadUsers();
+      reloadUnassigned();
     } catch (err: any) {
       toast.error(err.response?.data || 'Fehler beim Erstellen');
     } finally {
@@ -126,8 +115,8 @@ const UserManager: React.FC = () => {
         params: { courseId: courseId }
       });
       toast.success('Kurs erfolgreich zugewiesen');
-      loadUsers();
-      loadUnassignedUsers();
+      reloadUsers();
+      reloadUnassigned();
       setShowAddExistingModal(false);
     } catch (err: any) {
       toast.error(err.response?.data || 'Fehler bei der Zuweisung');
@@ -152,8 +141,8 @@ const UserManager: React.FC = () => {
       await api.put(`/admin/users/${editingUser.loginId}`, editFormData);
       toast.success('Benutzer erfolgreich aktualisiert');
       setShowEditModal(false);
-      loadUsers();
-      loadUnassignedUsers();
+      reloadUsers();
+      reloadUnassigned();
     } catch (err: any) {
       toast.error(err.response?.data || 'Fehler beim Aktualisieren');
     } finally {
@@ -171,7 +160,7 @@ const UserManager: React.FC = () => {
         try {
           await api.patch(`/admin/users/${user.loginId}/toggle-status`);
           toast.success(`Benutzer ${user.enabled !== false ? 'deaktiviert' : 'aktiviert'}`);
-          loadUsers();
+          reloadUsers();
         } catch (err: any) {
           toast.error(err.response?.data || 'Fehler beim Ändern des Status');
         }
@@ -189,8 +178,8 @@ const UserManager: React.FC = () => {
         try {
           await api.delete(`/admin/users/${id}`);
           toast.success('Benutzer gelöscht');
-          loadUsers();
-          loadUnassignedUsers();
+          reloadUsers();
+          reloadUnassigned();
         } catch (err: any) {
           toast.error(err.response?.data || 'Fehler beim Löschen');
         }
@@ -247,8 +236,8 @@ const UserManager: React.FC = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       toast.success(`${res.data.imported} Studenten importiert (${res.data.skipped} übersprungen)`);
-      loadUsers();
-      loadUnassignedUsers();
+      reloadUsers();
+      reloadUnassigned();
     } catch (err: any) {
       toast.error('Fehler beim CSV Import: ' + (err.response?.data || err.message));
     } finally {
@@ -288,7 +277,7 @@ const UserManager: React.FC = () => {
             </a>
             {isInstructor && (
               <button 
-                onClick={() => { loadUnassignedUsers(); setShowAddExistingModal(true); }}
+                onClick={() => { reloadUnassigned(); setShowAddExistingModal(true); }}
                 className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 py-2.5 px-4 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all flex items-center shadow-sm"
               >
                 <UserPlus size={18} className="mr-2" /> Bestehende hinzufügen

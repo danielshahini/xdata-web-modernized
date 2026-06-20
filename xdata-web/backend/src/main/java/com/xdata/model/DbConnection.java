@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 public class DbConnection extends BaseAuditEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "connection_id")
     private Integer id;
 
     @Column(name = "connection_name")

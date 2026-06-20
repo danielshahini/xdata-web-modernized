@@ -71,13 +71,21 @@ public class Configuration implements ConfigurationInterface{
 		// Class.forName(name, initialize, loader)
 		
 		try{
-        properties.load(Configuration.class.getResourceAsStream("XData.properties"));
-		
-	          
+        // The bundled properties live at classpath /util/XData.properties (resources/util/),
+        // not next to this class — load by absolute path.
+        InputStream in = Configuration.class.getResourceAsStream("/util/XData.properties");
+        if (in == null) {
+            in = Configuration.class.getResourceAsStream("XData.properties");
+        }
+        if (in != null) {
+            try (InputStream stream = in) {
+                properties.load(stream);
+            }
+        }
 		}catch(IOException e){
 			logger.log(Level.SEVERE,"Could not load XData.properties: " + e.getMessage());
 			// System.exit(1); // Entschärft
-		} 
+		}
 		String prop = properties.getProperty(property);
 		if (prop== null)
 		{
