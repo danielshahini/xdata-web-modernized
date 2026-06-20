@@ -48,22 +48,42 @@ public class StudentController {
     }
 
     @GetMapping("/assignments/{assignmentId}/questions")
-    public ResponseEntity<List<Question>> getQuestions(@PathVariable Integer assignmentId) {
+    public ResponseEntity<List<Map<String, Object>>> getQuestions(@PathVariable Integer assignmentId) {
         return assignmentService.getAssignmentById(assignmentId).map(assignment -> {
             courseAccessGuard.requireCourseAccess(assignment.getCourseId());
             if (assignment.getPublishedDate() != null && assignment.getPublishedDate().isAfter(LocalDateTime.now())) {
-                return ResponseEntity.status(403).<List<Question>>build();
+                return ResponseEntity.status(403).<List<Map<String, Object>>>build();
             }
-            return ResponseEntity.ok(questionRepository.findByAssignment_Id(assignmentId));
+            // SECURITY: never expose the reference solution (instructorQuery) to
+            // students — return a sanitized view with only display fields.
+            List<Map<String, Object>> safe = questionRepository.findByAssignment_Id(assignmentId).stream()
+                .map(q -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id", q.getId());
+                    m.put("name", q.getName());
+                    m.put("marks", q.getMarks());
+                    m.put("assignmentId", assignmentId);
+                    return m;
+                })
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(safe);
         }).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/submit")
     public ResponseEntity<?> submitSolution(@RequestBody Map<String, Object> body) {
-        Object qIdObj = body.get("questionId");
-        Integer questionId = (qIdObj instanceof Integer) ? (Integer) qIdObj : Integer.parseInt(qIdObj.toString());
-        String query = (String) body.get("query");
-        
+        Object qIdObj = body != null ? body.get("questionId") : null;
+        String query = body != null ? (String) body.get("query") : null;
+        if (qIdObj == null || query == null || query.isBlank()) {
+            return ResponseEntity.badRequest().body("questionId und query sind erforderlich.");
+        }
+        Integer questionId;
+        try {
+            questionId = (qIdObj instanceof Integer) ? (Integer) qIdObj : Integer.parseInt(qIdObj.toString());
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body("Ungültige questionId.");
+        }
+
         return questionRepository.findById(questionId).map(question -> {
             Assignment assignment = question.getAssignment();
             if (assignment == null) {

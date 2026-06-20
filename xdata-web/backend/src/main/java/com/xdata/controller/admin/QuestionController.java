@@ -22,7 +22,7 @@ public class QuestionController {
     private final CourseAccessGuard courseAccessGuard;
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
     public ResponseEntity<Question> getQuestionById(@PathVariable Integer id) {
         return assignmentService.getQuestionById(id)
                 .map(question -> {

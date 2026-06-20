@@ -41,19 +41,30 @@ public class DbConnectionController {
     public ResponseEntity<List<DbConnection>> getAllConnections() {
         if (accessControlService.isAdmin()) {
             log.info("Admin fetching all connections");
-            return ResponseEntity.ok(dbConnectionRepository.findAll());
+            return ResponseEntity.ok(hydrateCourseIds(dbConnectionRepository.findAll()));
         }
         List<String> courseIds = accessControlService.getUserCourseIds();
-        log.info("Fetching connections for user '{}' with courses: {}", 
+        log.info("Fetching connections for user '{}' with courses: {}",
             accessControlService.getCurrentUserLoginId(), courseIds);
-            
+
         if (!courseIds.isEmpty()) {
             List<DbConnection> connections = dbConnectionRepository.findByCourse_InstructorCourseIdIn(courseIds);
             log.info("Found {} connections for instructor", connections.size());
-            return ResponseEntity.ok(connections);
+            return ResponseEntity.ok(hydrateCourseIds(connections));
         }
         log.warn("No courses found for user '{}'", accessControlService.getCurrentUserLoginId());
         return ResponseEntity.ok(new ArrayList<>());
+    }
+
+    /**
+     * Snapshot each connection's courseId into its transient field while the JPA
+     * session is still open (OSIV is off). Without this, Jackson would trigger a
+     * LazyInitializationException on the lazy {@code course} proxy during response
+     * serialization — which produced a 500 on the admin {@code findAll()} path.
+     */
+    private List<DbConnection> hydrateCourseIds(List<DbConnection> connections) {
+        connections.forEach(c -> c.setCourseId(c.getCourseId()));
+        return connections;
     }
 
     @PostMapping
