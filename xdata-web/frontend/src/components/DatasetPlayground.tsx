@@ -72,24 +72,26 @@ const DatasetPlayground: React.FC = () => {
         mutationTypes
       });
 
-      const inserts = response.data.inserts || [];
+      const inserts = (response.data.inserts || []).filter((s: string) => !s.trim().startsWith('--'));
       if (response.data.success && inserts.length > 0) {
         setResults(inserts);
         setMessage(response.data.message);
-        toast.success('Testdaten generiert');
-      } else if (response.data.success) {
-        // success flag but no rows — the generator produced nothing (see message)
-        setResults([]);
-        setMessage(response.data.message || 'Es konnten keine Testdaten generiert werden.');
-        toast('Keine Testdaten generiert', { icon: 'ℹ️' });
+        toast.success(`${inserts.length} Testdaten-Zeile(n) generiert`);
       } else {
-        setMessage(response.data.message || 'Generation failed');
-        toast.error('Datengenerierung fehlgeschlagen');
+        // success flag but no rows
+        setResults([]);
+        setMessage(response.data.message || 'Für diese Abfrage konnten keine Testdaten erzeugt werden.');
+        toast('Keine Testdaten erzeugt', { icon: 'ℹ️' });
       }
     } catch (err: any) {
       console.error('Generation error', err);
-      setMessage(err.response?.data?.message || 'Server error occurred');
-      toast.error('An error occurred during generation');
+      setResults([]);
+      // The backend returns 422 with a clear, user-facing message for queries it
+      // cannot handle; surface that instead of a generic error.
+      const msg = err.response?.data?.message
+        || 'Die Datengenerierung ist fehlgeschlagen. Bitte vereinfache die Abfrage oder versuche es erneut.';
+      setMessage(msg);
+      toast.error('Keine Testdaten erzeugt');
     } finally {
       setLoading(false);
     }
@@ -139,9 +141,9 @@ const DatasetPlayground: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
-            <Database className="w-10 h-10 text-blue-600" />
-            Dataset <span className="text-blue-600">Playground</span>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
+            <Database className="w-10 h-10 text-brand-600" />
+            Dataset <span className="text-brand-600">Playground</span>
           </h1>
           <p className="text-slate-500 dark:text-gray-400 mt-2 font-medium">
             Generiere gezielt Datensätze, um Mutanten deiner SQL-Abfrage zu erkennen.
@@ -159,7 +161,7 @@ const DatasetPlayground: React.FC = () => {
           <button 
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 px-6 py-3 rounded-2xl font-bold transition-all shadow-sm dark:shadow-none"
+            className="flex items-center gap-2 bg-white dark:bg-ink-card border border-slate-200 dark:border-ink-border hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 px-6 py-3 rounded-2xl font-bold transition-all shadow-sm dark:shadow-none"
           >
             {uploading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             Schema laden (.sql)
@@ -169,13 +171,13 @@ const DatasetPlayground: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl dark:shadow-none border border-slate-100 dark:border-gray-700 p-8 transition-colors">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">
+          <div className="bg-white dark:bg-ink-card rounded-2xl shadow-xl dark:shadow-none border border-slate-100 dark:border-ink-border p-8 transition-colors">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">
               Datenbankschema auswählen
             </label>
             <div className="flex gap-4">
               <select
-                className="flex-1 rounded-2xl border-slate-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white shadow-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 font-bold px-4 py-3 appearance-none outline-none transition-all"
+                className="flex-1 rounded-2xl border-slate-200 dark:border-ink-border dark:bg-ink-soft dark:text-white shadow-sm focus:ring-4 focus:ring-brand-500/10 focus:border-blue-500 font-bold px-4 py-3 appearance-none outline-none transition-all"
                 value={selectedSchema || ''}
                 onChange={(e) => setSelectedSchema(Number(e.target.value))}
               >
@@ -185,7 +187,7 @@ const DatasetPlayground: React.FC = () => {
                 ))}
               </select>
               <button 
-                className="p-3 text-blue-600 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-2xl transition-all" 
+                className="p-3 text-brand-600 bg-brand-50 dark:bg-brand-950/30 hover:bg-brand-100 dark:hover:bg-blue-900/50 rounded-2xl transition-all" 
                 title="Refresh list"
                 onClick={() => reloadSchemas()}
               >
@@ -194,22 +196,22 @@ const DatasetPlayground: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl dark:shadow-none border border-slate-100 dark:border-gray-700 overflow-hidden transition-colors">
-            <div className="p-5 border-b border-slate-50 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-900/50 flex justify-between items-center">
-              <span className="text-xs font-black text-slate-500 dark:text-gray-400 uppercase tracking-widest">Referenz-Abfrage (SQL)</span>
+          <div className="bg-white dark:bg-ink-card rounded-2xl shadow-xl dark:shadow-none border border-slate-100 dark:border-ink-border overflow-hidden transition-colors">
+            <div className="p-5 border-b border-slate-50 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/50 flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Referenz-Abfrage (SQL)</span>
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
+                <label className="flex items-center gap-2 text-[10px] text-brand-600 dark:text-brand-400 font-bold uppercase tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
                     <input 
                         type="checkbox" 
                         checked={showMutantEditor} 
                         onChange={(e) => setShowMutantEditor(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-900"
+                        className="w-4 h-4 rounded border-slate-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 dark:bg-ink-soft"
                     />
-                    Eigene Mutante testen
+                    Eigene Mutante (experimentell)
                 </label>
               </div>
             </div>
-            <div className="h-48 border-b dark:border-gray-700 relative"
+            <div className="h-48 border-b dark:border-ink-border relative"
                  data-lpignore="true"
                  data-form-type="other"
                  data-ignore-autofill="true">
@@ -230,9 +232,10 @@ const DatasetPlayground: React.FC = () => {
             </div>
 
             {showMutantEditor && (
-                <div className="border-t border-slate-50 dark:border-gray-700">
-                    <div className="p-3 px-5 bg-amber-50/50 dark:bg-amber-900/20 border-b border-slate-50 dark:border-gray-700 flex justify-between items-center">
-                        <span className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-[0.2em]">Eigene Mutanten-Abfrage</span>
+                <div className="border-t border-slate-50 dark:border-ink-border">
+                    <div className="p-3 px-5 bg-amber-50/50 dark:bg-amber-900/20 border-b border-slate-50 dark:border-ink-border">
+                        <span className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-[0.2em]">Eigene Mutanten-Abfrage</span>
+                        <p className="text-[11px] text-amber-700/80 dark:text-amber-500/80 mt-1 normal-case tracking-normal">Hinweis: wird derzeit noch nicht in die Generierung einbezogen.</p>
                     </div>
                     <div className="h-48 relative"
                          data-lpignore="true"
@@ -256,8 +259,8 @@ const DatasetPlayground: React.FC = () => {
                 </div>
             )}
             
-            <div className="bg-white dark:bg-gray-800 p-6 border-t border-slate-50 dark:border-gray-700">
-                <h3 className="text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-4 ml-1">Mutationstypen</h3>
+            <div className="bg-white dark:bg-ink-card p-6 border-t border-slate-50 dark:border-ink-border">
+                <h3 className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-4 ml-1">Mutationstypen</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
                     { id: 'SELECTION', label: 'Selection' },
@@ -268,7 +271,7 @@ const DatasetPlayground: React.FC = () => {
                     { id: 'EXTRAGROUPBY', label: 'Group By' },
                     { id: 'HAVING', label: 'Having' }
                   ].map(type => (
-                    <label key={type.id} className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-gray-300 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30">
+                    <label key={type.id} className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-gray-300 cursor-pointer hover:text-brand-600 dark:hover:text-brand-400 transition-colors bg-gray-50 dark:bg-ink-soft/50 p-3 rounded-xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30">
                       <input
                         type="checkbox"
                         checked={mutationTypes.includes(type.id)}
@@ -279,18 +282,18 @@ const DatasetPlayground: React.FC = () => {
                             setMutationTypes(mutationTypes.filter(t => t !== type.id));
                           }
                         }}
-                        className="w-4 h-4 rounded border-slate-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-900"
+                        className="w-4 h-4 rounded border-slate-300 dark:border-gray-600 text-brand-600 focus:ring-brand-500 dark:bg-ink-soft"
                       />
                       {type.label}
                     </label>
                   ))}
                 </div>
             </div>
-            <div className="p-6 bg-slate-50/50 dark:bg-gray-900/50 border-t border-slate-50 dark:border-gray-700 flex justify-end">
+            <div className="p-6 bg-slate-50/50 dark:bg-ink-soft/50 border-t border-slate-50 dark:border-ink-border flex justify-end">
               <button
                 onClick={handleGenerate}
                 disabled={loading || !selectedSchema}
-                className="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white px-8 py-4 rounded-[20px] font-black transition-all shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-3 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white px-8 py-4 rounded-[20px] font-bold transition-all shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-50"
               >
                 {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
                 Dataset generieren
@@ -300,9 +303,9 @@ const DatasetPlayground: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl dark:shadow-none border border-slate-100 dark:border-gray-700 flex flex-col h-full min-h-[500px] overflow-hidden transition-colors">
-            <div className="p-5 border-b border-slate-50 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-900/50 flex justify-between items-center">
-              <span className="text-xs font-black text-slate-500 dark:text-gray-400 uppercase tracking-widest">Generierter Datensatz (SQL Inserts)</span>
+          <div className="bg-white dark:bg-ink-card rounded-2xl shadow-xl dark:shadow-none border border-slate-100 dark:border-ink-border flex flex-col h-full min-h-[500px] overflow-hidden transition-colors">
+            <div className="p-5 border-b border-slate-50 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/50 flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Generierter Datensatz (SQL Inserts)</span>
               {results.length > 0 && (
                 <div className="flex gap-2">
                   <button
@@ -349,7 +352,7 @@ const DatasetPlayground: React.FC = () => {
             </div>
 
             {message && (
-              <div className={`p-4 border-t ${results.length > 0 ? 'bg-green-50 border-green-100 text-green-700' : 'bg-amber-50 border-amber-100 text-amber-700'} flex items-start gap-2`}>
+              <div className={`p-4 border-t ${results.length > 0 ? 'bg-easy/5 border-easy/20 text-easy' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-900/40 text-amber-700 dark:text-amber-400'} flex items-start gap-2`}>
                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <span className="text-sm font-medium">{message}</span>
               </div>

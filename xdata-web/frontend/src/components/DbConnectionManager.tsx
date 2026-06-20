@@ -92,11 +92,11 @@ const DbConnectionManager: React.FC = () => {
         message="Möchten Sie diese Datenbankverbindung wirklich löschen? Alle Aufgaben, die diese Verbindung nutzen, werden nicht mehr funktionieren."
       />
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-black text-gray-800 dark:text-white tracking-tight">Datenbank <span className="text-blue-600">Verbindungen</span></h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">Datenbank <span className="text-brand-600">Verbindungen</span></h2>
         {!editingConnection && (
           <button 
             onClick={() => setEditingConnection({ name: '', url: '', user: '', password: '', courseId: '' })}
-            className="px-6 py-3 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center"
+            className="px-6 py-3 bg-brand-600 text-white rounded-2xl font-bold text-sm hover:bg-brand-700 transition-all shadow-lg shadow-blue-100 flex items-center"
           >
             <Plus className="mr-2" size={18} /> Neue Verbindung
           </button>
@@ -104,37 +104,37 @@ const DbConnectionManager: React.FC = () => {
       </div>
 
       {editingConnection ? (
-        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden animate-slideUp transition-colors">
-          <div className="px-8 py-6 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center transition-colors">
-            <h3 className="text-xl font-black text-gray-800 dark:text-white">Verbindung <span className="text-blue-600">{editingConnection.id ? 'bearbeiten' : 'erstellen'}</span></h3>
+        <div className="bg-white dark:bg-ink-card rounded-2xl border border-slate-200 dark:border-ink-border shadow-xl overflow-hidden animate-slideUp transition-colors">
+          <div className="px-8 py-6 bg-gray-50 dark:bg-ink-soft/50 border-b border-slate-200 dark:border-ink-border flex justify-between items-center transition-colors">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white">Verbindung <span className="text-brand-600">{editingConnection.id ? 'bearbeiten' : 'erstellen'}</span></h3>
             <div className="flex space-x-3">
               <button onClick={() => setEditingConnection(null)} className="px-6 py-2.5 rounded-xl font-bold text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center"><X className="mr-2" size={16} /> Abbrechen</button>
-              <button onClick={handleSave} className="px-8 py-2.5 rounded-xl font-black text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all flex items-center"><Save className="mr-2" size={16} /> Speichern</button>
+              <button onClick={handleSave} className="px-8 py-2.5 rounded-xl font-bold text-sm text-white bg-brand-600 hover:bg-brand-700 shadow-lg shadow-blue-100 transition-all flex items-center"><Save className="mr-2" size={16} /> Speichern</button>
             </div>
           </div>
           <div className="p-8 grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Name der Verbindung</label>
+              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Name der Verbindung</label>
               <input 
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-soft focus:ring-2 focus:ring-brand-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
                 value={editingConnection.name}
                 onChange={e => setEditingConnection({...editingConnection, name: e.target.value})}
                 placeholder="z.B. Postgres Haupt-DB"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs</label>
+              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs</label>
               <select 
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-white dark:bg-gray-900 text-gray-700 dark:text-white transition-colors appearance-none"
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border focus:ring-2 focus:ring-brand-500 outline-none font-bold bg-white dark:bg-ink-soft text-gray-700 dark:text-white transition-colors appearance-none"
                 value={editingConnection.courseId}
                 onChange={e => setEditingConnection({...editingConnection, courseId: e.target.value})}
               >
-                <option value="" className="dark:bg-gray-900">Kurs wählen...</option>
-                {courses.map(c => <option key={c.id} value={c.instructorCourseId} className="dark:bg-gray-900">{c.courseName} ({c.instructorCourseId})</option>)}
+                <option value="" className="dark:bg-ink-soft">Kurs wählen...</option>
+                {courses.map(c => <option key={c.id} value={c.instructorCourseId} className="dark:bg-ink-soft">{c.courseName} ({c.instructorCourseId})</option>)}
               </select>
             </div>
             <div className="md:col-span-2 space-y-2">
-              <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">
+              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">
                 JDBC URL
                 <InfoTip 
                   title="JDBC Verbindungs-URL" 
@@ -146,31 +146,31 @@ const DbConnectionManager: React.FC = () => {
                         <li><strong>MySQL:</strong> jdbc:mysql://localhost:3306/dbname</li>
                         <li><strong>Oracle:</strong> jdbc:oracle:thin:@localhost:1521:xe</li>
                       </ul>
-                      <p className="mt-2 font-bold text-blue-500">Hinweis: Die Datenbank muss für das System erreichbar sein.</p>
+                      <p className="mt-2 font-bold text-brand-500">Hinweis: Die Datenbank muss für das System erreichbar sein.</p>
                     </div>
                   } 
                 />
               </label>
               <input 
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm dark:text-blue-400 transition-colors" 
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-soft focus:ring-2 focus:ring-brand-500 outline-none font-mono text-sm dark:text-brand-400 transition-colors" 
                 value={editingConnection.url}
                 onChange={e => setEditingConnection({...editingConnection, url: e.target.value})}
                 placeholder="jdbc:postgresql://localhost:5432/db"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Benutzername</label>
+              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Benutzername</label>
               <input 
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-soft focus:ring-2 focus:ring-brand-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
                 value={editingConnection.user}
                 onChange={e => setEditingConnection({...editingConnection, user: e.target.value})}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Passwort</label>
+              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Passwort</label>
               <input 
                 type="password"
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
+                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-soft focus:ring-2 focus:ring-brand-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
                 value={editingConnection.password || ''}
                 onChange={e => setEditingConnection({...editingConnection, password: e.target.value})}
                 placeholder="••••••••"
@@ -181,27 +181,27 @@ const DbConnectionManager: React.FC = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {connections.map(conn => (
-            <div key={conn.id} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all group">
+            <div key={conn.id} className="bg-white dark:bg-ink-card p-6 rounded-2xl border border-slate-200 dark:border-ink-border shadow-sm hover:shadow-md transition-all group">
               <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 rounded-2xl flex items-center justify-center">
                   <Plug size={24} />
                 </div>
                 <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => conn.id && handleTest(conn.id)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 transition-colors" title="Verbindung testen"><FlaskConical size={18}/></button>
-                  <button onClick={() => setEditingConnection(conn)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="Bearbeiten"><Edit size={18}/></button>
+                  <button onClick={() => setEditingConnection(conn)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 transition-colors" title="Bearbeiten"><Edit size={18}/></button>
                   <button onClick={() => conn.id && setDeleteModal({ isOpen: true, id: conn.id })} className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Löschen"><Trash2 size={18}/></button>
                 </div>
               </div>
-              <h3 className="text-lg font-black text-gray-800 dark:text-white">{conn.name}</h3>
-              <p className="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-lg inline-block mt-2 uppercase">{conn.courseId}</p>
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white">{conn.name}</h3>
+              <p className="text-xs font-bold text-brand-600 bg-brand-50 dark:bg-brand-950/30 px-2 py-1 rounded-lg inline-block mt-2 uppercase">{conn.courseId}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 font-mono truncate">{conn.url}</p>
-              <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-700 flex items-center text-xs font-bold text-gray-500 dark:text-gray-400">
+              <div className="mt-4 pt-4 border-t border-gray-50 dark:border-ink-border flex items-center text-xs font-bold text-gray-500 dark:text-gray-400">
                 <Database size={14} className="mr-2" /> User: {conn.user}
               </div>
             </div>
           ))}
           {connections.length === 0 && !connectionsLoading && (
-            <div className="col-span-full py-20 text-center text-gray-400 italic bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 transition-colors">
+            <div className="col-span-full py-20 text-center text-gray-400 italic bg-gray-50 dark:bg-ink-card/50 rounded-2xl border border-dashed border-gray-200 dark:border-ink-border transition-colors">
               Noch keine Datenbankverbindungen konfiguriert.
             </div>
           )}

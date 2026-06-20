@@ -182,13 +182,13 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
 
   if (loading) return (
     <div className="p-8 text-center flex flex-col items-center justify-center dark:text-gray-400">
-      <RefreshCw className="animate-spin mb-4 text-blue-500" size={48} />
-      <p className="font-black uppercase tracking-widest text-xs">Analyse-Daten werden aufbereitet...</p>
+      <RefreshCw className="animate-spin mb-4 text-brand-500" size={48} />
+      <p className="font-bold uppercase tracking-widest text-xs">Analyse-Daten werden aufbereitet...</p>
     </div>
   );
 
   if (!summary || !analytics) return (
-    <div className="p-10 text-center bg-gray-50 dark:bg-gray-900 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
+    <div className="p-10 text-center bg-gray-50 dark:bg-ink-soft rounded-2xl border border-dashed border-gray-200 dark:border-ink-border">
       <Search className="mx-auto mb-4 opacity-20 dark:text-white" size={48} />
       <p className="text-gray-400 font-bold italic">Keine Aufgabe ausgewählt.</p>
       <p className="text-gray-400 text-sm mt-2">Öffne die Statistik über das Diagramm-Symbol einer Aufgabe in der Aufgaben-Liste.</p>
@@ -197,22 +197,22 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      <div className="flex gap-4 border-b dark:border-gray-700 pb-2">
+      <div className="flex gap-4 border-b dark:border-ink-border pb-2">
         <button 
           onClick={() => setActiveTab('overview')}
-          className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'overview' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400'}`}
+          className={`px-6 py-2 text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'overview' ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-400'}`}
         >
           Übersicht
         </button>
         <button 
           onClick={() => setActiveTab('submissions')}
-          className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'submissions' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400'}`}
+          className={`px-6 py-2 text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'submissions' ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-400'}`}
         >
           Abgaben & Feedback
         </button>
         <button 
           onClick={() => setActiveTab('plagiarism')}
-          className={`px-6 py-2 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'plagiarism' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400'}`}
+          className={`px-6 py-2 text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'plagiarism' ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-400'}`}
         >
           Plagiats-Check ({plagiarism.length})
         </button>
@@ -221,31 +221,31 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
       {activeTab === 'overview' && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <TrendingUp className="text-blue-500 mb-4" size={32} />
-              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Ø Gesamt-Punkte</div>
-              <div className="text-3xl font-black dark:text-white">
+            <div className="bg-white dark:bg-ink-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-ink-border">
+              <TrendingUp className="text-brand-500 mb-4" size={32} />
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ø Gesamt-Punkte</div>
+              <div className="text-3xl font-bold dark:text-white">
                 {(analytics.questionAnalytics.reduce((acc, q) => acc + q.averageMarks, 0)).toFixed(1)}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-ink-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-ink-border">
               <FileSpreadsheet className="text-green-500 mb-4" size={32} />
-              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Exportieren</div>
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Exportieren</div>
               <button 
                 onClick={handleExport}
-                className="mt-2 text-xs font-black text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+                className="mt-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center"
               >
                 Als CSV herunterladen
               </button>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-ink-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-ink-border">
               <AlertTriangle className={`mb-4 ${plagiarism.length > 0 ? 'text-red-500' : 'text-gray-300'}`} size={32} />
-              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Plagiats-Verdacht</div>
-              <div className="text-3xl font-black dark:text-white">{plagiarism.length} Fälle</div>
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Plagiats-Verdacht</div>
+              <div className="text-3xl font-bold dark:text-white">{plagiarism.length} Fälle</div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 h-[400px]">
+          <div className="bg-white dark:bg-ink-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-ink-border h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsBarChart data={analytics.questionAnalytics}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
@@ -267,14 +267,14 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
       )}
 
       {activeTab === 'submissions' && (
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border dark:border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-ink-card rounded-2xl shadow-sm border dark:border-ink-border overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900/50">
+            <thead className="bg-gray-50 dark:bg-ink-soft/50">
               <tr>
-                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Student</th>
-                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Aufgabe</th>
-                <th className="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Ergebnis</th>
-                <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Feedback</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Student</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Aufgabe</th>
+                <th className="px-6 py-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ergebnis</th>
+                <th className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">Feedback</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -287,7 +287,7 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
                     {s.query.substring(0, 50)}...
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`text-xs font-black px-3 py-1 rounded-full ${s.marks >= 1.0 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${s.marks >= 1.0 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                       {(s.marks * 100).toFixed(0)}%
                     </span>
                   </td>
@@ -295,7 +295,7 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
                     {editingFeedbackId === s.submissionId ? (
                       <div className="flex gap-2">
                         <input 
-                          className="text-xs p-2 border dark:border-gray-700 rounded-xl dark:bg-gray-900 dark:text-white"
+                          className="text-xs p-2 border dark:border-ink-border rounded-xl dark:bg-ink-soft dark:text-white"
                           value={feedbackText}
                           onChange={e => setFeedbackText(e.target.value)}
                           placeholder="Feedback..."
@@ -306,7 +306,7 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
                     ) : (
                       <button 
                         onClick={() => {setEditingFeedbackId(s.submissionId); setFeedbackText(s.instructorFeedback || '');}}
-                        className={`text-sm font-bold flex items-center justify-end w-full ${s.instructorFeedback ? 'text-blue-500' : 'text-gray-300'}`}
+                        className={`text-sm font-bold flex items-center justify-end w-full ${s.instructorFeedback ? 'text-brand-500' : 'text-gray-300'}`}
                       >
                         <MessageSquare size={16} className="mr-2" />
                         {s.instructorFeedback ? 'Bearbeiten' : 'Feedback geben'}
@@ -323,28 +323,28 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
       {activeTab === 'plagiarism' && (
         <div className="space-y-4">
           {plagiarism.map((p, idx) => (
-            <div key={idx} className="bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 p-8 rounded-3xl">
+            <div key={idx} className="bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 p-8 rounded-2xl">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center">
                   <ShieldAlert className="text-red-500 mr-3" size={24} />
-                  <span className="font-black dark:text-white">Verdacht: {p.student1} ↔ {p.student2}</span>
+                  <span className="font-bold dark:text-white">Verdacht: {p.student1} ↔ {p.student2}</span>
                 </div>
-                <span className="text-xl font-black text-red-600">{(p.similarity * 100).toFixed(1)}% Ähnlichkeit</span>
+                <span className="text-xl font-bold text-red-600">{(p.similarity * 100).toFixed(1)}% Ähnlichkeit</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{p.student1}</p>
-                  <pre className="p-4 bg-white dark:bg-gray-800 rounded-2xl text-xs font-mono dark:text-gray-300 overflow-x-auto border dark:border-gray-700">{p.query1}</pre>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{p.student1}</p>
+                  <pre className="p-4 bg-white dark:bg-ink-card rounded-2xl text-xs font-mono dark:text-gray-300 overflow-x-auto border dark:border-ink-border">{p.query1}</pre>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{p.student2}</p>
-                  <pre className="p-4 bg-white dark:bg-gray-800 rounded-2xl text-xs font-mono dark:text-gray-300 overflow-x-auto border dark:border-gray-700">{p.query2}</pre>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{p.student2}</p>
+                  <pre className="p-4 bg-white dark:bg-ink-card rounded-2xl text-xs font-mono dark:text-gray-300 overflow-x-auto border dark:border-ink-border">{p.query2}</pre>
                 </div>
               </div>
             </div>
           ))}
           {plagiarism.length === 0 && (
-            <div className="text-center py-20 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
+            <div className="text-center py-20 bg-gray-50 dark:bg-ink-soft/50 rounded-2xl border border-dashed border-gray-200 dark:border-ink-border">
                <CheckCircle className="mx-auto mb-4 text-green-500 opacity-20" size={48} />
                <p className="text-gray-400 font-bold italic">Keine auffälligen Ähnlichkeiten gefunden.</p>
             </div>

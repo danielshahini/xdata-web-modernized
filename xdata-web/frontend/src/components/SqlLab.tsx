@@ -121,8 +121,8 @@ const SqlLab: React.FC = () => {
     <div className="space-y-8 animate-fadeIn">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-black dark:text-white">
-            SQL <span className="text-blue-600">Diagnose Labor</span>
+          <h2 className="text-2xl font-bold dark:text-white">
+            SQL <span className="text-brand-600">Diagnose Labor</span>
             <InfoTip 
               title="Was ist das SQL Diagnose Labor?"
               content={
@@ -139,7 +139,7 @@ const SqlLab: React.FC = () => {
           <div className="flex-1 md:w-64 relative">
              <Database className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
              <select 
-               className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 font-bold focus:ring-4 focus:ring-blue-500/10 outline-none appearance-none transition-all dark:text-white"
+               className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-ink-border dark:bg-ink-card font-bold focus:ring-4 focus:ring-brand-500/10 outline-none appearance-none transition-all dark:text-white"
                value={selectedSchema || ''}
                onChange={(e) => setSelectedSchema(parseInt(e.target.value))}
              >
@@ -150,28 +150,28 @@ const SqlLab: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden transition-all">
+      <div className="bg-white dark:bg-ink-card rounded-2xl border border-slate-200 dark:border-ink-border shadow-xl overflow-hidden transition-all">
         <button 
           onClick={() => setShowParams(!showParams)}
           className="w-full flex items-center justify-between p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
         >
           <div className="flex items-center">
-            <Settings className="text-blue-600 mr-3" size={20} />
-            <span className="font-black text-gray-700 dark:text-gray-200">Bewertungs-Gewichte anpassen</span>
+            <Settings className="text-brand-600 mr-3" size={20} />
+            <span className="font-bold text-gray-700 dark:text-gray-200">Bewertungs-Gewichte anpassen</span>
           </div>
           {showParams ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
         </button>
         
         {showParams && (
-          <div className="p-8 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="p-8 border-t border-slate-200 dark:border-ink-border bg-gray-50/50 dark:bg-ink-soft/20 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
             {(Object.keys(defaultParams) as Array<keyof PartialMarkParameters>).map(key => (
               <div key={key} className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-wider">{key}</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">{key}</label>
                 <input 
                   type="number"
                   value={params[key]}
                   onChange={e => updateParam(key, e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 font-bold focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-ink-border dark:bg-ink-card font-bold focus:ring-2 focus:ring-brand-500 outline-none dark:text-white"
                 />
               </div>
             ))}
@@ -180,15 +180,15 @@ const SqlLab: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl space-y-4">
+        <div className="bg-white dark:bg-ink-card p-6 rounded-2xl border border-slate-200 dark:border-ink-border shadow-xl space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black dark:text-white flex items-center gap-2">
+            <h3 className="text-lg font-bold dark:text-white flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-sm italic">M</span>
               Musterlösung
             </h3>
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Dozenten View</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Dozenten View</span>
           </div>
-          <div className="h-64 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-inner relative" 
+          <div className="h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-ink-border shadow-inner relative" 
                data-lpignore="true"
                data-form-type="other"
                data-ignore-autofill="true">
@@ -199,7 +199,7 @@ const SqlLab: React.FC = () => {
               value={queryPattern}
               onChange={(val) => setQueryPattern(val || '')}
               onMount={handleEditorMount}
-              loading={<div className="flex items-center justify-center h-full dark:bg-gray-900 dark:text-gray-400">Lade Editor...</div>}
+              loading={<div className="flex items-center justify-center h-full dark:bg-ink-soft dark:text-gray-400">Lade Editor...</div>}
               options={{ 
                 minimap: { enabled: false }, 
                 fontSize: 14, 
@@ -216,15 +216,15 @@ const SqlLab: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl space-y-4">
+        <div className="bg-white dark:bg-ink-card p-6 rounded-2xl border border-slate-200 dark:border-ink-border shadow-xl space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black dark:text-white flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-sm italic">S</span>
+            <h3 className="text-lg font-bold dark:text-white flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center text-sm italic">S</span>
               Studentische Abfrage
             </h3>
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Test Kandidat</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Test Kandidat</span>
           </div>
-          <div className="h-64 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-inner relative" 
+          <div className="h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-ink-border shadow-inner relative" 
                data-lpignore="true"
                data-form-type="other"
                data-ignore-autofill="true">
@@ -235,7 +235,7 @@ const SqlLab: React.FC = () => {
               value={queryStudent}
               onChange={(val) => setQueryStudent(val || '')}
               onMount={handleEditorMount}
-              loading={<div className="flex items-center justify-center h-full dark:bg-gray-900 dark:text-gray-400">Lade Editor...</div>}
+              loading={<div className="flex items-center justify-center h-full dark:bg-ink-soft dark:text-gray-400">Lade Editor...</div>}
               options={{ 
                 minimap: { enabled: false }, 
                 fontSize: 14, 
@@ -257,7 +257,7 @@ const SqlLab: React.FC = () => {
           <button 
             onClick={handleFullAnalysis}
             disabled={loadingGrading}
-            className="w-full py-6 bg-blue-600 text-white rounded-[32px] font-black flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-500/25 disabled:opacity-50 group"
+            className="w-full py-6 bg-brand-600 text-white rounded-[32px] font-bold flex items-center justify-center gap-3 hover:bg-brand-700 transition-all shadow-2xl shadow-blue-500/25 disabled:opacity-50 group"
           >
             {loadingGrading ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
@@ -271,11 +271,11 @@ const SqlLab: React.FC = () => {
       {markInfo && (
         <div className="space-y-6 animate-slideIn">
           {markInfo && (
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-[40px] border border-gray-100 dark:border-gray-700 shadow-xl space-y-6 transition-colors">
-              <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-700/50 pb-6">
-                <h3 className="text-xl font-black flex items-center dark:text-white uppercase tracking-wider">
-                  <BarChart3 className="text-blue-600 mr-3" size={24} /> 
-                  Strukturelle <span className="text-blue-600 ml-2">Analyse & Feedback</span>
+            <div className="bg-white dark:bg-ink-card p-8 rounded-[40px] border border-slate-200 dark:border-ink-border shadow-xl space-y-6 transition-colors">
+              <div className="flex items-center justify-between border-b border-gray-50 dark:border-ink-border/50 pb-6">
+                <h3 className="text-xl font-bold flex items-center dark:text-white uppercase tracking-wider">
+                  <BarChart3 className="text-brand-600 mr-3" size={24} /> 
+                  Strukturelle <span className="text-brand-600 ml-2">Analyse & Feedback</span>
                 </h3>
               </div>
               <MarkInfoDisplay data={markInfo} />

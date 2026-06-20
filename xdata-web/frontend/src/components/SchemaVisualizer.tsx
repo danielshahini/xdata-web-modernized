@@ -20,24 +20,24 @@ const SchemaVisualizer: React.FC<SchemaVisualizerProps> = ({ metadata }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
       {metadata.tables.map(table => (
-        <div key={table.tableName} className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col group hover:border-blue-200 dark:hover:border-blue-800 transition-all">
-          <div className="bg-gray-50 dark:bg-gray-900/50 px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div key={table.tableName} className="bg-white dark:bg-ink-card rounded-2xl border border-slate-200 dark:border-ink-border shadow-sm overflow-hidden flex flex-col group hover:border-brand-200 dark:hover:border-blue-800 transition-all">
+          <div className="bg-gray-50 dark:bg-ink-soft/50 px-5 py-3 border-b border-slate-200 dark:border-ink-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TableIcon size={16} className="text-blue-500" />
-              <span className="font-black text-xs uppercase tracking-wider dark:text-white">{table.tableName}</span>
+              <TableIcon size={16} className="text-brand-500" />
+              <span className="font-bold text-xs uppercase tracking-wider dark:text-white">{table.tableName}</span>
             </div>
-            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{table.columns.length} Spalten</span>
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{table.columns.length} Spalten</span>
           </div>
           <div className="p-4 space-y-2">
             {table.columns.map(col => (
               <div key={col.columnName} className="flex justify-between items-center group/col">
                 <div className="flex items-center gap-2">
-                  <Hash size={10} className="text-gray-300 dark:text-gray-600 group-hover/col:text-blue-400 transition-colors" />
+                  <Hash size={10} className="text-gray-300 dark:text-gray-600 group-hover/col:text-brand-400 transition-colors" />
                   <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{col.columnName}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                    <Type size={10} className="text-gray-300" />
-                   <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase bg-gray-50 dark:bg-gray-900 px-2 py-0.5 rounded-full">{col.dataType}</span>
+                   <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase bg-gray-50 dark:bg-ink-soft px-2 py-0.5 rounded-full">{col.dataType}</span>
                 </div>
               </div>
             ))}

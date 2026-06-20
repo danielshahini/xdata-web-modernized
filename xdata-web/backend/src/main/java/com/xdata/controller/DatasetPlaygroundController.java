@@ -70,22 +70,30 @@ public class DatasetPlaygroundController {
                 
             if (errorMsg.isPresent()) {
                 response.setSuccess(false);
+                response.setInserts(java.util.List.of());
                 response.setMessage(errorMsg.get());
-            } else if (inserts.isEmpty()) {
-                response.setSuccess(true);
-                response.setMessage("Es konnten keine Testdaten generiert werden. Die automatische SMT-Datengenerierung ist derzeit nicht verfügbar (siehe docs/dataset-playground-analysis.md).");
+                return ResponseEntity.unprocessableEntity().body(response);
+            } else if (inserts.stream().noneMatch(s -> !s.startsWith("--"))) {
+                // No real INSERT rows were produced — report honestly instead of "success".
+                response.setSuccess(false);
+                response.setInserts(java.util.List.of());
+                response.setMessage("Für diese Abfrage konnten keine Testdaten erzeugt werden. "
+                        + "Komplexe Strukturen (Joins, Subqueries, Aggregate, einige Spaltentypen) "
+                        + "werden von der Datengenerierung derzeit nur eingeschränkt unterstützt.");
+                return ResponseEntity.unprocessableEntity().body(response);
             } else {
+                int n = (int) inserts.stream().filter(s -> !s.startsWith("--")).count();
                 response.setSuccess(true);
-                response.setMessage("Successfully generated " + (int)inserts.stream().filter(s -> !s.startsWith("--")).count() + " insert statements.");
+                response.setMessage(n + " Testdaten-Zeile(n) generiert.");
+                return ResponseEntity.ok(response);
             }
-            
-            return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error in playground data generation", e);
             DatasetPlaygroundResponse response = new DatasetPlaygroundResponse();
             response.setSuccess(false);
-            response.setMessage("Error: " + e.getMessage());
-            return ResponseEntity.status(500).body(response);
+            response.setMessage("Die Datengenerierung ist für diese Abfrage fehlgeschlagen. "
+                    + "Bitte vereinfache die Query oder versuche es erneut.");
+            return ResponseEntity.unprocessableEntity().body(response);
         }
     }
 

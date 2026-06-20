@@ -93,30 +93,33 @@ const InstructorDashboard: React.FC = () => {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 gap-4 transition-colors">
-        <div>
-          <h1 className="text-3xl font-black dark:text-white tracking-tight">Dozenten-Panel</h1>
-          <p className="text-gray-400 font-bold uppercase tracking-widest text-xs mt-1">Verwalten Sie Ihre Kurse und Studenten</p>
-        </div>
-      </div>
+      <header className="animate-rise">
+        <p className="kicker">{isAdmin ? 'Administration' : 'Dozenten-Bereich'}</p>
+        <h1 className="mt-1 text-3xl font-display font-extrabold tracking-tight text-slate-900 dark:text-white">Dozenten-Panel</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Kurse, Aufgaben und Studierende an einem Ort.</p>
+      </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-3 space-y-2">
-          {menuItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id as any)}
-              className={`w-full flex items-center px-6 py-4 rounded-2xl text-sm font-black transition-all ${
-                tab === item.id 
-                ? 'bg-blue-600 text-white shadow-xl dark:shadow-none' 
-                : 'text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm'
-              }`}
-            >
-              <item.icon size={20} className="mr-4" />
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <nav className="lg:col-span-3 space-y-1.5" aria-label="Bereiche">
+          {menuItems.map(item => {
+            const active = tab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setTab(item.id as any)}
+                aria-current={active ? 'page' : undefined}
+                className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                  active
+                    ? 'bg-brand-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-ink-card hover:shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-ink-border'
+                }`}
+              >
+                <item.icon size={18} className={active ? 'text-white' : 'text-slate-400 group-hover:text-brand-500'} />
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
 
         <div className="lg:col-span-9 animate-slideUp">
           {tab === 'assignments' && <AssignmentManager />}
@@ -128,90 +131,103 @@ const InstructorDashboard: React.FC = () => {
 
           {tab === 'announcements' && (
             <div className="space-y-6">
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors">
-                <h3 className="text-xl font-black dark:text-white mb-6 flex items-center">
-                  <Plus className="mr-2 text-blue-500" /> Neue Ankündigung erstellen
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <input 
-                    placeholder="Titel" 
-                    className="w-full px-5 py-3 rounded-2xl border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 font-bold dark:text-white"
-                    value={newAnnouncement.title}
-                    onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
-                  />
-                  <select 
-                    className="w-full px-5 py-3 rounded-2xl border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 font-bold dark:text-white"
-                    value={newAnnouncement.courseId}
-                    onChange={e => setNewAnnouncement({...newAnnouncement, courseId: e.target.value})}
-                  >
-                    {courses.map(c => <option key={c.instructorCourseId} value={c.instructorCourseId}>{c.courseName}</option>)}
-                  </select>
+              <section className="x-card p-6 sm:p-8">
+                <h3 className="section-title flex items-center gap-2"><Plus size={20} className="text-brand-500" /> Neue Ankündigung</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                  <div>
+                    <label className="x-label">Titel</label>
+                    <input
+                      placeholder="z. B. Abgabefrist verlängert"
+                      className="x-input"
+                      value={newAnnouncement.title}
+                      onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="x-label">Kurs</label>
+                    <select
+                      className="x-select"
+                      value={newAnnouncement.courseId}
+                      onChange={e => setNewAnnouncement({...newAnnouncement, courseId: e.target.value})}
+                    >
+                      {courses.map(c => <option key={c.instructorCourseId} value={c.instructorCourseId}>{c.courseName}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <textarea 
-                  placeholder="Inhalt der Ankündigung..." 
-                  className="w-full px-5 py-3 rounded-2xl border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 font-bold dark:text-white mb-4 h-32"
-                  value={newAnnouncement.content}
-                  onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
-                />
-                <button 
-                  onClick={handleCreateAnnouncement}
-                  className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-lg"
-                >
-                  Veröffentlichen
-                </button>
-              </div>
+                <div className="mt-4">
+                  <label className="x-label">Inhalt</label>
+                  <textarea
+                    placeholder="Was sollen deine Studierenden wissen?"
+                    className="x-input h-32 resize-y"
+                    value={newAnnouncement.content}
+                    onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
+                  />
+                </div>
+                <div className="mt-5 flex justify-end">
+                  <button onClick={handleCreateAnnouncement} className="btn-primary"><Bell size={16} /> Veröffentlichen</button>
+                </div>
+              </section>
 
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors">
-                <h3 className="text-xl font-black dark:text-white mb-6">Bestehende Ankündigungen</h3>
-                <div className="space-y-4">
+              <section className="x-card p-6 sm:p-8">
+                <h3 className="section-title mb-5">Veröffentlichte Ankündigungen</h3>
+                <div className="space-y-3">
                   {announcements.map(a => (
-                    <div key={a.id} className="p-6 rounded-2xl border dark:border-gray-700 flex justify-between items-start">
-                      <div>
-                        <p className="font-black text-lg dark:text-white">{a.title}</p>
-                        <p className="text-gray-500 dark:text-gray-400 mt-2">{a.content}</p>
-                        <p className="text-[10px] font-black uppercase text-blue-500 mt-4 tracking-widest">
-                          Kurs: {a.course.courseName} | Datum: {new Date(a.createdAt).toLocaleString()}
-                        </p>
+                    <div key={a.id} className="group flex justify-between items-start gap-4 p-5 rounded-xl border border-slate-200 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/40">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900 dark:text-white">{a.title}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-line">{a.content}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-3">
+                          <span className="badge-brand">{a.course.courseName}</span>
+                          <span className="text-xs text-slate-400">{new Date(a.createdAt).toLocaleString('de-DE')}</span>
+                        </div>
                       </div>
-                      <button onClick={() => deleteAnnouncement(a.id)} className="text-gray-300 hover:text-red-500 transition-colors">
-                        <Trash2 size={20} />
+                      <button onClick={() => deleteAnnouncement(a.id)} className="icon-btn hover:text-hard shrink-0" title="Ankündigung löschen" aria-label="Ankündigung löschen">
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   ))}
-                  {announcements.length === 0 && <p className="text-center text-gray-400 italic py-10">Keine Ankündigungen vorhanden.</p>}
+                  {announcements.length === 0 && (
+                    <div className="empty-state">
+                      <Bell className="text-slate-300 dark:text-slate-600 mb-3" size={36} />
+                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Noch keine Ankündigungen. Erstelle oben die erste.</p>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </section>
             </div>
           )}
 
           {tab === 'courses' && (
-            <div className="space-y-8">
-              <div className="bg-blue-50/60 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30 flex items-start gap-3">
-                <Info className="text-blue-500 shrink-0 mt-0.5" size={20} />
+            <div className="space-y-6">
+              <div className="flex items-start gap-3 p-5 rounded-2xl border border-brand-200 dark:border-brand-900/40 bg-brand-50/60 dark:bg-brand-950/30">
+                <Info className="text-brand-500 shrink-0 mt-0.5" size={20} />
                 <div>
-                  <h3 className="text-sm font-black dark:text-white uppercase tracking-widest mb-1">Ihre Kurse</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Neue Kurse werden von einem Administrator angelegt und Ihnen zugewiesen. Hier sehen Sie Ihre zugewiesenen Kurse.</p>
+                  <p className="font-semibold text-slate-900 dark:text-white">Deine Kurse</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Kurse werden von einer Administratorin angelegt und dir zugewiesen.</p>
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border dark:border-gray-700">
+              <section className="x-card overflow-hidden">
                 <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-900/50">
+                  <thead>
                     <tr>
-                      <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Kursname</th>
-                      <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">ID</th>
+                      <th className="x-th">Kursname</th>
+                      <th className="x-th">Kurs-ID</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  <tbody>
                     {courses.map(c => (
-                      <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                        <td className="px-6 py-4 font-bold dark:text-white">{c.courseName}</td>
-                        <td className="px-6 py-4 font-mono text-sm text-blue-500">{c.instructorCourseId}</td>
+                      <tr key={c.id} className="x-row">
+                        <td className="x-td font-semibold text-slate-900 dark:text-white">{c.courseName}</td>
+                        <td className="x-td"><span className="font-mono text-brand-600 dark:text-brand-400">{c.instructorCourseId}</span></td>
                       </tr>
                     ))}
+                    {courses.length === 0 && (
+                      <tr><td className="x-td text-slate-400 italic" colSpan={2}>Dir ist noch kein Kurs zugewiesen.</td></tr>
+                    )}
                   </tbody>
                 </table>
-              </div>
+              </section>
             </div>
           )}
         </div>

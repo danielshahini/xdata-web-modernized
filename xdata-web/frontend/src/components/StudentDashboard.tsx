@@ -10,7 +10,6 @@ import {
   BookOpen,
   CheckCircle,
   Clock,
-  HelpCircle,
   History,
   Send,
   ChevronRight,

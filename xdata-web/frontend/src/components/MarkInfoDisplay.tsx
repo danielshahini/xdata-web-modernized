@@ -23,15 +23,15 @@ const MarkInfoDisplay: React.FC<MarkInfoDisplayProps> = ({ data, markInfoJson })
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800">
+      <div className="flex justify-between items-center bg-brand-50 dark:bg-brand-950/20 p-4 rounded-2xl border border-blue-100 dark:border-brand-800">
         <div className="flex flex-col">
-          <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Gesamtbewertung</span>
-          <span className="text-2xl font-black dark:text-white">
+          <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest">Gesamtbewertung</span>
+          <span className="text-2xl font-bold dark:text-white">
             {markData.marks.toFixed(1)} <span className="text-gray-400 text-sm font-bold">/ {markData.maxMarks.toFixed(1)}</span>
           </span>
         </div>
         <div className="text-right">
-          <div className="text-3xl font-black text-blue-600">{markData.percentage.toFixed(0)}%</div>
+          <div className="text-3xl font-bold text-brand-600">{markData.percentage.toFixed(0)}%</div>
         </div>
       </div>
 
@@ -53,16 +53,16 @@ const QueryLevelDisplay: React.FC<{ qi: QueryInfo }> = ({ qi }) => {
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm">
-      <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
-        <h4 className="font-black text-sm uppercase tracking-tight text-gray-500 dark:text-gray-400">
+    <div className="bg-white dark:bg-ink-card rounded-2xl border border-slate-200 dark:border-ink-border overflow-hidden shadow-sm">
+      <div className="bg-gray-50 dark:bg-ink-soft/50 px-6 py-3 border-b border-slate-200 dark:border-ink-border">
+        <h4 className="font-bold text-sm uppercase tracking-tight text-gray-500 dark:text-gray-400">
           {qi.level === 1 ? 'Hauptabfrage' : `Unterabfrage Ebene ${qi.level}`}
         </h4>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 dark:border-gray-700">
+            <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 dark:border-ink-border">
               <th className="px-6 py-3 w-1/4">Komponente</th>
               <th className="px-6 py-3 w-3/8">Deine Lösung</th>
               <th className="px-6 py-3 w-3/8">Musterlösung</th>
@@ -80,7 +80,7 @@ const QueryLevelDisplay: React.FC<{ qi: QueryInfo }> = ({ qi }) => {
                 <td className="px-6 py-4">
                   <div className="space-y-1">
                     {row.instructor && row.instructor.map((item, i) => (
-                      <div key={i} className="text-xs font-medium text-gray-500 dark:text-gray-400 font-mono bg-gray-50 dark:bg-gray-900/30 px-2 py-1 rounded-md inline-block mr-1">
+                      <div key={i} className="text-xs font-medium text-gray-500 dark:text-gray-400 font-mono bg-gray-50 dark:bg-ink-soft/30 px-2 py-1 rounded-md inline-block mr-1">
                         {item}
                       </div>
                     ))}
@@ -97,7 +97,7 @@ const QueryLevelDisplay: React.FC<{ qi: QueryInfo }> = ({ qi }) => {
                    <div className={`flex items-center space-x-2 text-xs font-bold ${qi.studentHavingMark > 0 ? 'text-green-600' : 'text-red-500'}`}>
                       {qi.studentHavingMark > 0 ? <Check size={14} /> : <X size={14} />}
                       <span className="font-mono">{qi.studentHaving}</span>
-                      <span className="text-[10px] bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] bg-gray-100 dark:bg-ink-soft px-1.5 py-0.5 rounded">
                         {qi.studentHavingMark > 0 ? '+' : ''}{qi.studentHavingMark.toFixed(1)}
                       </span>
                    </div>
@@ -114,12 +114,12 @@ const QueryLevelDisplay: React.FC<{ qi: QueryInfo }> = ({ qi }) => {
                  <div className={`flex items-center space-x-2 text-xs font-bold ${qi.studentDistinctMark >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                     {qi.studentDistinctMark >= 0 ? <Check size={14} /> : <X size={14} />}
                     <span>{qi.studentDistinct ? 'Ja' : 'Nein'}</span>
-                    <span className="text-[10px] bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] bg-gray-100 dark:bg-ink-soft px-1.5 py-0.5 rounded">
                       {qi.studentDistinctMark >= 0 ? '+' : ''}{qi.studentDistinctMark.toFixed(1)}
                     </span>
                  </div>
               </td>
-              <td className="px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase font-black tracking-widest">
+              <td className="px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase font-bold tracking-widest">
                 {qi.instructorDistinct ? 'Ja' : 'Nein'}
               </td>
             </tr>

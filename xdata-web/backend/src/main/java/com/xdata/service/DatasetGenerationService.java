@@ -137,7 +137,21 @@ public class DatasetGenerationService {
     private List<String> runEngine(String query, String ddl, List<String> mutationTypes) {
         String tempDb = "xdata_pg_" + Math.abs(System.nanoTime());
         Path home = null;
-        ENGINE_LOCK.lock();
+        // The legacy engine + static Z3 context can only run one generation at a time
+        // (ENGINE_LOCK). Acquire with a timeout so a single slow/stuck generation can't
+        // make every subsequent request hang indefinitely — callers get a clear
+        // "busy" message instead.
+        boolean locked;
+        try {
+            locked = ENGINE_LOCK.tryLock(60, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            return new ArrayList<>(java.util.List.of("-- ERROR: Datengenerierung wurde unterbrochen."));
+        }
+        if (!locked) {
+            return new ArrayList<>(java.util.List.of(
+                "-- ERROR: Die Daten-Engine ist gerade ausgelastet. Bitte in einigen Sekunden erneut versuchen."));
+        }
         String prevHome = com.xdata.legacy.util.Configuration.homeDir;
         try {
             // The legacy Z3 context is static and accumulates declarations across runs

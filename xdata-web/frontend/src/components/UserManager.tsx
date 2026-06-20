@@ -15,6 +15,7 @@ import {
   Edit2,
   CheckCircle,
   XCircle,
+  RefreshCw,
   ToggleLeft,
   ToggleRight
 } from 'lucide-react';
@@ -272,30 +273,31 @@ const UserManager: React.FC = () => {
       />
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-black tracking-tight dark:text-white">
-          Benutzer <span className="text-blue-600">Verwaltung</span>
-        </h2>
-        <div className="flex flex-wrap gap-3">
-            <a 
-                href={`${api.defaults.baseURL}/admin/users/template`} 
-                className="bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 py-2.5 px-4 rounded-xl font-bold hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-all flex items-center shadow-sm"
+        <div>
+          <p className="kicker">{isInstructor ? 'Kurs-Teilnehmer' : 'Benutzer'}</p>
+          <h2 className="mt-1 section-title text-2xl">Benutzerverwaltung</h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+            <a
+                href={`${api.defaults.baseURL}/admin/users/template`}
+                className="btn-secondary"
                 download
             >
-                <FileImport size={18} className="mr-2" /> Vorlage laden
+                <FileImport size={16} /> Vorlage
             </a>
             {isInstructor && (
-              <button 
+              <button
                 onClick={() => { reloadUnassigned(); setShowAddExistingModal(true); }}
-                className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 py-2.5 px-4 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all flex items-center shadow-sm"
+                className="btn-secondary"
               >
-                <UserPlus size={18} className="mr-2" /> Bestehende hinzufügen
+                <UserPlus size={16} /> Bestehende hinzufügen
               </button>
             )}
-            <label className="cursor-pointer bg-blue-600 text-white py-2.5 px-4 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center shadow-lg shadow-blue-500/20">
-                <FileImport size={18} className="mr-2" /> CSV Importieren
+            <label className="btn-primary cursor-pointer">
+                <FileImport size={16} /> CSV importieren
                 <input type="file" accept=".csv" className="hidden" onChange={handleCsvImport} disabled={loading} />
             </label>
-            <InfoTip 
+            <InfoTip
               title="CSV Import Format"
               content={
                 <div className="space-y-2">
@@ -310,45 +312,45 @@ const UserManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden relative transition-colors">
-        <div className="absolute top-0 left-0 w-2 h-full bg-blue-600"></div>
-        <h3 className="text-lg font-black mb-6 flex items-center dark:text-white">
-          <UserPlus size={20} className="text-blue-500 mr-2" /> Neuen {isInstructor ? 'Studenten' : 'Benutzer'} anlegen
+      <div className="x-card p-6 sm:p-8 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-brand-600"></div>
+        <h3 className="section-title flex items-center gap-2 mb-6">
+          <UserPlus size={20} className="text-brand-500" /> Neuen {isInstructor ? 'Studenten' : 'Benutzer'} anlegen
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Vollständiger Name</label>
+            <label className="x-label">Vollständiger Name</label>
             <input 
               placeholder="z.B. Max Mustermann" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all" 
+              className="x-input" 
               value={newUser.username} 
               onChange={e => setNewUser({...newUser, username: e.target.value})} 
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Login ID</label>
+            <label className="x-label">Login ID</label>
             <input 
               placeholder="z.B. mmuster" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all" 
+              className="x-input" 
               value={newUser.loginId} 
               onChange={e => setNewUser({...newUser, loginId: e.target.value})} 
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">E-Mail Adresse</label>
+            <label className="x-label">E-Mail Adresse</label>
             <input 
               placeholder="max@beispiel.de" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all" 
+              className="x-input" 
               value={newUser.email} 
               onChange={e => setNewUser({...newUser, email: e.target.value})} 
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Passwort</label>
+            <label className="x-label">Passwort</label>
             <input 
               type="password" 
               placeholder="••••••••" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all" 
+              className="x-input" 
               value={newUser.password} 
               onChange={e => setNewUser({...newUser, password: e.target.value})} 
             />
@@ -356,7 +358,7 @@ const UserManager: React.FC = () => {
           {isAdmin && (
             <>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">
+                <label className="x-label">
                   Rolle
                   <InfoTip 
                     title="Benutzerrollen"
@@ -372,7 +374,7 @@ const UserManager: React.FC = () => {
                   />
                 </label>
                 <select 
-                  className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all appearance-none" 
+                  className="x-select" 
                   value={newUser.role} 
                   onChange={e => setNewUser({...newUser, role: e.target.value})}
                 >
@@ -382,10 +384,10 @@ const UserManager: React.FC = () => {
                 </select>
               </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs Zuweisung</label>
+                <label className="x-label">Kurs Zuweisung</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-[150px] overflow-y-auto">
                   {courses.map(c => (
-                    <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-blue-300 transition-all">
+                    <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card p-2 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer hover:border-brand-300 transition-all">
                       <input 
                         type="checkbox" 
                         className="rounded text-blue-600 focus:ring-blue-500"
@@ -408,10 +410,10 @@ const UserManager: React.FC = () => {
           )}
           {isInstructor && (
              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs Zuweisung (Meine Kurse)</label>
+                <label className="x-label">Kurs Zuweisung (Meine Kurse)</label>
                 <div className="flex flex-wrap gap-2 p-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     {courses.map(c => (
-                        <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer">
+                        <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card px-3 py-1.5 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer">
                             <input 
                                 type="checkbox" 
                                 checked={newUser.courseIds.includes(c.instructorCourseId)}
@@ -430,30 +432,30 @@ const UserManager: React.FC = () => {
              </div>
           )}
           <div className="flex items-end">
-            <button 
-              onClick={createUser} 
+            <button
+              onClick={createUser}
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-2xl font-black shadow-lg shadow-blue-100 dark:shadow-none hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center disabled:opacity-50"
+              className="btn-primary w-full"
             >
-              {loading ? 'Verarbeite...' : <><UserCheck size={18} className="mr-2" /> {isInstructor ? 'Student Erstellen' : 'Benutzer Erstellen'}</>}
+              {loading ? <><RefreshCw size={16} className="animate-spin" /> Verarbeite…</> : <><UserCheck size={16} /> {isInstructor ? 'Student erstellen' : 'Benutzer erstellen'}</>}
             </button>
           </div>
         </div>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden transition-colors">
-        <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-gray-900/50">
-          <div className="flex items-center space-x-4 w-full md:w-auto">
-            <h3 className="font-black text-gray-800 dark:text-white uppercase tracking-tight text-sm shrink-0">Zugeordnete Benutzer</h3>
-            <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full text-[10px] font-black shrink-0">{filteredUsers.length} Gesamt</span>
+      <div className="x-card overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-ink-border flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <h3 className="section-title text-base shrink-0">Zugeordnete Benutzer</h3>
+            <span className="badge-neutral shrink-0">{filteredUsers.length} gesamt</span>
           </div>
-          
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-            <input 
+
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <input
               type="text"
-              placeholder="Suchen..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+              placeholder="Name, Login-ID oder E-Mail…"
+              className="x-input pl-10 py-2"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -462,57 +464,49 @@ const UserManager: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-white dark:bg-gray-800">
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Status</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Name</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Login ID</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Kurs</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Rolle</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700 text-right">Aktionen</th>
+              <tr>
+                <th className="x-th">Status</th>
+                <th className="x-th">Name</th>
+                <th className="x-th">Login-ID</th>
+                <th className="x-th">Kurs</th>
+                <th className="x-th">Rolle</th>
+                <th className="x-th text-right">Aktionen</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+            <tbody>
               {filteredUsers.map(u => (
-                <tr key={u.loginId} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
-                  <td className="px-8 py-4">
-                     {u.enabled !== false ? (
-                        <span className="flex items-center text-green-500 font-bold text-[10px]">
-                           <CheckCircle size={14} className="mr-1" /> AKTIV
-                        </span>
-                     ) : (
-                        <span className="flex items-center text-red-500 font-bold text-[10px]">
-                           <XCircle size={14} className="mr-1" /> INAKTIV
-                        </span>
-                     )}
+                <tr key={u.loginId} className="x-row">
+                  <td className="x-td">
+                     {u.enabled !== false
+                        ? <span className="badge-success"><CheckCircle size={12} /> Aktiv</span>
+                        : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={12} /> Inaktiv</span>}
                   </td>
-                  <td className="px-8 py-4">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs mr-3">
+                  <td className="x-td">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center font-bold text-xs uppercase shrink-0">
                         {(u.username || "?").charAt(0)}
                       </div>
-                      <span className="font-bold text-gray-800 dark:text-gray-200">{u.username}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">{u.username}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-4 font-mono text-sm text-gray-500 dark:text-gray-400">{u.loginId}</td>
-                  <td className="px-8 py-4 text-xs font-bold text-gray-600 dark:text-gray-400">
+                  <td className="x-td"><span className="font-mono text-slate-500 dark:text-slate-400">{u.loginId}</span></td>
+                  <td className="x-td">
                      <div className="flex flex-wrap gap-1">
                         {u.courseIds && u.courseIds.length > 0 ? u.courseIds.map(cid => (
-                            <span key={cid} className="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-600 dark:text-gray-300">
-                                {cid}
-                            </span>
-                        )) : <span className="text-gray-300 dark:text-gray-600 italic">Kein Kurs</span>}
+                            <span key={cid} className="badge-neutral font-mono normal-case">{cid}</span>
+                        )) : <span className="text-slate-300 dark:text-slate-600 italic text-sm">Kein Kurs</span>}
                      </div>
                   </td>
-                  <td className="px-8 py-4">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-tight ${
-                      u.role?.trim().toUpperCase() === 'ADMIN' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 
-                      u.role?.trim().toUpperCase() === 'INSTRUCTOR' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 
-                      'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                    }`}>
+                  <td className="x-td">
+                    <span className={
+                      u.role?.trim().toUpperCase() === 'ADMIN' ? 'badge bg-violet-500/10 text-violet-600 dark:text-violet-300 ring-violet-500/20' :
+                      u.role?.trim().toUpperCase() === 'INSTRUCTOR' ? 'badge-brand' :
+                      'badge-neutral'
+                    }>
                       {u.role}
                     </span>
                   </td>
-                  <td className="px-8 py-4 text-right">
+                  <td className="x-td text-right">
                     <div className="flex items-center justify-end space-x-1">
                       <button 
                         onClick={() => toggleStatus(u)} 
@@ -524,7 +518,7 @@ const UserManager: React.FC = () => {
                       {isAdmin && u.loginId !== currentUser?.loginId && (
                         <button 
                           onClick={() => handleImpersonate(u.loginId, u.username)} 
-                          className="p-2 text-gray-300 dark:text-gray-600 hover:text-purple-500 dark:hover:text-purple-400 transition-colors"
+                          className="icon-btnhover:text-purple-500 dark:hover:text-purple-400 transition-colors"
                           title="Als dieser Benutzer anmelden"
                         >
                           <UserSecret size={18} />
@@ -532,21 +526,21 @@ const UserManager: React.FC = () => {
                       )}
                       <button 
                         onClick={() => handleEdit(u)} 
-                        className="p-2 text-gray-300 dark:text-gray-600 hover:text-green-500 dark:hover:text-green-400 transition-colors"
+                        className="icon-btnhover:text-green-500 dark:hover:text-green-400 transition-colors"
                         title="Benutzer bearbeiten"
                       >
                         <Edit2 size={18} />
                       </button>
                       <button 
                         onClick={() => { setResettingUser(u.loginId); setShowResetModal(true); }} 
-                        className="p-2 text-gray-300 dark:text-gray-600 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                        className="icon-btnhover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                         title="Passwort zurücksetzen"
                       >
                         <Key size={18} />
                       </button>
                       <button 
                         onClick={() => deleteUser(u.id, u.username)} 
-                        className="p-2 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        className="icon-btnhover:text-red-500 dark:hover:text-red-400 transition-colors"
                         title="Benutzer löschen"
                       >
                         <Trash2 size={18} />
@@ -561,10 +555,10 @@ const UserManager: React.FC = () => {
       </div>
 
       {showAddExistingModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-2xl w-full shadow-2xl animate-slideUp max-h-[80vh] flex flex-col transition-colors border border-gray-100 dark:border-gray-700">
+        <div className="modal-overlay">
+          <div className="modal-card max-w-2xl p-6 sm:p-8 max-h-[85vh] flex flex-col">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black dark:text-white flex items-center">
+              <h3 className="section-title flex items-center gap-2">
                 <Users className="mr-2 text-blue-500" size={24} /> Studenten ohne Kurszuweisung
               </h3>
               <button onClick={() => setShowAddExistingModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
@@ -575,9 +569,9 @@ const UserManager: React.FC = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-900/50">
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Name</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Login ID</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700 text-right">Aktion</th>
+                    <th className="x-th">Name</th>
+                    <th className="x-th">Login ID</th>
+                    <th className="x-th">Aktion</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
@@ -596,7 +590,7 @@ const UserManager: React.FC = () => {
                                 <button 
                                     key={c.instructorCourseId}
                                     onClick={() => assignCourse(u.loginId, c.instructorCourseId)}
-                                    className="bg-blue-600/10 text-blue-600 dark:text-blue-400 py-1 px-3 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition-all border border-blue-200 dark:border-blue-800"
+                                    className="badge-brand hover:bg-brand-600 hover:text-white cursor-pointer transition-colors"
                                 >
                                     + {c.courseName}
                                 </button>
@@ -614,10 +608,10 @@ const UserManager: React.FC = () => {
       )}
 
       {showEditModal && editingUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-2xl w-full shadow-2xl animate-slideUp border border-gray-100 dark:border-gray-700 transition-colors">
+        <div className="modal-overlay">
+          <div className="modal-card max-w-2xl p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black dark:text-white flex items-center">
+              <h3 className="section-title flex items-center gap-2">
                 <Edit2 className="mr-2 text-blue-500" size={24} /> Benutzer bearbeiten: <span className="ml-2 text-blue-600">{editingUser.loginId}</span>
               </h3>
               <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
@@ -627,7 +621,7 @@ const UserManager: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Vollständiger Name</label>
+                <label className="x-label">Vollständiger Name</label>
                 <input 
                   className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white" 
                   value={editFormData.username} 
@@ -635,7 +629,7 @@ const UserManager: React.FC = () => {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">E-Mail Adresse</label>
+                <label className="x-label">E-Mail Adresse</label>
                 <input 
                   className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white" 
                   value={editFormData.email} 
@@ -644,7 +638,7 @@ const UserManager: React.FC = () => {
               </div>
               {isAdmin && (
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Rolle</label>
+                  <label className="x-label">Rolle</label>
                   <select 
                     className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white appearance-none" 
                     value={editFormData.role} 
@@ -658,10 +652,10 @@ const UserManager: React.FC = () => {
               )}
               
               <div className="space-y-1 md:col-span-2">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs Zuweisung</label>
+                <label className="x-label">Kurs Zuweisung</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-[200px] overflow-y-auto custom-scrollbar">
                   {courses.filter(c => isAdmin || (isInstructor && currentUser?.courseIds?.includes(c.instructorCourseId))).map(c => (
-                    <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-blue-300 transition-all">
+                    <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card p-2 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer hover:border-brand-300 transition-all">
                       <input 
                         type="checkbox" 
                         className="rounded text-blue-600 focus:ring-blue-500"
@@ -684,14 +678,14 @@ const UserManager: React.FC = () => {
             <div className="flex gap-4">
               <button 
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 px-6 py-3 rounded-2xl font-black text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                className="btn-secondary flex-1"
               >
                 Abbrechen
               </button>
               <button 
                 onClick={handleUpdateUser}
                 disabled={loading}
-                className="flex-1 px-6 py-3 rounded-2xl font-black bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100 dark:shadow-none transition-all disabled:opacity-50"
+                className="btn-primary flex-1"
               >
                 {loading ? 'Speichern...' : 'Änderungen speichern'}
               </button>
@@ -701,13 +695,13 @@ const UserManager: React.FC = () => {
       )}
 
       {showResetModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-slideUp border border-gray-100 dark:border-gray-700">
+        <div className="modal-overlay">
+          <div className="modal-card max-w-md p-6 sm:p-8">
             <div className="flex items-center space-x-3 mb-4">
                <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg">
                   <Key className="text-orange-600 dark:text-orange-400" size={20} />
                </div>
-               <h3 className="text-xl font-black dark:text-white">Passwort zurücksetzen</h3>
+               <h3 className="section-title">Passwort zurücksetzen</h3>
             </div>
             <p className="text-gray-500 dark:text-gray-400 mb-6 font-medium leading-relaxed">
               Geben Sie ein neues Passwort für <span className="text-blue-600 font-bold">{resettingUser}</span> ein.
@@ -723,13 +717,13 @@ const UserManager: React.FC = () => {
             <div className="flex gap-4">
               <button 
                 onClick={() => setShowResetModal(false)}
-                className="flex-1 px-6 py-3 rounded-2xl font-black text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                className="btn-secondary flex-1"
               >
                 Abbrechen
               </button>
               <button 
                 onClick={handleResetPassword}
-                className="flex-1 px-6 py-3 rounded-2xl font-black bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100 dark:shadow-none transition-all"
+                className="btn-primary flex-1"
               >
                 Speichern
               </button>
