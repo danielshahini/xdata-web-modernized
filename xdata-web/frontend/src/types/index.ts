@@ -7,6 +7,7 @@ export interface User {
   courseIds?: string[];
   courseId?: string;
   enabled?: boolean;
+  createdAt?: string;
 }
 
 export interface Course {

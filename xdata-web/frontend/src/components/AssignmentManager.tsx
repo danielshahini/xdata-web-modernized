@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  Plus, 
+  Plus,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Save, 
   Copy,
   Trash2,
@@ -55,6 +56,7 @@ const AssignmentManager: React.FC = () => {
   const [showQuestionParams, setShowQuestionParams] = useState<number | null>(null);
   const [showStats, setShowStats] = useState<number | null>(null);
   const [wizardStep, setWizardStep] = useState<number>(1);
+  const [showAdvAssignment, setShowAdvAssignment] = useState<boolean>(false);
   const [assignmentStats, setAssignmentStats] = useState<Record<number, any[]>>({});
 
   const [deleteModal, setDeleteModal] = useState<{ 
@@ -390,82 +392,101 @@ const AssignmentManager: React.FC = () => {
           </div>
 
           {wizardStep === 1 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fadeIn">
-              <div className="space-y-4">
-                 <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
-                    Name des Assignments
-                 </label>
-                 <input 
-                    className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
-                    value={editingAssignment.name}
-                    onChange={e => setEditingAssignment({...editingAssignment, name: e.target.value})}
-                    placeholder="z.B. Woche 1: SELECT Statements"
-                 />
-              </div>
-              <div className="space-y-4">
-                 <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
-                   Ziel-Datenbank
-                   <InfoTip 
-                     title="Verbindung"
-                     content="An welche Datenbank sollen die Abfragen der Studenten gesendet werden?"
+            <div className="space-y-8 animate-fadeIn">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
+                      Name des Assignments
+                   </label>
+                   <input
+                      className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                      value={editingAssignment.name}
+                      onChange={e => setEditingAssignment({...editingAssignment, name: e.target.value})}
+                      placeholder="z.B. Woche 1: SELECT Statements"
                    />
-                 </label>
-                 <select 
-                    className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
-                    value={editingAssignment.connection?.id || ''}
-                    onChange={e => setEditingAssignment({
-                      ...editingAssignment, 
-                      connection: { id: parseInt(e.target.value) }
-                    })}
-                 >
-                    <option value="">Verbindung wählen...</option>
-                    {dbConnections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                 </select>
-              </div>
-              <div className="space-y-4">
-                 <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Deadline</label>
-                 <input 
-                    type="datetime-local"
-                    className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
-                    value={editingAssignment.deadline ? new Date(editingAssignment.deadline).toISOString().slice(0, 16) : ''}
-                    onChange={e => setEditingAssignment({...editingAssignment, deadline: e.target.value})}
-                 />
-              </div>
-              <div className="space-y-4">
-                 <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Veröffentlichung</label>
-                 <input 
-                    type="datetime-local"
-                    className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
-                    value={editingAssignment.publishedDate ? new Date(editingAssignment.publishedDate).toISOString().slice(0, 16) : ''}
-                    onChange={e => setEditingAssignment({...editingAssignment, publishedDate: e.target.value})}
-                 />
-              </div>
-              <div className="space-y-4">
-                 <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Penalty (Verspätung)</label>
-                 <div className="flex items-center h-[60px] gap-4 px-6 bg-gray-50 dark:bg-ink-soft rounded-2xl border-2 border-gray-50 dark:border-ink-border">
-                    <input 
-                      type="checkbox"
-                      className="w-6 h-6 rounded-lg border-gray-300 text-brand-600 focus:ring-brand-500"
-                      checked={editingAssignment.lateSubmissionAllowed || false}
-                      onChange={e => setEditingAssignment({...editingAssignment, lateSubmissionAllowed: e.target.checked})}
-                    />
-                    <span className="text-sm font-bold text-gray-500 uppercase">Aktiviert</span>
-                    {editingAssignment.lateSubmissionAllowed && (
-                      <div className="flex items-center gap-2 ml-auto">
-                        <input 
-                          type="number"
-                          className="w-20 px-3 py-1.5 rounded-xl border dark:border-gray-600 bg-white dark:bg-ink-card text-xs font-bold text-center"
-                          value={editingAssignment.penaltyPercentage || 10}
-                          onChange={e => setEditingAssignment({...editingAssignment, penaltyPercentage: parseFloat(e.target.value)})}
-                        />
-                        <span className="text-[10px] font-bold text-gray-400">%</span>
-                      </div>
-                    )}
-                 </div>
+                </div>
+                <div className="space-y-4">
+                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Deadline</label>
+                   <input
+                      type="datetime-local"
+                      className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                      value={editingAssignment.deadline ? new Date(editingAssignment.deadline).toISOString().slice(0, 16) : ''}
+                      onChange={e => setEditingAssignment({...editingAssignment, deadline: e.target.value})}
+                   />
+                </div>
               </div>
 
-              <div className="col-span-full pt-10 flex justify-end">
-                 <button 
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvAssignment(v => !v)}
+                  className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                  aria-expanded={showAdvAssignment}
+                >
+                  <Settings size={14} /> Erweiterte Einstellungen
+                  <ChevronDown size={14} className={`transition-transform ${showAdvAssignment ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showAdvAssignment && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-5">
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
+                         Ziel-Datenbank
+                         <InfoTip
+                           title="Verbindung"
+                           content="An welche Datenbank sollen die Abfragen der Studenten gesendet werden?"
+                         />
+                       </label>
+                       <select
+                          className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                          value={editingAssignment.connection?.id || ''}
+                          onChange={e => setEditingAssignment({
+                            ...editingAssignment,
+                            connection: { id: parseInt(e.target.value) }
+                          })}
+                       >
+                          <option value="">Verbindung wählen...</option>
+                          {dbConnections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                       </select>
+                    </div>
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Veröffentlichung</label>
+                       <input
+                          type="datetime-local"
+                          className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                          value={editingAssignment.publishedDate ? new Date(editingAssignment.publishedDate).toISOString().slice(0, 16) : ''}
+                          onChange={e => setEditingAssignment({...editingAssignment, publishedDate: e.target.value})}
+                       />
+                    </div>
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Penalty (Verspätung)</label>
+                       <div className="flex items-center h-[60px] gap-4 px-6 bg-gray-50 dark:bg-ink-soft rounded-2xl border-2 border-gray-50 dark:border-ink-border">
+                          <input
+                            type="checkbox"
+                            className="w-6 h-6 rounded-lg border-gray-300 text-brand-600 focus:ring-brand-500"
+                            checked={editingAssignment.lateSubmissionAllowed || false}
+                            onChange={e => setEditingAssignment({...editingAssignment, lateSubmissionAllowed: e.target.checked})}
+                          />
+                          <span className="text-sm font-bold text-gray-500 uppercase">Aktiviert</span>
+                          {editingAssignment.lateSubmissionAllowed && (
+                            <div className="flex items-center gap-2 ml-auto">
+                              <input
+                                type="number"
+                                className="w-20 px-3 py-1.5 rounded-xl border dark:border-gray-600 bg-white dark:bg-ink-card text-xs font-bold text-center"
+                                value={editingAssignment.penaltyPercentage || 10}
+                                onChange={e => setEditingAssignment({...editingAssignment, penaltyPercentage: parseFloat(e.target.value)})}
+                              />
+                              <span className="text-[10px] font-bold text-gray-400">%</span>
+                            </div>
+                          )}
+                       </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-6 flex justify-end">
+                 <button
                   onClick={async () => { const saved = await saveAssignment(); if (saved) setWizardStep(2); }}
                   className="bg-brand-600 text-white px-12 py-5 rounded-2xl font-bold shadow-2xl shadow-blue-500/20 flex items-center gap-3 hover:bg-brand-700 transition-all group"
                  >

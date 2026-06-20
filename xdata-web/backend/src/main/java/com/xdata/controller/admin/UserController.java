@@ -295,6 +295,9 @@ public class UserController {
         int imported = 0;
         int skipped = 0;
         List<String> logs = new ArrayList<>();
+        // Instructors may only import STUDENTS into their own courses; admins may set any role.
+        final boolean isAdmin = accessControlService.isAdmin();
+        final List<String> instructorCourses = isAdmin ? null : accessControlService.getUserCourseIds();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String line = reader.readLine(); // header
             while ((line = reader.readLine()) != null) {
@@ -306,6 +309,14 @@ public class UserController {
                 String email = parts.length > 3 ? parts[3].trim() : null;
                 String role = parts.length > 4 ? parts[4].trim().toUpperCase() : "STUDENT";
                 String courseId = parts.length > 5 ? parts[5].trim() : null;
+
+                // Enforce least privilege for instructors regardless of CSV contents.
+                if (!isAdmin) {
+                    role = "STUDENT";
+                    if (courseId != null && !instructorCourses.contains(courseId)) {
+                        courseId = null;
+                    }
+                }
 
                 if (userRepository.findByLoginIdIgnoreCase(loginId).isPresent()) {
                     logs.add("Übersprungen: " + loginId + " existiert bereits.");

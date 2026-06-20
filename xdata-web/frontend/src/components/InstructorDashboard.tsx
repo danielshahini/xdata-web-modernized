@@ -18,7 +18,8 @@ import {
   Bell,
   Trash2,
   Plus,
-  Info
+  Info,
+  ChevronDown
 } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-hot-toast';
@@ -80,16 +81,43 @@ const InstructorDashboard: React.FC = () => {
   };
 
 
-  const menuItems = [
+  // Everyday actions stay front-and-center; rarely used setup lives under "Erweitert".
+  const primaryItems = [
     { id: 'assignments', label: 'Aufgaben', icon: ClipboardList },
-    { id: 'stats', label: 'Statistiken', icon: BarChart3 },
-    { id: 'announcements', label: 'Ankündigungen', icon: Bell },
-    { id: 'schemas', label: 'SQL Schemas', icon: Database },
     { id: 'users', label: 'Studenten', icon: Users },
-    { id: 'courses', label: 'Kurse', icon: GraduationCap },
+    { id: 'announcements', label: 'Ankündigungen', icon: Bell },
+    { id: 'stats', label: 'Statistiken', icon: BarChart3 },
+  ];
+  const advancedItems = [
+    { id: 'schemas', label: 'SQL Schemas', icon: Database },
     { id: 'connections', label: 'Datenbanken', icon: Plug },
+    { id: 'courses', label: 'Kurse', icon: GraduationCap },
     ...(isAdmin ? [{ id: 'audit', label: 'Audit Logs', icon: Briefcase }] : [])
   ];
+
+  // Keep the advanced group open if the active tab lives inside it.
+  const [showAdvanced, setShowAdvanced] = useState(
+    ['schemas', 'connections', 'courses', 'audit'].includes(tab)
+  );
+
+  const renderNavButton = (item: { id: string; label: string; icon: any }) => {
+    const active = tab === item.id;
+    return (
+      <button
+        key={item.id}
+        onClick={() => setTab(item.id as any)}
+        aria-current={active ? 'page' : undefined}
+        className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+          active
+            ? 'bg-brand-600 text-white shadow-sm'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-ink-card hover:shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-ink-border'
+        }`}
+      >
+        <item.icon size={18} className={active ? 'text-white' : 'text-slate-400 group-hover:text-brand-500'} />
+        {item.label}
+      </button>
+    );
+  };
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn pb-20">
@@ -101,24 +129,17 @@ const InstructorDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <nav className="lg:col-span-3 space-y-1.5" aria-label="Bereiche">
-          {menuItems.map(item => {
-            const active = tab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setTab(item.id as any)}
-                aria-current={active ? 'page' : undefined}
-                className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                  active
-                    ? 'bg-brand-600 text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-ink-card hover:shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-ink-border'
-                }`}
-              >
-                <item.icon size={18} className={active ? 'text-white' : 'text-slate-400 group-hover:text-brand-500'} />
-                {item.label}
-              </button>
-            );
-          })}
+          {primaryItems.map(item => renderNavButton(item))}
+
+          <button
+            onClick={() => setShowAdvanced(v => !v)}
+            className="w-full flex items-center justify-between gap-3 px-4 pt-4 pb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            aria-expanded={showAdvanced}
+          >
+            Erweitert
+            <ChevronDown size={14} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+          </button>
+          {showAdvanced && advancedItems.map(item => renderNavButton(item))}
         </nav>
 
         <div className="lg:col-span-9 animate-slideUp">

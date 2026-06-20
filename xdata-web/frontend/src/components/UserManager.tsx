@@ -30,6 +30,7 @@ const UserManager: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
 
   // Confirmation Modal state
   const [confirmConfig, setConfirmConfig] = useState<{
@@ -229,6 +230,24 @@ const UserManager: React.FC = () => {
     });
   };
 
+  const downloadTemplate = async () => {
+    try {
+      // Fetch through the authenticated api client (a plain <a download> cannot
+      // send the JWT, which made the endpoint return 401).
+      const res = await api.get('/admin/users/template', { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'user_import_template.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error('Vorlage konnte nicht geladen werden');
+    }
+  };
+
   const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -255,11 +274,16 @@ const UserManager: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    (u.username || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredUsers = users.filter(u =>
+    (u.username || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.loginId || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.email || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ).sort((a, b) => {
+    if (sortBy === 'name') return (a.username || '').localeCompare(b.username || '');
+    const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return sortBy === 'newest' ? tb - ta : ta - tb;
+  });
 
   return (
     <div className="space-y-10 animate-fadeIn text-gray-800 dark:text-gray-200">
@@ -278,13 +302,9 @@ const UserManager: React.FC = () => {
           <h2 className="mt-1 section-title text-2xl">Benutzerverwaltung</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-            <a
-                href={`${api.defaults.baseURL}/admin/users/template`}
-                className="btn-secondary"
-                download
-            >
+            <button onClick={downloadTemplate} className="btn-secondary">
                 <FileImport size={16} /> Vorlage
-            </a>
+            </button>
             {isInstructor && (
               <button
                 onClick={() => { reloadUnassigned(); setShowAddExistingModal(true); }}
@@ -373,14 +393,15 @@ const UserManager: React.FC = () => {
                     }
                   />
                 </label>
-                <select 
-                  className="x-select" 
-                  value={newUser.role} 
+                <select
+                  className="x-select"
+                  value={newUser.role}
                   onChange={e => setNewUser({...newUser, role: e.target.value})}
+                  disabled={!isAdmin}
                 >
                   <option value="STUDENT">STUDENT</option>
-                  <option value="INSTRUCTOR">INSTRUCTOR</option>
-                  <option value="ADMIN">ADMIN</option>
+                  {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
+                  {isAdmin && <option value="ADMIN">ADMIN</option>}
                 </select>
               </div>
               <div className="space-y-1 md:col-span-2">
@@ -450,15 +471,27 @@ const UserManager: React.FC = () => {
             <span className="badge-neutral shrink-0">{filteredUsers.length} gesamt</span>
           </div>
 
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder="Name, Login-ID oder E-Mail…"
-              className="x-input pl-10 py-2"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="relative flex-1 md:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder="Name, Login-ID oder E-Mail…"
+                className="x-input pl-10 py-2"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <select
+              className="x-select py-2 w-auto shrink-0"
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as 'newest' | 'oldest' | 'name')}
+              title="Sortierung"
+            >
+              <option value="newest">Neueste zuerst</option>
+              <option value="oldest">Älteste zuerst</option>
+              <option value="name">Name (A–Z)</option>
+            </select>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -470,6 +503,7 @@ const UserManager: React.FC = () => {
                 <th className="x-th">Login-ID</th>
                 <th className="x-th">Kurs</th>
                 <th className="x-th">Rolle</th>
+                <th className="x-th">Erstellt</th>
                 <th className="x-th text-right">Aktionen</th>
               </tr>
             </thead>
@@ -504,6 +538,11 @@ const UserManager: React.FC = () => {
                       'badge-neutral'
                     }>
                       {u.role}
+                    </span>
+                  </td>
+                  <td className="x-td">
+                    <span className="text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString('de-DE') : '–'}
                     </span>
                   </td>
                   <td className="x-td text-right">
@@ -639,14 +678,15 @@ const UserManager: React.FC = () => {
               {isAdmin && (
                 <div className="space-y-1">
                   <label className="x-label">Rolle</label>
-                  <select 
-                    className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white appearance-none" 
-                    value={editFormData.role} 
+                  <select
+                    className="x-select"
+                    value={editFormData.role}
                     onChange={e => setEditFormData({...editFormData, role: e.target.value})}
+                    disabled={!isAdmin}
                   >
                     <option value="STUDENT">STUDENT</option>
-                    <option value="INSTRUCTOR">INSTRUCTOR</option>
-                    <option value="ADMIN">ADMIN</option>
+                    {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
+                    {isAdmin && <option value="ADMIN">ADMIN</option>}
                   </select>
                 </div>
               )}
