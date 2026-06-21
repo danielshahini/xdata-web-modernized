@@ -29,6 +29,8 @@ public class EvaluationController {
     private final CourseAccessGuard courseAccessGuard;
     private final PlagiarismService plagiarismService;
     private final com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
+    private final com.xdata.service.AccessControlService accessControlService;
+    private final com.xdata.service.core.SubmissionComparisonService comparisonService;
 
     @PostMapping("/start/{questionId}")
     public ResponseEntity<String> startEvaluation(@PathVariable Integer questionId) {
@@ -118,9 +120,16 @@ public class EvaluationController {
     @GetMapping("/regrade-requests")
     public ResponseEntity<?> listRegradeRequests() {
         courseAccessGuard.requireInstructorOrAdmin();
+        boolean admin = accessControlService.isAdmin();
+        java.util.List<String> myCourses = admin ? null : accessControlService.getUserCourseIds();
         java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
         for (com.xdata.model.RegradeRequest r : regradeRequestRepository.findByStatusOrderByCreatedAtDesc("OPEN")) {
             com.xdata.model.Submission s = submissionRepository.findById(r.getSubmissionId()).orElse(null);
+            com.xdata.model.Question q = s != null ? s.getQuestion() : null;
+            com.xdata.model.Assignment a = q != null ? q.getAssignment() : null;
+            String courseId = a != null ? a.getCourseId() : null;
+            // Scope to the instructor's own courses (admins see all).
+            if (!admin && (courseId == null || myCourses == null || !myCourses.contains(courseId))) continue;
             java.util.Map<String, Object> m = new java.util.HashMap<>();
             m.put("id", r.getId());
             m.put("submissionId", r.getSubmissionId());
@@ -129,13 +138,42 @@ public class EvaluationController {
             m.put("createdAt", r.getCreatedAt());
             if (s != null) {
                 m.put("studentName", s.getUser() != null ? s.getUser().getUsername() : r.getStudentLoginId());
-                m.put("questionName", s.getQuestion() != null ? s.getQuestion().getName() : null);
                 m.put("currentMarks", s.getMarks());
                 m.put("query", s.getQuery());
+                m.put("markInfoJson", s.getMarkInfoJson());
+                m.put("submissionTime", s.getSubmissionTime());
+            }
+            if (q != null) {
+                m.put("questionName", q.getName());
+                m.put("questionDescription", q.getDescription());
+                m.put("maxMarks", q.getMarks());
+            }
+            if (a != null) {
+                m.put("assignmentName", a.getName());
+                m.put("courseId", courseId);
+                m.put("courseName", a.getCourse() != null ? a.getCourse().getName() : null);
             }
             out.add(m);
         }
         return ResponseEntity.ok(out);
+    }
+
+    /**
+     * Instructor view of expected-vs-actual output for a disputed submission, so they can
+     * judge a regrade request. Course-access checked; the reference SQL is never returned,
+     * only its output (see SubmissionComparisonService).
+     */
+    @GetMapping("/submissions/{submissionId}/result-comparison")
+    public ResponseEntity<?> instructorResultComparison(@PathVariable Integer submissionId) {
+        courseAccessGuard.requireInstructorOrAdmin();
+        com.xdata.model.Submission s = submissionRepository.findById(submissionId).orElse(null);
+        if (s == null) return ResponseEntity.notFound().build();
+        com.xdata.model.Question q = s.getQuestion();
+        com.xdata.model.Assignment a = q != null ? q.getAssignment() : null;
+        if (a == null) return ResponseEntity.notFound().build();
+        courseAccessGuard.requireCourseAccess(a.getCourseId());
+        return ResponseEntity.ok(comparisonService.compare(
+                a.getConnection(), q.getInstructorQuery(), s.getQuery()));
     }
 
     @PostMapping("/submissions/{submissionId}/override")

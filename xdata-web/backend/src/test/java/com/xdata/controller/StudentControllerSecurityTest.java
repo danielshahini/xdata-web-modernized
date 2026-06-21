@@ -58,6 +58,7 @@ class StudentControllerSecurityTest {
     @MockBean private com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
     @MockBean private com.xdata.repository.UserRepository userRepository;
     @MockBean private com.xdata.service.core.SchemaService schemaService;
+    @MockBean private com.xdata.service.core.SubmissionComparisonService comparisonService;
 
     @BeforeEach
     void setUp() {

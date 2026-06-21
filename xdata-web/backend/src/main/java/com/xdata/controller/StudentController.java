@@ -40,6 +40,7 @@ public class StudentController {
     private final SubmissionService submissionService;
     private final com.xdata.service.DatabaseService databaseService;
     private final com.xdata.service.SqlSandboxService sqlSandboxService;
+    private final com.xdata.service.core.SubmissionComparisonService comparisonService;
     private final com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
     private final com.xdata.repository.UserRepository userRepository;
     private final com.xdata.service.core.SchemaService schemaService;
@@ -253,41 +254,8 @@ public class StudentController {
         if (Boolean.FALSE.equals(assignment.getGradesReleased())) {
             return ResponseEntity.status(403).body(Map.of("error", "Ergebnisvergleich erst nach Notenfreigabe verfügbar."));
         }
-        com.xdata.model.DbConnection conn = assignment.getConnection();
-        if (conn == null || conn.getUrl() == null) {
-            return ResponseEntity.ok(Map.of("error", "Für diese Aufgabe ist keine Datenbank konfiguriert."));
-        }
-        try {
-            sqlSandboxService.validateQuery(question.getInstructorQuery());
-            sqlSandboxService.validateQuery(s.getQuery());
-        } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("error", "Vergleich nicht möglich (nur SELECT-Abfragen)."));
-        }
-        try (java.sql.Connection c = databaseService.getConnection(conn)) {
-            Map<String, Object> expected = runReadOnly(c, question.getInstructorQuery(), 100);
-            Map<String, Object> actual = runReadOnly(c, s.getQuery(), 100);
-            @SuppressWarnings("unchecked")
-            List<List<Object>> expRows = (List<List<Object>>) expected.get("rows");
-            @SuppressWarnings("unchecked")
-            List<List<Object>> actRows = (List<List<Object>>) actual.get("rows");
-            // Multiset diff: rows expected-but-missing, and rows present-but-unexpected.
-            List<List<Object>> remaining = new java.util.ArrayList<>(actRows);
-            List<List<Object>> missing = new java.util.ArrayList<>();
-            for (List<Object> row : expRows) {
-                if (!remaining.remove(row)) missing.add(row);
-            }
-            Map<String, Object> out = new HashMap<>();
-            out.put("expected", expected);
-            out.put("actual", actual);
-            out.put("missing", missing);   // in expected, not in student's output
-            out.put("extra", remaining);   // in student's output, not expected
-            out.put("match", missing.isEmpty() && remaining.isEmpty());
-            return ResponseEntity.ok(out);
-        } catch (java.sql.SQLException e) {
-            return ResponseEntity.ok(Map.of("error", "SQL-Fehler: " + e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("error", "Vergleich fehlgeschlagen."));
-        }
+        return ResponseEntity.ok(comparisonService.compare(
+                assignment.getConnection(), question.getInstructorQuery(), s.getQuery()));
     }
 
     /**
@@ -353,36 +321,6 @@ public class StudentController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    /** Read-only execution helper: returns {columns, rows, rowCount, truncated}. */
-    private Map<String, Object> runReadOnly(java.sql.Connection c, String query, int maxRows) throws java.sql.SQLException {
-        try (java.sql.Statement st = c.createStatement()) {
-            st.setQueryTimeout(10);
-            st.setMaxRows(maxRows + 1);
-            try (java.sql.ResultSet rs = st.executeQuery(query)) {
-                java.sql.ResultSetMetaData md = rs.getMetaData();
-                int cols = md.getColumnCount();
-                List<String> columns = new java.util.ArrayList<>();
-                for (int i = 1; i <= cols; i++) columns.add(md.getColumnLabel(i));
-                List<List<Object>> rows = new java.util.ArrayList<>();
-                boolean truncated = false;
-                while (rs.next()) {
-                    if (rows.size() >= maxRows) { truncated = true; break; }
-                    List<Object> row = new java.util.ArrayList<>(cols);
-                    for (int i = 1; i <= cols; i++) {
-                        Object v = rs.getObject(i);
-                        row.add(v == null ? null : String.valueOf(v));
-                    }
-                    rows.add(row);
-                }
-                Map<String, Object> out = new HashMap<>();
-                out.put("columns", columns);
-                out.put("rows", rows);
-                out.put("rowCount", rows.size());
-                out.put("truncated", truncated);
-                return out;
-            }
-        }
-    }
 
     /** Student raises an objection / regrade request on one of their graded submissions. */
     @PostMapping("/submissions/{submissionId}/regrade-request")

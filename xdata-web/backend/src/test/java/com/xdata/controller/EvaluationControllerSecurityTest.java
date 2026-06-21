@@ -48,6 +48,7 @@ class EvaluationControllerSecurityTest {
     @MockBean private AccessControlService accessControlService;
     @MockBean private PlagiarismService plagiarismService;
     @MockBean private com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
+    @MockBean private com.xdata.service.core.SubmissionComparisonService comparisonService;
 
     @Test
     void startEvaluation_unauthenticated_is_rejected() throws Exception {

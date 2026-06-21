@@ -69,6 +69,9 @@
         *::-webkit-scrollbar { width: 10px; height: 10px; }
         *::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; border: 3px solid transparent; background-clip: content-box; }
         .dark *::-webkit-scrollbar-thumb { background: #334155; border: 3px solid transparent; background-clip: content-box; }
+        /* Subtle ambient depth so neither mode reads as a flat slab */
+        body { background-image: radial-gradient(1100px 620px at 50% -15%, rgba(99,102,241,.06), transparent 58%); background-attachment: fixed; }
+        .dark body { background-image: radial-gradient(1100px 620px at 50% -16%, rgba(99,102,241,.14), transparent 56%); }
       }
 
       @layer components {
@@ -112,6 +115,10 @@
         .modal-card { @apply w-full max-w-lg rounded-2xl bg-white dark:bg-ink-card border border-slate-200 dark:border-ink-border shadow-card-hover animate-slideUp; }
         /* Empty state */
         .empty-state { @apply flex flex-col items-center justify-center text-center py-14 px-6 rounded-2xl border border-dashed border-slate-200 dark:border-ink-border bg-slate-50/60 dark:bg-ink-soft/30; }
+        /* Code / SQL surface — refined, readable in both modes (replaces harsh black/green terminal) */
+        .x-code { @apply rounded-xl bg-[#0f141b] text-slate-200 ring-1 ring-inset ring-white/10 border border-slate-800/60 px-4 py-3 text-xs font-mono leading-relaxed overflow-x-auto; }
+        /* Note / quote box — legible amber in both light and dark */
+        .note-amber { @apply rounded-xl border border-amber-200/80 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-200; }
       }
 
       @layer utilities {
