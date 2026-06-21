@@ -201,6 +201,16 @@ const StudentDashboard: React.FC = () => {
     }
   };
 
+  const requestRegrade = async (submissionId: number) => {
+    const message = window.prompt('Begründung für die Anfechtung (optional):') ?? '';
+    try {
+      await api.post(`/student/submissions/${submissionId}/regrade-request`, { message });
+      toast.success('Anfechtung eingereicht');
+    } catch {
+      toast.error('Anfechtung konnte nicht eingereicht werden');
+    }
+  };
+
   const submitSolution = async () => {
     if (!selectedQuestion || !sql.trim()) return;
     const qId = selectedQuestion.id;
@@ -609,6 +619,11 @@ const StudentDashboard: React.FC = () => {
 
                       <div className="bg-white dark:bg-ink-card rounded-xl p-5 border border-slate-200 dark:border-ink-border">
                         <MarkInfoDisplay markInfoJson={s.markInfoJson} />
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <button onClick={() => requestRegrade(s.submissionId)} className="btn-secondary text-xs">
+                          <MessageSquare size={14} /> Bewertung anfechten
+                        </button>
                       </div>
                       </>
                       )}

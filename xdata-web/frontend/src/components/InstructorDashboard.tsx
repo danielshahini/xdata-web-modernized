@@ -3,6 +3,7 @@ import { useAsyncData } from '../hooks/useAsyncData';
 import SchemaManager from './SchemaManager';
 import AssignmentManager from './AssignmentManager';
 import Gradebook from './Gradebook';
+import RegradeRequests from './RegradeRequests';
 import UserManager from './UserManager';
 import AuditLogViewer from './AuditLogViewer';
 import DbConnectionManager from './DbConnectionManager';
@@ -15,6 +16,7 @@ import {
   Plug, 
   BarChart3,
   BookOpen,
+  Gavel,
   GraduationCap,
   Briefcase,
   Bell,
@@ -29,7 +31,7 @@ import { Course, Announcement } from '../types';
 
 const InstructorDashboard: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
+  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'regrades' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
   
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', courseId: '' });
   
@@ -87,6 +89,7 @@ const InstructorDashboard: React.FC = () => {
   const primaryItems = [
     { id: 'assignments', label: 'Aufgaben', icon: ClipboardList },
     { id: 'gradebook', label: 'Notenbuch', icon: BookOpen },
+    { id: 'regrades', label: 'Anfechtungen', icon: Gavel },
     { id: 'users', label: 'Studenten', icon: Users },
     { id: 'announcements', label: 'Ankündigungen', icon: Bell },
     { id: 'stats', label: 'Statistiken', icon: BarChart3 },
@@ -148,6 +151,7 @@ const InstructorDashboard: React.FC = () => {
         <div className="lg:col-span-9 animate-slideUp">
           {tab === 'assignments' && <AssignmentManager />}
           {tab === 'gradebook' && <Gradebook />}
+          {tab === 'regrades' && <RegradeRequests />}
           {tab === 'schemas' && <SchemaManager />}
           {tab === 'users' && <UserManager />}
           {tab === 'audit' && <AuditLogViewer />}

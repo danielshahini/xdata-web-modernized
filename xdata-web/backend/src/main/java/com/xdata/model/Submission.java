@@ -67,6 +67,10 @@ public class Submission extends BaseAuditEntity {
     @Column(name = "instructor_feedback", columnDefinition = "TEXT")
     private String instructorFeedback;
     
+    @Column(name = "manually_graded")
+    @Builder.Default
+    private Boolean manuallyGraded = false;
+
     @Column(name = "verifiedcorrect")
     @Builder.Default
     private Boolean verifiedCorrect = false;

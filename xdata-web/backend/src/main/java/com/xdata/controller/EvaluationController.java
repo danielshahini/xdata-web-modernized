@@ -28,6 +28,7 @@ public class EvaluationController {
     private final SubmissionRepository submissionRepository;
     private final CourseAccessGuard courseAccessGuard;
     private final PlagiarismService plagiarismService;
+    private final com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
 
     @PostMapping("/start/{questionId}")
     public ResponseEntity<String> startEvaluation(@PathVariable Integer questionId) {
@@ -108,6 +109,61 @@ public class EvaluationController {
         return submissionRepository.findById(submissionId).map(s -> {
             s.setInstructorFeedback(body.get("feedback"));
             submissionRepository.save(s);
+            return ResponseEntity.ok(s);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // --- Regrade requests + manual override (#8) ---
+
+    @GetMapping("/regrade-requests")
+    public ResponseEntity<?> listRegradeRequests() {
+        courseAccessGuard.requireInstructorOrAdmin();
+        java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
+        for (com.xdata.model.RegradeRequest r : regradeRequestRepository.findByStatusOrderByCreatedAtDesc("OPEN")) {
+            com.xdata.model.Submission s = submissionRepository.findById(r.getSubmissionId()).orElse(null);
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            m.put("id", r.getId());
+            m.put("submissionId", r.getSubmissionId());
+            m.put("studentLoginId", r.getStudentLoginId());
+            m.put("message", r.getMessage());
+            m.put("createdAt", r.getCreatedAt());
+            if (s != null) {
+                m.put("studentName", s.getUser() != null ? s.getUser().getUsername() : r.getStudentLoginId());
+                m.put("questionName", s.getQuestion() != null ? s.getQuestion().getName() : null);
+                m.put("currentMarks", s.getMarks());
+                m.put("query", s.getQuery());
+            }
+            out.add(m);
+        }
+        return ResponseEntity.ok(out);
+    }
+
+    @PostMapping("/submissions/{submissionId}/override")
+    public ResponseEntity<?> overrideMark(@PathVariable Integer submissionId, @RequestBody Map<String, Object> body) {
+        courseAccessGuard.requireInstructorOrAdmin();
+        Object marksObj = body.get("marks"); // percentage 0..100
+        if (marksObj == null) return ResponseEntity.badRequest().body("marks (0-100) ist erforderlich.");
+        double pct;
+        try { pct = Double.parseDouble(marksObj.toString()); } catch (Exception e) { return ResponseEntity.badRequest().body("Ungültige Note."); }
+        if (pct < 0 || pct > 100) return ResponseEntity.badRequest().body("Note muss zwischen 0 und 100 liegen.");
+        String reason = body.get("reason") != null ? body.get("reason").toString() : null;
+
+        return submissionRepository.findById(submissionId).map(s -> {
+            s.setMarks((float) (pct / 100.0));
+            s.setManuallyGraded(true);
+            if (reason != null && !reason.isBlank()) {
+                String prev = s.getInstructorFeedback();
+                s.setInstructorFeedback((prev != null && !prev.isBlank() ? prev + "\n" : "") + "[Manuelle Korrektur] " + reason);
+            }
+            submissionRepository.save(s);
+            // Resolve any open regrade requests for this submission.
+            for (com.xdata.model.RegradeRequest r : regradeRequestRepository.findBySubmissionId(submissionId)) {
+                if ("OPEN".equals(r.getStatus())) {
+                    r.setStatus("RESOLVED");
+                    r.setInstructorResponse(reason);
+                    regradeRequestRepository.save(r);
+                }
+            }
             return ResponseEntity.ok(s);
         }).orElse(ResponseEntity.notFound().build());
     }

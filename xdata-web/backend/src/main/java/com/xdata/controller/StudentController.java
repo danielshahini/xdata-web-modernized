@@ -40,6 +40,7 @@ public class StudentController {
     private final SubmissionService submissionService;
     private final com.xdata.service.DatabaseService databaseService;
     private final com.xdata.service.SqlSandboxService sqlSandboxService;
+    private final com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboard() {
@@ -204,6 +205,25 @@ public class StudentController {
                 return ResponseEntity.ok(Map.of("error", "Ausführung fehlgeschlagen: " + e.getMessage()));
             }
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Student raises an objection / regrade request on one of their graded submissions. */
+    @PostMapping("/submissions/{submissionId}/regrade-request")
+    public ResponseEntity<?> requestRegrade(@PathVariable Integer submissionId, @RequestBody Map<String, String> body) {
+        String loginId = accessControlService.getCurrentUserLoginId();
+        Submission s = submissionRepository.findById(submissionId).orElse(null);
+        if (s == null) return ResponseEntity.notFound().build();
+        if (s.getUser() == null || !s.getUser().getLoginId().equalsIgnoreCase(loginId)) {
+            return ResponseEntity.status(403).build();
+        }
+        com.xdata.model.RegradeRequest r = com.xdata.model.RegradeRequest.builder()
+                .submissionId(submissionId)
+                .studentLoginId(loginId)
+                .message(body != null ? body.get("message") : null)
+                .status("OPEN")
+                .build();
+        regradeRequestRepository.save(r);
+        return ResponseEntity.ok(java.util.Map.of("message", "Anfechtung eingereicht."));
     }
 
     @GetMapping("/submissions")
