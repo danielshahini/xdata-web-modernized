@@ -91,9 +91,10 @@ public class SubmissionEvaluationService implements SubmissionEvaluator {
         Integer schemaId = assignment != null ? assignment.getDefaultSchemaId() : null;
         var connection = assignment != null ? assignment.getConnection() : null;
         float penalty = submissionService.calculatePenalty(submission);
+        String seedSql = assignment != null ? assignment.getSeedSql() : null;
         return new EvaluationRequest(
                 new QueryPair(question.getInstructorQuery(), submission.getQuery()),
-                new SchemaRef(schemaId, connection),
+                new SchemaRef(schemaId, connection, seedSql),
                 question.getPartialMarkParameters(),
                 penalty);
     }

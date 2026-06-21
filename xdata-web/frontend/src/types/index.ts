@@ -27,6 +27,7 @@ export interface Assignment {
   deadline: string;
   courseId: string;
   defaultSchemaId?: number;
+  seedSql?: string;
   penaltyPercentage?: number;
   publishedDate?: string;
   lateSubmissionAllowed?: boolean;
@@ -48,6 +49,7 @@ export interface Question {
   tags?: string;
   hints?: string | string[];
   difficulty?: 'EASY' | 'MEDIUM' | 'HARD' | string;
+  description?: string;
   partialMarkInfo?: string;
   partialMarkParameters?: PartialMarkParameters;
 }

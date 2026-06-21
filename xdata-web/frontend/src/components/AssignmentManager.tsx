@@ -20,7 +20,8 @@ import {
   Layout,
   FileText,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Upload
 } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-hot-toast';
@@ -114,7 +115,11 @@ const AssignmentManager: React.FC = () => {
   }, [loadCourses]);
 
   const startCreate = () => {
-    setEditingAssignment({ 
+    if (!selectedCourseId) {
+      toast.error('Bitte zuerst einen Kurs auswählen. Ist dir keiner zugeordnet, wende dich an einen Admin.');
+      return;
+    }
+    setEditingAssignment({
       name: '', 
       courseId: selectedCourseId, 
       deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -136,22 +141,40 @@ const AssignmentManager: React.FC = () => {
   };
 
   const saveAssignment = async () => {
+    // Client-side validation: surface a clear, friendly message instead of a
+    // confusing backend 403/500 (e.g. an empty courseId → "Zugriff verweigert").
+    if (!editingAssignment.id && !selectedCourseId) {
+      toast.error('Bitte zuerst oben einen Kurs auswählen.');
+      return null;
+    }
+    if (!editingAssignment.name?.trim()) {
+      toast.error('Bitte einen Namen für die Aufgabe angeben.');
+      return null;
+    }
+    if (!editingAssignment.connection?.id) {
+      toast.error('Bitte eine Ziel-Datenbank wählen (unter „Erweiterte Einstellungen"). Lege ggf. zuerst eine Verbindung unter „Datenbanken" an.');
+      return null;
+    }
     try {
       let savedAssignment;
       if (editingAssignment.id) {
         const res = await api.put(`/assignments/${editingAssignment.id}`, editingAssignment);
         savedAssignment = res.data;
-        toast.success("Assignment Metadaten aktualisiert");
+        toast.success("Aufgabe aktualisiert");
       } else {
-        const res = await api.post(`/assignments?courseId=${selectedCourseId}`, editingAssignment);
+        const res = await api.post(`/assignments?courseId=${encodeURIComponent(selectedCourseId)}`, editingAssignment);
         savedAssignment = res.data;
         setEditingAssignment(savedAssignment);
-        toast.success("Assignment erstellt");
+        toast.success("Aufgabe erstellt");
       }
       loadAssignments(selectedCourseId);
       return savedAssignment;
     } catch (e: any) {
-      toast.error(`Fehler beim Speichern: ${e.response?.data?.details || e.response?.data?.message || 'Unbekannter Fehler'}`);
+      const msg = e.response?.status === 403
+        ? 'Kein Zugriff auf diesen Kurs — bitte wähle einen deiner eigenen Kurse.'
+        : (e.response?.data?.details || e.response?.data?.message
+            || (typeof e.response?.data === 'string' ? e.response.data : 'Bitte Eingaben prüfen.'));
+      toast.error(`Speichern fehlgeschlagen: ${msg}`);
       return null;
     }
   };
@@ -167,11 +190,13 @@ const AssignmentManager: React.FC = () => {
   };
 
   const saveQuestion = async (q: any, idx: number) => {
+    if (!q.name?.trim()) { toast.error('Bitte einen Titel für die Frage angeben.'); return; }
+    if (!q.instructorQuery?.trim()) { toast.error(`Bitte eine Musterlösung (SQL) für „${q.name}" angeben.`); return; }
     if (!editingAssignment?.id) {
         const saved = await saveAssignment();
         if (!saved) return;
     }
-    
+
     try {
       const payload = { ...q, assignmentId: editingAssignment.id };
       if (q.id) {
@@ -194,16 +219,20 @@ const AssignmentManager: React.FC = () => {
   };
 
   const saveAllQuestions = async () => {
+    if (questions.length === 0) { toast.error('Füge zuerst mindestens eine Frage hinzu.'); return; }
+    const invalid = questions.find(q => !q.name?.trim() || !(q as any).instructorQuery?.trim());
+    if (invalid) { toast.error('Jede Frage braucht einen Titel und eine Musterlösung (SQL).'); return; }
     if (!editingAssignment?.id) {
         const saved = await saveAssignment();
         if (!saved) return;
     }
-    
+
     toast.loading("Speichere alle Fragen...", { id: 'save-all' });
     let successCount = 0;
+    const failed: string[] = [];
     for(let i=0; i < questions.length; i++) {
+        const q = questions[i];
         try {
-            const q = questions[i];
             const payload = { ...q, assignmentId: editingAssignment.id };
             if (q.id) {
                 await api.put(`/admin/questions/${q.id}`, payload);
@@ -212,13 +241,13 @@ const AssignmentManager: React.FC = () => {
                 questions[i] = res.data;
             }
             successCount++;
-        } catch(e) {}
+        } catch(e) { failed.push(q.name || `Frage ${i + 1}`); }
     }
     setQuestions([...questions]);
-    if (successCount === questions.length) {
+    if (failed.length === 0) {
       toast.success(`${successCount} von ${questions.length} Fragen gespeichert`, { id: 'save-all' });
     } else {
-      toast.error(`${successCount} von ${questions.length} Fragen gespeichert – prüfe die Musterlösungen der übrigen.`, { id: 'save-all' });
+      toast.error(`Gespeichert: ${successCount}/${questions.length}. Fehlerhaft: ${failed.join(', ')} — prüfe deren Musterlösung.`, { id: 'save-all' });
     }
   };
 
@@ -318,18 +347,28 @@ const AssignmentManager: React.FC = () => {
               </div>
             </div>
             <div className="flex gap-4 w-full md:w-auto">
-              <select 
+              <select
                 className="x-select flex-1 md:w-72"
                 value={selectedCourseId}
                 onChange={e => loadAssignments(e.target.value)}
               >
+                {courses.length === 0 && <option value="">Kein Kurs verfügbar</option>}
                 {courses.map(c => <option key={c.instructorCourseId} value={c.instructorCourseId}>{c.courseName}</option>)}
               </select>
-              <button onClick={startCreate} className="btn-primary">
+              <button onClick={startCreate} disabled={!selectedCourseId} className="btn-primary">
                 <Plus size={18} /> Neu
               </button>
             </div>
           </div>
+
+          {courses.length === 0 && (
+            <div className="mb-8 flex items-start gap-3 p-5 rounded-2xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20">
+              <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={20} />
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                Dir ist noch kein Kurs zugeordnet. Bitte einen Admin, dich einem Kurs zuzuweisen — danach kannst du Aufgaben anlegen.
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {assignments.map(a => (
@@ -450,6 +489,7 @@ const AssignmentManager: React.FC = () => {
                 </button>
 
                 {showAdvAssignment && (
+                  <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-5">
                     <div className="space-y-4">
                        <label className="x-label flex items-center">
@@ -549,6 +589,42 @@ const AssignmentManager: React.FC = () => {
                        </label>
                     </div>
                   </div>
+
+                  <div className="mt-6 space-y-2">
+                    <label className="x-label flex items-center">
+                      Testdaten (optional)
+                      <InfoTip
+                        title="Feste Testdaten"
+                        content="INSERT-Anweisungen, die einmal pro Aufgabe gespeichert werden. Beim Bewerten werden Referenz- und Studenten-Abfrage auf einer Wegwerf-Datenbank mit genau diesen Daten ausgeführt und verglichen — schnell, deterministisch und ohne Live-Datenbank. Voraussetzung: ein Standard-Schema ist gesetzt. Generieren kannst du sie im Dataset-Playground."
+                      />
+                    </label>
+                    <textarea
+                      className="x-input font-mono h-40 resize-y"
+                      placeholder={"INSERT INTO students VALUES (1, 'Alice', 23);\nINSERT INTO students VALUES (2, 'Bob', 19);"}
+                      value={editingAssignment.seedSql || ''}
+                      onChange={e => setEditingAssignment({ ...editingAssignment, seedSql: e.target.value })}
+                    />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="btn-secondary cursor-pointer text-xs">
+                        <Upload size={14} /> .sql laden
+                        <input
+                          type="file"
+                          accept=".sql,.txt"
+                          className="hidden"
+                          onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (!f) return;
+                            const r = new FileReader();
+                            r.onload = () => setEditingAssignment({ ...editingAssignment, seedSql: String(r.result || '') });
+                            r.readAsText(f);
+                            e.currentTarget.value = '';
+                          }}
+                        />
+                      </label>
+                      <span className="text-[11px] text-gray-400">Einmal pro Aufgabe — wird beim Bewerten auf einer Wegwerf-DB genutzt (Standard-Schema erforderlich).</span>
+                    </div>
+                  </div>
+                  </>
                 )}
               </div>
 
@@ -630,6 +706,16 @@ const AssignmentManager: React.FC = () => {
                         <button onClick={() => saveQuestion(q, idx)} className="icon-btn hover:text-easy" title="Frage speichern"><Check size={20} /></button>
                         <button onClick={() => setDeleteModal({ isOpen: true, type: 'question', id: q.id, idx })} className="icon-btn hover:text-hard" title="Frage löschen"><Trash2 size={20} /></button>
                       </div>
+                    </div>
+
+                    <div className="space-y-2 mb-6">
+                      <label className="x-label">Aufgabenstellung (sehen die Studierenden)</label>
+                      <textarea
+                        className="x-input h-28 resize-y"
+                        value={(q as any).description || ''}
+                        placeholder="Beschreibe die Aufgabe in Worten, z. B.: Gib die Namen aller Studierenden aus, die älter als 22 sind, sortiert nach Name."
+                        onChange={e => { const n = [...questions]; (n[idx] as any).description = e.target.value; setQuestions(n); }}
+                      />
                     </div>
 
                     <div className="space-y-2 mb-6">

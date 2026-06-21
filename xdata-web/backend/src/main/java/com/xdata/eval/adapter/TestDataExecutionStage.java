@@ -32,8 +32,16 @@ public class TestDataExecutionStage implements EquivalenceStageCheck {
     @Override
     public EquivalenceResult check(QueryPair queries, SchemaRef schema) {
         try {
-            List<String> testData = datasetGenerationService
-                    .generateDatasetFromQuery(queries.instructorQuery(), schema.schemaId());
+            // Prefer the instructor's pre-stored dataset (generated/imported once per assignment).
+            // Falls back to per-submission generation only when no dataset is stored.
+            List<String> testData;
+            if (schema.schemaId() != null && schema.seedSql() != null && !schema.seedSql().isBlank()) {
+                // Scratch DB needs the schema DDL (fetched by schemaId in compareQueries) + this seed.
+                testData = List.of(schema.seedSql());
+            } else {
+                testData = datasetGenerationService
+                        .generateDatasetFromQuery(queries.instructorQuery(), schema.schemaId());
+            }
             if (testData == null || testData.isEmpty()) {
                 return EquivalenceResult.inconclusive(Stage.TEST_DATA, "no test data generated");
             }

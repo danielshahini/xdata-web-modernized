@@ -30,6 +30,9 @@ import {
   TrendingUp,
   Medal,
   Lock,
+  Table,
+  FileText,
+  GitCompareArrows,
 } from 'lucide-react';
 import { Assignment, Question, Submission, Announcement } from '../types';
 import Skeleton from './common/Skeleton';
@@ -108,6 +111,36 @@ const difficultyOf = (q: { difficulty?: string; marks: number }): { key: 'easy' 
   return { key: 'hard', label: 'Hard' };
 };
 
+// Renders a result set; rows present in `highlight` get a colored background
+// (used for the expected-vs-actual diff: missing rows in green, extra rows in red).
+const rowKey = (r: any[]) => JSON.stringify(r);
+const DiffTable: React.FC<{ title: string; data: any; highlight?: any[][]; accent: 'easy' | 'hard' }> = ({ title, data, highlight, accent }) => {
+  const hi = new Set((highlight || []).map(rowKey));
+  const cols: string[] = data?.columns || [];
+  const rows: any[][] = data?.rows || [];
+  return (
+    <div className="rounded-xl border border-slate-200 dark:border-ink-border overflow-hidden">
+      <div className="px-4 py-2 bg-white/60 dark:bg-ink-card/60 border-b border-slate-200 dark:border-ink-border flex items-center justify-between">
+        <span className="kicker">{title}</span>
+        <span className="text-[10px] text-slate-400">{rows.length} Zeile(n){data?.truncated ? ' · gekürzt' : ''}</span>
+      </div>
+      <div className="overflow-x-auto max-h-72">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead><tr>{cols.map((c, i) => <th key={i} className="x-th !py-2">{c}</th>)}</tr></thead>
+          <tbody>
+            {rows.map((r, ri) => (
+              <tr key={ri} className={hi.has(rowKey(r)) ? (accent === 'easy' ? 'bg-easy/10' : 'bg-hard/10') : ''}>
+                {r.map((cell, ci) => <td key={ci} className="x-td !py-2 font-mono">{cell === null ? <span className="text-slate-300 italic">NULL</span> : String(cell)}</td>)}
+              </tr>
+            ))}
+            {rows.length === 0 && <tr><td className="x-td !py-2 text-slate-400 italic" colSpan={cols.length || 1}>keine Zeilen</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 const StudentDashboard: React.FC = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -125,6 +158,10 @@ const StudentDashboard: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [showSchema, setShowSchema] = useState(false);
+  const [showSample, setShowSample] = useState(false);
+  const [sampleData, setSampleData] = useState<any | null>(null);
+  const [comparison, setComparison] = useState<{ submissionId: number; data: any } | null>(null);
+  const [loadingComparison, setLoadingComparison] = useState(false);
   // Question id whose submission is currently being graded (awaiting the
   // WebSocket result push). Used to show a "grading…" state instead of a
   // misleading 0% from the not-yet-graded submission.
@@ -274,6 +311,31 @@ const StudentDashboard: React.FC = () => {
       toast.success('Anfechtung eingereicht');
     } catch {
       toast.error('Anfechtung konnte nicht eingereicht werden');
+    }
+  };
+
+  const toggleSampleData = async () => {
+    const next = !showSample;
+    setShowSample(next); setShowSchema(false); setShowCheatSheet(false);
+    const assignmentId = selectedAssignment?.id ?? (selectedQuestion as any)?.assignmentId;
+    if (next && !sampleData && assignmentId) {
+      try {
+        const res = await api.get(`/student/assignments/${assignmentId}/sample-data`);
+        setSampleData(res.data);
+      } catch { toast.error('Beispieldaten konnten nicht geladen werden.'); }
+    }
+  };
+
+  const loadComparison = async (submissionId: number) => {
+    if (comparison?.submissionId === submissionId) { setComparison(null); return; }
+    setLoadingComparison(true);
+    try {
+      const res = await api.get(`/student/submissions/${submissionId}/result-comparison`);
+      setComparison({ submissionId, data: res.data });
+    } catch (e: any) {
+      toast.error('Ergebnisvergleich nicht verfügbar.');
+    } finally {
+      setLoadingComparison(false);
     }
   };
 
@@ -618,7 +680,7 @@ const StudentDashboard: React.FC = () => {
                     return (
                       <button
                         key={q.id}
-                        onClick={() => { setSelectedQuestion(q); setSql(''); setRunResult(null); setRevealedHints(0); }}
+                        onClick={() => { setSelectedQuestion(q); setSql(''); setRunResult(null); setRevealedHints(0); setShowSample(false); setSampleData(null); setComparison(null); }}
                         className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
                           active ? 'bg-brand-50 dark:bg-brand-500/10' : 'hover:bg-slate-50 dark:hover:bg-ink-soft'
                         }`}
@@ -688,8 +750,25 @@ const StudentDashboard: React.FC = () => {
                       >
                         <Code size={15} /> {showCheatSheet ? 'Cheat-Sheet aus' : 'Cheat-Sheet'}
                       </button>
+                      <button
+                        onClick={toggleSampleData}
+                        className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2.5 rounded-xl border transition-all ${
+                          showSample
+                            ? 'bg-brand-600 text-white border-brand-600 shadow-sm'
+                            : 'text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/10 border-brand-100 dark:border-brand-500/20 hover:bg-brand-100 dark:hover:bg-brand-500/20'
+                        }`}
+                      >
+                        <Table size={15} /> {showSample ? 'Beispieldaten aus' : 'Beispieldaten'}
+                      </button>
                     </div>
                   </div>
+
+                  {selectedQuestion.description?.trim() && (
+                    <div className="mb-6 p-5 rounded-2xl bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-ink-border">
+                      <span className="kicker flex items-center gap-1.5 mb-2"><FileText size={14} className="text-brand-500" /> Aufgabenstellung</span>
+                      <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line leading-relaxed">{selectedQuestion.description}</p>
+                    </div>
+                  )}
 
                   {showCheatSheet && (
                     <div className="mb-6 p-5 rounded-2xl bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-ink-border grid grid-cols-2 md:grid-cols-4 gap-5 animate-fadeIn">
@@ -729,6 +808,37 @@ const StudentDashboard: React.FC = () => {
                     <div className="mb-6 p-5 rounded-2xl bg-brand-50/50 dark:bg-brand-500/5 border border-brand-100 dark:border-brand-500/20 animate-fadeIn">
                       <h4 className="kicker text-brand-500 mb-3">Schema · {schemaMetadata.schemaName}</h4>
                       <SchemaVisualizer metadata={schemaMetadata} />
+                    </div>
+                  )}
+
+                  {showSample && (
+                    <div className="mb-6 p-5 rounded-2xl bg-brand-50/50 dark:bg-brand-500/5 border border-brand-100 dark:border-brand-500/20 animate-fadeIn space-y-4">
+                      <h4 className="kicker text-brand-500">Beispieldaten {sampleData?.schemaName ? `· ${sampleData.schemaName}` : ''}</h4>
+                      {!sampleData ? (
+                        <p className="text-sm text-slate-400 italic">Lädt …</p>
+                      ) : (sampleData.tables || []).length === 0 ? (
+                        <p className="text-sm text-slate-400 italic">{sampleData.error || 'Keine Beispieldaten verfügbar.'}</p>
+                      ) : (
+                        (sampleData.tables || []).map((t: any) => (
+                          <div key={t.tableName} className="rounded-xl border border-slate-200 dark:border-ink-border overflow-hidden">
+                            <div className="px-4 py-2 bg-white/60 dark:bg-ink-card/60 border-b border-slate-200 dark:border-ink-border flex items-center gap-2">
+                              <Table size={13} className="text-brand-500" />
+                              <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-200">{t.tableName}</span>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left border-collapse text-xs">
+                                <thead><tr>{(t.columns || []).map((c: string, i: number) => <th key={i} className="x-th !py-2">{c}</th>)}</tr></thead>
+                                <tbody>
+                                  {(t.rows || []).map((r: any[], ri: number) => (
+                                    <tr key={ri} className="x-row">{r.map((cell, ci) => <td key={ci} className="x-td !py-2 font-mono">{cell === null ? <span className="text-slate-300 italic">NULL</span> : String(cell)}</td>)}</tr>
+                                  ))}
+                                  {(t.rows || []).length === 0 && <tr><td className="x-td !py-2 text-slate-400 italic" colSpan={(t.columns || []).length || 1}>{t.error ? 'nicht verfügbar' : 'keine Zeilen'}</td></tr>}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
 
@@ -863,11 +973,33 @@ const StudentDashboard: React.FC = () => {
                       <div className="bg-white dark:bg-ink-card rounded-xl p-5 border border-slate-200 dark:border-ink-border">
                         <MarkInfoDisplay markInfoJson={s.markInfoJson} />
                       </div>
-                      <div className="mt-4 flex justify-end">
+                      <div className="mt-4 flex flex-wrap justify-end gap-2">
+                        <button onClick={() => loadComparison(s.submissionId)} disabled={loadingComparison} className="btn-secondary text-xs">
+                          <GitCompareArrows size={14} /> {comparison?.submissionId === s.submissionId ? 'Vergleich ausblenden' : 'Erwartete Ausgabe vergleichen'}
+                        </button>
                         <button onClick={() => requestRegrade(s.submissionId)} className="btn-secondary text-xs">
                           <MessageSquare size={14} /> Bewertung anfechten
                         </button>
                       </div>
+
+                      {comparison?.submissionId === s.submissionId && (
+                        <div className="mt-4 rounded-xl border border-slate-200 dark:border-ink-border p-4 animate-fadeIn">
+                          {comparison.data.error ? (
+                            <p className="text-sm text-slate-400 italic">{comparison.data.error}</p>
+                          ) : (
+                            <div className="space-y-4">
+                              {comparison.data.match
+                                ? <span className="badge badge-success"><CheckCircle size={12} /> Ergebnis stimmt mit der erwarteten Ausgabe überein</span>
+                                : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={12} /> {(comparison.data.missing?.length || 0)} Zeile(n) fehlen · {(comparison.data.extra?.length || 0)} zu viel</span>}
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <DiffTable title="Erwartete Ausgabe" data={comparison.data.expected} highlight={comparison.data.missing} accent="easy" />
+                                <DiffTable title="Deine Ausgabe" data={comparison.data.actual} highlight={comparison.data.extra} accent="hard" />
+                              </div>
+                              <p className="text-[11px] text-slate-400">Grün = in der erwarteten Ausgabe, aber in deiner fehlt. Rot = in deiner Ausgabe, aber nicht erwartet.</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       </>
                       )}
                     </div>

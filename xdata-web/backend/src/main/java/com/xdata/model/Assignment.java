@@ -42,6 +42,13 @@ public class Assignment extends BaseAuditEntity {
     @Column(name = "defaultschemaid")
     private Integer defaultSchemaId;
 
+    // Optional fixed test dataset (INSERT statements) generated/imported once by the instructor.
+    // When present, grading seeds an ephemeral scratch DB with it (see TestDataExecutionStage)
+    // instead of generating per submission or hitting a live connection.
+    @Column(name = "seed_sql", columnDefinition = "TEXT")
+    @JsonProperty("seedSql")
+    private String seedSql;
+
     @Column(name = "assignment_name")
     @NotBlank
     @JsonProperty("name")

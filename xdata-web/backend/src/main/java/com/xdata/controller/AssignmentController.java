@@ -45,6 +45,11 @@ public class AssignmentController {
     @PostMapping
     public ResponseEntity<?> createAssignment(@RequestBody Assignment assignment, @RequestParam String courseId) {
         log.info("Request to create assignment: {} for course: {}", assignment.getName(), courseId);
+        // Guard a blank courseId up front: otherwise requireCourseAccess turns it into a
+        // confusing 403 ("Zugriff verweigert") instead of a clear "no course selected".
+        if (courseId == null || courseId.isBlank()) {
+            return ResponseEntity.badRequest().body("Kein Kurs ausgewählt. Bitte zuerst einen Kurs wählen.");
+        }
         courseAccessGuard.requireCourseAccess(courseId);
 
 
@@ -72,6 +77,7 @@ public class AssignmentController {
             existing.setName(assignmentData.getName());
             existing.setDeadline(assignmentData.getDeadline());
             existing.setDefaultSchemaId(assignmentData.getDefaultSchemaId());
+            existing.setSeedSql(assignmentData.getSeedSql());
             
             if (assignmentData.getConnection() != null && assignmentData.getConnection().getId() != null) {
                 dbConnectionRepository.findById(assignmentData.getConnection().getId()).ifPresent(existing::setConnection);

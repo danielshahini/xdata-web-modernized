@@ -67,6 +67,12 @@ public class Question extends BaseAuditEntity {
     @JsonProperty("difficulty")
     private String difficulty;
 
+    // Natural-language task statement shown to students (the actual problem text,
+    // separate from the short name/title). Nullable.
+    @Column(name = "description", columnDefinition = "TEXT")
+    @JsonProperty("description")
+    private String description;
+
     @Column(name = "partial_mark_info", columnDefinition = "TEXT")
     @Convert(converter = com.xdata.util.PartialMarkParametersConverter.class)
     @JsonProperty("partialMarkParameters")

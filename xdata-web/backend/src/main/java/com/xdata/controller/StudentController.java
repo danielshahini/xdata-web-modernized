@@ -42,6 +42,7 @@ public class StudentController {
     private final com.xdata.service.SqlSandboxService sqlSandboxService;
     private final com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
     private final com.xdata.repository.UserRepository userRepository;
+    private final com.xdata.service.core.SchemaService schemaService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboard() {
@@ -84,6 +85,7 @@ public class StudentController {
                     m.put("marks", q.getMarks());
                     m.put("tags", q.getTags());
                     m.put("difficulty", q.getDifficulty());
+                    m.put("description", q.getDescription());
                     m.put("hints", q.getHints() == null ? List.of()
                             : java.util.Arrays.stream(q.getHints().split("\\r?\\n"))
                                 .map(String::trim).filter(h -> !h.isEmpty()).collect(Collectors.toList()));
@@ -229,6 +231,157 @@ public class StudentController {
                 return ResponseEntity.ok(Map.of("error", "Ausführung fehlgeschlagen: " + e.getMessage()));
             }
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Expected-output vs. the student's own output for a graded submission. Runs the
+     * reference query and the student's stored query read-only against the assignment DB
+     * and returns both result sets plus a multiset diff. The reference SQL itself is never
+     * sent — only its OUTPUT — and only once grades are released.
+     */
+    @GetMapping("/submissions/{submissionId}/result-comparison")
+    public ResponseEntity<?> resultComparison(@PathVariable Integer submissionId) {
+        String loginId = accessControlService.getCurrentUserLoginId();
+        Submission s = submissionRepository.findById(submissionId).orElse(null);
+        if (s == null) return ResponseEntity.notFound().build();
+        if (s.getUser() == null || !s.getUser().getLoginId().equalsIgnoreCase(loginId)) {
+            return ResponseEntity.status(403).build();
+        }
+        Question question = s.getQuestion();
+        Assignment assignment = question != null ? question.getAssignment() : null;
+        if (assignment == null) return ResponseEntity.notFound().build();
+        if (Boolean.FALSE.equals(assignment.getGradesReleased())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Ergebnisvergleich erst nach Notenfreigabe verfügbar."));
+        }
+        com.xdata.model.DbConnection conn = assignment.getConnection();
+        if (conn == null || conn.getUrl() == null) {
+            return ResponseEntity.ok(Map.of("error", "Für diese Aufgabe ist keine Datenbank konfiguriert."));
+        }
+        try {
+            sqlSandboxService.validateQuery(question.getInstructorQuery());
+            sqlSandboxService.validateQuery(s.getQuery());
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("error", "Vergleich nicht möglich (nur SELECT-Abfragen)."));
+        }
+        try (java.sql.Connection c = databaseService.getConnection(conn)) {
+            Map<String, Object> expected = runReadOnly(c, question.getInstructorQuery(), 100);
+            Map<String, Object> actual = runReadOnly(c, s.getQuery(), 100);
+            @SuppressWarnings("unchecked")
+            List<List<Object>> expRows = (List<List<Object>>) expected.get("rows");
+            @SuppressWarnings("unchecked")
+            List<List<Object>> actRows = (List<List<Object>>) actual.get("rows");
+            // Multiset diff: rows expected-but-missing, and rows present-but-unexpected.
+            List<List<Object>> remaining = new java.util.ArrayList<>(actRows);
+            List<List<Object>> missing = new java.util.ArrayList<>();
+            for (List<Object> row : expRows) {
+                if (!remaining.remove(row)) missing.add(row);
+            }
+            Map<String, Object> out = new HashMap<>();
+            out.put("expected", expected);
+            out.put("actual", actual);
+            out.put("missing", missing);   // in expected, not in student's output
+            out.put("extra", remaining);   // in student's output, not expected
+            out.put("match", missing.isEmpty() && remaining.isEmpty());
+            return ResponseEntity.ok(out);
+        } catch (java.sql.SQLException e) {
+            return ResponseEntity.ok(Map.of("error", "SQL-Fehler: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("error", "Vergleich fehlgeschlagen."));
+        }
+    }
+
+    /**
+     * A small sample of real rows per table of the assignment's schema, so students can see
+     * the data they are querying. Read-only; table names come strictly from the schema
+     * metadata (an allow-list), never from user input.
+     */
+    @GetMapping("/assignments/{assignmentId}/sample-data")
+    public ResponseEntity<?> sampleData(@PathVariable Integer assignmentId) {
+        return assignmentService.getAssignmentById(assignmentId).map(assignment -> {
+            courseAccessGuard.requireCourseAccess(assignment.getCourseId());
+            Integer schemaId = assignment.getDefaultSchemaId();
+            if (schemaId == null) {
+                return ResponseEntity.ok(Map.of("tables", List.of()));
+            }
+            com.xdata.model.DbConnection conn = assignment.getConnection();
+            if (conn == null || conn.getUrl() == null) {
+                return ResponseEntity.ok(Map.of("error", "Für diese Aufgabe ist keine Datenbank konfiguriert."));
+            }
+            com.xdata.dto.SchemaMetadataDTO meta = schemaService.getSchemaMetadata(schemaId);
+            List<Map<String, Object>> tables = new java.util.ArrayList<>();
+            try (java.sql.Connection c = databaseService.getConnection(conn)) {
+                for (com.xdata.dto.SchemaMetadataDTO.TableMetadataDTO t : meta.getTables()) {
+                    String table = t.getTableName();
+                    // Allow-list guard: only plain identifiers from the parsed DDL.
+                    if (table == null || !table.matches("[A-Za-z_][A-Za-z0-9_]*")) continue;
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("tableName", table);
+                    try (java.sql.Statement st = c.createStatement()) {
+                        st.setQueryTimeout(8);
+                        st.setMaxRows(5);
+                        try (java.sql.ResultSet rs = st.executeQuery("SELECT * FROM " + table + " LIMIT 5")) {
+                            java.sql.ResultSetMetaData md = rs.getMetaData();
+                            int cols = md.getColumnCount();
+                            List<String> columns = new java.util.ArrayList<>();
+                            for (int i = 1; i <= cols; i++) columns.add(md.getColumnLabel(i));
+                            List<List<Object>> rows = new java.util.ArrayList<>();
+                            while (rs.next()) {
+                                List<Object> row = new java.util.ArrayList<>(cols);
+                                for (int i = 1; i <= cols; i++) {
+                                    Object v = rs.getObject(i);
+                                    row.add(v == null ? null : String.valueOf(v));
+                                }
+                                rows.add(row);
+                            }
+                            entry.put("columns", columns);
+                            entry.put("rows", rows);
+                        }
+                    } catch (Exception e) {
+                        entry.put("columns", List.of());
+                        entry.put("rows", List.of());
+                        entry.put("error", true);
+                    }
+                    tables.add(entry);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.ok(Map.of("error", "Beispieldaten nicht verfügbar."));
+            }
+            Map<String, Object> out = new HashMap<>();
+            out.put("schemaName", meta.getSchemaName());
+            out.put("tables", tables);
+            return ResponseEntity.ok(out);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Read-only execution helper: returns {columns, rows, rowCount, truncated}. */
+    private Map<String, Object> runReadOnly(java.sql.Connection c, String query, int maxRows) throws java.sql.SQLException {
+        try (java.sql.Statement st = c.createStatement()) {
+            st.setQueryTimeout(10);
+            st.setMaxRows(maxRows + 1);
+            try (java.sql.ResultSet rs = st.executeQuery(query)) {
+                java.sql.ResultSetMetaData md = rs.getMetaData();
+                int cols = md.getColumnCount();
+                List<String> columns = new java.util.ArrayList<>();
+                for (int i = 1; i <= cols; i++) columns.add(md.getColumnLabel(i));
+                List<List<Object>> rows = new java.util.ArrayList<>();
+                boolean truncated = false;
+                while (rs.next()) {
+                    if (rows.size() >= maxRows) { truncated = true; break; }
+                    List<Object> row = new java.util.ArrayList<>(cols);
+                    for (int i = 1; i <= cols; i++) {
+                        Object v = rs.getObject(i);
+                        row.add(v == null ? null : String.valueOf(v));
+                    }
+                    rows.add(row);
+                }
+                Map<String, Object> out = new HashMap<>();
+                out.put("columns", columns);
+                out.put("rows", rows);
+                out.put("rowCount", rows.size());
+                out.put("truncated", truncated);
+                return out;
+            }
+        }
     }
 
     /** Student raises an objection / regrade request on one of their graded submissions. */

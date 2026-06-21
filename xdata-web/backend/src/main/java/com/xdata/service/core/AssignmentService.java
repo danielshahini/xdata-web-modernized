@@ -148,6 +148,7 @@ public class AssignmentService {
         copy.setCourse(original.getCourse());
         copy.setConnection(original.getConnection());
         copy.setDefaultSchemaId(original.getDefaultSchemaId());
+        copy.setSeedSql(original.getSeedSql());
         copy.setDeadline(original.getDeadline());
         copy.setSoftDeadline(original.getSoftDeadline());
         copy.setPenaltyPercentage(original.getPenaltyPercentage());
@@ -166,6 +167,7 @@ public class AssignmentService {
             qCopy.setTags(q.getTags());
             qCopy.setHints(q.getHints());
             qCopy.setDifficulty(q.getDifficulty());
+            qCopy.setDescription(q.getDescription());
             qCopy.setPartialMarkParameters(q.getPartialMarkParameters());
             questionRepository.save(qCopy);
         }
