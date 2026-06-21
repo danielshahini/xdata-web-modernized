@@ -47,6 +47,7 @@ export interface Question {
   assignment?: Assignment;
   tags?: string;
   hints?: string | string[];
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD' | string;
   partialMarkInfo?: string;
   partialMarkParameters?: PartialMarkParameters;
 }

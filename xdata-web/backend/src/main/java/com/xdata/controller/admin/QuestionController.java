@@ -80,6 +80,7 @@ public class QuestionController {
                     existing.setMarks(questionData.getMarks());
                     existing.setTags(questionData.getTags());
                     existing.setHints(questionData.getHints());
+                    existing.setDifficulty(questionData.getDifficulty());
                     existing.setPartialMarkParameters(questionData.getPartialMarkParameters());
 
                     try {

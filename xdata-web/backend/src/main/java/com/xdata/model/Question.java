@@ -61,6 +61,12 @@ public class Question extends BaseAuditEntity {
     @JsonProperty("hints")
     private String hints;
 
+    // Teacher-set difficulty: "EASY" | "MEDIUM" | "HARD". Nullable — when unset the
+    // frontend derives difficulty from the question's marks.
+    @Column(name = "difficulty", length = 16)
+    @JsonProperty("difficulty")
+    private String difficulty;
+
     @Column(name = "partial_mark_info", columnDefinition = "TEXT")
     @Convert(converter = com.xdata.util.PartialMarkParametersConverter.class)
     @JsonProperty("partialMarkParameters")

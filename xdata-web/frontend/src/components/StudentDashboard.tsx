@@ -93,10 +93,18 @@ const badgeIcons: Record<string, React.ComponentType<any>> = {
   Sparkles, Target, Trophy, Award, TrendingUp, Flame,
 };
 
-// Derive a LeetCode-style difficulty from a question's point value.
-const difficultyOf = (marks: number): { key: 'easy' | 'medium' | 'hard'; label: string } => {
-  if (marks <= 2) return { key: 'easy', label: 'Easy' };
-  if (marks <= 5) return { key: 'medium', label: 'Medium' };
+// Difficulty prefers the teacher-set value; if unset, it's derived from the
+// question's point value (LeetCode-style).
+const DIFF_LABEL: Record<string, { key: 'easy' | 'medium' | 'hard'; label: string }> = {
+  EASY: { key: 'easy', label: 'Easy' },
+  MEDIUM: { key: 'medium', label: 'Medium' },
+  HARD: { key: 'hard', label: 'Hard' },
+};
+const difficultyOf = (q: { difficulty?: string; marks: number }): { key: 'easy' | 'medium' | 'hard'; label: string } => {
+  const d = q.difficulty?.toUpperCase();
+  if (d && DIFF_LABEL[d]) return DIFF_LABEL[d];
+  if (q.marks <= 2) return { key: 'easy', label: 'Easy' };
+  if (q.marks <= 5) return { key: 'medium', label: 'Medium' };
   return { key: 'hard', label: 'Hard' };
 };
 
@@ -215,6 +223,7 @@ const StudentDashboard: React.FC = () => {
           toast.success(`Aufgabe "${data.question.name}" wurde bewertet: ${(data.marks * 100).toFixed(0)}%`);
           // Clear the "grading…" state for the graded question so the real result shows.
           setGradingQuestionId(prev => (prev === data.questionId ? null : prev));
+          setRunResult(null);
           loadSubmissions();
           loadDashboard();
           loadLeaderboard();
@@ -276,6 +285,8 @@ const StudentDashboard: React.FC = () => {
     // panel never flashes the not-yet-graded 0% result. Cleared by the WebSocket
     // result push, or by the fallback below if no push arrives.
     setGradingQuestionId(qId);
+    // Drop the stale run preview so it doesn't sit next to "Letztes Ergebnis".
+    setRunResult(null);
     try {
       await api.post('/student/submit', {
         questionId: qId,
@@ -602,7 +613,7 @@ const StudentDashboard: React.FC = () => {
                 <div className="divide-y divide-slate-100 dark:divide-ink-border -mx-1">
                   {questions.map((q, idx) => {
                     const status = getQuestionStatus(q.id);
-                    const diff = difficultyOf(q.marks);
+                    const diff = difficultyOf(q);
                     const active = selectedQuestion?.id === q.id;
                     return (
                       <button
@@ -649,7 +660,7 @@ const StudentDashboard: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2.5 mb-1.5">
                         <h3 className="font-display text-xl font-bold text-slate-900 dark:text-white tracking-tight">{selectedQuestion.name}</h3>
-                        <span className={`pill pill-${difficultyOf(selectedQuestion.marks).key}`}>{difficultyOf(selectedQuestion.marks).label}</span>
+                        <span className={`pill pill-${difficultyOf(selectedQuestion).key}`}>{difficultyOf(selectedQuestion).label}</span>
                         <span className="font-mono text-xs font-semibold text-slate-400">{selectedQuestion.marks} Pkt</span>
                       </div>
                       <button onClick={() => loadAttempts(selectedQuestion.id)} className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors">

@@ -55,6 +55,7 @@ const AssignmentManager: React.FC = () => {
   const [editingAssignment, setEditingAssignment] = useState<any | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [dbConnections, setDbConnections] = useState<any[]>([]);
+  const [schemas, setSchemas] = useState<any[]>([]);
   const [showQuestionParams, setShowQuestionParams] = useState<number | null>(null);
   const [showStats, setShowStats] = useState<number | null>(null);
   const [extensionsFor, setExtensionsFor] = useState<Assignment | null>(null);
@@ -89,6 +90,9 @@ const AssignmentManager: React.FC = () => {
         const filtered = (res.data || []).filter((c: any) => c.courseId === courseId);
         setDbConnections(filtered);
       });
+      api.get(`/schemas/course/${courseId}`)
+        .then(res => setSchemas(res.data || []))
+        .catch(() => setSchemas([]));
     }
   }, []);
 
@@ -180,7 +184,12 @@ const AssignmentManager: React.FC = () => {
       }
       toast.success(`Frage "${q.name}" gespeichert`);
     } catch (e: any) {
-      toast.error(`SQL Fehler in "${q.name}": ${e.response?.data?.message || 'Ungültige Abfrage'}`);
+      // The backend returns the validation message as a plain string body
+      // (e.g. "Fehler in der Musterlösung: …"), not a JSON {message}.
+      const msg = typeof e.response?.data === 'string'
+        ? e.response.data
+        : (e.response?.data?.message || 'Ungültige Abfrage');
+      toast.error(`SQL Fehler in "${q.name}": ${msg}`);
     }
   };
 
@@ -206,7 +215,11 @@ const AssignmentManager: React.FC = () => {
         } catch(e) {}
     }
     setQuestions([...questions]);
-    toast.success(`${successCount} von ${questions.length} Fragen erfolgreich gespeichert`, { id: 'save-all' });
+    if (successCount === questions.length) {
+      toast.success(`${successCount} von ${questions.length} Fragen gespeichert`, { id: 'save-all' });
+    } else {
+      toast.error(`${successCount} von ${questions.length} Fragen gespeichert – prüfe die Musterlösungen der übrigen.`, { id: 'save-all' });
+    }
   };
 
   const deleteQuestion = async () => {
@@ -350,7 +363,7 @@ const AssignmentManager: React.FC = () => {
                 
                 <div className="space-y-3 relative z-10">
                   <div className="flex items-center text-xs text-gray-400 font-bold uppercase tracking-wider">
-                     <Database size={14} className="mr-3 text-brand-500" /> Schema: {a.defaultSchemaId || 'Standard'}
+                     <Database size={14} className="mr-3 text-brand-500" /> Schema: {schemas.find(s => s.id === a.defaultSchemaId)?.schemaName || 'Standard'}
                   </div>
                   <div className="flex items-center text-xs text-gray-400 font-bold uppercase tracking-wider">
                      <Calendar size={14} className="mr-3 text-brand-500" /> Deadline: {new Date(a.deadline).toLocaleDateString()}
@@ -464,6 +477,26 @@ const AssignmentManager: React.FC = () => {
                        </select>
                     </div>
                     <div className="space-y-4">
+                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
+                         Standard-Schema
+                         <InfoTip
+                           title="Schema"
+                           content="Welches Schema sehen Studierende im Schema-Explorer und in der SQL-Autovervollständigung?"
+                         />
+                       </label>
+                       <select
+                          className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                          value={editingAssignment.defaultSchemaId ?? ''}
+                          onChange={e => setEditingAssignment({
+                            ...editingAssignment,
+                            defaultSchemaId: e.target.value ? parseInt(e.target.value) : null
+                          })}
+                       >
+                          <option value="">Standard (keines)</option>
+                          {schemas.map(s => <option key={s.id} value={s.id}>{s.schemaName}</option>)}
+                       </select>
+                    </div>
+                    <div className="space-y-4">
                        <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Veröffentlichung</label>
                        <input
                           type="datetime-local"
@@ -554,7 +587,7 @@ const AssignmentManager: React.FC = () => {
                 {questions.map((q, idx) => (
                   <div key={idx} className="bg-gray-50/50 dark:bg-ink-soft/30 rounded-[2rem] border-2 border-gray-50 dark:border-ink-border p-8 group relative">
                     <div className="flex justify-between items-start mb-8 gap-6">
-                      <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-6">
                         <div className="md:col-span-3 space-y-2">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Fragentitel</label>
                           <input 
@@ -579,6 +612,23 @@ const AssignmentManager: React.FC = () => {
                               setQuestions(newQs);
                             }}
                           />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Schwierigkeit</label>
+                          <select
+                            className="w-full px-4 py-4 rounded-2xl border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-bold dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm"
+                            value={(q as any).difficulty || ''}
+                            onChange={e => {
+                              const newQs = [...questions];
+                              (newQs[idx] as any).difficulty = e.target.value || null;
+                              setQuestions(newQs);
+                            }}
+                          >
+                            <option value="">Auto (nach Punkten)</option>
+                            <option value="EASY">Easy</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HARD">Hard</option>
+                          </select>
                         </div>
                       </div>
                       <div className="flex gap-2">

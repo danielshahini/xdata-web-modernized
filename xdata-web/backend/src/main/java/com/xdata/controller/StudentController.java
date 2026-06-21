@@ -83,6 +83,7 @@ public class StudentController {
                     m.put("name", q.getName());
                     m.put("marks", q.getMarks());
                     m.put("tags", q.getTags());
+                    m.put("difficulty", q.getDifficulty());
                     m.put("hints", q.getHints() == null ? List.of()
                             : java.util.Arrays.stream(q.getHints().split("\\r?\\n"))
                                 .map(String::trim).filter(h -> !h.isEmpty()).collect(Collectors.toList()));

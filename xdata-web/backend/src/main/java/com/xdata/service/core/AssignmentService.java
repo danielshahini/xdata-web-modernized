@@ -163,6 +163,9 @@ public class AssignmentService {
             qCopy.setName(q.getName());
             qCopy.setInstructorQuery(q.getInstructorQuery());
             qCopy.setMarks(q.getMarks());
+            qCopy.setTags(q.getTags());
+            qCopy.setHints(q.getHints());
+            qCopy.setDifficulty(q.getDifficulty());
             qCopy.setPartialMarkParameters(q.getPartialMarkParameters());
             questionRepository.save(qCopy);
         }
