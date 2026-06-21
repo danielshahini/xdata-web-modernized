@@ -45,6 +45,7 @@ export interface Question {
   marks: number;
   assignmentId: number;
   assignment?: Assignment;
+  tags?: string;
   partialMarkInfo?: string;
   partialMarkParameters?: PartialMarkParameters;
 }

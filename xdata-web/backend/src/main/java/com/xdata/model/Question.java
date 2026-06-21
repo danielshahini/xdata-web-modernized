@@ -51,6 +51,11 @@ public class Question extends BaseAuditEntity {
     @JsonProperty("marks")
     private Float marks;
 
+    // Comma-separated topic tags, e.g. "JOIN, GROUP BY".
+    @Column(name = "tags")
+    @JsonProperty("tags")
+    private String tags;
+
     @Column(name = "partial_mark_info", columnDefinition = "TEXT")
     @Convert(converter = com.xdata.util.PartialMarkParametersConverter.class)
     @JsonProperty("partialMarkParameters")

@@ -443,8 +443,17 @@ const StudentDashboard: React.FC = () => {
                             : <Circle size={18} className="text-slate-300 dark:text-slate-600" />}
                         </span>
                         <span className="font-mono text-xs text-slate-400 w-7 shrink-0">{(idx + 1).toString().padStart(2, '0')}</span>
-                        <span className={`flex-1 truncate text-sm font-medium ${active ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'}`}>
-                          {q.name}
+                        <span className="flex-1 min-w-0">
+                          <span className={`block truncate text-sm font-medium ${active ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'}`}>
+                            {q.name}
+                          </span>
+                          {(q as any).tags && (
+                            <span className="hidden sm:flex flex-wrap gap-1 mt-1">
+                              {String((q as any).tags).split(',').map((t: string) => t.trim()).filter(Boolean).slice(0, 4).map((t: string) => (
+                                <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-ink-soft text-slate-500 dark:text-slate-400">{t}</span>
+                              ))}
+                            </span>
+                          )}
                         </span>
                         <span className={`pill pill-${diff.key} shrink-0`}>{diff.label}</span>
                         <span className="font-mono text-[11px] text-slate-400 w-12 text-right shrink-0">{q.marks} Pkt</span>

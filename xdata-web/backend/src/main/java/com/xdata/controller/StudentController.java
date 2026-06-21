@@ -65,6 +65,7 @@ public class StudentController {
                     m.put("id", q.getId());
                     m.put("name", q.getName());
                     m.put("marks", q.getMarks());
+                    m.put("tags", q.getTags());
                     m.put("assignmentId", assignmentId);
                     return m;
                 })

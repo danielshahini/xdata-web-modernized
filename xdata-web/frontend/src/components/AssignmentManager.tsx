@@ -587,6 +587,16 @@ const AssignmentManager: React.FC = () => {
                       </div>
                     </div>
 
+                    <div className="space-y-2 mb-6">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Themen-Tags (kommagetrennt)</label>
+                      <input
+                        className="w-full px-6 py-3 rounded-2xl border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-semibold dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm text-sm"
+                        value={(q as any).tags || ''}
+                        placeholder="z. B. JOIN, GROUP BY, Subquery"
+                        onChange={e => { const n = [...questions]; (n[idx] as any).tags = e.target.value; setQuestions(n); }}
+                      />
+                    </div>
+
                     <div className="space-y-3 mb-8">
                        <div className="flex justify-between items-center px-1">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Musterlösung (SQL)</label>
