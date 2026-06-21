@@ -83,12 +83,21 @@ public class CourseController {
         return ResponseEntity.ok(new ArrayList<>());
     }
 
+    // Both admins and instructors may create courses (gated by the class-level @PreAuthorize).
+    // An instructor who creates a course is auto-enrolled below so they can manage it.
     @PostMapping
-    public ResponseEntity<Course> createCourse(@RequestBody Course course) {
-        courseAccessGuard.requireAdmin();
+    public ResponseEntity<?> createCourse(@RequestBody Course course) {
+        if (course.getName() == null || course.getName().isBlank()
+                || course.getInstructorCourseId() == null || course.getInstructorCourseId().isBlank()) {
+            return ResponseEntity.badRequest().body("Kursname und Kurs-ID sind erforderlich.");
+        }
+        course.setInstructorCourseId(course.getInstructorCourseId().trim());
+        if (courseRepository.findByInstructorCourseId(course.getInstructorCourseId()).isPresent()) {
+            return ResponseEntity.badRequest().body("Diese Kurs-ID ist bereits vergeben.");
+        }
         Course savedCourse = courseRepository.save(course);
         auditService.log("COURSE_CREATED", savedCourse.getInstructorCourseId(), "Name: " + savedCourse.getName());
-        
+
         // Wenn ein Instructor einen Kurs erstellt, weise ihn ihm zu
         if (accessControlService.isInstructor()) {
             accessControlService.getCurrentUser().ifPresent(user -> {

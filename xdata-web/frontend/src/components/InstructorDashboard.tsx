@@ -24,7 +24,6 @@ import {
   Bell,
   Trash2,
   Plus,
-  Info,
   ChevronDown
 } from 'lucide-react';
 import api from '../api';
@@ -44,11 +43,30 @@ const InstructorDashboard: React.FC = () => {
   );
   const announcements = announcementsData ?? [];
 
-  const { data: coursesData } = useAsyncData<Course[]>(
+  const { data: coursesData, retry: reloadCourses } = useAsyncData<Course[]>(
     () => api.get('/admin/courses').then(res => res.data || []),
     []
   );
   const courses = coursesData ?? [];
+
+  const [newCourse, setNewCourse] = useState({ courseName: '', instructorCourseId: '' });
+  const handleCreateCourse = async () => {
+    if (!newCourse.courseName.trim() || !newCourse.instructorCourseId.trim()) {
+      toast.error('Bitte Kursname und Kurs-ID angeben.');
+      return;
+    }
+    try {
+      await api.post('/admin/courses', {
+        courseName: newCourse.courseName.trim(),
+        instructorCourseId: newCourse.instructorCourseId.trim(),
+      });
+      toast.success('Kurs erstellt.');
+      setNewCourse({ courseName: '', instructorCourseId: '' });
+      reloadCourses();
+    } catch (e: any) {
+      toast.error(e?.response?.data || 'Kurs konnte nicht erstellt werden.');
+    }
+  };
 
   useEffect(() => {
     if (coursesData && coursesData.length > 0) {
@@ -243,13 +261,28 @@ const InstructorDashboard: React.FC = () => {
 
           {tab === 'courses' && (
             <div className="space-y-6">
-              <div className="flex items-start gap-3 p-5 rounded-2xl border border-brand-200 dark:border-brand-900/40 bg-brand-50/60 dark:bg-brand-950/30">
-                <Info className="text-brand-500 shrink-0 mt-0.5" size={20} />
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">Deine Kurse</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Kurse werden von einer Administratorin angelegt und dir zugewiesen.</p>
+              <section className="x-card p-6">
+                <p className="font-semibold text-slate-900 dark:text-white mb-1">Neuen Kurs erstellen</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Du wirst dem Kurs automatisch als Dozent:in zugewiesen.</p>
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+                  <div className="space-y-1">
+                    <label className="x-label">Kursname</label>
+                    <input className="x-input" placeholder="z. B. Datenbanken II"
+                      value={newCourse.courseName}
+                      onChange={e => setNewCourse({ ...newCourse, courseName: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="x-label">Kurs-ID</label>
+                    <input className="x-input font-mono" placeholder="z. B. DB2-2026"
+                      value={newCourse.instructorCourseId}
+                      onChange={e => setNewCourse({ ...newCourse, instructorCourseId: e.target.value })}
+                      onKeyDown={e => { if (e.key === 'Enter') handleCreateCourse(); }} />
+                  </div>
+                  <button className="btn-primary" onClick={handleCreateCourse}>
+                    <Plus size={18} /> Erstellen
+                  </button>
                 </div>
-              </div>
+              </section>
 
               <section className="x-card overflow-hidden">
                 <table className="w-full">
