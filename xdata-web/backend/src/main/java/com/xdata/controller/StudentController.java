@@ -38,6 +38,8 @@ public class StudentController {
     private final SubmissionAnalytics submissionAnalytics;
     private final EvaluationService evaluationService;
     private final SubmissionService submissionService;
+    private final com.xdata.service.DatabaseService databaseService;
+    private final com.xdata.service.SqlSandboxService sqlSandboxService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboard() {
@@ -130,6 +132,77 @@ public class StudentController {
             }
 
             return ResponseEntity.ok(submission);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Run a student's query against the assignment database WITHOUT grading, so they
+     * can see the result set before submitting. Read-only (sandbox-validated), row-limited.
+     */
+    @PostMapping("/run")
+    public ResponseEntity<?> runQuery(@RequestBody Map<String, Object> body) {
+        Object qIdObj = body != null ? body.get("questionId") : null;
+        String query = body != null ? (String) body.get("query") : null;
+        if (qIdObj == null || query == null || query.isBlank()) {
+            return ResponseEntity.badRequest().body("questionId und query sind erforderlich.");
+        }
+        Integer questionId;
+        try {
+            questionId = (qIdObj instanceof Integer) ? (Integer) qIdObj : Integer.parseInt(qIdObj.toString());
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body("Ungültige questionId.");
+        }
+
+        return questionRepository.findById(questionId).map(question -> {
+            Assignment assignment = question.getAssignment();
+            if (assignment == null) return ResponseEntity.status(403).body("Zugriff verweigert.");
+            courseAccessGuard.requireCourseAccess(assignment.getCourseId());
+
+            // Only allow read-only SELECTs.
+            try {
+                sqlSandboxService.validateQuery(query);
+            } catch (Exception e) {
+                return ResponseEntity.ok(Map.of("error", "Nur lesende SELECT-Abfragen sind erlaubt."));
+            }
+
+            com.xdata.model.DbConnection conn = assignment.getConnection();
+            if (conn == null || conn.getUrl() == null) {
+                return ResponseEntity.ok(Map.of("error", "Für diese Aufgabe ist keine Datenbank konfiguriert."));
+            }
+
+            final int MAX_ROWS = 100;
+            try (java.sql.Connection c = databaseService.getConnection(conn);
+                 java.sql.Statement st = c.createStatement()) {
+                st.setQueryTimeout(10);
+                st.setMaxRows(MAX_ROWS + 1);
+                try (java.sql.ResultSet rs = st.executeQuery(query)) {
+                    java.sql.ResultSetMetaData md = rs.getMetaData();
+                    int cols = md.getColumnCount();
+                    List<String> columns = new java.util.ArrayList<>();
+                    for (int i = 1; i <= cols; i++) columns.add(md.getColumnLabel(i));
+                    List<List<Object>> rows = new java.util.ArrayList<>();
+                    boolean truncated = false;
+                    while (rs.next()) {
+                        if (rows.size() >= MAX_ROWS) { truncated = true; break; }
+                        List<Object> row = new java.util.ArrayList<>(cols);
+                        for (int i = 1; i <= cols; i++) {
+                            Object v = rs.getObject(i);
+                            row.add(v == null ? null : String.valueOf(v));
+                        }
+                        rows.add(row);
+                    }
+                    Map<String, Object> out = new HashMap<>();
+                    out.put("columns", columns);
+                    out.put("rows", rows);
+                    out.put("rowCount", rows.size());
+                    out.put("truncated", truncated);
+                    return ResponseEntity.ok(out);
+                }
+            } catch (java.sql.SQLException e) {
+                return ResponseEntity.ok(Map.of("error", "SQL-Fehler: " + e.getMessage()));
+            } catch (Exception e) {
+                return ResponseEntity.ok(Map.of("error", "Ausführung fehlgeschlagen: " + e.getMessage()));
+            }
         }).orElse(ResponseEntity.notFound().build());
     }
 

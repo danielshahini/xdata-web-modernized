@@ -24,6 +24,7 @@ import {
   XCircle,
   Sparkles,
   Circle,
+  Play,
 } from 'lucide-react';
 import { Assignment, Question, Submission, Announcement } from '../types';
 import Skeleton from './common/Skeleton';
@@ -63,6 +64,8 @@ const StudentDashboard: React.FC = () => {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<any | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [attempts, setAttempts] = useState<Submission[]>([]);
   const [sql, setSql] = useState('');
@@ -181,6 +184,20 @@ const StudentDashboard: React.FC = () => {
       setQuestions(res.data || []);
     } catch (e) {
       toast.error("Fehler beim Laden der Fragen");
+    }
+  };
+
+  const runQuery = async () => {
+    if (!selectedQuestion || !sql.trim()) return;
+    setRunning(true);
+    setRunResult(null);
+    try {
+      const res = await api.post('/student/run', { questionId: selectedQuestion.id, query: sql });
+      setRunResult(res.data);
+    } catch (e: any) {
+      setRunResult({ error: e.response?.data || 'Ausführung fehlgeschlagen.' });
+    } finally {
+      setRunning(false);
     }
   };
 
@@ -379,7 +396,7 @@ const StudentDashboard: React.FC = () => {
                     return (
                       <button
                         key={q.id}
-                        onClick={() => { setSelectedQuestion(q); setSql(''); }}
+                        onClick={() => { setSelectedQuestion(q); setSql(''); setRunResult(null); }}
                         className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
                           active ? 'bg-brand-50 dark:bg-brand-500/10' : 'hover:bg-slate-50 dark:hover:bg-ink-soft'
                         }`}
@@ -495,14 +512,56 @@ const StudentDashboard: React.FC = () => {
                     />
                   </div>
 
-                  <button
-                    onClick={submitSolution}
-                    disabled={loading || !sql.trim()}
-                    className="btn-primary w-full py-4 text-base group"
-                  >
-                    {loading ? <RefreshCw className="animate-spin" size={18} /> : <Send size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
-                    Antwort einreichen & prüfen
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={runQuery}
+                      disabled={running || !sql.trim()}
+                      className="btn-secondary sm:w-48 justify-center py-4"
+                    >
+                      {running ? <RefreshCw className="animate-spin" size={18} /> : <Play size={18} />}
+                      Ausführen
+                    </button>
+                    <button
+                      onClick={submitSolution}
+                      disabled={loading || !sql.trim()}
+                      className="btn-primary flex-1 py-4 text-base group justify-center"
+                    >
+                      {loading ? <RefreshCw className="animate-spin" size={18} /> : <Send size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
+                      Antwort einreichen & prüfen
+                    </button>
+                  </div>
+
+                  {runResult && (
+                    <div className="mt-5 rounded-2xl border border-slate-200 dark:border-ink-border overflow-hidden animate-fadeIn">
+                      {runResult.error ? (
+                        <div className="p-4 bg-hard/5 text-hard text-sm font-mono">{runResult.error}</div>
+                      ) : (
+                        <div>
+                          <div className="px-4 py-2 bg-slate-50 dark:bg-ink-soft border-b border-slate-200 dark:border-ink-border flex items-center justify-between">
+                            <span className="kicker">Ergebnis (Vorschau)</span>
+                            <span className="text-xs text-slate-400">{runResult.rowCount} Zeile(n){runResult.truncated ? ' · gekürzt auf 100' : ''}</span>
+                          </div>
+                          <div className="overflow-x-auto max-h-72">
+                            <table className="w-full text-left border-collapse text-sm">
+                              <thead>
+                                <tr>{(runResult.columns || []).map((c: string, i: number) => <th key={i} className="x-th">{c}</th>)}</tr>
+                              </thead>
+                              <tbody>
+                                {(runResult.rows || []).map((r: any[], ri: number) => (
+                                  <tr key={ri} className="x-row">
+                                    {r.map((cell, ci) => <td key={ci} className="x-td font-mono text-xs">{cell === null ? <span className="text-slate-300 italic">NULL</span> : String(cell)}</td>)}
+                                  </tr>
+                                ))}
+                                {(runResult.rows || []).length === 0 && (
+                                  <tr><td className="x-td text-slate-400 italic" colSpan={(runResult.columns || []).length || 1}>Keine Zeilen.</td></tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {gradingQuestionId === selectedQuestion.id && (
                     <div className="mt-6 p-5 rounded-2xl border border-brand-200 dark:border-brand-500/30 bg-brand-50/60 dark:bg-brand-500/10 animate-fadeIn flex items-center gap-4">
