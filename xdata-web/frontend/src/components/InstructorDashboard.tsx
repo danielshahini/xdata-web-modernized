@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAsyncData } from '../hooks/useAsyncData';
 import SchemaManager from './SchemaManager';
 import AssignmentManager from './AssignmentManager';
+import Gradebook from './Gradebook';
 import UserManager from './UserManager';
 import AuditLogViewer from './AuditLogViewer';
 import DbConnectionManager from './DbConnectionManager';
@@ -13,6 +14,7 @@ import {
   Users, 
   Plug, 
   BarChart3,
+  BookOpen,
   GraduationCap,
   Briefcase,
   Bell,
@@ -27,7 +29,7 @@ import { Course, Announcement } from '../types';
 
 const InstructorDashboard: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [tab, setTab] = useState<'assignments' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
+  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
   
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', courseId: '' });
   
@@ -84,6 +86,7 @@ const InstructorDashboard: React.FC = () => {
   // Everyday actions stay front-and-center; rarely used setup lives under "Erweitert".
   const primaryItems = [
     { id: 'assignments', label: 'Aufgaben', icon: ClipboardList },
+    { id: 'gradebook', label: 'Notenbuch', icon: BookOpen },
     { id: 'users', label: 'Studenten', icon: Users },
     { id: 'announcements', label: 'Ankündigungen', icon: Bell },
     { id: 'stats', label: 'Statistiken', icon: BarChart3 },
@@ -144,6 +147,7 @@ const InstructorDashboard: React.FC = () => {
 
         <div className="lg:col-span-9 animate-slideUp">
           {tab === 'assignments' && <AssignmentManager />}
+          {tab === 'gradebook' && <Gradebook />}
           {tab === 'schemas' && <SchemaManager />}
           {tab === 'users' && <UserManager />}
           {tab === 'audit' && <AuditLogViewer />}

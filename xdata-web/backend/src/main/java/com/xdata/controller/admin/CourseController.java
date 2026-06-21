@@ -40,6 +40,35 @@ public class CourseController {
     private final AccessControlService accessControlService;
     private final CourseAccessGuard courseAccessGuard;
     private final AuditService auditService;
+    private final com.xdata.service.core.SubmissionAnalytics submissionAnalytics;
+
+    private List<XDataUser> courseStudents(Integer courseNumericId) {
+        return userRepository.findDistinctByCourses_Id(courseNumericId).stream()
+                .filter(u -> "STUDENT".equalsIgnoreCase(u.getRole()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @GetMapping("/{id}/gradebook")
+    public ResponseEntity<?> getGradebook(@PathVariable Integer id) {
+        Course course = courseRepository.findById(id).orElse(null);
+        if (course == null) return ResponseEntity.notFound().build();
+        courseAccessGuard.requireCourseAccess(course.getInstructorCourseId());
+        return ResponseEntity.ok(submissionAnalytics.gradebook(course.getInstructorCourseId(), courseStudents(id)));
+    }
+
+    @GetMapping("/{id}/gradebook/export")
+    public ResponseEntity<byte[]> exportGradebook(@PathVariable Integer id) {
+        Course course = courseRepository.findById(id).orElse(null);
+        if (course == null) return ResponseEntity.notFound().build();
+        courseAccessGuard.requireCourseAccess(course.getInstructorCourseId());
+        String csv = submissionAnalytics.gradebookCsv(course.getInstructorCourseId(), courseStudents(id));
+        byte[] body = csv.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=notenbuch_" + course.getInstructorCourseId() + ".csv")
+                .contentType(org.springframework.http.MediaType.parseMediaType("text/csv"))
+                .body(body);
+    }
 
     @GetMapping
     public ResponseEntity<List<Course>> getAllCourses() {

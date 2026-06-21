@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -163,6 +165,83 @@ public class SubmissionAnalytics {
             csv.append(row);
         }
 
+        return csv.toString();
+    }
+
+    /**
+     * Course gradebook: matrix of students × assignments with achieved points
+     * (best mark per question × question weight). Students should be pre-filtered.
+     */
+    public Map<String, Object> gradebook(String courseId, List<XDataUser> students) {
+        List<Assignment> assignments = assignmentService.getAssignmentsByCourse(courseId);
+        Map<Integer, List<Question>> questionsByAssignment = new LinkedHashMap<>();
+        List<Map<String, Object>> assignmentInfo = new ArrayList<>();
+        for (Assignment a : assignments) {
+            List<Question> qs = questionRepository.findByAssignment_Id(a.getId());
+            questionsByAssignment.put(a.getId(), qs);
+            double total = qs.stream().mapToDouble(q -> q.getMarks() != null ? q.getMarks() : 0.0).sum();
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", a.getId());
+            m.put("name", a.getName());
+            m.put("totalMarks", total);
+            assignmentInfo.add(m);
+        }
+
+        List<Map<String, Object>> studentInfo = new ArrayList<>();
+        Map<String, Map<Integer, Double>> grades = new LinkedHashMap<>();
+        for (XDataUser u : students) {
+            Map<String, Object> sm = new LinkedHashMap<>();
+            sm.put("loginId", u.getLoginId());
+            sm.put("username", u.getUsername());
+            studentInfo.add(sm);
+
+            Map<Integer, Double> row = new LinkedHashMap<>();
+            for (Assignment a : assignments) {
+                double achieved = 0.0;
+                for (Question q : questionsByAssignment.get(a.getId())) {
+                    double best = bestMark(submissionRepository
+                            .findByUser_LoginIdAndQuestion_IdOrderBySubmissionTimeDesc(u.getLoginId(), q.getId()));
+                    achieved += best * (q.getMarks() != null ? q.getMarks() : 0.0);
+                }
+                row.put(a.getId(), Math.round(achieved * 100.0) / 100.0);
+            }
+            grades.put(u.getLoginId(), row);
+        }
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("students", studentInfo);
+        out.put("assignments", assignmentInfo);
+        out.put("grades", grades);
+        return out;
+    }
+
+    /** CSV form of the course gradebook (students × assignments + total). */
+    @SuppressWarnings("unchecked")
+    public String gradebookCsv(String courseId, List<XDataUser> students) {
+        Map<String, Object> gb = gradebook(courseId, students);
+        List<Map<String, Object>> assignments = (List<Map<String, Object>>) gb.get("assignments");
+        List<Map<String, Object>> studentRows = (List<Map<String, Object>>) gb.get("students");
+        Map<String, Map<Integer, Double>> grades = (Map<String, Map<Integer, Double>>) gb.get("grades");
+
+        StringBuilder csv = new StringBuilder("LoginId,Name");
+        double grandTotal = 0.0;
+        for (Map<String, Object> a : assignments) {
+            csv.append(",").append(((String) a.get("name")).replace(",", " "));
+            grandTotal += (double) a.get("totalMarks");
+        }
+        csv.append(",Gesamt (von ").append(Math.round(grandTotal * 100.0) / 100.0).append(")\n");
+
+        for (Map<String, Object> s : studentRows) {
+            String loginId = (String) s.get("loginId");
+            csv.append(loginId).append(",").append(((String) s.get("username")).replace(",", " "));
+            double sum = 0.0;
+            for (Map<String, Object> a : assignments) {
+                double v = grades.getOrDefault(loginId, Map.of()).getOrDefault((Integer) a.get("id"), 0.0);
+                sum += v;
+                csv.append(",").append(v);
+            }
+            csv.append(",").append(Math.round(sum * 100.0) / 100.0).append("\n");
+        }
         return csv.toString();
     }
 
