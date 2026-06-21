@@ -279,8 +279,8 @@ const AssignmentManager: React.FC = () => {
   if (showStats) {
     return (
       <div className="space-y-6 animate-fadeIn">
-        <button onClick={() => setShowStats(null)} className="flex items-center text-brand-500 font-bold hover:underline mb-6 group">
-          <ChevronLeft size={24} className="mr-2 group-hover:-translate-x-1 transition-transform" /> ZURÜCK ZUR ÜBERSICHT
+        <button onClick={() => setShowStats(null)} className="btn-ghost mb-6">
+          <ChevronLeft size={18} /> Zurück zur Übersicht
         </button>
         <AssignmentStats assignmentId={showStats} />
       </div>
@@ -319,17 +319,14 @@ const AssignmentManager: React.FC = () => {
             </div>
             <div className="flex gap-4 w-full md:w-auto">
               <select 
-                className="flex-1 md:w-72 px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all cursor-pointer"
+                className="x-select flex-1 md:w-72"
                 value={selectedCourseId}
                 onChange={e => loadAssignments(e.target.value)}
               >
                 {courses.map(c => <option key={c.instructorCourseId} value={c.instructorCourseId}>{c.courseName}</option>)}
               </select>
-              <button 
-                onClick={startCreate}
-                className="bg-brand-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center shadow-2xl shadow-blue-500/20 hover:bg-brand-700 active:scale-95 transition-all"
-              >
-                <Plus size={24} className="mr-2" /> NEU
+              <button onClick={startCreate} className="btn-primary">
+                <Plus size={18} /> Neu
               </button>
             </div>
           </div>
@@ -344,11 +341,11 @@ const AssignmentManager: React.FC = () => {
                     ID: {a.id}
                   </span>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                    <button onClick={() => editAssignment(a)} className="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-blue-900/30 rounded-lg transition-all" title="Bearbeiten"><Edit size={18}/></button>
-                    <button onClick={() => duplicateAssignment(a.id)} className="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-all" title="Duplizieren"><Copy size={18}/></button>
-                    <button onClick={() => setShowStats(a.id)} className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-all" title="Statistiken"><BarChart3 size={18}/></button>
-                    <button onClick={() => setExtensionsFor(a)} className="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-blue-900/30 rounded-lg transition-all" title="Fristverlängerungen"><CalendarClock size={18}/></button>
-                    <button onClick={() => setDeleteModal({ isOpen: true, type: 'assignment', id: a.id })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all" title="Löschen"><Trash2 size={18}/></button>
+                    <button onClick={() => editAssignment(a)} className="icon-btn hover:text-brand-600" title="Bearbeiten"><Edit size={18}/></button>
+                    <button onClick={() => duplicateAssignment(a.id)} className="icon-btn hover:text-amber-500" title="Duplizieren"><Copy size={18}/></button>
+                    <button onClick={() => setShowStats(a.id)} className="icon-btn hover:text-easy" title="Statistiken"><BarChart3 size={18}/></button>
+                    <button onClick={() => setExtensionsFor(a)} className="icon-btn hover:text-brand-600" title="Fristverlängerungen"><CalendarClock size={18}/></button>
+                    <button onClick={() => setDeleteModal({ isOpen: true, type: 'assignment', id: a.id })} className="icon-btn hover:text-hard" title="Löschen"><Trash2 size={18}/></button>
                   </div>
                 </div>
                 
@@ -395,8 +392,8 @@ const AssignmentManager: React.FC = () => {
       ) : (
         <div className="bg-white dark:bg-ink-card rounded-[2.5rem] p-10 shadow-2xl shadow-blue-500/5 border border-slate-200 dark:border-ink-border animate-slideUp">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b dark:border-ink-border pb-8">
-            <button onClick={() => setEditingAssignment(null)} className="flex items-center text-gray-400 font-bold hover:text-gray-600 transition-colors uppercase tracking-widest text-xs">
-              <ChevronLeft size={20} className="mr-2" /> Zurück
+            <button onClick={() => setEditingAssignment(null)} className="btn-ghost">
+              <ChevronLeft size={18} /> Zurück
             </button>
             <div className="flex items-center gap-2">
                {[1, 2].map(step => (
@@ -422,21 +419,19 @@ const AssignmentManager: React.FC = () => {
             <div className="space-y-8 animate-fadeIn">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
-                      Name des Assignments
-                   </label>
+                   <label className="x-label">Name des Assignments</label>
                    <input
-                      className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                      className="x-input"
                       value={editingAssignment.name}
                       onChange={e => setEditingAssignment({...editingAssignment, name: e.target.value})}
                       placeholder="z.B. Woche 1: SELECT Statements"
                    />
                 </div>
                 <div className="space-y-4">
-                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Deadline</label>
+                   <label className="x-label">Deadline</label>
                    <input
                       type="datetime-local"
-                      className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                      className="x-input"
                       value={editingAssignment.deadline ? new Date(editingAssignment.deadline).toISOString().slice(0, 16) : ''}
                       onChange={e => setEditingAssignment({...editingAssignment, deadline: e.target.value})}
                    />
@@ -457,7 +452,7 @@ const AssignmentManager: React.FC = () => {
                 {showAdvAssignment && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-5">
                     <div className="space-y-4">
-                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
+                       <label className="x-label flex items-center">
                          Ziel-Datenbank
                          <InfoTip
                            title="Verbindung"
@@ -465,7 +460,7 @@ const AssignmentManager: React.FC = () => {
                          />
                        </label>
                        <select
-                          className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                          className="x-select"
                           value={editingAssignment.connection?.id || ''}
                           onChange={e => setEditingAssignment({
                             ...editingAssignment,
@@ -477,7 +472,7 @@ const AssignmentManager: React.FC = () => {
                        </select>
                     </div>
                     <div className="space-y-4">
-                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
+                       <label className="x-label flex items-center">
                          Standard-Schema
                          <InfoTip
                            title="Schema"
@@ -485,7 +480,7 @@ const AssignmentManager: React.FC = () => {
                          />
                        </label>
                        <select
-                          className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                          className="x-select"
                           value={editingAssignment.defaultSchemaId ?? ''}
                           onChange={e => setEditingAssignment({
                             ...editingAssignment,
@@ -497,16 +492,16 @@ const AssignmentManager: React.FC = () => {
                        </select>
                     </div>
                     <div className="space-y-4">
-                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Veröffentlichung</label>
+                       <label className="x-label">Veröffentlichung</label>
                        <input
                           type="datetime-local"
-                          className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                          className="x-input"
                           value={editingAssignment.publishedDate ? new Date(editingAssignment.publishedDate).toISOString().slice(0, 16) : ''}
                           onChange={e => setEditingAssignment({...editingAssignment, publishedDate: e.target.value})}
                        />
                     </div>
                     <div className="space-y-4">
-                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Penalty (Verspätung)</label>
+                       <label className="x-label">Penalty (Verspätung)</label>
                        <div className="flex items-center h-[60px] gap-4 px-6 bg-gray-50 dark:bg-ink-soft rounded-2xl border-2 border-gray-50 dark:border-ink-border">
                           <input
                             type="checkbox"
@@ -519,7 +514,7 @@ const AssignmentManager: React.FC = () => {
                             <div className="flex items-center gap-2 ml-auto">
                               <input
                                 type="number"
-                                className="w-20 px-3 py-1.5 rounded-xl border dark:border-gray-600 bg-white dark:bg-ink-card text-xs font-bold text-center"
+                                className="x-input w-20 py-1.5 text-center text-xs"
                                 value={editingAssignment.penaltyPercentage || 10}
                                 onChange={e => setEditingAssignment({...editingAssignment, penaltyPercentage: parseFloat(e.target.value)})}
                               />
@@ -529,20 +524,20 @@ const AssignmentManager: React.FC = () => {
                        </div>
                     </div>
                     <div className="space-y-4">
-                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
+                       <label className="x-label flex items-center">
                          Max. Versuche
                          <InfoTip title="Versuche" content="Maximale Anzahl an Abgaben pro Frage. Leer = unbegrenzt." />
                        </label>
                        <input
                           type="number" min="1"
                           placeholder="unbegrenzt"
-                          className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                          className="x-input"
                           value={editingAssignment.maxAttempts ?? ''}
                           onChange={e => setEditingAssignment({...editingAssignment, maxAttempts: e.target.value ? parseInt(e.target.value) : null})}
                        />
                     </div>
                     <div className="space-y-4">
-                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Noten-Freigabe</label>
+                       <label className="x-label">Noten-Freigabe</label>
                        <label className="flex items-center h-[60px] gap-4 px-6 bg-gray-50 dark:bg-ink-soft rounded-2xl border-2 border-gray-50 dark:border-ink-border cursor-pointer">
                           <input
                             type="checkbox"
@@ -560,9 +555,9 @@ const AssignmentManager: React.FC = () => {
               <div className="pt-6 flex justify-end">
                  <button
                   onClick={async () => { const saved = await saveAssignment(); if (saved) setWizardStep(2); }}
-                  className="bg-brand-600 text-white px-12 py-5 rounded-2xl font-bold shadow-2xl shadow-blue-500/20 flex items-center gap-3 hover:bg-brand-700 transition-all group"
+                  className="btn-primary"
                  >
-                    Nächster Schritt <ChevronRight className="group-hover:translate-x-2 transition-transform" />
+                    Nächster Schritt <ChevronRight size={18} />
                  </button>
               </div>
             </div>
@@ -574,11 +569,11 @@ const AssignmentManager: React.FC = () => {
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Definieren Sie die Aufgabenstellungen</p>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
-                  <button onClick={addQuestion} className="flex-1 md:flex-none px-8 py-4 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl font-bold hover:bg-gray-200 transition-all flex items-center justify-center">
-                    <Plus size={20} className="mr-2" /> Hinzufügen
+                  <button onClick={addQuestion} className="btn-secondary flex-1 md:flex-none">
+                    <Plus size={18} /> Hinzufügen
                   </button>
-                  <button onClick={saveAllQuestions} className="flex-1 md:flex-none px-8 py-4 bg-brand-600 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 hover:bg-brand-700 transition-all flex items-center justify-center">
-                    <Save size={20} className="mr-2" /> Alle speichern
+                  <button onClick={saveAllQuestions} className="btn-primary flex-1 md:flex-none">
+                    <Save size={18} /> Alle speichern
                   </button>
                 </div>
               </div>
@@ -589,9 +584,9 @@ const AssignmentManager: React.FC = () => {
                     <div className="flex justify-between items-start mb-8 gap-6">
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-6">
                         <div className="md:col-span-3 space-y-2">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Fragentitel</label>
+                          <label className="x-label">Fragentitel</label>
                           <input 
-                            className="w-full px-6 py-4 rounded-2xl border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-bold dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm"
+                            className="x-input"
                             value={q.name}
                             onChange={e => {
                               const newQs = [...questions];
@@ -601,10 +596,10 @@ const AssignmentManager: React.FC = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Punkte</label>
+                          <label className="x-label">Punkte</label>
                           <input 
                             type="number"
-                            className="w-full px-6 py-4 rounded-2xl border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-bold dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm text-center"
+                            className="x-input text-center"
                             value={q.marks}
                             onChange={e => {
                               const newQs = [...questions];
@@ -614,9 +609,9 @@ const AssignmentManager: React.FC = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Schwierigkeit</label>
+                          <label className="x-label">Schwierigkeit</label>
                           <select
-                            className="w-full px-4 py-4 rounded-2xl border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-bold dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm"
+                            className="x-select"
                             value={(q as any).difficulty || ''}
                             onChange={e => {
                               const newQs = [...questions];
@@ -632,15 +627,15 @@ const AssignmentManager: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => saveQuestion(q, idx)} className="p-4 bg-white dark:bg-ink-card rounded-2xl text-green-500 shadow-sm border dark:border-ink-border hover:bg-green-50 transition-all"><Check size={20} /></button>
-                        <button onClick={() => setDeleteModal({ isOpen: true, type: 'question', id: q.id, idx })} className="p-4 bg-white dark:bg-ink-card rounded-2xl text-red-500 shadow-sm border dark:border-ink-border hover:bg-red-50 transition-all"><Trash2 size={20} /></button>
+                        <button onClick={() => saveQuestion(q, idx)} className="icon-btn hover:text-easy" title="Frage speichern"><Check size={20} /></button>
+                        <button onClick={() => setDeleteModal({ isOpen: true, type: 'question', id: q.id, idx })} className="icon-btn hover:text-hard" title="Frage löschen"><Trash2 size={20} /></button>
                       </div>
                     </div>
 
                     <div className="space-y-2 mb-6">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Themen-Tags (kommagetrennt)</label>
+                      <label className="x-label">Themen-Tags (kommagetrennt)</label>
                       <input
-                        className="w-full px-6 py-3 rounded-2xl border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-semibold dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm text-sm"
+                        className="x-input"
                         value={(q as any).tags || ''}
                         placeholder="z. B. JOIN, GROUP BY, Subquery"
                         onChange={e => { const n = [...questions]; (n[idx] as any).tags = e.target.value; setQuestions(n); }}
@@ -648,9 +643,9 @@ const AssignmentManager: React.FC = () => {
                     </div>
 
                     <div className="space-y-2 mb-6">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Hinweise (einer pro Zeile, progressiv)</label>
+                      <label className="x-label">Hinweise (einer pro Zeile, progressiv)</label>
                       <textarea
-                        className="w-full px-6 py-3 rounded-2xl border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-medium dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm text-sm h-24 resize-y"
+                        className="x-input h-24 resize-y"
                         value={typeof (q as any).hints === 'string' ? (q as any).hints : (Array.isArray((q as any).hints) ? (q as any).hints.join('\n') : '')}
                         placeholder={'Denk an die WHERE-Klausel.\nVergleiche mit >.'}
                         onChange={e => { const n = [...questions]; (n[idx] as any).hints = e.target.value; setQuestions(n); }}
@@ -659,11 +654,11 @@ const AssignmentManager: React.FC = () => {
 
                     <div className="space-y-3 mb-8">
                        <div className="flex justify-between items-center px-1">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Musterlösung (SQL)</label>
+                          <label className="x-label !mb-0">Musterlösung (SQL)</label>
                           <span className="text-[9px] font-bold text-brand-500 uppercase tracking-tighter">Wird gegen Schema geprüft</span>
                        </div>
                        <textarea 
-                         className="w-full p-6 rounded-[1.5rem] border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-mono text-sm dark:text-blue-300 min-h-[120px] shadow-inner focus:border-blue-500 outline-none transition-all"
+                         className="x-input font-mono min-h-[120px]"
                          value={q.instructorQuery}
                          spellCheck={false}
                          onChange={e => {
@@ -691,7 +686,7 @@ const AssignmentManager: React.FC = () => {
                             <input 
                               type="number" 
                               step="0.1"
-                              className="w-full px-3 py-2 rounded-xl border dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white text-xs focus:border-blue-500 outline-none transition-all"
+                              className="x-input py-2 text-xs"
                               value={(q.partialMarkParameters as any)?.[key] ?? (defaultParams as any)[key]}
                               onChange={(e) => updateQuestionParams(idx, key as any, parseFloat(e.target.value))}
                             />
@@ -705,17 +700,14 @@ const AssignmentManager: React.FC = () => {
               </div>
 
               <div className="pt-10 flex justify-between">
-                <button 
-                  onClick={() => setWizardStep(1)}
-                  className="px-10 py-5 rounded-2xl font-bold text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-all flex items-center gap-3"
-                >
-                  <ChevronLeft size={20} /> Metadaten anpassen
+                <button onClick={() => setWizardStep(1)} className="btn-ghost">
+                  <ChevronLeft size={18} /> Metadaten anpassen
                 </button>
-                <button 
+                <button
                   onClick={async () => { const saved = await saveAssignment(); if (saved) setEditingAssignment(null); }}
-                  className="bg-green-600 text-white px-12 py-5 rounded-2xl font-bold shadow-2xl shadow-green-500/20 flex items-center gap-3 hover:bg-green-700 active:scale-95 transition-all"
+                  className="btn-primary"
                 >
-                  <CheckCircle2 size={24} /> Fertigstellen & Speichern
+                  <CheckCircle2 size={18} /> Fertigstellen & Speichern
                 </button>
               </div>
             </div>

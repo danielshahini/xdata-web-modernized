@@ -550,7 +550,7 @@ const UserManager: React.FC = () => {
                     <div className="flex items-center justify-end space-x-1">
                       <button 
                         onClick={() => toggleStatus(u)} 
-                        className={`p-2 transition-colors ${u.enabled !== false ? 'text-gray-300 dark:text-gray-600 hover:text-orange-500' : 'text-orange-500 hover:text-orange-600'}`}
+                        className={`icon-btn ${u.enabled !== false ? 'hover:text-orange-500' : 'text-orange-500'}`}
                         title={u.enabled !== false ? 'Benutzer deaktivieren' : 'Benutzer aktivieren'}
                       >
                         {u.enabled !== false ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
@@ -558,7 +558,7 @@ const UserManager: React.FC = () => {
                       {isAdmin && u.loginId !== currentUser?.loginId && (
                         <button 
                           onClick={() => handleImpersonate(u.loginId, u.username)} 
-                          className="icon-btnhover:text-purple-500 dark:hover:text-purple-400 transition-colors"
+                          className="icon-btn hover:text-purple-500 dark:hover:text-purple-400 transition-colors"
                           title="Als dieser Benutzer anmelden"
                         >
                           <UserSecret size={18} />
@@ -566,21 +566,21 @@ const UserManager: React.FC = () => {
                       )}
                       <button 
                         onClick={() => handleEdit(u)} 
-                        className="icon-btnhover:text-green-500 dark:hover:text-green-400 transition-colors"
+                        className="icon-btn hover:text-green-500 dark:hover:text-green-400 transition-colors"
                         title="Benutzer bearbeiten"
                       >
                         <Edit2 size={18} />
                       </button>
                       <button 
                         onClick={() => { setResettingUser(u.loginId); setShowResetModal(true); }} 
-                        className="icon-btnhover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                        className="icon-btn hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                         title="Passwort zurücksetzen"
                       >
                         <Key size={18} />
                       </button>
                       <button 
                         onClick={() => deleteUser(u.id, u.username)} 
-                        className="icon-btnhover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        className="icon-btn hover:text-red-500 dark:hover:text-red-400 transition-colors"
                         title="Benutzer löschen"
                       >
                         <Trash2 size={18} />
@@ -601,7 +601,7 @@ const UserManager: React.FC = () => {
               <h3 className="section-title flex items-center gap-2">
                 <Users className="mr-2 text-blue-500" size={24} /> Studenten ohne Kurszuweisung
               </h3>
-              <button onClick={() => setShowAddExistingModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button onClick={() => setShowAddExistingModal(false)} className="icon-btn hover:text-hard">
                 <X size={24} />
               </button>
             </div>
@@ -654,7 +654,7 @@ const UserManager: React.FC = () => {
               <h3 className="section-title flex items-center gap-2">
                 <Edit2 className="mr-2 text-blue-500" size={24} /> Benutzer bearbeiten: <span className="ml-2 text-blue-600">{editingUser.loginId}</span>
               </h3>
-              <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button onClick={() => setShowEditModal(false)} className="icon-btn hover:text-hard">
                 <X size={24} />
               </button>
             </div>
@@ -663,7 +663,7 @@ const UserManager: React.FC = () => {
               <div className="space-y-1">
                 <label className="x-label">Vollständiger Name</label>
                 <input 
-                  className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white" 
+                  className="x-input"
                   value={editFormData.username} 
                   onChange={e => setEditFormData({...editFormData, username: e.target.value})} 
                 />
@@ -671,7 +671,7 @@ const UserManager: React.FC = () => {
               <div className="space-y-1">
                 <label className="x-label">E-Mail Adresse</label>
                 <input 
-                  className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white" 
+                  className="x-input"
                   value={editFormData.email} 
                   onChange={e => setEditFormData({...editFormData, email: e.target.value})} 
                 />
@@ -750,7 +750,7 @@ const UserManager: React.FC = () => {
             </p>
             <input 
               type="password" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold mb-6 bg-gray-50 dark:bg-gray-900 dark:text-white" 
+              className="x-input mb-6" 
               placeholder="Neues Passwort"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}

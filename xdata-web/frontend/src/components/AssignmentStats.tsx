@@ -197,23 +197,14 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      <div className="flex gap-4 border-b dark:border-ink-border pb-2">
-        <button 
-          onClick={() => setActiveTab('overview')}
-          className={`px-6 py-2 text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'overview' ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-400'}`}
-        >
+      <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-ink-soft p-1 rounded-xl border border-slate-200 dark:border-ink-border w-fit">
+        <button onClick={() => setActiveTab('overview')} className={`x-tab ${activeTab === 'overview' ? 'x-tab-active' : ''}`}>
           Übersicht
         </button>
-        <button 
-          onClick={() => setActiveTab('submissions')}
-          className={`px-6 py-2 text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'submissions' ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-400'}`}
-        >
-          Abgaben & Feedback
+        <button onClick={() => setActiveTab('submissions')} className={`x-tab ${activeTab === 'submissions' ? 'x-tab-active' : ''}`}>
+          Abgaben &amp; Feedback
         </button>
-        <button 
-          onClick={() => setActiveTab('plagiarism')}
-          className={`px-6 py-2 text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'plagiarism' ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-400'}`}
-        >
+        <button onClick={() => setActiveTab('plagiarism')} className={`x-tab ${activeTab === 'plagiarism' ? 'x-tab-active' : ''}`}>
           Plagiats-Check ({plagiarism.length})
         </button>
       </div>
@@ -221,14 +212,14 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
       {activeTab === 'overview' && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-ink-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-ink-border">
+            <div className="x-card p-8">
               <TrendingUp className="text-brand-500 mb-4" size={32} />
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ø Gesamt-Punkte</div>
               <div className="text-3xl font-bold dark:text-white">
                 {(analytics.questionAnalytics.reduce((acc, q) => acc + q.averageMarks, 0)).toFixed(1)}
               </div>
             </div>
-            <div className="bg-white dark:bg-ink-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-ink-border">
+            <div className="x-card p-8">
               <FileSpreadsheet className="text-green-500 mb-4" size={32} />
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Exportieren</div>
               <button 
@@ -238,14 +229,14 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
                 Als CSV herunterladen
               </button>
             </div>
-            <div className="bg-white dark:bg-ink-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-ink-border">
+            <div className="x-card p-8">
               <AlertTriangle className={`mb-4 ${plagiarism.length > 0 ? 'text-red-500' : 'text-gray-300'}`} size={32} />
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Plagiats-Verdacht</div>
               <div className="text-3xl font-bold dark:text-white">{plagiarism.length} Fälle</div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-ink-card p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-ink-border h-[400px]">
+          <div className="x-card p-8 h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsBarChart data={analytics.questionAnalytics}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
@@ -267,7 +258,7 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
       )}
 
       {activeTab === 'submissions' && (
-        <div className="bg-white dark:bg-ink-card rounded-2xl shadow-sm border dark:border-ink-border overflow-hidden">
+        <div className="x-card overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-ink-soft/50">
               <tr>
@@ -294,14 +285,14 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
                   <td className="px-6 py-4 text-right">
                     {editingFeedbackId === s.submissionId ? (
                       <div className="flex gap-2">
-                        <input 
-                          className="text-xs p-2 border dark:border-ink-border rounded-xl dark:bg-ink-soft dark:text-white"
+                        <input
+                          className="x-input text-xs py-2"
                           value={feedbackText}
                           onChange={e => setFeedbackText(e.target.value)}
                           placeholder="Feedback..."
                         />
-                        <button onClick={() => handleFeedback(s.submissionId)} className="text-green-500"><CheckCircle size={20}/></button>
-                        <button onClick={() => setEditingFeedbackId(null)} className="text-red-500"><XCircle size={20}/></button>
+                        <button onClick={() => handleFeedback(s.submissionId)} className="icon-btn hover:text-easy"><CheckCircle size={20}/></button>
+                        <button onClick={() => setEditingFeedbackId(null)} className="icon-btn hover:text-hard"><XCircle size={20}/></button>
                       </div>
                     ) : (
                       <button 

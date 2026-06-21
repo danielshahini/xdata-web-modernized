@@ -158,7 +158,7 @@ const DatasetPlayground: React.FC = () => {
           <button 
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-2 bg-white dark:bg-ink-card border border-slate-200 dark:border-ink-border hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 px-6 py-3 rounded-2xl font-bold transition-all shadow-sm dark:shadow-none"
+            className="btn-secondary"
           >
             {uploading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             Schema laden (.sql)
@@ -174,7 +174,7 @@ const DatasetPlayground: React.FC = () => {
             </label>
             <div className="flex gap-4">
               <select
-                className="flex-1 rounded-2xl border-slate-200 dark:border-ink-border dark:bg-ink-soft dark:text-white shadow-sm focus:ring-4 focus:ring-brand-500/10 focus:border-blue-500 font-bold px-4 py-3 appearance-none outline-none transition-all"
+                className="x-select flex-1"
                 value={selectedSchema || ''}
                 onChange={(e) => setSelectedSchema(Number(e.target.value))}
               >
@@ -256,7 +256,7 @@ const DatasetPlayground: React.FC = () => {
               <button
                 onClick={handleGenerate}
                 disabled={loading || !selectedSchema}
-                className="flex items-center gap-3 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white px-8 py-4 rounded-[20px] font-bold transition-all shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-50"
+                className="btn-primary py-4 text-base"
               >
                 {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
                 Dataset generieren
@@ -273,13 +273,13 @@ const DatasetPlayground: React.FC = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={copyToClipboard}
-                    className="p-3 text-slate-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm rounded-xl transition-all"
+                    className="icon-btn"
                     title="Kopieren"
                   >
                     <Copy className="w-5 h-5" />
                   </button>
                   <button
-                    className="p-3 text-slate-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm rounded-xl transition-all"
+                    className="icon-btn"
                     title="Download .sql"
                     onClick={() => {
                       const element = document.createElement("a");

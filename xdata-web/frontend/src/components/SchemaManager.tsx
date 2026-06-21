@@ -134,8 +134,8 @@ const SchemaManager: React.FC = () => {
       <div className="bg-gray-50 dark:bg-ink-card/50 p-6 rounded-2xl border border-slate-200 dark:border-ink-border flex flex-col md:flex-row gap-4 items-center transition-colors">
         <div className="relative w-full md:w-80">
           <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <select 
-            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-ink-border focus:ring-2 focus:ring-brand-500 outline-none appearance-none bg-white dark:bg-ink-card text-sm font-bold text-gray-700 dark:text-gray-200 shadow-sm"
+          <select
+            className="x-select pl-11"
             value={selectedCourseId}
             onChange={(e) => setSelectedCourseId(e.target.value)}
           >
@@ -150,23 +150,23 @@ const SchemaManager: React.FC = () => {
       {selectedCourseId ? (
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-ink-card p-8 rounded-2xl border border-slate-200 dark:border-ink-border shadow-lg sticky top-24 transition-colors">
+            <div className="x-card p-8 sticky top-24">
               <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
                 <CloudUpload className="text-brand-500 mr-2" size={24} /> Neues Schema
               </h3>
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Anzeigename</label>
+                  <label className="x-label">Anzeigename</label>
                   <input 
                     type="text" 
                     placeholder="z.B. Universität DB" 
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border focus:ring-2 focus:ring-brand-500 outline-none font-bold text-gray-700 dark:text-white bg-gray-50 dark:bg-ink-soft focus:bg-white dark:focus:bg-gray-800 transition-all"
+                    className="x-input"
                     value={newSchemaName}
                     onChange={(e) => setNewSchemaName(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                  <label className="x-label">
                     DDL Datei (.sql)
                     <InfoTip 
                       title="Was ist eine DDL-Datei?" 
@@ -192,9 +192,9 @@ const SchemaManager: React.FC = () => {
                 <button 
                   onClick={uploadSchema}
                   disabled={loading}
-                  className="w-full bg-brand-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:bg-brand-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center"
+                  className="btn-primary w-full"
                 >
-                  {loading ? <RefreshCw className="animate-spin mr-2" size={18} /> : <Upload className="mr-2" size={18} />}
+                  {loading ? <RefreshCw className="animate-spin" size={18} /> : <Upload size={18} />}
                   Schema Hochladen
                 </button>
               </div>
@@ -207,7 +207,7 @@ const SchemaManager: React.FC = () => {
             </h3>
             <div className="grid gap-4">
               {schemas.map(s => (
-                <div key={s.id} className="bg-white dark:bg-ink-card p-6 rounded-2xl border border-slate-200 dark:border-ink-border shadow-sm flex flex-col md:flex-row justify-between items-center group hover:border-brand-200 dark:hover:border-blue-800 transition-all duration-300 gap-4">
+                <div key={s.id} className="x-card p-6 flex flex-col md:flex-row justify-between items-center group hover:border-brand-200 dark:hover:border-blue-800 transition-all gap-4">
                   <div className="flex items-center space-x-4 w-full md:w-auto">
                     <div className="w-12 h-12 bg-brand-50 dark:bg-brand-950/40 text-brand-500 dark:text-brand-400 rounded-2xl flex items-center justify-center shadow-inner shrink-0">
                       <Database size={20} />
@@ -223,14 +223,14 @@ const SchemaManager: React.FC = () => {
                   <div className="flex flex-wrap items-center justify-end space-x-4 w-full md:w-auto">
                     <div className="flex items-center space-x-1">
                       <button 
-                        className="p-3 text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
+                        className="icon-btn hover:text-brand-600"
                         title="Metadaten ansehen"
                         onClick={() => loadMetadata(s.id)}
                       >
                         <Table size={18} />
                       </button>
                       <button 
-                        className="p-3 text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
+                        className="icon-btn hover:text-brand-600"
                         title="DDL ansehen"
                         onClick={() => toast(s.content)}
                       >
@@ -238,7 +238,7 @@ const SchemaManager: React.FC = () => {
                       </button>
                       <button 
                         onClick={() => setDeleteModal({ isOpen: true, id: s.id })}
-                        className="p-3 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                        className="icon-btn hover:text-hard"
                         title="Löschen"
                       >
                         <Trash2 size={18} />
@@ -253,14 +253,14 @@ const SchemaManager: React.FC = () => {
                   <div className="bg-white dark:bg-ink-card rounded-[40px] shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col transition-colors border border-slate-200 dark:border-ink-border">
                     <div className="p-8 bg-gray-50 dark:bg-ink-soft border-b border-slate-200 dark:border-ink-border flex justify-between items-center transition-colors">
                       <h3 className="text-2xl font-bold text-gray-800 dark:text-white uppercase tracking-tight">Metadaten: <span className="text-brand-600">{viewingMetadata.schemaName}</span></h3>
-                      <button onClick={() => setViewingMetadata(null)} className="w-12 h-12 rounded-2xl bg-white dark:bg-ink-card border border-gray-200 dark:border-ink-border text-gray-500 hover:text-red-500 transition-all flex items-center justify-center">
-                        <X size={24} />
+                      <button onClick={() => setViewingMetadata(null)} className="icon-btn hover:text-hard" title="Schließen">
+                        <X size={22} />
                       </button>
                     </div>
                     <div className="p-10 overflow-y-auto space-y-8 custom-scrollbar">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {viewingMetadata.tables.map(table => (
-                          <div key={table.tableName} className="bg-white dark:bg-gray-700/30 p-8 rounded-[32px] border border-slate-200 dark:border-ink-border shadow-sm">
+                          <div key={table.tableName} className="x-card p-8">
                             <h4 className="font-bold text-brand-600 dark:text-brand-400 mb-6 flex items-center text-lg uppercase tracking-wider">
                               <Table className="mr-3 opacity-50" size={20} /> {table.tableName}
                             </h4>

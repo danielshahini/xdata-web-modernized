@@ -139,7 +139,7 @@ const SqlLab: React.FC = () => {
           <div className="flex-1 md:w-64 relative">
              <Database className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
              <select 
-               className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-ink-border dark:bg-ink-card font-bold focus:ring-4 focus:ring-brand-500/10 outline-none appearance-none transition-all dark:text-white"
+               className="x-select pl-12"
                value={selectedSchema || ''}
                onChange={(e) => setSelectedSchema(parseInt(e.target.value))}
              >
@@ -171,7 +171,7 @@ const SqlLab: React.FC = () => {
                   type="number"
                   value={params[key]}
                   onChange={e => updateParam(key, e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-ink-border dark:bg-ink-card font-bold focus:ring-2 focus:ring-brand-500 outline-none dark:text-white"
+                  className="x-input py-2"
                 />
               </div>
             ))}
@@ -257,7 +257,7 @@ const SqlLab: React.FC = () => {
           <button 
             onClick={handleFullAnalysis}
             disabled={loadingGrading}
-            className="w-full py-6 bg-brand-600 text-white rounded-[32px] font-bold flex items-center justify-center gap-3 hover:bg-brand-700 transition-all shadow-2xl shadow-blue-500/25 disabled:opacity-50 group"
+            className="btn-primary w-full py-4 text-base"
           >
             {loadingGrading ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />

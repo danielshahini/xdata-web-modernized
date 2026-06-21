@@ -96,7 +96,7 @@ const DbConnectionManager: React.FC = () => {
         {!editingConnection && (
           <button 
             onClick={() => setEditingConnection({ name: '', url: '', user: '', password: '', courseId: '' })}
-            className="px-6 py-3 bg-brand-600 text-white rounded-2xl font-bold text-sm hover:bg-brand-700 transition-all shadow-lg shadow-blue-100 flex items-center"
+            className="btn-primary"
           >
             <Plus className="mr-2" size={18} /> Neue Verbindung
           </button>
@@ -108,24 +108,24 @@ const DbConnectionManager: React.FC = () => {
           <div className="px-8 py-6 bg-gray-50 dark:bg-ink-soft/50 border-b border-slate-200 dark:border-ink-border flex justify-between items-center transition-colors">
             <h3 className="text-xl font-bold text-gray-800 dark:text-white">Verbindung <span className="text-brand-600">{editingConnection.id ? 'bearbeiten' : 'erstellen'}</span></h3>
             <div className="flex space-x-3">
-              <button onClick={() => setEditingConnection(null)} className="px-6 py-2.5 rounded-xl font-bold text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center"><X className="mr-2" size={16} /> Abbrechen</button>
-              <button onClick={handleSave} className="px-8 py-2.5 rounded-xl font-bold text-sm text-white bg-brand-600 hover:bg-brand-700 shadow-lg shadow-blue-100 transition-all flex items-center"><Save className="mr-2" size={16} /> Speichern</button>
+              <button onClick={() => setEditingConnection(null)} className="btn-secondary"><X size={16} /> Abbrechen</button>
+              <button onClick={handleSave} className="btn-primary"><Save size={16} /> Speichern</button>
             </div>
           </div>
           <div className="p-8 grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Name der Verbindung</label>
+              <label className="x-label">Name der Verbindung</label>
               <input 
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-soft focus:ring-2 focus:ring-brand-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
+                className="x-input"
                 value={editingConnection.name}
                 onChange={e => setEditingConnection({...editingConnection, name: e.target.value})}
                 placeholder="z.B. Postgres Haupt-DB"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs</label>
+              <label className="x-label">Kurs</label>
               <select 
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border focus:ring-2 focus:ring-brand-500 outline-none font-bold bg-white dark:bg-ink-soft text-gray-700 dark:text-white transition-colors appearance-none"
+                className="x-select"
                 value={editingConnection.courseId}
                 onChange={e => setEditingConnection({...editingConnection, courseId: e.target.value})}
               >
@@ -134,7 +134,7 @@ const DbConnectionManager: React.FC = () => {
               </select>
             </div>
             <div className="md:col-span-2 space-y-2">
-              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">
+              <label className="x-label">
                 JDBC URL
                 <InfoTip 
                   title="JDBC Verbindungs-URL" 
@@ -152,25 +152,25 @@ const DbConnectionManager: React.FC = () => {
                 />
               </label>
               <input 
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-soft focus:ring-2 focus:ring-brand-500 outline-none font-mono text-sm dark:text-brand-400 transition-colors" 
+                className="x-input font-mono"
                 value={editingConnection.url}
                 onChange={e => setEditingConnection({...editingConnection, url: e.target.value})}
                 placeholder="jdbc:postgresql://localhost:5432/db"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Benutzername</label>
+              <label className="x-label">Benutzername</label>
               <input 
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-soft focus:ring-2 focus:ring-brand-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
+                className="x-input"
                 value={editingConnection.user}
                 onChange={e => setEditingConnection({...editingConnection, user: e.target.value})}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Passwort</label>
+              <label className="x-label">Passwort</label>
               <input 
                 type="password"
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-soft focus:ring-2 focus:ring-brand-500 outline-none font-bold text-gray-700 dark:text-white transition-colors" 
+                className="x-input"
                 value={editingConnection.password || ''}
                 onChange={e => setEditingConnection({...editingConnection, password: e.target.value})}
                 placeholder="••••••••"
@@ -181,15 +181,15 @@ const DbConnectionManager: React.FC = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {connections.map(conn => (
-            <div key={conn.id} className="bg-white dark:bg-ink-card p-6 rounded-2xl border border-slate-200 dark:border-ink-border shadow-sm hover:shadow-md transition-all group">
+            <div key={conn.id} className="x-card p-6 hover:shadow-card-hover transition-all group">
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 rounded-2xl flex items-center justify-center">
                   <Plug size={24} />
                 </div>
                 <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => conn.id && handleTest(conn.id)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 transition-colors" title="Verbindung testen"><FlaskConical size={18}/></button>
-                  <button onClick={() => setEditingConnection(conn)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 transition-colors" title="Bearbeiten"><Edit size={18}/></button>
-                  <button onClick={() => conn.id && setDeleteModal({ isOpen: true, id: conn.id })} className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Löschen"><Trash2 size={18}/></button>
+                  <button onClick={() => conn.id && handleTest(conn.id)} className="icon-btn hover:text-easy" title="Verbindung testen"><FlaskConical size={18}/></button>
+                  <button onClick={() => setEditingConnection(conn)} className="icon-btn hover:text-brand-600" title="Bearbeiten"><Edit size={18}/></button>
+                  <button onClick={() => conn.id && setDeleteModal({ isOpen: true, id: conn.id })} className="icon-btn hover:text-hard" title="Löschen"><Trash2 size={18}/></button>
                 </div>
               </div>
               <h3 className="text-lg font-bold text-gray-800 dark:text-white">{conn.name}</h3>

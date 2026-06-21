@@ -66,7 +66,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="grid place-items-center h-9 w-9 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-ink-soft transition-colors"
+              className="icon-btn"
               title={isDark ? 'Hellmodus' : 'Dunkelmodus'}
               aria-label="Theme umschalten"
             >
@@ -84,7 +84,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <div className="h-5 w-px bg-slate-200 dark:bg-ink-border" />
               <button
                 onClick={() => setShowChangePw(true)}
-                className="grid place-items-center h-7 w-7 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-500/10 transition-colors"
+                className="icon-btn h-7 w-7 hover:text-brand-600"
                 title="Passwort ändern"
                 aria-label="Passwort ändern"
               >
@@ -92,7 +92,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
               <button
                 onClick={handleLogout}
-                className="grid place-items-center h-7 w-7 rounded-lg text-slate-400 hover:text-hard hover:bg-hard/10 transition-colors"
+                className="icon-btn h-7 w-7 hover:text-hard"
                 title="Abmelden"
                 aria-label="Abmelden"
               >
@@ -102,7 +102,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden grid place-items-center h-9 w-9 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-ink-soft"
+              className="icon-btn md:hidden"
               aria-label="Menü"
             >
               {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
