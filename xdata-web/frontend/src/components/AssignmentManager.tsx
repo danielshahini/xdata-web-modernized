@@ -114,6 +114,8 @@ const AssignmentManager: React.FC = () => {
       publishedDate: null,
       lateSubmissionAllowed: false,
       penaltyPercentage: 10.0,
+      maxAttempts: null,
+      gradesReleased: true,
       connection: { id: dbConnections.length > 0 ? dbConnections[0].id : null }
     });
     setQuestions([]);
@@ -480,6 +482,31 @@ const AssignmentManager: React.FC = () => {
                             </div>
                           )}
                        </div>
+                    </div>
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center">
+                         Max. Versuche
+                         <InfoTip title="Versuche" content="Maximale Anzahl an Abgaben pro Frage. Leer = unbegrenzt." />
+                       </label>
+                       <input
+                          type="number" min="1"
+                          placeholder="unbegrenzt"
+                          className="w-full px-6 py-4 rounded-2xl border-2 border-gray-50 dark:border-ink-border bg-gray-50 dark:bg-ink-soft font-bold dark:text-white focus:border-blue-500 outline-none transition-all"
+                          value={editingAssignment.maxAttempts ?? ''}
+                          onChange={e => setEditingAssignment({...editingAssignment, maxAttempts: e.target.value ? parseInt(e.target.value) : null})}
+                       />
+                    </div>
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Noten-Freigabe</label>
+                       <label className="flex items-center h-[60px] gap-4 px-6 bg-gray-50 dark:bg-ink-soft rounded-2xl border-2 border-gray-50 dark:border-ink-border cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="w-6 h-6 rounded-lg border-gray-300 text-brand-600 focus:ring-brand-500"
+                            checked={editingAssignment.gradesReleased !== false}
+                            onChange={e => setEditingAssignment({...editingAssignment, gradesReleased: e.target.checked})}
+                          />
+                          <span className="text-sm font-bold text-gray-500 uppercase">{editingAssignment.gradesReleased !== false ? 'Sichtbar' : 'Verborgen'}</span>
+                       </label>
                     </div>
                   </div>
                 )}

@@ -94,7 +94,20 @@ public class StudentController {
             if (assignment.getPublishedDate() != null && assignment.getPublishedDate().isAfter(LocalDateTime.now())) {
                 return ResponseEntity.status(403).body("Diese Aufgabe ist noch nicht veröffentlicht.");
             }
-            
+
+            // Enforce the per-question attempt limit, if configured on the assignment.
+            Integer maxAttempts = assignment.getMaxAttempts();
+            if (maxAttempts != null && maxAttempts > 0) {
+                int used = submissionRepository
+                        .findByUser_LoginIdAndQuestion_IdOrderBySubmissionTimeDesc(
+                                accessControlService.getCurrentUserLoginId(), questionId)
+                        .size();
+                if (used >= maxAttempts) {
+                    return ResponseEntity.status(403)
+                            .body("Maximale Anzahl an Versuchen (" + maxAttempts + ") für diese Frage erreicht.");
+                }
+            }
+
             Submission submission = submissionService.createSubmission(
                     accessControlService.getCurrentUserLoginId(),
                     questionId,
@@ -121,15 +134,40 @@ public class StudentController {
     }
 
     @GetMapping("/submissions")
-    public ResponseEntity<List<Submission>> getMySubmissions() {
+    public ResponseEntity<List<Map<String, Object>>> getMySubmissions() {
         String loginId = accessControlService.getCurrentUserLoginId();
-        return ResponseEntity.ok(submissionRepository.findByUser_LoginId(loginId));
+        return ResponseEntity.ok(toStudentView(submissionRepository.findByUser_LoginId(loginId)));
     }
 
     @GetMapping("/questions/{questionId}/attempts")
-    public ResponseEntity<List<Submission>> getAttempts(@PathVariable Integer questionId) {
+    public ResponseEntity<List<Map<String, Object>>> getAttempts(@PathVariable Integer questionId) {
         String loginId = accessControlService.getCurrentUserLoginId();
-        return ResponseEntity.ok(submissionRepository.findByUser_LoginIdAndQuestion_IdOrderBySubmissionTimeDesc(loginId, questionId));
+        return ResponseEntity.ok(toStudentView(
+                submissionRepository.findByUser_LoginIdAndQuestion_IdOrderBySubmissionTimeDesc(loginId, questionId)));
+    }
+
+    /**
+     * Student-safe submission view: never exposes the reference solution
+     * (question.instructorQuery), and withholds marks/feedback for assignments
+     * whose grades the instructor has not released yet.
+     */
+    private List<Map<String, Object>> toStudentView(List<Submission> subs) {
+        List<Map<String, Object>> out = new java.util.ArrayList<>();
+        for (Submission s : subs) {
+            Assignment a = s.getQuestion() != null ? s.getQuestion().getAssignment() : null;
+            boolean released = a == null || a.getGradesReleased() == null || a.getGradesReleased();
+            Map<String, Object> m = new HashMap<>();
+            m.put("submissionId", s.getId());
+            m.put("questionId", s.getQuestion() != null ? s.getQuestion().getId() : null);
+            m.put("query", s.getQuery());
+            m.put("submissionTime", s.getSubmissionTime());
+            m.put("gradesReleased", released);
+            m.put("marks", released ? s.getMarks() : null);
+            m.put("markInfoJson", released ? s.getMarkInfoJson() : null);
+            m.put("instructorFeedback", released ? s.getInstructorFeedback() : null);
+            out.add(m);
+        }
+        return out;
     }
 
 }

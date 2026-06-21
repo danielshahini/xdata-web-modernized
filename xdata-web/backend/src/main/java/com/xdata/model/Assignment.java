@@ -68,6 +68,17 @@ public class Assignment extends BaseAuditEntity {
     @JsonProperty("publishedDate")
     private LocalDateTime publishedDate;
 
+    // null = unlimited attempts per question
+    @Column(name = "max_attempts")
+    @JsonProperty("maxAttempts")
+    private Integer maxAttempts;
+
+    // when false, grades are withheld from students until the instructor releases them
+    @Column(name = "grades_released")
+    @JsonProperty("gradesReleased")
+    @Builder.Default
+    private Boolean gradesReleased = true;
+
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default

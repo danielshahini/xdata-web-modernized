@@ -19,6 +19,14 @@ public class WebSocketResultNotifier implements ResultNotifier {
     public void notifyGraded(Submission submission) {
         try {
             if (submission.getUser() != null) {
+                // Withhold the live score when the instructor has not released grades.
+                com.xdata.model.Assignment a = submission.getQuestion() != null
+                        ? submission.getQuestion().getAssignment() : null;
+                boolean released = a == null || a.getGradesReleased() == null || a.getGradesReleased();
+                if (!released) {
+                    log.info("Grades withheld — skipping live notification for submission {}.", submission.getId());
+                    return;
+                }
                 String loginId = submission.getUser().getLoginId();
                 messagingTemplate.convertAndSend("/topic/grading/" + loginId, submission);
             }

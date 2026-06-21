@@ -30,6 +30,8 @@ export interface Assignment {
   penaltyPercentage?: number;
   publishedDate?: string;
   lateSubmissionAllowed?: boolean;
+  maxAttempts?: number | null;
+  gradesReleased?: boolean;
   totalQuestions?: number;
   totalMarks?: number;
   achievedMarks?: number;
@@ -58,6 +60,7 @@ export interface Submission {
   evaluated: boolean;
   markInfoJson?: string;
   instructorFeedback?: string;
+  gradesReleased?: boolean;
 }
 
 export interface Announcement {

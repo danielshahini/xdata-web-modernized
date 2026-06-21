@@ -79,6 +79,10 @@ public class AssignmentController {
             existing.setLateSubmissionAllowed(assignmentData.getLateSubmissionAllowed());
             existing.setPenaltyPercentage(assignmentData.getPenaltyPercentage());
             existing.setPublishedDate(assignmentData.getPublishedDate());
+            existing.setMaxAttempts(assignmentData.getMaxAttempts());
+            if (assignmentData.getGradesReleased() != null) {
+                existing.setGradesReleased(assignmentData.getGradesReleased());
+            }
 
             return ResponseEntity.ok(assignmentService.saveAssignment(existing));
         }).orElse(ResponseEntity.notFound().build());

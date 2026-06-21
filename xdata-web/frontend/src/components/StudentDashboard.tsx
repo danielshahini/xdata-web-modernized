@@ -516,6 +516,16 @@ const StudentDashboard: React.FC = () => {
 
                   {gradingQuestionId !== selectedQuestion.id && submissions.filter(s => s.questionId === selectedQuestion.id).sort((a,b) => new Date(b.submissionTime).getTime() - new Date(a.submissionTime).getTime()).slice(0, 1).map(s => (
                     <div key={s.submissionId} className="mt-6 p-6 rounded-2xl border border-slate-200 dark:border-ink-border bg-slate-50/60 dark:bg-ink-bg animate-fadeIn">
+                      {s.gradesReleased === false ? (
+                        <div className="flex items-center gap-4">
+                          <RefreshCw className="text-medium shrink-0" size={22} />
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800 dark:text-white">Eingereicht — Bewertung noch nicht freigegeben</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Deine Lösung wurde gespeichert. Die Note wird sichtbar, sobald deine Dozentin sie freigibt.</p>
+                          </div>
+                        </div>
+                      ) : (
+                      <>
                       <div className="flex justify-between items-center mb-5">
                         <div className="flex items-center gap-2.5">
                           <div className="grid place-items-center h-9 w-9 rounded-lg bg-brand-600 text-white">
@@ -541,6 +551,8 @@ const StudentDashboard: React.FC = () => {
                       <div className="bg-white dark:bg-ink-card rounded-xl p-5 border border-slate-200 dark:border-ink-border">
                         <MarkInfoDisplay markInfoJson={s.markInfoJson} />
                       </div>
+                      </>
+                      )}
                     </div>
                   ))}
                 </div>
