@@ -322,7 +322,7 @@ const UserManager: React.FC = () => {
               content={
                 <div className="space-y-2">
                   <p>Die CSV-Datei sollte folgende Spalten enthalten:</p>
-                  <code className="block bg-gray-100 dark:bg-gray-900 p-2 rounded text-[10px]">
+                  <code className="x-code block">
                     username,loginId,password,email,role,courseId
                   </code>
                   <p>Nutzen Sie den Button "Vorlage laden", um eine beispielhafte Datei herunterzuladen.</p>
