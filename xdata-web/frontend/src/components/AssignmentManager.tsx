@@ -597,6 +597,16 @@ const AssignmentManager: React.FC = () => {
                       />
                     </div>
 
+                    <div className="space-y-2 mb-6">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Hinweise (einer pro Zeile, progressiv)</label>
+                      <textarea
+                        className="w-full px-6 py-3 rounded-2xl border-2 border-white dark:border-ink-border bg-white dark:bg-ink-card font-medium dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm text-sm h-24 resize-y"
+                        value={typeof (q as any).hints === 'string' ? (q as any).hints : (Array.isArray((q as any).hints) ? (q as any).hints.join('\n') : '')}
+                        placeholder={'Denk an die WHERE-Klausel.\nVergleiche mit >.'}
+                        onChange={e => { const n = [...questions]; (n[idx] as any).hints = e.target.value; setQuestions(n); }}
+                      />
+                    </div>
+
                     <div className="space-y-3 mb-8">
                        <div className="flex justify-between items-center px-1">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Musterlösung (SQL)</label>

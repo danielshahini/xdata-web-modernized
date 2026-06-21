@@ -68,6 +68,7 @@ const StudentDashboard: React.FC = () => {
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [running, setRunning] = useState(false);
   const [runResult, setRunResult] = useState<any | null>(null);
+  const [revealedHints, setRevealedHints] = useState(0);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [attempts, setAttempts] = useState<Submission[]>([]);
   const [sql, setSql] = useState('');
@@ -431,7 +432,7 @@ const StudentDashboard: React.FC = () => {
                     return (
                       <button
                         key={q.id}
-                        onClick={() => { setSelectedQuestion(q); setSql(''); setRunResult(null); }}
+                        onClick={() => { setSelectedQuestion(q); setSql(''); setRunResult(null); setRevealedHints(0); }}
                         className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
                           active ? 'bg-brand-50 dark:bg-brand-500/10' : 'hover:bg-slate-50 dark:hover:bg-ink-soft'
                         }`}
@@ -513,6 +514,28 @@ const StudentDashboard: React.FC = () => {
                           <p className="text-[10px] font-mono bg-white dark:bg-ink-card p-2 rounded-lg border border-slate-200 dark:border-ink-border text-slate-500">{hint.example}</p>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {Array.isArray(selectedQuestion.hints) && selectedQuestion.hints.length > 0 && (
+                    <div className="mb-6 p-5 rounded-2xl bg-xp-500/5 border border-xp-500/20 animate-fadeIn">
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <span className="kicker flex items-center gap-1.5"><Sparkles size={14} className="text-xp-600" /> Hinweise</span>
+                        {revealedHints < selectedQuestion.hints.length && (
+                          <button onClick={() => setRevealedHints(h => h + 1)} className="btn-secondary text-xs py-1.5">
+                            Hinweis anzeigen ({revealedHints}/{selectedQuestion.hints.length})
+                          </button>
+                        )}
+                      </div>
+                      {revealedHints === 0 ? (
+                        <p className="text-sm text-slate-400 italic">Du steckst fest? Decke schrittweise Hinweise auf.</p>
+                      ) : (
+                        <ol className="space-y-2 list-decimal list-inside">
+                          {(selectedQuestion.hints as string[]).slice(0, revealedHints).map((h, i) => (
+                            <li key={i} className="text-sm text-slate-700 dark:text-slate-200">{h}</li>
+                          ))}
+                        </ol>
+                      )}
                     </div>
                   )}
 

@@ -56,6 +56,11 @@ public class Question extends BaseAuditEntity {
     @JsonProperty("tags")
     private String tags;
 
+    // Progressive hints, one per line.
+    @Column(name = "hints", columnDefinition = "TEXT")
+    @JsonProperty("hints")
+    private String hints;
+
     @Column(name = "partial_mark_info", columnDefinition = "TEXT")
     @Convert(converter = com.xdata.util.PartialMarkParametersConverter.class)
     @JsonProperty("partialMarkParameters")
