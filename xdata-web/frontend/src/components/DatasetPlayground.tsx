@@ -14,7 +14,7 @@ interface Schema {
 const DatasetPlayground: React.FC = () => {
   const { isDark } = useAuth();
   const [selectedSchema, setSelectedSchema] = useState<number | null>(null);
-  const [query, setQuery] = useState('SELECT * FROM students WHERE age > 20;');
+  const [query, setQuery] = useState('');
   const [mutationTypes, setMutationTypes] = useState<string[]>(['SELECTION', 'EQUIVALENCE', 'AGG']);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -215,6 +215,11 @@ const DatasetPlayground: React.FC = () => {
                   padding: { top: 12 }
                 }}
               />
+              {!query && (
+                <div className="pointer-events-none absolute top-3 left-[3.4rem] font-mono text-[14px] text-slate-400 dark:text-gray-600 select-none">
+                  z.&nbsp;B. SELECT name FROM students WHERE age &gt; 20;
+                </div>
+              )}
             </div>
 
             <div className="bg-white dark:bg-ink-card p-6 border-t border-slate-50 dark:border-ink-border">
