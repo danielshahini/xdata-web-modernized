@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -184,7 +185,13 @@ const Login: React.FC = () => {
             </>
           )}
 
-          <p className="mt-8 text-center font-mono text-xs text-slate-400 dark:text-slate-600">
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-ink-border text-center">
+            <Link to="/try-sql" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 transition-colors">
+              <Sparkles size={15} /> SQL ohne Anmeldung ausprobieren
+            </Link>
+          </div>
+
+          <p className="mt-6 text-center font-mono text-xs text-slate-400 dark:text-slate-600">
             &copy; {new Date().getFullYear()} XData Web
           </p>
         </div>

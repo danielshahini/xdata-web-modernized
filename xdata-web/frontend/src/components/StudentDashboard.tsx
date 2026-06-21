@@ -26,11 +26,42 @@ import {
   Circle,
   Play,
   BookMarked,
+  Flame,
+  TrendingUp,
+  Medal,
+  Lock,
 } from 'lucide-react';
 import { Assignment, Question, Submission, Announcement } from '../types';
 import Skeleton from './common/Skeleton';
 import MarkInfoDisplay from './MarkInfoDisplay';
 import SchemaVisualizer from './SchemaVisualizer';
+
+interface Achievement {
+  key: string;
+  label: string;
+  description: string;
+  icon: string;
+  earned: boolean;
+  current: number;
+  target: number;
+  progress: number;
+}
+
+interface LeaderboardEntry {
+  rank: number;
+  displayName: string;
+  points: number;
+  solved: number;
+  xp: number;
+  isMe: boolean;
+}
+
+interface LeaderboardData {
+  totalStudents: number;
+  entries: LeaderboardEntry[];
+  me?: LeaderboardEntry | null;
+  percentile?: number;
+}
 
 interface DashboardData {
   studentName: string;
@@ -39,6 +70,11 @@ interface DashboardData {
   level: number;
   nextLevelXp: number;
   currentLevelXp: number;
+  streak: number;
+  submissionsToday: number;
+  dailyGoal: number;
+  activeDaysTotal: number;
+  achievements: Achievement[];
   assignments: {
     id: number;
     assignmentId: number;
@@ -51,6 +87,11 @@ interface DashboardData {
     percentage: number;
   }[];
 }
+
+// Maps an achievement's backend icon name to a lucide icon component.
+const badgeIcons: Record<string, React.ComponentType<any>> = {
+  Sparkles, Target, Trophy, Award, TrendingUp, Flame,
+};
 
 // Derive a LeetCode-style difficulty from a question's point value.
 const difficultyOf = (marks: number): { key: 'easy' | 'medium' | 'hard'; label: string } => {
@@ -80,13 +121,16 @@ const StudentDashboard: React.FC = () => {
   // WebSocket result push). Used to show a "grading…" state instead of a
   // misleading 0% from the not-yet-graded submission.
   const [gradingQuestionId, setGradingQuestionId] = useState<number | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null);
   const completionProviderRef = useRef<any>(null);
 
   const { user, isDark } = useAuth();
 
   const { data: schemaMetadata } = useAsyncData<any>(
     () => {
-      const schemaId = selectedQuestion?.assignment?.defaultSchemaId ?? selectedAssignment?.defaultSchemaId;
+      const schemaId = (selectedQuestion as any)?.defaultSchemaId
+        ?? selectedQuestion?.assignment?.defaultSchemaId
+        ?? selectedAssignment?.defaultSchemaId;
       return schemaId
         ? api.get(`/schemas/${schemaId}/metadata`).then(res => res.data).catch(() => null)
         : Promise.resolve(null);
@@ -155,10 +199,15 @@ const StudentDashboard: React.FC = () => {
     api.get('/student/submissions').then(res => setSubmissions(res.data || []));
   }, []);
 
+  const loadLeaderboard = useCallback(() => {
+    api.get('/student/leaderboard').then(res => setLeaderboard(res.data)).catch(() => { /* non-critical */ });
+  }, []);
+
   useEffect(() => {
     loadDashboard();
     loadAnnouncements();
     loadSubmissions();
+    loadLeaderboard();
 
     if (user) {
       WebSocketService.connect().then(() => {
@@ -168,12 +217,13 @@ const StudentDashboard: React.FC = () => {
           setGradingQuestionId(prev => (prev === data.questionId ? null : prev));
           loadSubmissions();
           loadDashboard();
+          loadLeaderboard();
         });
       });
     }
 
     return () => WebSocketService.disconnect();
-  }, [loadDashboard, loadAnnouncements, loadSubmissions, user]);
+  }, [loadDashboard, loadAnnouncements, loadSubmissions, loadLeaderboard, user]);
 
   const loadAttempts = async (questionId: number) => {
     try {
@@ -311,6 +361,36 @@ const StudentDashboard: React.FC = () => {
                   style={{ width: `${Math.max(0, Math.min(100, xpIntoLevel))}%` }}
                 />
               </div>
+
+              {/* Streak + daily goal */}
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold ${
+                    dashboard.streak > 0 ? 'bg-orange-500/15 text-orange-400' : 'bg-white/5 text-slate-400'
+                  }`}
+                  title="Aufeinanderfolgende Tage mit Aktivität"
+                >
+                  <Flame size={13} /> {dashboard.streak} {dashboard.streak === 1 ? 'Tag' : 'Tage'} Streak
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[11px] text-slate-400">
+                    Heute {Math.min(dashboard.submissionsToday, dashboard.dailyGoal)}/{dashboard.dailyGoal}
+                  </span>
+                  <div className="flex gap-1">
+                    {Array.from({ length: dashboard.dailyGoal }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-2 w-5 rounded-full transition-colors ${
+                          i < dashboard.submissionsToday ? 'bg-easy' : 'bg-white/10'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  {dashboard.submissionsToday >= dashboard.dailyGoal && (
+                    <span className="text-[11px] font-bold text-easy">Tagesziel erreicht ✓</span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -362,6 +442,101 @@ const StudentDashboard: React.FC = () => {
                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-line">{m.content}</p></>}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Leaderboard ── */}
+          {leaderboard && leaderboard.totalStudents > 0 && (
+            <div className="x-card p-5">
+              <h2 className="flex items-center justify-between mb-4">
+                <span className="flex items-center gap-2">
+                  <Trophy size={16} className="text-xp-500" />
+                  <span className="kicker">Rangliste</span>
+                </span>
+                {leaderboard.me && (
+                  <span className="text-[11px] font-mono text-slate-400">
+                    #{leaderboard.me.rank} / {leaderboard.totalStudents}
+                    {typeof leaderboard.percentile === 'number' && ` · Top ${100 - leaderboard.percentile}%`}
+                  </span>
+                )}
+              </h2>
+              <div className="space-y-1.5">
+                {leaderboard.entries.map(e => (
+                  <div
+                    key={e.rank}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl border transition-colors ${
+                      e.isMe
+                        ? 'border-brand-300 dark:border-brand-500/40 bg-brand-50 dark:bg-brand-500/10'
+                        : 'border-transparent hover:bg-slate-50 dark:hover:bg-ink-soft'
+                    }`}
+                  >
+                    <span className="w-6 shrink-0 flex justify-center">
+                      {e.rank <= 3
+                        ? <Medal size={16} className={e.rank === 1 ? 'text-xp-500' : e.rank === 2 ? 'text-slate-400' : 'text-orange-400'} />
+                        : <span className="font-mono text-xs text-slate-400">{e.rank}</span>}
+                    </span>
+                    <span className={`flex-1 min-w-0 truncate text-sm font-semibold ${e.isMe ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'}`}>
+                      {e.displayName}
+                    </span>
+                    <span className="font-mono text-[11px] text-slate-400 shrink-0">{e.solved} gelöst</span>
+                    <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0 w-12 text-right">{e.points} Pkt</span>
+                  </div>
+                ))}
+                {leaderboard.me && !leaderboard.entries.some(e => e.isMe) && (
+                  <>
+                    <div className="text-center text-slate-300 dark:text-slate-600 text-xs">···</div>
+                    <div className="flex items-center gap-3 px-3 py-2 rounded-xl border border-brand-300 dark:border-brand-500/40 bg-brand-50 dark:bg-brand-500/10">
+                      <span className="w-6 shrink-0 text-center font-mono text-xs text-brand-600 dark:text-brand-300">{leaderboard.me.rank}</span>
+                      <span className="flex-1 min-w-0 truncate text-sm font-semibold text-brand-700 dark:text-brand-300">{leaderboard.me.displayName}</span>
+                      <span className="font-mono text-[11px] text-slate-400 shrink-0">{leaderboard.me.solved} gelöst</span>
+                      <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0 w-12 text-right">{leaderboard.me.points} Pkt</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Achievements ── */}
+          {dashboard.achievements && dashboard.achievements.length > 0 && (
+            <div className="x-card p-5">
+              <h2 className="flex items-center justify-between mb-4">
+                <span className="flex items-center gap-2">
+                  <Award size={16} className="text-brand-500" />
+                  <span className="kicker">Abzeichen</span>
+                </span>
+                <span className="text-[11px] font-mono text-slate-400">
+                  {dashboard.achievements.filter(a => a.earned).length}/{dashboard.achievements.length}
+                </span>
+              </h2>
+              <div className="grid grid-cols-2 gap-2.5">
+                {dashboard.achievements.map(a => {
+                  const Icon = badgeIcons[a.icon] || Award;
+                  return (
+                    <div
+                      key={a.key}
+                      title={a.description}
+                      className={`p-3 rounded-xl border flex flex-col gap-1.5 transition-all ${
+                        a.earned
+                          ? 'border-xp-500/30 bg-xp-500/5'
+                          : 'border-slate-200 dark:border-ink-border bg-slate-50/60 dark:bg-ink-soft/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`grid place-items-center h-7 w-7 rounded-lg shrink-0 ${a.earned ? 'bg-xp-500 text-white' : 'bg-slate-200 dark:bg-ink-border text-slate-400'}`}>
+                          {a.earned ? <Icon size={15} /> : <Lock size={13} />}
+                        </span>
+                        <span className={`text-xs font-bold leading-tight ${a.earned ? 'text-slate-800 dark:text-white' : 'text-slate-400'}`}>{a.label}</span>
+                      </div>
+                      {!a.earned && a.target > 1 && (
+                        <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-ink-border overflow-hidden">
+                          <div className="h-full rounded-full bg-brand-400 transition-all" style={{ width: `${a.progress}%` }} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

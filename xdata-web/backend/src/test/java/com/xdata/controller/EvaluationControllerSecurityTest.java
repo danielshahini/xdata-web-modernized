@@ -51,7 +51,7 @@ class EvaluationControllerSecurityTest {
     @Test
     void startEvaluation_unauthenticated_is_rejected() throws Exception {
         mockMvc.perform(post("/api/v1/evaluation/start/1"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

@@ -58,7 +58,7 @@ class AssignmentControllerSecurityTest {
 
     @Test
     void deleteAssignment_unauthenticated_is_rejected() throws Exception {
-        mockMvc.perform(delete("/api/v1/assignments/1")).andExpect(status().isForbidden());
+        mockMvc.perform(delete("/api/v1/assignments/1")).andExpect(status().isUnauthorized());
     }
 
     @Test

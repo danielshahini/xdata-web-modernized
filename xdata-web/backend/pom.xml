@@ -119,6 +119,14 @@
 			<artifactId>jsqlparser</artifactId>
 			<version>5.0</version>
 		</dependency>
+		<!-- Ephemeral in-memory DB for the public, login-free SQL sandbox.
+		     Each request gets a private throwaway H2 instance — fully isolated
+		     from the real application database. -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.2.224</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>

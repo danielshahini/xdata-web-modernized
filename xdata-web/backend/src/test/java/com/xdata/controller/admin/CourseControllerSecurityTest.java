@@ -72,7 +72,7 @@ class CourseControllerSecurityTest {
     void createCourse_unauthenticated_is_rejected() throws Exception {
         mockMvc.perform(post("/api/v1/admin/courses")
                         .contentType(MediaType.APPLICATION_JSON).content(COURSE_JSON))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

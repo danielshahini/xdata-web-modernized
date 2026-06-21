@@ -44,7 +44,7 @@ class AnnouncementControllerSecurityTest {
 
     @Test
     void announcements_require_authentication() throws Exception {
-        mockMvc.perform(get("/api/v1/announcements")).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/announcements")).andExpect(status().isUnauthorized());
     }
 
     @Test

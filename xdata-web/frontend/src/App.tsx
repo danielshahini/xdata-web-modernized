@@ -11,6 +11,7 @@ const InstructorDashboard = lazy(() => import('./components/InstructorDashboard'
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const SqlLab = lazy(() => import('./components/SqlLab'));
 const DatasetPlayground = lazy(() => import('./components/DatasetPlayground'));
+const TrySql = lazy(() => import('./components/TrySql'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -37,7 +38,10 @@ const App: React.FC = () => {
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" replace />} />
-        
+
+        {/* Public, login-free SQL sandbox (W3Schools-style) */}
+        <Route path="/try-sql" element={<TrySql />} />
+
         {/* Specific exact routes should come before splat routes */}
         <Route path="/dataset-playground" element={
           <ProtectedRoute allowedRoles={['ADMIN', 'INSTRUCTOR']}>

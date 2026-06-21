@@ -41,6 +41,9 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        // Public, login-free SQL sandbox — read-only, runs against an
+                        // ephemeral in-memory DB, no access to real data.
+                        .requestMatchers("/api/v1/public/**").permitAll()
                         // SockJS/STOMP handshake (/ws-grading, /ws-grading/info, /ws-grading/**) cannot
                         // carry the JWT in an Authorization header, so it must be permitted at the HTTP
                         // layer; otherwise the handshake falls through to anyRequest().authenticated() -> 403.

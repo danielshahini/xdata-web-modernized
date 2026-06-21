@@ -111,7 +111,136 @@ public class SubmissionAnalytics {
         }).collect(Collectors.toList());
 
         dashboard.put("assignments", assignmentData);
+
+        // ── Streak & daily goal ──────────────────────────────────────────────
+        // An "active day" is any day the student made at least one submission.
+        // The streak counts consecutive active days ending today (or yesterday,
+        // so an ongoing streak isn't shown as broken before the user submits today).
+        List<Submission> allSubmissions = submissionRepository.findByUser_LoginId(user.getLoginId());
+        java.util.Set<java.time.LocalDate> activeDays = allSubmissions.stream()
+                .filter(s -> s.getSubmissionTime() != null)
+                .map(s -> s.getSubmissionTime().toLocalDate())
+                .collect(Collectors.toCollection(java.util.HashSet::new));
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate cursor = activeDays.contains(today) ? today
+                : (activeDays.contains(today.minusDays(1)) ? today.minusDays(1) : null);
+        int streak = 0;
+        while (cursor != null && activeDays.contains(cursor)) {
+            streak++;
+            cursor = cursor.minusDays(1);
+        }
+        long submissionsToday = allSubmissions.stream()
+                .filter(s -> s.getSubmissionTime() != null && s.getSubmissionTime().toLocalDate().equals(today))
+                .count();
+        dashboard.put("streak", streak);
+        dashboard.put("submissionsToday", submissionsToday);
+        dashboard.put("dailyGoal", 3);
+        dashboard.put("activeDaysTotal", activeDays.size());
+
+        // ── Achievements (derived from existing data, no extra persistence) ──
+        long solvedTotal = assignmentData.stream()
+                .mapToLong(d -> ((Number) d.get("solvedQuestions")).longValue()).sum();
+        boolean anyModuleComplete = assignmentData.stream().anyMatch(d -> {
+            int tq = ((Number) d.get("totalQuestions")).intValue();
+            long sq = ((Number) d.get("solvedQuestions")).longValue();
+            return tq > 0 && sq >= tq;
+        });
+        List<Map<String, Object>> achievements = new ArrayList<>();
+        achievements.add(badge("first_solve", "Erste Lösung", "Löse deine erste Aufgabe", "Sparkles", solvedTotal >= 1, solvedTotal, 1));
+        achievements.add(badge("ten_solved", "Fleißig", "Löse 10 Aufgaben", "Target", solvedTotal >= 10, solvedTotal, 10));
+        achievements.add(badge("pro_solver", "SQL-Profi", "Löse 25 Aufgaben", "Trophy", solvedTotal >= 25, solvedTotal, 25));
+        achievements.add(badge("perfect_module", "Perfektionist", "Schließe ein Modul zu 100 % ab", "Award", anyModuleComplete, anyModuleComplete ? 1 : 0, 1));
+        achievements.add(badge("level_up", "Aufsteiger", "Erreiche Level 5", "TrendingUp", level >= 5, level, 5));
+        achievements.add(badge("on_fire", "Serientäter", "3 Tage in Folge aktiv", "Flame", streak >= 3, streak, 3));
+        dashboard.put("achievements", achievements);
+
         return dashboard;
+    }
+
+    /** One achievement tile. `cur`/`target` drive the progress bar for unearned badges. */
+    private Map<String, Object> badge(String key, String label, String description,
+                                      String icon, boolean earned, long cur, long target) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("key", key);
+        m.put("label", label);
+        m.put("description", description);
+        m.put("icon", icon);
+        m.put("earned", earned);
+        m.put("current", cur);
+        m.put("target", target);
+        m.put("progress", target > 0 ? (int) Math.min(100, Math.max(0, cur * 100 / target)) : (earned ? 100 : 0));
+        return m;
+    }
+
+    /**
+     * Course leaderboard for the student view: ranks the cohort by total achieved
+     * points (best mark × question weight) across the given courses, XP as tiebreak.
+     * Privacy-aware — other students are shown as "Firstname L." only, never login ids.
+     */
+    public Map<String, Object> leaderboard(XDataUser me, List<String> courseIds, List<XDataUser> students) {
+        List<Assignment> assignments = assignmentService.getAssignmentsByCourses(courseIds).stream()
+                .filter(a -> a.getPublishedDate() == null || a.getPublishedDate().isBefore(LocalDateTime.now()))
+                .collect(Collectors.toList());
+        Map<Integer, List<Question>> questionsByAssignment = new LinkedHashMap<>();
+        for (Assignment a : assignments) {
+            questionsByAssignment.put(a.getId(), questionRepository.findByAssignment_Id(a.getId()));
+        }
+
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (XDataUser u : students) {
+            double points = 0.0;
+            long solved = 0;
+            for (Assignment a : assignments) {
+                for (Question q : questionsByAssignment.get(a.getId())) {
+                    double best = bestMark(submissionRepository
+                            .findByUser_LoginIdAndQuestion_IdOrderBySubmissionTimeDesc(u.getLoginId(), q.getId()));
+                    points += best * (q.getMarks() != null ? q.getMarks() : 0.0);
+                    if (best >= 1.0) solved++;
+                }
+            }
+            boolean isMe = u.getLoginId().equals(me.getLoginId());
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("displayName", isMe ? "Du" : privacyName(u.getUsername()));
+            r.put("xp", u.getXp() != null ? u.getXp() : 0);
+            r.put("points", Math.round(points * 100.0) / 100.0);
+            r.put("solved", solved);
+            r.put("isMe", isMe);
+            rows.add(r);
+        }
+
+        rows.sort((x, y) -> {
+            int c = Double.compare(((Number) y.get("points")).doubleValue(), ((Number) x.get("points")).doubleValue());
+            if (c != 0) return c;
+            return Integer.compare(((Number) y.get("xp")).intValue(), ((Number) x.get("xp")).intValue());
+        });
+
+        int rank = 0;
+        Map<String, Object> meRow = null;
+        for (Map<String, Object> r : rows) {
+            rank++;
+            r.put("rank", rank);
+            if (Boolean.TRUE.equals(r.get("isMe"))) meRow = r;
+        }
+
+        int total = rows.size();
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("totalStudents", total);
+        out.put("entries", rows.stream().limit(10).collect(Collectors.toList()));
+        out.put("me", meRow);
+        if (meRow != null && total > 0) {
+            int myRank = ((Number) meRow.get("rank")).intValue();
+            // Percentile = share of the cohort you are ahead of (higher is better).
+            out.put("percentile", (int) Math.round((double) (total - myRank) / total * 100));
+        }
+        return out;
+    }
+
+    /** "Erika Lehrer" -> "Erika L."; single-token names are returned unchanged. */
+    private String privacyName(String username) {
+        if (username == null || username.isBlank()) return "Anonym";
+        String[] parts = username.trim().split("\\s+");
+        if (parts.length == 1) return parts[0];
+        return parts[0] + " " + parts[parts.length - 1].substring(0, 1).toUpperCase() + ".";
     }
 
     /** CSV export of all results for one assignment. */

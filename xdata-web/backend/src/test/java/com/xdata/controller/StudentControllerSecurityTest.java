@@ -53,6 +53,10 @@ class StudentControllerSecurityTest {
     @MockBean private SubmissionAnalytics submissionAnalytics;
     @MockBean private EvaluationService evaluationService;
     @MockBean private SubmissionService submissionService;
+    @MockBean private com.xdata.service.DatabaseService databaseService;
+    @MockBean private com.xdata.service.SqlSandboxService sqlSandboxService;
+    @MockBean private com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
+    @MockBean private com.xdata.repository.UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
@@ -61,6 +65,9 @@ class StudentControllerSecurityTest {
 
     @Test
     void dashboard_requires_authentication() throws Exception {
-        mockMvc.perform(get("/api/v1/student/dashboard")).andExpect(status().isForbidden());
+        // An anonymous request (no/expired JWT) now resolves to 401 via the
+        // AuthenticationEntryPoint, so the SPA can tell "log in again" apart from
+        // a genuine "logged in but forbidden" 403.
+        mockMvc.perform(get("/api/v1/student/dashboard")).andExpect(status().isUnauthorized());
     }
 }

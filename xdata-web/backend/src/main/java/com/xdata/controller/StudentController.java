@@ -41,12 +41,29 @@ public class StudentController {
     private final com.xdata.service.DatabaseService databaseService;
     private final com.xdata.service.SqlSandboxService sqlSandboxService;
     private final com.xdata.repository.RegradeRequestRepository regradeRequestRepository;
+    private final com.xdata.repository.UserRepository userRepository;
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboard() {
         return accessControlService.getCurrentUser().map(user -> {
             List<String> courseIds = accessControlService.getUserCourseIds();
             return ResponseEntity.ok(submissionAnalytics.dashboard(user, courseIds));
+        }).orElse(ResponseEntity.status(401).build());
+    }
+
+    /** Privacy-aware cohort leaderboard for the student's own courses. */
+    @GetMapping("/leaderboard")
+    public ResponseEntity<?> getLeaderboard() {
+        return accessControlService.getCurrentUser().map(user -> {
+            List<String> courseIds = accessControlService.getUserCourseIds();
+            if (courseIds.isEmpty()) {
+                return ResponseEntity.ok(Map.of("totalStudents", 0, "entries", List.of()));
+            }
+            List<com.xdata.model.XDataUser> students = userRepository
+                    .findDistinctByCourses_InstructorCourseIdIn(courseIds).stream()
+                    .filter(u -> "STUDENT".equalsIgnoreCase(u.getRole()))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(submissionAnalytics.leaderboard(user, courseIds, students));
         }).orElse(ResponseEntity.status(401).build());
     }
 
@@ -70,6 +87,8 @@ public class StudentController {
                             : java.util.Arrays.stream(q.getHints().split("\\r?\\n"))
                                 .map(String::trim).filter(h -> !h.isEmpty()).collect(Collectors.toList()));
                     m.put("assignmentId", assignmentId);
+                    // Needed by the student schema explorer to load the table/PK/FK metadata.
+                    m.put("defaultSchemaId", assignment.getDefaultSchemaId());
                     return m;
                 })
                 .collect(Collectors.toList());
