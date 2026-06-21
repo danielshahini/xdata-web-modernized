@@ -23,6 +23,9 @@ const Login: React.FC = () => {
       console.error('Login error details:', err);
       if (!err.response) {
         toast.error('Netzwerkfehler: Backend nicht erreichbar.');
+      } else if (err.response.status === 423) {
+        const mins = err.response.headers?.['x-lock-minutes'];
+        toast.error(`Konto vorübergehend gesperrt (zu viele Fehlversuche).${mins ? ` Bitte in ${mins} Min erneut versuchen.` : ''}`);
       } else if (err.response.status === 401) {
         toast.error('Ungültige Anmeldedaten');
       } else {

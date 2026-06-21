@@ -12,6 +12,7 @@ interface AuthContextType {
   isStudent: boolean;
   isDark: boolean;
   toggleTheme: () => void;
+  markPasswordChanged: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,6 +65,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('user');
   };
 
+  const markPasswordChanged = () => {
+    setUser(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, mustChangePassword: false };
+      try {
+        const saved = JSON.parse(localStorage.getItem('user') || '{}');
+        localStorage.setItem('user', JSON.stringify({ ...saved, mustChangePassword: false }));
+      } catch { /* ignore */ }
+      return updated;
+    });
+  };
+
   const isAdmin = user?.role?.trim().toUpperCase() === 'ADMIN';
   const isInstructor = user?.role?.trim().toUpperCase() === 'INSTRUCTOR';
   const isStudent = user?.role?.trim().toUpperCase() === 'STUDENT';
@@ -79,7 +92,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isInstructor,
       isStudent,
       isDark,
-      toggleTheme
+      toggleTheme,
+      markPasswordChanged
     }}>
       {children}
     </AuthContext.Provider>

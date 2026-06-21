@@ -60,7 +60,21 @@ public class XDataUser extends BaseAuditEntity {
     
     @Column(name = "xp")
     private Integer xp = 0;
-    
+
+    // --- Login security / password policy ---
+    @Column(name = "failed_login_attempts")
+    @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private int failedLoginAttempts = 0;
+
+    @Column(name = "locked_until")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private java.time.LocalDateTime lockedUntil;
+
+    @Column(name = "must_change_password")
+    @Builder.Default
+    private boolean mustChangePassword = false;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "xdata_user_courses",

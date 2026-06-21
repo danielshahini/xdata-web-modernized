@@ -8,6 +8,7 @@ export interface User {
   courseId?: string;
   enabled?: boolean;
   createdAt?: string;
+  mustChangePassword?: boolean;
 }
 
 export interface Course {

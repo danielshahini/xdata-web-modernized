@@ -105,6 +105,8 @@ public class UserController {
             log.info("Zufallspasswort für {} generiert.", user.getLoginId());
         }
 
+        // Force a password change on first login (admin/instructor sets the initial one).
+        user.setMustChangePassword(true);
         XDataUser savedUser = userRepository.saveAndFlush(user);
         auditService.log("USER_CREATED", user.getLoginId(), "Role: " + user.getRole());
         return ResponseEntity.ok(savedUser);
@@ -259,6 +261,9 @@ public class UserController {
         }
         return userRepository.findByLoginIdIgnoreCase(loginId).map(user -> {
             user.setPassword(passwordEncoder.encode(newPassword));
+            user.setMustChangePassword(true); // force the user to set their own on next login
+            user.setFailedLoginAttempts(0);
+            user.setLockedUntil(null);
             userRepository.saveAndFlush(user);
             auditService.log("PASSWORD_RESET_ADMIN", loginId, "Reset by " + accessControlService.getCurrentUserLoginId());
             return ResponseEntity.ok("Passwort erfolgreich zurückgesetzt.");
@@ -331,6 +336,7 @@ public class UserController {
                 newUser.setEmail(email);
                 newUser.setRole(role);
                 newUser.setEnabled(true);
+                newUser.setMustChangePassword(true);
 
                 if (password != null && !password.isEmpty()) {
                     newUser.setPassword(passwordEncoder.encode(password));

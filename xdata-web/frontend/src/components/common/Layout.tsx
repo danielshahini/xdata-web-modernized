@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Database, User as UserIcon, LogOut, Sun, Moon, LayoutDashboard, Menu, X, Beaker, FlaskConical } from 'lucide-react';
+import { Database, User as UserIcon, LogOut, Sun, Moon, LayoutDashboard, Menu, X, Beaker, FlaskConical, KeyRound } from 'lucide-react';
+import ChangePasswordModal from './ChangePasswordModal';
 
 type NavItem = { to: string; label: string; icon: React.ReactNode; show: boolean };
 
@@ -10,6 +11,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showChangePw, setShowChangePw] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -81,6 +83,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
               <div className="h-5 w-px bg-slate-200 dark:bg-ink-border" />
               <button
+                onClick={() => setShowChangePw(true)}
+                className="grid place-items-center h-7 w-7 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-500/10 transition-colors"
+                title="Passwort ändern"
+                aria-label="Passwort ändern"
+              >
+                <KeyRound size={16} />
+              </button>
+              <button
                 onClick={handleLogout}
                 className="grid place-items-center h-7 w-7 rounded-lg text-slate-400 hover:text-hard hover:bg-hard/10 transition-colors"
                 title="Abmelden"
@@ -147,6 +157,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <span>&copy; {new Date().getFullYear()} — gebaut zum Lernen, Query für Query.</span>
         </div>
       </footer>
+
+      {/* Forced change on first login / after admin reset — blocks the app. */}
+      {user?.mustChangePassword && <ChangePasswordModal forced />}
+      {/* Voluntary change from the navbar. */}
+      {showChangePw && !user?.mustChangePassword && (
+        <ChangePasswordModal onClose={() => setShowChangePw(false)} />
+      )}
     </div>
   );
 };

@@ -39,6 +39,7 @@ public class AuthController {
     private final PasswordResetTokenRepository tokenRepository;
     private final MailService mailService;
     private final AuditService auditService;
+    private final com.xdata.service.LoginAttemptService loginAttemptService;
 
     @PostMapping("/login")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -63,6 +64,14 @@ public class AuthController {
             return ResponseEntity.status(401).body(null);
         }
 
+        // Brute-force lockout: refuse while the cooldown window is active.
+        if (loginAttemptService.isLocked(user)) {
+            long mins = loginAttemptService.minutesRemaining(user);
+            log.warn("LOGIN_BLOCKED: Konto {} gesperrt ({} min verbleibend).", user.getLoginId(), mins);
+            auditService.log("LOGIN_BLOCKED", user.getLoginId(), "Account locked, " + mins + " min remaining");
+            return ResponseEntity.status(423).header("X-Lock-Minutes", String.valueOf(mins)).build();
+        }
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getLoginId(), passwordInput)
@@ -70,8 +79,11 @@ public class AuthController {
         } catch (Exception e) {
             log.error("LOGIN_FAILED: Passwort-Match fehlgeschlagen fuer {}.", user.getLoginId());
             auditService.log("LOGIN_FAILED", user.getLoginId(), "Invalid password");
+            loginAttemptService.recordFailure(user.getLoginId());
             return ResponseEntity.status(401).build();
         }
+
+        loginAttemptService.recordSuccess(user.getLoginId());
 
         String role = user.getRole();
         if (role == null) role = "STUDENT";
@@ -91,7 +103,38 @@ public class AuthController {
                 .role(role.trim().toUpperCase())
                 .courseId(user.getCourseId())
                 .courseIds(user.getCourseIds())
+                .mustChangePassword(user.isMustChangePassword())
                 .build());
+    }
+
+    /** Self-service password change for the logged-in user (works locally without e-mail). */
+    @PostMapping("/change-password")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
+        String currentLoginId = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication().getName();
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+
+        if (newPassword == null || newPassword.length() < 8) {
+            return ResponseEntity.badRequest().body("Das neue Passwort muss mindestens 8 Zeichen lang sein.");
+        }
+
+        XDataUser user = userRepository.findByLoginIdIgnoreCase(currentLoginId).orElse(null);
+        if (user == null) return ResponseEntity.status(401).build();
+
+        if (oldPassword == null || !passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return ResponseEntity.status(400).body("Das aktuelle Passwort ist falsch.");
+        }
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            return ResponseEntity.badRequest().body("Das neue Passwort muss sich vom alten unterscheiden.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
+        userRepository.save(user);
+        auditService.log("PASSWORD_CHANGED_SELF", user.getLoginId(), "Self-service change");
+        return ResponseEntity.ok(Map.of("message", "Passwort erfolgreich geändert."));
     }
 
     @PostMapping("/forgot-password")

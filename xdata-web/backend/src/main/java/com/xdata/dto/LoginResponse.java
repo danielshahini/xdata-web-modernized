@@ -18,4 +18,5 @@ public class LoginResponse {
     private String role;
     private String courseId;
     private Set<String> courseIds;
+    private boolean mustChangePassword;
 }

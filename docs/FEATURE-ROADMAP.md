@@ -22,6 +22,21 @@ Die Lücken unten bauen darauf auf.
 
 ---
 
+## Aktueller Stand (2026-06-21) — was seit der Roadmap erledigt wurde
+
+- ✅ **Sortierung der Nutzerliste** nach Erstelldatum/Name + „Erstellt"-Spalte.
+- ✅ **CSV-Vorlage-Download** repariert (authentifiziert) und **Lehrer dürfen nur Studenten** anlegen
+  (Formular + CSV-Import erzwingen STUDENT).
+- ✅ **UX-Vereinfachung**: Dozenten-Panel auf 4 Primär-Tabs + „Erweitert"; Aufgaben-Wizard mit
+  Progressive Disclosure.
+- ✅ **Aufräumen**: tote/irreführende Features entfernt, Rechte verschärft (siehe `CLEANUP-REMOVE.md`).
+- ✅ **Robustheit/Sicherheit** (früher): keine 500er bei Fehleingaben, kein Musterlösungs-Leak, Echtzeit-Grading.
+
+**Damit sind die meisten Roadmap-Punkte unten noch offen.** Die definitive Restliste folgt — Priorität
+P0 (zuerst) → P2.
+
+---
+
 ## P0 — Kernlücken (für „Schüler managen + bewerten" am wichtigsten)
 
 ### 1. Notenbuch (Gradebook) — *Canvas/Gradescope*
