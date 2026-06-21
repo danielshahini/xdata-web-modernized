@@ -62,7 +62,7 @@ class CourseControllerSecurityTest {
     @MockBean private org.springframework.data.jpa.mapping.JpaMetamodelMappingContext jpaMappingContext;
     @MockBean private com.xdata.service.core.SubmissionAnalytics submissionAnalytics;
 
-    private static final String COURSE_JSON = "{\"instructorCourseId\":\"C1\",\"name\":\"Test\"}";
+    private static final String COURSE_JSON = "{\"instructorCourseId\":\"C1\",\"courseName\":\"Test\"}";
 
     @BeforeEach
     void setUp() {
@@ -86,13 +86,16 @@ class CourseControllerSecurityTest {
 
     @Test
     @WithMockUser(roles = "INSTRUCTOR")
-    void createCourse_as_instructor_is_denied_by_guard_with_consistent_403() throws Exception {
-        when(accessControlService.isAdmin()).thenReturn(false); // guard.requireAdmin() denies
+    void createCourse_as_instructor_succeeds_and_is_auto_enrolled() throws Exception {
+        when(accessControlService.isAdmin()).thenReturn(false);
+        when(accessControlService.isInstructor()).thenReturn(true);
+        when(courseRepository.findByInstructorCourseId("C1")).thenReturn(java.util.Optional.empty());
+        when(courseRepository.save(any(Course.class))).thenAnswer(inv -> inv.getArgument(0));
 
         mockMvc.perform(post("/api/v1/admin/courses")
                         .contentType(MediaType.APPLICATION_JSON).content(COURSE_JSON))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value("Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen."));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.instructorCourseId").value("C1"));
     }
 
     @Test
@@ -100,6 +103,7 @@ class CourseControllerSecurityTest {
     void createCourse_as_admin_succeeds() throws Exception {
         when(accessControlService.isAdmin()).thenReturn(true);
         when(accessControlService.isInstructor()).thenReturn(false);
+        when(courseRepository.findByInstructorCourseId("C1")).thenReturn(java.util.Optional.empty());
         when(courseRepository.save(any(Course.class))).thenAnswer(inv -> inv.getArgument(0));
 
         mockMvc.perform(post("/api/v1/admin/courses")
