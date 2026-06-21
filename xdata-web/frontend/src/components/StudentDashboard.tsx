@@ -25,6 +25,7 @@ import {
   Sparkles,
   Circle,
   Play,
+  BookMarked,
 } from 'lucide-react';
 import { Assignment, Question, Submission, Announcement } from '../types';
 import Skeleton from './common/Skeleton';
@@ -61,6 +62,7 @@ const difficultyOf = (marks: number): { key: 'easy' | 'medium' | 'hard'; label: 
 const StudentDashboard: React.FC = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [materials, setMaterials] = useState<any[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
@@ -142,6 +144,10 @@ const StudentDashboard: React.FC = () => {
     } catch (e) {
       console.error("Ankündigungen konnten nicht geladen werden");
     }
+    try {
+      const m = await api.get('/materials');
+      setMaterials(m.data || []);
+    } catch (e) { /* ignore */ }
   }, []);
 
   const loadSubmissions = useCallback(() => {
@@ -334,6 +340,25 @@ const StudentDashboard: React.FC = () => {
                       <span>{a.course?.courseName}</span>
                       <span>{new Date(a.createdAt).toLocaleDateString()}</span>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {materials.length > 0 && (
+            <div className="x-card p-5">
+              <h2 className="flex items-center gap-2 mb-4">
+                <BookMarked size={16} className="text-brand-500" />
+                <span className="kicker">Lernmaterial</span>
+              </h2>
+              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                {materials.map(m => (
+                  <div key={m.id} className="p-3 rounded-xl border border-slate-200 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/40">
+                    {m.type === 'LINK'
+                      ? <a href={m.content} target="_blank" rel="noreferrer" className="font-semibold text-brand-600 hover:underline text-sm break-words">{m.title}</a>
+                      : <><p className="font-semibold text-slate-900 dark:text-white text-sm">{m.title}</p>
+                         <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-line">{m.content}</p></>}
                   </div>
                 ))}
               </div>

@@ -4,6 +4,7 @@ import SchemaManager from './SchemaManager';
 import AssignmentManager from './AssignmentManager';
 import Gradebook from './Gradebook';
 import RegradeRequests from './RegradeRequests';
+import CourseMaterials from './CourseMaterials';
 import UserManager from './UserManager';
 import AuditLogViewer from './AuditLogViewer';
 import DbConnectionManager from './DbConnectionManager';
@@ -16,6 +17,7 @@ import {
   Plug, 
   BarChart3,
   BookOpen,
+  BookMarked,
   Gavel,
   GraduationCap,
   Briefcase,
@@ -31,7 +33,7 @@ import { Course, Announcement } from '../types';
 
 const InstructorDashboard: React.FC = () => {
   const { isAdmin } = useAuth();
-  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'regrades' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
+  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'regrades' | 'materials' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
   
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', courseId: '' });
   
@@ -95,6 +97,7 @@ const InstructorDashboard: React.FC = () => {
     { id: 'stats', label: 'Statistiken', icon: BarChart3 },
   ];
   const advancedItems = [
+    { id: 'materials', label: 'Kursinhalte', icon: BookMarked },
     { id: 'schemas', label: 'SQL Schemas', icon: Database },
     { id: 'connections', label: 'Datenbanken', icon: Plug },
     { id: 'courses', label: 'Kurse', icon: GraduationCap },
@@ -103,7 +106,7 @@ const InstructorDashboard: React.FC = () => {
 
   // Keep the advanced group open if the active tab lives inside it.
   const [showAdvanced, setShowAdvanced] = useState(
-    ['schemas', 'connections', 'courses', 'audit'].includes(tab)
+    ['materials', 'schemas', 'connections', 'courses', 'audit'].includes(tab)
   );
 
   const renderNavButton = (item: { id: string; label: string; icon: any }) => {
@@ -152,6 +155,7 @@ const InstructorDashboard: React.FC = () => {
           {tab === 'assignments' && <AssignmentManager />}
           {tab === 'gradebook' && <Gradebook />}
           {tab === 'regrades' && <RegradeRequests />}
+          {tab === 'materials' && <CourseMaterials />}
           {tab === 'schemas' && <SchemaManager />}
           {tab === 'users' && <UserManager />}
           {tab === 'audit' && <AuditLogViewer />}
