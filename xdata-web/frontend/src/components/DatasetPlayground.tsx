@@ -296,7 +296,7 @@ const DatasetPlayground: React.FC = () => {
               )}
             </div>
             
-            <div className="flex-1 p-6 font-mono text-sm overflow-auto bg-slate-900 dark:bg-black text-green-400 selection:bg-green-500/20 custom-scrollbar">
+            <div className="flex-1 p-6 font-mono text-sm overflow-auto bg-[#0f141b] text-slate-200 selection:bg-brand-500/25 custom-scrollbar">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-4">
                   <RefreshCw className="w-12 h-12 animate-spin" />
