@@ -22,13 +22,18 @@ const CourseMaterials: React.FC = () => {
   useEffect(() => { load(); }, [load]);
 
   const add = async () => {
-    if (!form.title.trim()) { toast.error('Titel erforderlich'); return; }
+    if (!form.title.trim()) { toast.error('Bitte einen Titel angeben.'); return; }
+    if (!form.content.trim()) { toast.error(form.type === 'LINK' ? 'Bitte eine URL angeben.' : 'Bitte einen Inhalt angeben.'); return; }
+    if (form.type === 'LINK' && !/^https?:\/\//i.test(form.content.trim())) {
+      toast.error('Bitte eine gültige URL angeben (beginnend mit http:// oder https://).');
+      return;
+    }
     try {
       await api.post(`/materials?courseId=${encodeURIComponent(courseId)}`, form);
       toast.success('Material hinzugefügt');
       setForm({ title: '', type: 'LINK', content: '' });
       load();
-    } catch (e: any) { toast.error(e.response?.data || 'Fehler'); }
+    } catch (e: any) { toast.error('Material konnte nicht hinzugefügt werden.'); }
   };
 
   const remove = async (id: number) => {

@@ -24,13 +24,15 @@ const RegradeRequests: React.FC = () => {
 
   const apply = async (r: Req) => {
     const d = draft[r.id] || { marks: '', reason: '' };
-    if (d.marks === '') { toast.error('Bitte neue Note (0–100) angeben'); return; }
+    if (d.marks === '') { toast.error('Bitte neue Note (0–100) angeben.'); return; }
+    const m = Number(d.marks);
+    if (Number.isNaN(m) || m < 0 || m > 100) { toast.error('Die Note muss zwischen 0 und 100 liegen.'); return; }
     try {
-      await api.post(`/evaluation/submissions/${r.submissionId}/override`, { marks: Number(d.marks), reason: d.reason });
+      await api.post(`/evaluation/submissions/${r.submissionId}/override`, { marks: m, reason: d.reason });
       toast.success('Note überschrieben & Anfechtung gelöst');
       load();
     } catch (e: any) {
-      toast.error(e.response?.data || 'Fehler beim Überschreiben');
+      toast.error('Note konnte nicht überschrieben werden.');
     }
   };
 

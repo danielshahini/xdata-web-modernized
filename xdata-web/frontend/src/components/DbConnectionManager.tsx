@@ -43,10 +43,10 @@ const DbConnectionManager: React.FC = () => {
       if (res.data === true || res.data === "Connection successful") {
         toast.success("Verbindung erfolgreich!");
       } else {
-        toast.error("Verbindung fehlgeschlagen: " + JSON.stringify(res.data));
+        toast.error("Verbindung fehlgeschlagen — bitte Zugangsdaten und Erreichbarkeit der Datenbank prüfen.");
       }
     } catch (e: any) {
-      toast.error("Fehler beim Testen: " + (e.response?.data || e.message));
+      toast.error("Verbindungstest fehlgeschlagen — prüfe URL, Zugangsdaten und Erreichbarkeit der Datenbank.");
     }
   };
 

@@ -57,8 +57,8 @@ const InstructorDashboard: React.FC = () => {
   }, [coursesData]);
 
   const handleCreateAnnouncement = async () => {
-    if (!newAnnouncement.title || !newAnnouncement.content || !newAnnouncement.courseId) {
-      toast.error("Bitte alle Felder ausfüllen");
+    if (!newAnnouncement.title.trim() || !newAnnouncement.content.trim() || !newAnnouncement.courseId) {
+      toast.error("Bitte Titel, Inhalt und Kurs ausfüllen.");
       return;
     }
     try {
