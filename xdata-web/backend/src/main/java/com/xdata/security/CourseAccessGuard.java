@@ -25,9 +25,11 @@ public class CourseAccessGuard {
         }
     }
 
-    /** Allow INSTRUCTOR or ADMIN. */
+    /** Allow teaching staff (INSTRUCTOR, TUTOR) or ADMIN — i.e. anyone who may grade.
+     *  User/course management controllers are additionally gated to ADMIN/INSTRUCTOR
+     *  via class-level @PreAuthorize, so tutors are still blocked from those. */
     public void requireInstructorOrAdmin() {
-        if (!accessControl.isInstructor() && !accessControl.isAdmin()) {
+        if (!accessControl.isInstructor() && !accessControl.isAdmin() && !accessControl.isTutor()) {
             throw denied();
         }
     }

@@ -69,6 +69,14 @@ public class AccessControlService {
         }).orElse(false);
     }
 
+    /** Teaching assistant / tutor: may grade and give feedback, but not manage users/courses. */
+    public boolean isTutor() {
+        return getCurrentUser().map(user -> {
+            String role = user.getRole();
+            return role != null && "TUTOR".equalsIgnoreCase(role.trim());
+        }).orElse(false);
+    }
+
     public List<String> getUserCourseIds() {
         return getCurrentUser().map(user -> {
             if (user.getCourses() != null) {

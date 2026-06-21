@@ -400,6 +400,7 @@ const UserManager: React.FC = () => {
                   disabled={!isAdmin}
                 >
                   <option value="STUDENT">STUDENT</option>
+                  {isAdmin && <option value="TUTOR">TUTOR</option>}
                   {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
                   {isAdmin && <option value="ADMIN">ADMIN</option>}
                 </select>
@@ -685,6 +686,7 @@ const UserManager: React.FC = () => {
                     disabled={!isAdmin}
                   >
                     <option value="STUDENT">STUDENT</option>
+                    {isAdmin && <option value="TUTOR">TUTOR</option>}
                     {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
                     {isAdmin && <option value="ADMIN">ADMIN</option>}
                   </select>

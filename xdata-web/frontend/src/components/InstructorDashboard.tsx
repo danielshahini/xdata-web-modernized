@@ -32,8 +32,8 @@ import { toast } from 'react-hot-toast';
 import { Course, Announcement } from '../types';
 
 const InstructorDashboard: React.FC = () => {
-  const { isAdmin } = useAuth();
-  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'regrades' | 'materials' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
+  const { isAdmin, isTutor } = useAuth();
+  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'regrades' | 'materials' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>(isTutor ? 'gradebook' : 'assignments');
   
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', courseId: '' });
   
@@ -88,15 +88,22 @@ const InstructorDashboard: React.FC = () => {
 
 
   // Everyday actions stay front-and-center; rarely used setup lives under "Erweitert".
-  const primaryItems = [
-    { id: 'assignments', label: 'Aufgaben', icon: ClipboardList },
-    { id: 'gradebook', label: 'Notenbuch', icon: BookOpen },
-    { id: 'regrades', label: 'Anfechtungen', icon: Gavel },
-    { id: 'users', label: 'Studenten', icon: Users },
-    { id: 'announcements', label: 'Ankündigungen', icon: Bell },
-    { id: 'stats', label: 'Statistiken', icon: BarChart3 },
-  ];
-  const advancedItems = [
+  // Tutors (TA) only get the grading-related views; instructors/admins get everything.
+  const primaryItems = isTutor
+    ? [
+        { id: 'gradebook', label: 'Notenbuch', icon: BookOpen },
+        { id: 'regrades', label: 'Anfechtungen', icon: Gavel },
+        { id: 'stats', label: 'Statistiken', icon: BarChart3 },
+      ]
+    : [
+        { id: 'assignments', label: 'Aufgaben', icon: ClipboardList },
+        { id: 'gradebook', label: 'Notenbuch', icon: BookOpen },
+        { id: 'regrades', label: 'Anfechtungen', icon: Gavel },
+        { id: 'users', label: 'Studenten', icon: Users },
+        { id: 'announcements', label: 'Ankündigungen', icon: Bell },
+        { id: 'stats', label: 'Statistiken', icon: BarChart3 },
+      ];
+  const advancedItems = isTutor ? [] : [
     { id: 'materials', label: 'Kursinhalte', icon: BookMarked },
     { id: 'schemas', label: 'SQL Schemas', icon: Database },
     { id: 'connections', label: 'Datenbanken', icon: Plug },
@@ -131,8 +138,8 @@ const InstructorDashboard: React.FC = () => {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn pb-20">
       <header className="animate-rise">
-        <p className="kicker">{isAdmin ? 'Administration' : 'Dozenten-Bereich'}</p>
-        <h1 className="mt-1 text-3xl font-display font-extrabold tracking-tight text-slate-900 dark:text-white">Dozenten-Panel</h1>
+        <p className="kicker">{isAdmin ? 'Administration' : isTutor ? 'Tutor-Bereich' : 'Dozenten-Bereich'}</p>
+        <h1 className="mt-1 text-3xl font-display font-extrabold tracking-tight text-slate-900 dark:text-white">{isTutor ? 'Tutor-Panel' : 'Dozenten-Panel'}</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Kurse, Aufgaben und Studierende an einem Ort.</p>
       </header>
 
@@ -140,15 +147,19 @@ const InstructorDashboard: React.FC = () => {
         <nav className="lg:col-span-3 space-y-1.5" aria-label="Bereiche">
           {primaryItems.map(item => renderNavButton(item))}
 
-          <button
-            onClick={() => setShowAdvanced(v => !v)}
-            className="w-full flex items-center justify-between gap-3 px-4 pt-4 pb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-            aria-expanded={showAdvanced}
-          >
-            Erweitert
-            <ChevronDown size={14} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-          </button>
-          {showAdvanced && advancedItems.map(item => renderNavButton(item))}
+          {advancedItems.length > 0 && (
+            <>
+              <button
+                onClick={() => setShowAdvanced(v => !v)}
+                className="w-full flex items-center justify-between gap-3 px-4 pt-4 pb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                aria-expanded={showAdvanced}
+              >
+                Erweitert
+                <ChevronDown size={14} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+              </button>
+              {showAdvanced && advancedItems.map(item => renderNavButton(item))}
+            </>
+          )}
         </nav>
 
         <div className="lg:col-span-9 animate-slideUp">
