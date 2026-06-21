@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  CalendarClock,
   Save, 
   Copy,
   Trash2,
@@ -26,6 +27,7 @@ import { toast } from 'react-hot-toast';
 import AssignmentStats from './AssignmentStats';
 import ConfirmationModal from './common/ConfirmationModal';
 import InfoTip from './common/InfoTip';
+import DeadlineExtensionModal from './DeadlineExtensionModal';
 import { Course, Assignment, Question, PartialMarkParameters } from '../types';
 
 const defaultParams: PartialMarkParameters = {
@@ -55,6 +57,7 @@ const AssignmentManager: React.FC = () => {
   const [dbConnections, setDbConnections] = useState<any[]>([]);
   const [showQuestionParams, setShowQuestionParams] = useState<number | null>(null);
   const [showStats, setShowStats] = useState<number | null>(null);
+  const [extensionsFor, setExtensionsFor] = useState<Assignment | null>(null);
   const [wizardStep, setWizardStep] = useState<number>(1);
   const [showAdvAssignment, setShowAdvAssignment] = useState<boolean>(false);
   const [assignmentStats, setAssignmentStats] = useState<Record<number, any[]>>({});
@@ -281,6 +284,14 @@ const AssignmentManager: React.FC = () => {
         message={deleteModal.type === 'question' ? 'Soll diese Frage wirklich entfernt werden?' : 'Soll dieses Assignment mit allen Fragen gelöscht werden?'}
       />
 
+      {extensionsFor && (
+        <DeadlineExtensionModal
+          assignmentId={extensionsFor.id}
+          assignmentName={extensionsFor.name}
+          onClose={() => setExtensionsFor(null)}
+        />
+      )}
+
       {!editingAssignment ? (
         <div className="bg-white dark:bg-ink-card rounded-[2.5rem] p-10 shadow-2xl shadow-blue-500/5 border border-slate-200 dark:border-ink-border transition-all">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
@@ -323,6 +334,7 @@ const AssignmentManager: React.FC = () => {
                     <button onClick={() => editAssignment(a)} className="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-blue-900/30 rounded-lg transition-all" title="Bearbeiten"><Edit size={18}/></button>
                     <button onClick={() => duplicateAssignment(a.id)} className="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-all" title="Duplizieren"><Copy size={18}/></button>
                     <button onClick={() => setShowStats(a.id)} className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-all" title="Statistiken"><BarChart3 size={18}/></button>
+                    <button onClick={() => setExtensionsFor(a)} className="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-blue-900/30 rounded-lg transition-all" title="Fristverlängerungen"><CalendarClock size={18}/></button>
                     <button onClick={() => setDeleteModal({ isOpen: true, type: 'assignment', id: a.id })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all" title="Löschen"><Trash2 size={18}/></button>
                   </div>
                 </div>

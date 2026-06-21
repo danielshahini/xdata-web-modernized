@@ -32,6 +32,7 @@ public class AssignmentController {
     private final SubmissionAnalytics submissionAnalytics;
     private final CourseAccessGuard courseAccessGuard;
     private final DbConnectionRepository dbConnectionRepository;
+    private final com.xdata.repository.DeadlineExtensionRepository deadlineExtensionRepository;
 
     @GetMapping
     public ResponseEntity<List<Assignment>> getAssignments(@RequestParam(required = false) String courseId) {
@@ -91,6 +92,53 @@ public class AssignmentController {
     @GetMapping("/{id}")
     public ResponseEntity<Assignment> getAssignment(@PathVariable Integer id) {
         return assignmentService.getAssignmentById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    // --- Per-student deadline extensions (#5b) — instructor/admin only ---
+
+    @GetMapping("/{id}/extensions")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN','INSTRUCTOR')")
+    public ResponseEntity<?> listExtensions(@PathVariable Integer id) {
+        return assignmentService.getAssignmentById(id).map(a -> {
+            courseAccessGuard.requireCourseAccess(a.getCourse().getInstructorCourseId());
+            return ResponseEntity.ok(deadlineExtensionRepository.findByAssignmentId(id));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{id}/extensions")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN','INSTRUCTOR')")
+    public ResponseEntity<?> setExtension(@PathVariable Integer id, @RequestBody java.util.Map<String, String> body) {
+        return assignmentService.getAssignmentById(id).map(a -> {
+            courseAccessGuard.requireCourseAccess(a.getCourse().getInstructorCourseId());
+            String studentLoginId = body.get("studentLoginId");
+            String deadlineStr = body.get("extendedDeadline");
+            if (studentLoginId == null || studentLoginId.isBlank() || deadlineStr == null || deadlineStr.isBlank()) {
+                return ResponseEntity.badRequest().body("studentLoginId und extendedDeadline sind erforderlich.");
+            }
+            java.time.LocalDateTime when;
+            try {
+                when = java.time.LocalDateTime.parse(deadlineStr);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("Ungültiges Datumsformat.");
+            }
+            com.xdata.model.DeadlineExtension ext = deadlineExtensionRepository
+                    .findByAssignmentIdAndStudentLoginId(id, studentLoginId)
+                    .orElseGet(() -> com.xdata.model.DeadlineExtension.builder()
+                            .assignmentId(id).studentLoginId(studentLoginId).build());
+            ext.setExtendedDeadline(when);
+            return ResponseEntity.ok(deadlineExtensionRepository.save(ext));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}/extensions/{studentLoginId}")
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN','INSTRUCTOR')")
+    public ResponseEntity<?> deleteExtension(@PathVariable Integer id, @PathVariable String studentLoginId) {
+        return assignmentService.getAssignmentById(id).map(a -> {
+            courseAccessGuard.requireCourseAccess(a.getCourse().getInstructorCourseId());
+            deadlineExtensionRepository.deleteByAssignmentIdAndStudentLoginId(id, studentLoginId);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}/questions")

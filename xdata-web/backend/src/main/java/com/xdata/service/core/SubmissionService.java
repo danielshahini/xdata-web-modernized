@@ -18,6 +18,7 @@ public class SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final com.xdata.repository.DeadlineExtensionRepository deadlineExtensionRepository;
 
     public Submission createSubmission(String loginId, Integer questionId, String query) {
         XDataUser user = userRepository.findByLoginIdIgnoreCase(loginId)
@@ -48,7 +49,18 @@ public class SubmissionService {
         
         LocalDateTime deadline = q.getAssignment().getDeadline();
         LocalDateTime submissionTime = submission.getSubmissionTime();
-        
+
+        // Honour a per-student deadline extension if one exists for this assignment.
+        if (submission.getUser() != null) {
+            LocalDateTime effective = deadlineExtensionRepository
+                    .findByAssignmentIdAndStudentLoginId(q.getAssignment().getId(), submission.getUser().getLoginId())
+                    .map(com.xdata.model.DeadlineExtension::getExtendedDeadline)
+                    .orElse(null);
+            if (effective != null && (deadline == null || effective.isAfter(deadline))) {
+                deadline = effective;
+            }
+        }
+
         if (deadline != null && submissionTime != null && submissionTime.isAfter(deadline)) {
             return q.getAssignment().getPenaltyPercentage() != null ? q.getAssignment().getPenaltyPercentage() / 100.0f : 0.0f;
         }
