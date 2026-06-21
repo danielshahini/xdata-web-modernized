@@ -43,9 +43,16 @@ class AuditLogControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser(roles = "INSTRUCTOR")
-    void instructor_can_read_audit_logs() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    void admin_can_read_audit_logs() throws Exception {
         when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of());
         mockMvc.perform(get("/api/v1/admin/audit-logs")).andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "INSTRUCTOR")
+    void audit_logs_are_off_limits_to_instructors() throws Exception {
+        // Audit logs hold system-wide security events -> ADMIN only (see SecurityConfiguration).
+        mockMvc.perform(get("/api/v1/admin/audit-logs")).andExpect(status().isForbidden());
     }
 }

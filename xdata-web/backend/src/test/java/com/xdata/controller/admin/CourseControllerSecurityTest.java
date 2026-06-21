@@ -60,6 +60,7 @@ class CourseControllerSecurityTest {
 
     // @EnableJpaAuditing pulls in a JPA metamodel bean that is empty in a web slice
     @MockBean private org.springframework.data.jpa.mapping.JpaMetamodelMappingContext jpaMappingContext;
+    @MockBean private com.xdata.service.core.SubmissionAnalytics submissionAnalytics;
 
     private static final String COURSE_JSON = "{\"instructorCourseId\":\"C1\",\"name\":\"Test\"}";
 

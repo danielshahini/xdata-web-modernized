@@ -50,6 +50,7 @@ class AssignmentControllerSecurityTest {
     @MockBean private AssignmentService assignmentService;
     @MockBean private SubmissionAnalytics submissionAnalytics;
     @MockBean private DbConnectionRepository dbConnectionRepository;
+    @MockBean private com.xdata.repository.DeadlineExtensionRepository deadlineExtensionRepository;
 
     @BeforeEach
     void setUp() {
