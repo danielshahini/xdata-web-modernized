@@ -101,7 +101,7 @@ const UserManager: React.FC = () => {
     setLoading(true);
     try {
       await api.post('/admin/users', newUser);
-      toast.success('Benutzer erfolgreich erstellt');
+      toast.success('User created successfully');
       setNewUser({ 
         username: '', 
         email: '', 
@@ -113,7 +113,7 @@ const UserManager: React.FC = () => {
       reloadUsers();
       reloadUnassigned();
     } catch (err: any) {
-      toast.error(err.response?.data || 'Fehler beim Erstellen');
+      toast.error(err.response?.data || 'Error while creating');
     } finally {
       setLoading(false);
     }
@@ -124,19 +124,19 @@ const UserManager: React.FC = () => {
       await api.post(`/admin/users/${loginId}/assign-course`, null, {
         params: { courseId: courseId }
       });
-      toast.success('Kurs erfolgreich zugewiesen');
+      toast.success('Course assigned successfully');
       reloadUsers();
       reloadUnassigned();
       setShowAddExistingModal(false);
     } catch (err: any) {
-      toast.error(err.response?.data || 'Fehler bei der Zuweisung');
+      toast.error(err.response?.data || 'Error during assignment');
     }
   };
   
   const handleEdit = (user: User) => {
     setEditingUser(user);
     setEditFormData({
-      username: user.username || "Unbekannt",
+      username: user.username || "Unknown",
       email: user.email || '',
       role: user.role,
       courseIds: user.courseIds || []
@@ -149,12 +149,12 @@ const UserManager: React.FC = () => {
     setLoading(true);
     try {
       await api.put(`/admin/users/${editingUser.loginId}`, editFormData);
-      toast.success('Benutzer erfolgreich aktualisiert');
+      toast.success('User updated successfully');
       setShowEditModal(false);
       reloadUsers();
       reloadUnassigned();
     } catch (err: any) {
-      toast.error(err.response?.data || 'Fehler beim Aktualisieren');
+      toast.error(err.response?.data || 'Error while updating');
     } finally {
       setLoading(false);
     }
@@ -163,16 +163,16 @@ const UserManager: React.FC = () => {
   const toggleStatus = (user: User) => {
     setConfirmConfig({
       isOpen: true,
-      title: user.enabled !== false ? 'Benutzer deaktivieren' : 'Benutzer aktivieren',
-      message: `Möchten Sie den Benutzer ${user.username || "Unbekannt"} wirklich ${user.enabled !== false ? 'deaktivieren' : 'aktivieren'}? ${user.enabled !== false ? 'Der Benutzer kann sich dann nicht mehr anmelden.' : ''}`,
+      title: user.enabled !== false ? 'Disable user' : 'Enable user',
+      message: `Are you sure you want to ${user.enabled !== false ? 'disable' : 'enable'} the user ${user.username || "Unknown"}? ${user.enabled !== false ? 'The user will then no longer be able to sign in.' : ''}`,
       type: user.enabled !== false ? 'warning' : 'info',
       onConfirm: async () => {
         try {
           await api.patch(`/admin/users/${user.loginId}/toggle-status`);
-          toast.success(`Benutzer ${user.enabled !== false ? 'deaktiviert' : 'aktiviert'}`);
+          toast.success(`User ${user.enabled !== false ? 'disabled' : 'enabled'}`);
           reloadUsers();
         } catch (err: any) {
-          toast.error(err.response?.data || 'Fehler beim Ändern des Status');
+          toast.error(err.response?.data || 'Error while changing status');
         }
       }
     });
@@ -181,17 +181,17 @@ const UserManager: React.FC = () => {
   const deleteUser = (id: string, name: string) => {
     setConfirmConfig({
       isOpen: true,
-      title: 'Benutzer löschen',
-      message: `Möchten Sie den Benutzer ${name} wirklich unwiderruflich löschen? Alle zugehörigen Daten gehen verloren.`,
+      title: 'Delete user',
+      message: `Are you sure you want to permanently delete the user ${name}? All associated data will be lost.`,
       type: 'danger',
       onConfirm: async () => {
         try {
           await api.delete(`/admin/users/${id}`);
-          toast.success('Benutzer gelöscht');
+          toast.success('User deleted');
           reloadUsers();
           reloadUnassigned();
         } catch (err: any) {
-          toast.error(err.response?.data || 'Fehler beim Löschen');
+          toast.error(err.response?.data || 'Error while deleting');
         }
       }
     });
@@ -201,19 +201,19 @@ const UserManager: React.FC = () => {
     if (!resettingUser || !newPassword) return;
     try {
       await api.post(`/admin/users/${resettingUser}/reset-password`, { password: newPassword });
-      toast.success('Passwort erfolgreich zurückgesetzt');
+      toast.success('Password reset successfully');
       setShowResetModal(false);
       setNewPassword('');
     } catch (err: any) {
-      toast.error(err.response?.data || 'Fehler beim Zurücksetzen');
+      toast.error(err.response?.data || 'Error while resetting');
     }
   };
 
   const handleImpersonate = (loginId: string, name: string) => {
     setConfirmConfig({
       isOpen: true,
-      title: 'Benutzer-Impersonation',
-      message: `Möchten Sie sich wirklich als ${name} anmelden? Ihre aktuelle Sitzung wird unterbrochen.`,
+      title: 'User impersonation',
+      message: `Are you sure you want to sign in as ${name}? Your current session will be interrupted.`,
       type: 'info',
       onConfirm: async () => {
         try {
@@ -221,10 +221,10 @@ const UserManager: React.FC = () => {
           const { token, user } = res.data;
           localStorage.setItem('token', token);
           localStorage.setItem('user', JSON.stringify(user));
-          toast.success(`Angemeldet als ${user.username || "Unbekannt"}.`);
+          toast.success(`Signed in as ${user.username || "Unknown"}.`);
           setTimeout(() => window.location.href = '/', 1000);
         } catch (err: any) {
-          toast.error('Impersonation fehlgeschlagen: ' + (err.response?.data?.message || err.message));
+          toast.error('Impersonation failed: ' + (err.response?.data?.message || err.message));
         }
       }
     });
@@ -244,7 +244,7 @@ const UserManager: React.FC = () => {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      toast.error('Vorlage konnte nicht geladen werden');
+      toast.error('Template could not be loaded');
     }
   };
 
@@ -263,11 +263,11 @@ const UserManager: React.FC = () => {
       const res = await api.post('/admin/users/import-csv', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      toast.success(`${res.data.imported} Studenten importiert (${res.data.skipped} übersprungen)`);
+      toast.success(`${res.data.imported} students imported (${res.data.skipped} skipped)`);
       reloadUsers();
       reloadUnassigned();
     } catch (err: any) {
-      toast.error('Fehler beim CSV Import: ' + (err.response?.data || err.message));
+      toast.error('Error during CSV import: ' + (err.response?.data || err.message));
     } finally {
       setLoading(false);
       e.target.value = ''; // Reset input
@@ -298,34 +298,34 @@ const UserManager: React.FC = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <p className="kicker">{isInstructor ? 'Kurs-Teilnehmer' : 'Benutzer'}</p>
-          <h2 className="mt-1 section-title text-2xl">Benutzerverwaltung</h2>
+          <p className="kicker">{isInstructor ? 'Course participants' : 'Users'}</p>
+          <h2 className="mt-1 section-title text-2xl">User management</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
             <button onClick={downloadTemplate} className="btn-secondary">
-                <FileImport size={16} /> Vorlage
+                <FileImport size={16} /> Template
             </button>
             {isInstructor && (
               <button
                 onClick={() => { reloadUnassigned(); setShowAddExistingModal(true); }}
                 className="btn-secondary"
               >
-                <UserPlus size={16} /> Bestehende hinzufügen
+                <UserPlus size={16} /> Add existing
               </button>
             )}
             <label className="btn-primary cursor-pointer">
-                <FileImport size={16} /> CSV importieren
+                <FileImport size={16} /> Import CSV
                 <input type="file" accept=".csv" className="hidden" onChange={handleCsvImport} disabled={loading} />
             </label>
             <InfoTip
               title="CSV Import Format"
               content={
                 <div className="space-y-2">
-                  <p>Die CSV-Datei sollte folgende Spalten enthalten:</p>
+                  <p>The CSV file should contain the following columns:</p>
                   <code className="x-code block">
                     username,loginId,password,email,role,courseId
                   </code>
-                  <p>Nutzen Sie den Button "Vorlage laden", um eine beispielhafte Datei herunterzuladen.</p>
+                  <p>Use the "Load template" button to download an example file.</p>
                 </div>
               }
             />
@@ -335,13 +335,13 @@ const UserManager: React.FC = () => {
       <div className="x-card p-6 sm:p-8 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-1 h-full bg-brand-600"></div>
         <h3 className="section-title flex items-center gap-2 mb-6">
-          <UserPlus size={20} className="text-brand-500" /> Neuen {isInstructor ? 'Studenten' : 'Benutzer'} anlegen
+          <UserPlus size={20} className="text-brand-500" /> Create new {isInstructor ? 'student' : 'user'}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <div className="space-y-1">
-            <label className="x-label">Vollständiger Name</label>
-            <input 
-              placeholder="z.B. Max Mustermann" 
+            <label className="x-label">Full name</label>
+            <input
+              placeholder="e.g. John Doe"
               className="x-input" 
               value={newUser.username} 
               onChange={e => setNewUser({...newUser, username: e.target.value})} 
@@ -350,23 +350,23 @@ const UserManager: React.FC = () => {
           <div className="space-y-1">
             <label className="x-label">Login ID</label>
             <input 
-              placeholder="z.B. mmuster" 
+              placeholder="e.g. jdoe"
               className="x-input" 
               value={newUser.loginId} 
               onChange={e => setNewUser({...newUser, loginId: e.target.value})} 
             />
           </div>
           <div className="space-y-1">
-            <label className="x-label">E-Mail Adresse</label>
-            <input 
-              placeholder="max@beispiel.de" 
+            <label className="x-label">Email address</label>
+            <input
+              placeholder="john@example.com"
               className="x-input" 
               value={newUser.email} 
               onChange={e => setNewUser({...newUser, email: e.target.value})} 
             />
           </div>
           <div className="space-y-1">
-            <label className="x-label">Passwort</label>
+            <label className="x-label">Password</label>
             <input 
               type="password" 
               placeholder="••••••••" 
@@ -379,15 +379,15 @@ const UserManager: React.FC = () => {
             <>
               <div className="space-y-1">
                 <label className="x-label">
-                  Rolle
-                  <InfoTip 
-                    title="Benutzerrollen"
+                  Role
+                  <InfoTip
+                    title="User roles"
                     content={
                       <div className="space-y-2">
                         <ul className="list-disc ml-4 space-y-1">
-                          <li><strong>Student:</strong> Kann Aufgaben lösen und Playgrounds nutzen.</li>
-                          <li><strong>Instructor:</strong> Kann Aufgaben, Schemata und Verbindungen verwalten.</li>
-                          <li><strong>Admin:</strong> Hat Vollzugriff auf das gesamte System.</li>
+                          <li><strong>Student:</strong> Can solve assignments and use playgrounds.</li>
+                          <li><strong>Instructor:</strong> Can manage assignments, schemas and connections.</li>
+                          <li><strong>Admin:</strong> Has full access to the entire system.</li>
                         </ul>
                       </div>
                     }
@@ -400,13 +400,12 @@ const UserManager: React.FC = () => {
                   disabled={!isAdmin}
                 >
                   <option value="STUDENT">STUDENT</option>
-                  {isAdmin && <option value="TUTOR">TUTOR</option>}
                   {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
                   {isAdmin && <option value="ADMIN">ADMIN</option>}
                 </select>
               </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="x-label">Kurs Zuweisung</label>
+                <label className="x-label">Course assignment</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-[150px] overflow-y-auto">
                   {courses.map(c => (
                     <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card p-2 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer hover:border-brand-300 transition-all">
@@ -425,14 +424,14 @@ const UserManager: React.FC = () => {
                       <span className="text-[11px] font-bold truncate dark:text-white" title={c.courseName}>{c.courseName}</span>
                     </label>
                   ))}
-                  {courses.length === 0 && <p className="col-span-full text-center text-xs text-gray-400 italic py-2">Keine Kurse verfügbar</p>}
+                  {courses.length === 0 && <p className="col-span-full text-center text-xs text-gray-400 italic py-2">No courses available</p>}
                 </div>
               </div>
             </>
           )}
           {isInstructor && (
              <div className="space-y-1">
-                <label className="x-label">Kurs Zuweisung (Meine Kurse)</label>
+                <label className="x-label">Course assignment (My courses)</label>
                 <div className="flex flex-wrap gap-2 p-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     {courses.map(c => (
                         <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card px-3 py-1.5 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer">
@@ -459,7 +458,7 @@ const UserManager: React.FC = () => {
               disabled={loading}
               className="btn-primary w-full"
             >
-              {loading ? <><RefreshCw size={16} className="animate-spin" /> Verarbeite…</> : <><UserCheck size={16} /> {isInstructor ? 'Student erstellen' : 'Benutzer erstellen'}</>}
+              {loading ? <><RefreshCw size={16} className="animate-spin" /> Processing…</> : <><UserCheck size={16} /> {isInstructor ? 'Create student' : 'Create user'}</>}
             </button>
           </div>
         </div>
@@ -468,8 +467,8 @@ const UserManager: React.FC = () => {
       <div className="x-card overflow-hidden">
         <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-ink-border flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <h3 className="section-title text-base shrink-0">Zugeordnete Benutzer</h3>
-            <span className="badge-neutral shrink-0">{filteredUsers.length} gesamt</span>
+            <h3 className="section-title text-base shrink-0">Assigned users</h3>
+            <span className="badge-neutral shrink-0">{filteredUsers.length} total</span>
           </div>
 
           <div className="flex items-center gap-2 w-full md:w-auto">
@@ -477,7 +476,7 @@ const UserManager: React.FC = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input
                 type="text"
-                placeholder="Name, Login-ID oder E-Mail…"
+                placeholder="Name, login ID or email…"
                 className="x-input pl-10 py-2"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
@@ -487,10 +486,10 @@ const UserManager: React.FC = () => {
               className="x-select py-2 w-auto shrink-0"
               value={sortBy}
               onChange={e => setSortBy(e.target.value as 'newest' | 'oldest' | 'name')}
-              title="Sortierung"
+              title="Sorting"
             >
-              <option value="newest">Neueste zuerst</option>
-              <option value="oldest">Älteste zuerst</option>
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
               <option value="name">Name (A–Z)</option>
             </select>
           </div>
@@ -501,11 +500,11 @@ const UserManager: React.FC = () => {
               <tr>
                 <th className="x-th">Status</th>
                 <th className="x-th">Name</th>
-                <th className="x-th">Login-ID</th>
-                <th className="x-th">Kurs</th>
-                <th className="x-th">Rolle</th>
-                <th className="x-th">Erstellt</th>
-                <th className="x-th text-right">Aktionen</th>
+                <th className="x-th">Login ID</th>
+                <th className="x-th">Course</th>
+                <th className="x-th">Role</th>
+                <th className="x-th">Created</th>
+                <th className="x-th text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -513,8 +512,8 @@ const UserManager: React.FC = () => {
                 <tr key={u.loginId} className="x-row">
                   <td className="x-td">
                      {u.enabled !== false
-                        ? <span className="badge-success"><CheckCircle size={12} /> Aktiv</span>
-                        : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={12} /> Inaktiv</span>}
+                        ? <span className="badge-success"><CheckCircle size={12} /> Active</span>
+                        : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={12} /> Inactive</span>}
                   </td>
                   <td className="x-td">
                     <div className="flex items-center gap-3">
@@ -529,7 +528,7 @@ const UserManager: React.FC = () => {
                      <div className="flex flex-wrap gap-1">
                         {u.courseIds && u.courseIds.length > 0 ? u.courseIds.map(cid => (
                             <span key={cid} className="badge-neutral font-mono normal-case">{cid}</span>
-                        )) : <span className="text-slate-300 dark:text-slate-600 italic text-sm">Kein Kurs</span>}
+                        )) : <span className="text-slate-300 dark:text-slate-600 italic text-sm">No course</span>}
                      </div>
                   </td>
                   <td className="x-td">
@@ -543,7 +542,7 @@ const UserManager: React.FC = () => {
                   </td>
                   <td className="x-td">
                     <span className="text-sm text-slate-500 dark:text-slate-400 tabular-nums">
-                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString('de-DE') : '–'}
+                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-US') : '–'}
                     </span>
                   </td>
                   <td className="x-td text-right">
@@ -551,7 +550,7 @@ const UserManager: React.FC = () => {
                       <button 
                         onClick={() => toggleStatus(u)} 
                         className={`icon-btn ${u.enabled !== false ? 'hover:text-orange-500' : 'text-orange-500'}`}
-                        title={u.enabled !== false ? 'Benutzer deaktivieren' : 'Benutzer aktivieren'}
+                        title={u.enabled !== false ? 'Disable user' : 'Enable user'}
                       >
                         {u.enabled !== false ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                       </button>
@@ -559,7 +558,7 @@ const UserManager: React.FC = () => {
                         <button 
                           onClick={() => handleImpersonate(u.loginId, u.username)} 
                           className="icon-btn hover:text-purple-500 dark:hover:text-purple-400 transition-colors"
-                          title="Als dieser Benutzer anmelden"
+                          title="Sign in as this user"
                         >
                           <UserSecret size={18} />
                         </button>
@@ -567,21 +566,21 @@ const UserManager: React.FC = () => {
                       <button 
                         onClick={() => handleEdit(u)} 
                         className="icon-btn hover:text-green-500 dark:hover:text-green-400 transition-colors"
-                        title="Benutzer bearbeiten"
+                        title="Edit user"
                       >
                         <Edit2 size={18} />
                       </button>
                       <button 
                         onClick={() => { setResettingUser(u.loginId); setShowResetModal(true); }} 
                         className="icon-btn hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-                        title="Passwort zurücksetzen"
+                        title="Reset password"
                       >
                         <Key size={18} />
                       </button>
                       <button 
                         onClick={() => deleteUser(u.id, u.username)} 
                         className="icon-btn hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                        title="Benutzer löschen"
+                        title="Delete user"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -599,7 +598,7 @@ const UserManager: React.FC = () => {
           <div className="modal-card max-w-2xl p-6 sm:p-8 max-h-[85vh] flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <h3 className="section-title flex items-center gap-2">
-                <Users className="mr-2 text-blue-500" size={24} /> Studenten ohne Kurszuweisung
+                <Users className="mr-2 text-blue-500" size={24} /> Students without course assignment
               </h3>
               <button onClick={() => setShowAddExistingModal(false)} className="icon-btn hover:text-hard">
                 <X size={24} />
@@ -611,13 +610,13 @@ const UserManager: React.FC = () => {
                   <tr className="bg-gray-50 dark:bg-gray-900/50">
                     <th className="x-th">Name</th>
                     <th className="x-th">Login ID</th>
-                    <th className="x-th">Aktion</th>
+                    <th className="x-th">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                   {unassignedUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-4 py-12 text-center text-gray-400 font-bold italic">Keine kurslosen Studenten gefunden</td>
+                      <td colSpan={3} className="px-4 py-12 text-center text-gray-400 font-bold italic">No students without a course found</td>
                     </tr>
                   ) : (
                     unassignedUsers.map(u => (
@@ -652,7 +651,7 @@ const UserManager: React.FC = () => {
           <div className="modal-card max-w-2xl p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6">
               <h3 className="section-title flex items-center gap-2">
-                <Edit2 className="mr-2 text-blue-500" size={24} /> Benutzer bearbeiten: <span className="ml-2 text-blue-600">{editingUser.loginId}</span>
+                <Edit2 className="mr-2 text-blue-500" size={24} /> Edit user: <span className="ml-2 text-blue-600">{editingUser.loginId}</span>
               </h3>
               <button onClick={() => setShowEditModal(false)} className="icon-btn hover:text-hard">
                 <X size={24} />
@@ -661,24 +660,24 @@ const UserManager: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="space-y-1">
-                <label className="x-label">Vollständiger Name</label>
-                <input 
+                <label className="x-label">Full name</label>
+                <input
                   className="x-input"
-                  value={editFormData.username} 
+                  value={editFormData.username}
                   onChange={e => setEditFormData({...editFormData, username: e.target.value})} 
                 />
               </div>
               <div className="space-y-1">
-                <label className="x-label">E-Mail Adresse</label>
-                <input 
+                <label className="x-label">Email address</label>
+                <input
                   className="x-input"
-                  value={editFormData.email} 
+                  value={editFormData.email}
                   onChange={e => setEditFormData({...editFormData, email: e.target.value})} 
                 />
               </div>
               {isAdmin && (
                 <div className="space-y-1">
-                  <label className="x-label">Rolle</label>
+                  <label className="x-label">Role</label>
                   <select
                     className="x-select"
                     value={editFormData.role}
@@ -686,15 +685,14 @@ const UserManager: React.FC = () => {
                     disabled={!isAdmin}
                   >
                     <option value="STUDENT">STUDENT</option>
-                    {isAdmin && <option value="TUTOR">TUTOR</option>}
-                    {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
+                      {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
                     {isAdmin && <option value="ADMIN">ADMIN</option>}
                   </select>
                 </div>
               )}
               
               <div className="space-y-1 md:col-span-2">
-                <label className="x-label">Kurs Zuweisung</label>
+                <label className="x-label">Course assignment</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-[200px] overflow-y-auto custom-scrollbar">
                   {courses.filter(c => isAdmin || (isInstructor && currentUser?.courseIds?.includes(c.instructorCourseId))).map(c => (
                     <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card p-2 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer hover:border-brand-300 transition-all">
@@ -722,14 +720,14 @@ const UserManager: React.FC = () => {
                 onClick={() => setShowEditModal(false)}
                 className="btn-secondary flex-1"
               >
-                Abbrechen
+                Cancel
               </button>
-              <button 
+              <button
                 onClick={handleUpdateUser}
                 disabled={loading}
                 className="btn-primary flex-1"
               >
-                {loading ? 'Speichern...' : 'Änderungen speichern'}
+                {loading ? 'Saving...' : 'Save changes'}
               </button>
             </div>
           </div>
@@ -743,15 +741,15 @@ const UserManager: React.FC = () => {
                <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg">
                   <Key className="text-orange-600 dark:text-orange-400" size={20} />
                </div>
-               <h3 className="section-title">Passwort zurücksetzen</h3>
+               <h3 className="section-title">Reset password</h3>
             </div>
             <p className="text-gray-500 dark:text-gray-400 mb-6 font-medium leading-relaxed">
-              Geben Sie ein neues Passwort für <span className="text-blue-600 font-bold">{resettingUser}</span> ein.
+              Enter a new password for <span className="text-blue-600 font-bold">{resettingUser}</span>.
             </p>
-            <input 
-              type="password" 
-              className="x-input mb-6" 
-              placeholder="Neues Passwort"
+            <input
+              type="password"
+              className="x-input mb-6"
+              placeholder="New password"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
               autoFocus
@@ -761,13 +759,13 @@ const UserManager: React.FC = () => {
                 onClick={() => setShowResetModal(false)}
                 className="btn-secondary flex-1"
               >
-                Abbrechen
+                Cancel
               </button>
-              <button 
+              <button
                 onClick={handleResetPassword}
                 className="btn-primary flex-1"
               >
-                Speichern
+                Save
               </button>
             </div>
           </div>

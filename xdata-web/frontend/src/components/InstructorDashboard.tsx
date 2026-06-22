@@ -31,8 +31,8 @@ import { toast } from 'react-hot-toast';
 import { Course, Announcement } from '../types';
 
 const InstructorDashboard: React.FC = () => {
-  const { isAdmin, isTutor } = useAuth();
-  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'regrades' | 'materials' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>(isTutor ? 'gradebook' : 'assignments');
+  const { isAdmin } = useAuth();
+  const [tab, setTab] = useState<'assignments' | 'gradebook' | 'regrades' | 'materials' | 'schemas' | 'users' | 'courses' | 'audit' | 'connections' | 'stats' | 'announcements'>('assignments');
   
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', courseId: '' });
   
@@ -52,7 +52,7 @@ const InstructorDashboard: React.FC = () => {
   const [newCourse, setNewCourse] = useState({ courseName: '', instructorCourseId: '' });
   const handleCreateCourse = async () => {
     if (!newCourse.courseName.trim() || !newCourse.instructorCourseId.trim()) {
-      toast.error('Bitte Kursname und Kurs-ID angeben.');
+      toast.error('Please provide a course name and course ID.');
       return;
     }
     try {
@@ -60,11 +60,11 @@ const InstructorDashboard: React.FC = () => {
         courseName: newCourse.courseName.trim(),
         instructorCourseId: newCourse.instructorCourseId.trim(),
       });
-      toast.success('Kurs erstellt.');
+      toast.success('Course created.');
       setNewCourse({ courseName: '', instructorCourseId: '' });
       reloadCourses();
     } catch (e: any) {
-      toast.error(e?.response?.data || 'Kurs konnte nicht erstellt werden.');
+      toast.error(e?.response?.data || 'Course could not be created.');
     }
   };
 
@@ -76,7 +76,7 @@ const InstructorDashboard: React.FC = () => {
 
   const handleCreateAnnouncement = async () => {
     if (!newAnnouncement.title.trim() || !newAnnouncement.content.trim() || !newAnnouncement.courseId) {
-      toast.error("Bitte Titel, Inhalt und Kurs ausfüllen.");
+      toast.error("Please fill in title, content, and course.");
       return;
     }
     try {
@@ -84,48 +84,41 @@ const InstructorDashboard: React.FC = () => {
         title: newAnnouncement.title,
         content: newAnnouncement.content
       });
-      toast.success("Ankündigung erstellt");
+      toast.success("Announcement created");
       setNewAnnouncement({ ...newAnnouncement, title: '', content: '' });
       reloadAnnouncements();
     } catch (e) {
-      toast.error("Fehler beim Erstellen");
+      toast.error("Error while creating");
     }
   };
 
   const deleteAnnouncement = async (id: number) => {
-    if (window.confirm("Ankündigung löschen?")) {
+    if (window.confirm("Delete announcement?")) {
       try {
         await api.delete(`/announcements/${id}`);
         reloadAnnouncements();
-        toast.success("Gelöscht");
+        toast.success("Deleted");
       } catch (e) {
-        toast.error("Fehler beim Löschen");
+        toast.error("Error while deleting");
       }
     }
   };
 
 
-  // Everyday actions stay front-and-center; rarely used setup lives under "Erweitert".
-  // Tutors (TA) only get the grading-related views; instructors/admins get everything.
-  const primaryItems = isTutor
-    ? [
-        { id: 'gradebook', label: 'Notenbuch', icon: BookOpen },
-        { id: 'regrades', label: 'Anfechtungen', icon: Gavel },
-        { id: 'stats', label: 'Statistiken', icon: BarChart3 },
-      ]
-    : [
-        { id: 'assignments', label: 'Aufgaben', icon: ClipboardList },
-        { id: 'gradebook', label: 'Notenbuch', icon: BookOpen },
-        { id: 'regrades', label: 'Anfechtungen', icon: Gavel },
-        { id: 'users', label: 'Studenten', icon: Users },
-        { id: 'announcements', label: 'Ankündigungen', icon: Bell },
-        { id: 'stats', label: 'Statistiken', icon: BarChart3 },
-      ];
-  const advancedItems = isTutor ? [] : [
-    { id: 'materials', label: 'Kursinhalte', icon: BookMarked },
+  // Everyday actions stay front-and-center; rarely used setup lives under "Advanced".
+  const primaryItems = [
+    { id: 'assignments', label: 'Assignments', icon: ClipboardList },
+    { id: 'gradebook', label: 'Gradebook', icon: BookOpen },
+    { id: 'regrades', label: 'Regrade requests', icon: Gavel },
+    { id: 'users', label: 'Students', icon: Users },
+    { id: 'announcements', label: 'Announcements', icon: Bell },
+    { id: 'stats', label: 'Statistics', icon: BarChart3 },
+  ];
+  const advancedItems = [
+    { id: 'materials', label: 'Course materials', icon: BookMarked },
     { id: 'schemas', label: 'SQL Schemas', icon: Database },
-    { id: 'connections', label: 'Datenbanken', icon: Plug },
-    { id: 'courses', label: 'Kurse', icon: GraduationCap },
+    { id: 'connections', label: 'Databases', icon: Plug },
+    { id: 'courses', label: 'Courses', icon: GraduationCap },
     ...(isAdmin ? [{ id: 'audit', label: 'Audit Logs', icon: Briefcase }] : [])
   ];
 
@@ -156,13 +149,13 @@ const InstructorDashboard: React.FC = () => {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-fadeIn pb-20">
       <header className="animate-rise">
-        <p className="kicker">{isAdmin ? 'Administration' : isTutor ? 'Tutor-Bereich' : 'Dozenten-Bereich'}</p>
-        <h1 className="mt-1 text-3xl font-display font-extrabold tracking-tight text-slate-900 dark:text-white">{isTutor ? 'Tutor-Panel' : 'Dozenten-Panel'}</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Kurse, Aufgaben und Studierende an einem Ort.</p>
+        <p className="kicker">{isAdmin ? 'Administration' : 'Instructor area'}</p>
+        <h1 className="mt-1 text-3xl font-display font-extrabold tracking-tight text-slate-900 dark:text-white">Instructor Panel</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Courses, assignments, and students in one place.</p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <nav className="lg:col-span-3 space-y-1.5" aria-label="Bereiche">
+        <nav className="lg:col-span-3 space-y-1.5" aria-label="Sections">
           {primaryItems.map(item => renderNavButton(item))}
 
           {advancedItems.length > 0 && (
@@ -172,7 +165,7 @@ const InstructorDashboard: React.FC = () => {
                 className="w-full flex items-center justify-between gap-3 px-4 pt-4 pb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 aria-expanded={showAdvanced}
               >
-                Erweitert
+                Advanced
                 <ChevronDown size={14} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
               </button>
               {showAdvanced && advancedItems.map(item => renderNavButton(item))}
@@ -194,19 +187,19 @@ const InstructorDashboard: React.FC = () => {
           {tab === 'announcements' && (
             <div className="space-y-6">
               <section className="x-card p-6 sm:p-8">
-                <h3 className="section-title flex items-center gap-2"><Plus size={20} className="text-brand-500" /> Neue Ankündigung</h3>
+                <h3 className="section-title flex items-center gap-2"><Plus size={20} className="text-brand-500" /> New Announcement</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                   <div>
-                    <label className="x-label">Titel</label>
+                    <label className="x-label">Title</label>
                     <input
-                      placeholder="z. B. Abgabefrist verlängert"
+                      placeholder="e.g. Submission deadline extended"
                       className="x-input"
                       value={newAnnouncement.title}
                       onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="x-label">Kurs</label>
+                    <label className="x-label">Course</label>
                     <select
                       className="x-select"
                       value={newAnnouncement.courseId}
@@ -217,21 +210,21 @@ const InstructorDashboard: React.FC = () => {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="x-label">Inhalt</label>
+                  <label className="x-label">Content</label>
                   <textarea
-                    placeholder="Was sollen deine Studierenden wissen?"
+                    placeholder="What should your students know?"
                     className="x-input h-32 resize-y"
                     value={newAnnouncement.content}
                     onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
                   />
                 </div>
                 <div className="mt-5 flex justify-end">
-                  <button onClick={handleCreateAnnouncement} className="btn-primary"><Bell size={16} /> Veröffentlichen</button>
+                  <button onClick={handleCreateAnnouncement} className="btn-primary"><Bell size={16} /> Publish</button>
                 </div>
               </section>
 
               <section className="x-card p-6 sm:p-8">
-                <h3 className="section-title mb-5">Veröffentlichte Ankündigungen</h3>
+                <h3 className="section-title mb-5">Published Announcements</h3>
                 <div className="space-y-3">
                   {announcements.map(a => (
                     <div key={a.id} className="group flex justify-between items-start gap-4 p-5 rounded-xl border border-slate-200 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/40">
@@ -240,10 +233,10 @@ const InstructorDashboard: React.FC = () => {
                         <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-line">{a.content}</p>
                         <div className="flex flex-wrap items-center gap-2 mt-3">
                           <span className="badge-brand">{a.course.courseName}</span>
-                          <span className="text-xs text-slate-400">{new Date(a.createdAt).toLocaleString('de-DE')}</span>
+                          <span className="text-xs text-slate-400">{new Date(a.createdAt).toLocaleString('en-US')}</span>
                         </div>
                       </div>
-                      <button onClick={() => deleteAnnouncement(a.id)} className="icon-btn hover:text-hard shrink-0" title="Ankündigung löschen" aria-label="Ankündigung löschen">
+                      <button onClick={() => deleteAnnouncement(a.id)} className="icon-btn hover:text-hard shrink-0" title="Delete announcement" aria-label="Delete announcement">
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -251,7 +244,7 @@ const InstructorDashboard: React.FC = () => {
                   {announcements.length === 0 && (
                     <div className="empty-state">
                       <Bell className="text-slate-300 dark:text-slate-600 mb-3" size={36} />
-                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Noch keine Ankündigungen. Erstelle oben die erste.</p>
+                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No announcements yet. Create the first one above.</p>
                     </div>
                   )}
                 </div>
@@ -262,24 +255,24 @@ const InstructorDashboard: React.FC = () => {
           {tab === 'courses' && (
             <div className="space-y-6">
               <section className="x-card p-6">
-                <p className="font-semibold text-slate-900 dark:text-white mb-1">Neuen Kurs erstellen</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Du wirst dem Kurs automatisch als Dozent:in zugewiesen.</p>
+                <p className="font-semibold text-slate-900 dark:text-white mb-1">Create new course</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">You will automatically be assigned to the course as an instructor.</p>
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
                   <div className="space-y-1">
-                    <label className="x-label">Kursname</label>
-                    <input className="x-input" placeholder="z. B. Datenbanken II"
+                    <label className="x-label">Course name</label>
+                    <input className="x-input" placeholder="e.g. Databases II"
                       value={newCourse.courseName}
                       onChange={e => setNewCourse({ ...newCourse, courseName: e.target.value })} />
                   </div>
                   <div className="space-y-1">
-                    <label className="x-label">Kurs-ID</label>
-                    <input className="x-input font-mono" placeholder="z. B. DB2-2026"
+                    <label className="x-label">Course ID</label>
+                    <input className="x-input font-mono" placeholder="e.g. DB2-2026"
                       value={newCourse.instructorCourseId}
                       onChange={e => setNewCourse({ ...newCourse, instructorCourseId: e.target.value })}
                       onKeyDown={e => { if (e.key === 'Enter') handleCreateCourse(); }} />
                   </div>
                   <button className="btn-primary" onClick={handleCreateCourse}>
-                    <Plus size={18} /> Erstellen
+                    <Plus size={18} /> Create
                   </button>
                 </div>
               </section>
@@ -288,8 +281,8 @@ const InstructorDashboard: React.FC = () => {
                 <table className="w-full">
                   <thead>
                     <tr>
-                      <th className="x-th">Kursname</th>
-                      <th className="x-th">Kurs-ID</th>
+                      <th className="x-th">Course name</th>
+                      <th className="x-th">Course ID</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -300,7 +293,7 @@ const InstructorDashboard: React.FC = () => {
                       </tr>
                     ))}
                     {courses.length === 0 && (
-                      <tr><td className="x-td text-slate-400 italic" colSpan={2}>Dir ist noch kein Kurs zugewiesen.</td></tr>
+                      <tr><td className="x-td text-slate-400 italic" colSpan={2}>You have not been assigned to any course yet.</td></tr>
                     )}
                   </tbody>
                 </table>

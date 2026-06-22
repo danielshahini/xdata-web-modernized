@@ -29,7 +29,6 @@ const App: React.FC = () => {
     switch (userRole) {
       case 'ADMIN': return <Navigate to="/admin" replace />;
       case 'INSTRUCTOR': return <Navigate to="/instructor" replace />;
-      case 'TUTOR': return <Navigate to="/instructor" replace />;
       default: return <Navigate to="/student" replace />;
     }
   };
@@ -62,7 +61,7 @@ const App: React.FC = () => {
         } />
         
         <Route path="/instructor/*" element={
-          <ProtectedRoute allowedRoles={['INSTRUCTOR', 'TUTOR']}>
+          <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
             <Layout><InstructorDashboard /></Layout>
           </ProtectedRoute>
         } />

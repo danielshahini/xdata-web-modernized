@@ -10,7 +10,6 @@ interface AuthContextType {
   isAdmin: boolean;
   isInstructor: boolean;
   isStudent: boolean;
-  isTutor: boolean;
   isDark: boolean;
   toggleTheme: () => void;
   markPasswordChanged: () => void;
@@ -81,7 +80,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAdmin = user?.role?.trim().toUpperCase() === 'ADMIN';
   const isInstructor = user?.role?.trim().toUpperCase() === 'INSTRUCTOR';
   const isStudent = user?.role?.trim().toUpperCase() === 'STUDENT';
-  const isTutor = user?.role?.trim().toUpperCase() === 'TUTOR';
 
   return (
     <AuthContext.Provider value={{ 
@@ -93,7 +91,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isAdmin,
       isInstructor,
       isStudent,
-      isTutor,
       isDark,
       toggleTheme,
       markPasswordChanged
