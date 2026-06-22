@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { LogIn, Key, Mail, Database } from 'lucide-react';
+import { Key, Mail, Database, User as UserIcon, ArrowRight, Sparkles, CheckCircle2, XOctagon } from 'lucide-react';
+
+type AuthState = 'idle' | 'running' | 'ok' | 'error';
 
 const Login: React.FC = () => {
   const { login } = useAuth();
@@ -11,22 +14,30 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
+  // Drives the console "result" line — the signature ties the form to a live query.
+  const [authState, setAuthState] = useState<AuthState>('idle');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setAuthState('running');
     try {
       const response = await api.post('/auth/login', { loginId, password });
+      setAuthState('ok');
       login(response.data.token, response.data);
-      toast.success('Erfolgreich angemeldet!');
+      toast.success('Signed in successfully!');
     } catch (err: any) {
+      setAuthState('error');
       console.error('Login error details:', err);
       if (!err.response) {
-        toast.error('Netzwerkfehler: Backend nicht erreichbar.');
+        toast.error('Network error: backend unreachable.');
+      } else if (err.response.status === 423) {
+        const mins = err.response.headers?.['x-lock-minutes'];
+        toast.error(`Account temporarily locked (too many failed attempts).${mins ? ` Please try again in ${mins} min.` : ''}`);
       } else if (err.response.status === 401) {
-        toast.error('Ungültige Anmeldedaten');
+        toast.error('Invalid credentials');
       } else {
-        toast.error(err.response.data?.message || 'Login fehlgeschlagen');
+        toast.error(err.response.data?.message || 'Sign-in failed');
       }
     } finally {
       setLoading(false);
@@ -38,123 +49,207 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       await api.post('/auth/forgot-password', { email });
-      toast.success('Reset-Link wurde gesendet (falls E-Mail existiert)');
+      toast.success('Reset link sent (if the email exists)');
       setShowForgot(false);
     } catch (err) {
-      toast.error('Fehler beim Senden der E-Mail');
+      toast.error('Error sending the email');
     } finally {
       setLoading(false);
     }
   };
 
+  const inputBase =
+    'w-full rounded-xl border border-slate-200 dark:border-ink-border bg-slate-50 dark:bg-ink-bg pl-11 pr-3 py-3 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white dark:focus:bg-ink-soft transition-all';
+
+  // The form values, rendered as the predicate of a live SQL query.
+  const maskedPw = password ? '•'.repeat(Math.min(password.length, 10)) : '';
+  const queryConsole = (
+    <pre className="px-5 py-4 font-mono text-[13px] leading-[1.7] overflow-x-auto whitespace-pre">
+<span className="text-brand-400">SELECT</span> <span className="text-slate-200">*</span> <span className="text-brand-400">FROM</span> <span className="text-slate-200">users</span>{'\n'}
+<span className="text-brand-400">WHERE</span>  <span className="text-slate-200">login_id</span> <span className="text-slate-500">=</span> <span className="text-easy">'{loginId || <span className="text-slate-600">…</span>}'</span>{!loginId && <span className="ml-px inline-block w-[2px] h-[1.05em] -mb-[2px] bg-brand-400 animate-pulse align-middle" aria-hidden="true" />}{'\n'}
+<span className="text-slate-500">  </span><span className="text-brand-400">AND</span>  <span className="text-slate-200">password</span> <span className="text-slate-500">=</span> <span className="text-xp-400">crypt</span><span className="text-slate-500">(</span><span className="text-easy">'{maskedPw || <span className="text-slate-600">…</span>}'</span><span className="text-slate-500">);</span>
+    </pre>
+  );
+
+  const resultLine = (() => {
+    switch (authState) {
+      case 'running':
+        return (
+          <span className="flex items-center gap-2 text-brand-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-400 animate-pulse" /> running …
+          </span>
+        );
+      case 'ok':
+        return (
+          <span className="flex items-center gap-1.5 text-easy">
+            <CheckCircle2 size={13} /> 1 row · authenticated
+          </span>
+        );
+      case 'error':
+        return (
+          <span className="flex items-center gap-1.5 text-hard">
+            <XOctagon size={13} /> 0 rows · access denied
+          </span>
+        );
+      default:
+        return <span className="text-slate-500">ready · press Sign in to run</span>;
+    }
+  })();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 p-10 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 transition-colors">
-        <div>
-          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-inner">
-            <Database size={32} />
+    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-slate-50 dark:bg-ink-bg">
+      {/* ── Signature panel: your credentials, rendered as a live query ── */}
+      <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-ink-bg text-slate-200 p-12">
+        <div className="absolute inset-0 bg-grid opacity-60" />
+        <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-brand-600/30 blur-3xl" />
+        <div className="absolute bottom-0 -left-20 h-72 w-72 rounded-full bg-xp-500/10 blur-3xl" />
+
+        <div className="relative flex items-center gap-2.5">
+          <div className="grid place-items-center h-10 w-10 rounded-xl bg-brand-600 text-white shadow-glow">
+            <Database size={20} strokeWidth={2.4} />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-black text-gray-900 dark:text-white tracking-tight">
-            XData <span className="text-blue-600">Web</span>
-          </h2>
-          <p className="mt-2 text-center text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-black">
-            Automated SQL Grading
+          <div className="leading-none">
+            <span className="font-display text-xl font-extrabold tracking-tight text-white">XData</span>
+            <span className="ml-1 font-mono text-sm font-semibold text-brand-400">/sql</span>
+          </div>
+        </div>
+
+        <div className="relative">
+          <p className="kicker text-brand-400">Learning platform for databases</p>
+          <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-tight text-white">
+            Master SQL,
+            <br />
+            <span className="text-brand-400">Query by Query.</span>
+          </h1>
+
+          {/* Live query console — the brand artifact, parameterised by the form */}
+          <div className="mt-8 max-w-md rounded-2xl border border-ink-border bg-ink-card/80 backdrop-blur shadow-2xl">
+            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-ink-border">
+              <span className="h-3 w-3 rounded-full bg-hard/80" />
+              <span className="h-3 w-3 rounded-full bg-medium/80" />
+              <span className="h-3 w-3 rounded-full bg-easy/80" />
+              <span className="ml-2 font-mono text-xs text-slate-500">auth.sql</span>
+              <span className="ml-auto font-mono text-[10px] uppercase tracking-widest text-slate-600">live</span>
+            </div>
+            {queryConsole}
+            <div className="px-5 py-2.5 border-t border-ink-border font-mono text-[11px]" aria-live="polite">
+              {resultLine}
+            </div>
+          </div>
+
+          <div className="mt-7 flex items-center gap-4 text-xs font-semibold">
+            <span className="pill pill-easy">Easy</span>
+            <span className="pill pill-medium">Medium</span>
+            <span className="pill pill-hard">Hard</span>
+            <span className="flex items-center gap-1.5 text-xp-400">
+              <Sparkles size={14} /> Earn XP
+            </span>
+          </div>
+        </div>
+
+        <p className="relative font-mono text-xs text-slate-500">XData IIT Bombay · Automated SQL Grading</p>
+      </aside>
+
+      {/* ── Form panel ── */}
+      <main className="flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-sm animate-rise">
+          {/* compact brand for mobile */}
+          <div className="lg:hidden mb-8 flex items-center gap-2.5">
+            <div className="grid place-items-center h-10 w-10 rounded-xl bg-brand-600 text-white shadow-glow">
+              <Database size={20} strokeWidth={2.4} />
+            </div>
+            <span className="font-display text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              XData<span className="ml-1 font-mono text-sm font-semibold text-brand-500">/sql</span>
+            </span>
+          </div>
+
+          {showForgot ? (
+            <>
+              <p className="kicker text-brand-500 mb-2">Recover account</p>
+              <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Reset password</h2>
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                Enter your email — we'll send you a reset link.
+              </p>
+              <form className="mt-7 space-y-5" onSubmit={handleForgot}>
+                <div>
+                  <label className="kicker block mb-1.5 ml-0.5">Email address</label>
+                  <div className="relative">
+                    <Mail size={18} className="absolute inset-y-0 left-3.5 my-auto text-slate-400" />
+                    <input type="email" required className={inputBase} placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+                  {loading ? 'Sending …' : 'Send reset link'}
+                </button>
+                <button type="button" onClick={() => setShowForgot(false)} className="block w-full text-center text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                  Back to login
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <p className="kicker text-brand-500 mb-2">Sign in</p>
+              <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">Sign in and continue your journey.</p>
+
+              {/* Mobile-only mini query strip so the signature shows on small screens too */}
+              <div className="lg:hidden mt-5 rounded-xl border border-slate-200 dark:border-ink-border bg-slate-50 dark:bg-ink-card/80 px-4 py-3 font-mono text-[12px] overflow-x-auto">
+                <span className="text-brand-500 dark:text-brand-400">SELECT</span> <span className="text-slate-500">* </span>
+                <span className="text-brand-500 dark:text-brand-400">FROM</span> <span className="text-slate-700 dark:text-slate-200">users</span> <span className="text-brand-500 dark:text-brand-400">WHERE</span>{' '}
+                <span className="text-easy">'{loginId || '...'}'</span>
+              </div>
+
+              <form className="mt-6 space-y-5" onSubmit={handleLogin}>
+                <div>
+                  <label htmlFor="loginId" className="kicker block mb-1.5 ml-0.5">User ID</label>
+                  <div className="relative">
+                    <UserIcon size={18} className="absolute inset-y-0 left-3.5 my-auto text-slate-400 z-10" />
+                    <input
+                      id="loginId" name="loginId" type="text" autoComplete="username" required
+                      className={inputBase} placeholder="Login-ID" value={loginId}
+                      onChange={(e) => { setLoginId(e.target.value); if (authState !== 'idle') setAuthState('idle'); }}
+                      data-ignore-monaco="true"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5 ml-0.5">
+                    <label htmlFor="password" className="kicker">Password</label>
+                    <button type="button" onClick={() => setShowForgot(true)} className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors normal-case tracking-normal">
+                      Forgot?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Key size={18} className="absolute inset-y-0 left-3.5 my-auto text-slate-400 z-10" />
+                    <input
+                      id="password" name="password" type="password" autoComplete="current-password" required
+                      className={inputBase} placeholder="••••••••" value={password}
+                      onChange={(e) => { setPassword(e.target.value); if (authState !== 'idle') setAuthState('idle'); }}
+                      data-ignore-monaco="true"
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" disabled={loading} className="btn-primary w-full py-3 group">
+                  {loading ? 'Running …' : (<><span>Sign in</span><ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" /></>)}
+                </button>
+              </form>
+            </>
+          )}
+
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-ink-border text-center">
+            <Link to="/try-sql" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 transition-colors">
+              <Sparkles size={15} /> Try SQL without signing in
+              <ArrowRight size={14} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+            </Link>
+          </div>
+
+          <p className="mt-6 text-center font-mono text-xs text-slate-400 dark:text-slate-600">
+            &copy; {new Date().getFullYear()} XData Web
           </p>
         </div>
-        {showForgot ? (
-          <form className="mt-8 space-y-6" onSubmit={handleForgot}>
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">E-Mail Adresse</label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
-                  <Mail size={18} />
-                </span>
-                <input
-                  type="email"
-                  required
-                  className="appearance-none rounded-2xl relative block w-full pl-11 px-3 py-3.5 border border-gray-200 dark:border-gray-700 placeholder-gray-400 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-bold"
-                  placeholder="name@beispiel.de"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-4 px-4 border border-transparent text-sm font-black rounded-2xl text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50"
-            >
-              {loading ? 'Sende...' : 'Reset-Link senden'}
-            </button>
-            <p className="text-center">
-              <button type="button" onClick={() => setShowForgot(false)} className="text-sm font-bold text-blue-600 hover:underline">
-                Zurück zum Login
-              </button>
-            </p>
-          </form>
-        ) : (
-          <form className="mt-8 space-y-5" onSubmit={handleLogin}>
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Benutzerkennung</label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 z-20">
-                    <LogIn size={18} />
-                  </span>
-                  <input
-                    id="loginId"
-                    name="loginId"
-                    type="text"
-                    autoComplete="username"
-                    required
-                    className="appearance-none rounded-2xl relative block w-full pl-11 px-3 py-3.5 border border-gray-200 dark:border-gray-700 placeholder-gray-400 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-bold"
-                    placeholder="Login ID"
-                    value={loginId}
-                    onChange={(e) => setLoginId(e.target.value)}
-                    data-ignore-monaco="true"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Passwort</label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 z-20">
-                    <Key size={18} />
-                  </span>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    className="appearance-none rounded-2xl relative block w-full pl-11 px-3 py-3.5 border border-gray-200 dark:border-gray-700 placeholder-gray-400 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-bold"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    data-ignore-monaco="true"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end">
-              <button type="button" onClick={() => setShowForgot(true)} className="text-[10px] font-black uppercase text-blue-600 hover:text-blue-700 transition-colors tracking-widest">
-                Passwort vergessen?
-              </button>
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-black rounded-2xl text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20 focus:outline-none transition-all active:scale-95 disabled:opacity-50"
-              >
-                {loading ? 'Anmelden...' : 'Anmelden'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
+      </main>
     </div>
   );
 };

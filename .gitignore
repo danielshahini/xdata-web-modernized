@@ -3,6 +3,12 @@
 .project
 .classpath
 .settings/
+.idea/
+*.iml
+
+# Local tooling (Claude Code / agents)
+.agents/
+.claude/
 
 # Java / Maven
 target/
@@ -34,3 +40,4 @@ yarn-error.log*
 
 # OS spezifisch
 Thumbs.db
+bachelorarbeit/

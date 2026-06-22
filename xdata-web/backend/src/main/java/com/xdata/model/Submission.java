@@ -56,12 +56,21 @@ public class Submission extends BaseAuditEntity {
     @Builder.Default
     private Boolean evaluated = false;
 
+    // Transient flag for the student view: false => marks withheld by the instructor.
+    @Transient
+    @Builder.Default
+    private Boolean gradesReleased = true;
+
     @Column(name = "mark_info_json", columnDefinition = "TEXT")
     private String markInfoJson;
 
     @Column(name = "instructor_feedback", columnDefinition = "TEXT")
     private String instructorFeedback;
     
+    @Column(name = "manually_graded")
+    @Builder.Default
+    private Boolean manuallyGraded = false;
+
     @Column(name = "verifiedcorrect")
     @Builder.Default
     private Boolean verifiedCorrect = false;

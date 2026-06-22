@@ -3,53 +3,145 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>XData Web</title>
+    <meta name="theme-color" content="#0E1217" />
+    <title>XData — Learn SQL, query by query</title>
+
+    <!-- Type system: Sora (display), Inter (body), JetBrains Mono (data/SQL) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              display: ['Sora', 'Inter', 'ui-sans-serif', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+            },
             colors: {
-              dark: {
-                bg: '#1a202c',
-                card: '#2d3748',
-                border: '#4a5568'
-              }
-            }
-          }
-        }
-      }
+              // Electric indigo — primary brand
+              brand: {
+                50: '#eef0ff', 100: '#e0e3ff', 200: '#c7cbfe', 300: '#a5a9fc',
+                400: '#8385f8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+                800: '#3730a3', 900: '#312e81', 950: '#1e1b4b',
+              },
+              // Amber — XP / streak / achievement signature accent
+              xp: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' },
+              // Difficulty semantics (LeetCode-style)
+              easy: '#16a34a',
+              medium: '#d97706',
+              hard: '#e11d48',
+              // App neutrals (slate ramp) for dark surfaces
+              ink: {
+                bg: '#0e1217',     // app background (dark)
+                card: '#171c24',   // surface (dark)
+                soft: '#1f2630',   // raised surface (dark)
+                border: '#262e3a', // border (dark)
+              },
+              // legacy namespace kept for safety
+              dark: { bg: '#1a202c', card: '#2d3748', border: '#4a5568' },
+            },
+            boxShadow: {
+              card: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)',
+              'card-hover': '0 8px 24px -6px rgba(16,24,40,.12), 0 2px 6px rgba(16,24,40,.06)',
+              glow: '0 0 0 1px rgba(79,70,229,.25), 0 8px 30px -8px rgba(79,70,229,.45)',
+            },
+          },
+        },
+      };
     </script>
+
     <style type="text/tailwindcss">
+      @layer base {
+        html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+        body { font-feature-settings: 'cv02','cv03','cv04','cv11'; }
+        ::selection { background: rgba(79,70,229,.22); }
+        /* Slim, modern scrollbars */
+        * { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+        .dark * { scrollbar-color: #334155 transparent; }
+        *::-webkit-scrollbar { width: 10px; height: 10px; }
+        *::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; border: 3px solid transparent; background-clip: content-box; }
+        .dark *::-webkit-scrollbar-thumb { background: #334155; border: 3px solid transparent; background-clip: content-box; }
+        /* Subtle ambient depth so neither mode reads as a flat slab */
+        body { background-image: radial-gradient(1100px 620px at 50% -15%, rgba(99,102,241,.06), transparent 58%); background-attachment: fixed; }
+        .dark body { background-image: radial-gradient(1100px 620px at 50% -16%, rgba(99,102,241,.14), transparent 56%); }
+      }
+
+      @layer components {
+        /* Eyebrow / kicker label */
+        .kicker { @apply text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500; }
+        /* Surface card */
+        .x-card { @apply bg-white dark:bg-ink-card border border-slate-200 dark:border-ink-border rounded-2xl shadow-card; }
+        /* Difficulty pills */
+        .pill { @apply inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full; }
+        .pill-easy   { @apply bg-easy/10 text-easy ring-1 ring-inset ring-easy/20; }
+        .pill-medium { @apply bg-medium/10 text-medium ring-1 ring-inset ring-medium/20; }
+        .pill-hard   { @apply bg-hard/10 text-hard ring-1 ring-inset ring-hard/20; }
+        /* Buttons */
+        .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-700 active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink-bg disabled:opacity-50 disabled:pointer-events-none; }
+        .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-ink-border bg-white dark:bg-ink-soft px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-ink-border active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-50 disabled:pointer-events-none; }
+        .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 transition-all hover:bg-slate-100 dark:hover:bg-ink-soft hover:text-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500; }
+        .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-hard px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-110 active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-hard disabled:opacity-50 disabled:pointer-events-none; }
+        /* Icon-only action button (table rows) */
+        .icon-btn { @apply inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-ink-soft hover:text-slate-700 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500; }
+        /* Form controls */
+        .x-label { @apply block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400 mb-1.5; }
+        .x-input { @apply w-full rounded-xl border border-slate-200 dark:border-ink-border bg-white dark:bg-ink-soft px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500; }
+        .x-select { @apply x-input appearance-none pr-9 cursor-pointer; }
+        /* Section header */
+        .section-title { @apply text-lg font-display font-bold tracking-tight text-slate-900 dark:text-white; }
+        /* Badges */
+        .badge { @apply inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ring-1 ring-inset; }
+        .badge-brand { @apply badge bg-brand-500/10 text-brand-600 dark:text-brand-300 ring-brand-500/20; }
+        .badge-neutral { @apply badge bg-slate-100 dark:bg-ink-soft text-slate-600 dark:text-slate-300 ring-slate-200 dark:ring-ink-border; }
+        .badge-success { @apply badge bg-easy/10 text-easy ring-easy/20; }
+        .badge-amber { @apply badge bg-xp-500/10 text-xp-600 dark:text-xp-400 ring-xp-500/20; }
+        /* Tables */
+        .x-th { @apply px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500; }
+        .x-td { @apply px-5 py-3.5 text-sm text-slate-700 dark:text-slate-300 align-middle; }
+        .x-row { @apply border-t border-slate-100 dark:border-ink-border/70 transition-colors hover:bg-slate-50/70 dark:hover:bg-ink-soft/40; }
+        /* Segmented tabs */
+        .x-tab { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 transition-all hover:text-slate-800 dark:hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500; }
+        .x-tab-active { @apply bg-white dark:bg-ink-soft text-brand-700 dark:text-brand-300 shadow-sm ring-1 ring-slate-200 dark:ring-ink-border; }
+        /* Modal */
+        .modal-overlay { @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 dark:bg-black/60 backdrop-blur-sm animate-fadeIn; }
+        .modal-card { @apply w-full max-w-lg rounded-2xl bg-white dark:bg-ink-card border border-slate-200 dark:border-ink-border shadow-card-hover animate-slideUp; }
+        /* Empty state */
+        .empty-state { @apply flex flex-col items-center justify-center text-center py-14 px-6 rounded-2xl border border-dashed border-slate-200 dark:border-ink-border bg-slate-50/60 dark:bg-ink-soft/30; }
+        /* Code / SQL surface — refined, readable in both modes (replaces harsh black/green terminal) */
+        .x-code { @apply rounded-xl bg-[#0f141b] text-slate-200 ring-1 ring-inset ring-white/10 border border-slate-800/60 px-4 py-3 text-xs font-mono leading-relaxed overflow-x-auto; }
+        /* Note / quote box — legible amber in both light and dark */
+        .note-amber { @apply rounded-xl border border-amber-200/80 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-200; }
+      }
+
       @layer utilities {
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-        .animate-slideUp {
-          animation: slideUp 0.4s ease-out forwards;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out forwards;
-        }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-slideUp { animation: slideUp 0.45s cubic-bezier(.21,.61,.35,1) forwards; }
+        .animate-slideDown { animation: slideDown 0.3s ease-out forwards; }
+        .animate-rise { opacity: 0; animation: rise 0.55s cubic-bezier(.21,.61,.35,1) forwards; }
+        /* Subtle dotted "data grid" texture for hero/empty surfaces */
+        .bg-grid { background-image: radial-gradient(circle at 1px 1px, rgba(99,102,241,.14) 1px, transparent 0); background-size: 22px 22px; }
       }
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
+
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
       }
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
   </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+  <body class="font-sans antialiased bg-slate-50 dark:bg-ink-bg text-slate-900 dark:text-slate-100">
+    <noscript>Please enable JavaScript to use XData.</noscript>
     <div id="root"></div>
   </body>
 </html>

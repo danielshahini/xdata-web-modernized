@@ -32,5 +32,12 @@ public class SchemaMetadataDTO {
     public static class ColumnMetadataDTO {
         private String columnName;
         private String dataType;
+        /** True if this column is part of the table's primary key. */
+        @Builder.Default
+        private boolean primaryKey = false;
+        /** Referenced table for a foreign key, or null if this column is not an FK. */
+        private String referencesTable;
+        /** Referenced column for a foreign key, or null. */
+        private String referencesColumn;
     }
 }

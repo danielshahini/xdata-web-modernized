@@ -83,9 +83,9 @@
 		
 		<!-- Lokale Jars Integration -->
 		<dependency>
-			<groupId>com.microsoft</groupId>
-			<artifactId>z3</artifactId>
-			<version>1.0</version>
+			<groupId>tools.aqua</groupId>
+			<artifactId>z3-turnkey</artifactId>
+			<version>4.12.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.xdata</groupId>
@@ -118,6 +118,14 @@
 			<groupId>com.github.jsqlparser</groupId>
 			<artifactId>jsqlparser</artifactId>
 			<version>5.0</version>
+		</dependency>
+		<!-- Ephemeral in-memory DB for the public, login-free SQL sandbox.
+		     Each request gets a private throwaway H2 instance — fully isolated
+		     from the real application database. -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.2.224</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>

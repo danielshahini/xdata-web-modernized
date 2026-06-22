@@ -4,9 +4,38 @@ import net.sf.jsqlparser.expression.Expression;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Structural partial marking: scores a student query against the instructor's
+ * pattern across the SQL dimensions. {@link #getMarks} is the stable seam (called
+ * via {@code PartialMarkingPort}); behind it the comparison is decomposed into
+ * named steps — per-query dimension comparison, the HAVING and DISTINCT marks, and
+ * the score aggregation — each small enough to reason about and test in isolation.
+ */
 public class PartialMarker {
+
     public static MarkInfo getMarks(QueryStructure instructor, QueryStructure student, PartialMarkParameters params) {
         MarkInfo markInfo = new MarkInfo();
+
+        QueryInfo queryInfo = compareDimensions(instructor, student, params);
+
+        List<QueryInfo> subqueryData = new ArrayList<>();
+        subqueryData.add(queryInfo);
+        if (instructor.getSubqueries() != null && student.getSubqueries() != null) {
+            int minSize = Math.min(instructor.getSubqueries().size(), student.getSubqueries().size());
+            for (int i = 0; i < minSize; i++) {
+                MarkInfo subMark = getMarks(instructor.getSubqueries().get(i), student.getSubqueries().get(i), params);
+                subMark.getSubqueryData().get(0).setLevel(instructor.getSubqueries().get(i).getLevel());
+                subqueryData.addAll(subMark.getSubqueryData());
+            }
+        }
+        markInfo.setSubqueryData(subqueryData);
+
+        aggregateScore(markInfo, subqueryData, instructor, params);
+        return markInfo;
+    }
+
+    /** Compare one query level across every dimension into a {@link QueryInfo}. */
+    private static QueryInfo compareDimensions(QueryStructure instructor, QueryStructure student, PartialMarkParameters params) {
         QueryInfo queryInfo = new QueryInfo();
 
         queryInfo.setInstructorProjections(instructor.getProjections());
@@ -35,44 +64,45 @@ public class PartialMarker {
 
         queryInfo.setInstructorHaving(instructor.getHaving());
         queryInfo.setStudentHaving(student.getHaving());
-        if (instructor.getHavingExpression() != null && student.getHavingExpression() != null) {
-            boolean match = ExpressionComparator.areEqual(instructor.getHavingExpression(), student.getHavingExpression(), instructor.getAliasMap(), student.getAliasMap());
-            queryInfo.setStudentHavingMark(match ? params.getHavingClause() : -params.getHavingClause());
-        } else if (instructor.getHaving() != null && student.getHaving() != null) {
-            boolean match = instructor.getHaving().equalsIgnoreCase(student.getHaving());
-            queryInfo.setStudentHavingMark(match ? params.getHavingClause() : -params.getHavingClause());
-        } else if (instructor.getHaving() == null && student.getHaving() != null) {
-            queryInfo.setStudentHavingMark(-params.getHavingClause());
-        } else {
-            queryInfo.setStudentHavingMark(0);
-        }
+        queryInfo.setStudentHavingMark(havingMark(instructor, student, params));
 
         queryInfo.setInstructorDistinct(instructor.isDistinct());
         queryInfo.setStudentDistinct(student.isDistinct());
-        if (queryInfo.isInstructorDistinct() && queryInfo.isStudentDistinct()) {
-            queryInfo.setStudentDistinctMark(params.getDistinct());
-        } else if (!queryInfo.isInstructorDistinct() && queryInfo.isStudentDistinct()) {
-            queryInfo.setStudentDistinctMark(-params.getDistinct());
-        } else if (queryInfo.isInstructorDistinct() && !queryInfo.isStudentDistinct()) {
-            queryInfo.setStudentDistinctMark(-params.getDistinct());
+        queryInfo.setStudentDistinctMark(distinctMark(instructor.isDistinct(), student.isDistinct(), params));
+
+        return queryInfo;
+    }
+
+    /** Mark for the HAVING dimension: +weight on match, -weight on mismatch/spurious, 0 if neither has one. */
+    private static double havingMark(QueryStructure instructor, QueryStructure student, PartialMarkParameters params) {
+        if (instructor.getHavingExpression() != null && student.getHavingExpression() != null) {
+            boolean match = ExpressionComparator.areEqual(instructor.getHavingExpression(), student.getHavingExpression(), instructor.getAliasMap(), student.getAliasMap());
+            return match ? params.getHavingClause() : -params.getHavingClause();
+        } else if (instructor.getHaving() != null && student.getHaving() != null) {
+            boolean match = instructor.getHaving().equalsIgnoreCase(student.getHaving());
+            return match ? params.getHavingClause() : -params.getHavingClause();
+        } else if (instructor.getHaving() == null && student.getHaving() != null) {
+            return -params.getHavingClause();
         } else {
-            queryInfo.setStudentDistinctMark(0);
+            return 0;
         }
+    }
 
-        List<QueryInfo> subqueryData = new ArrayList<>();
-        subqueryData.add(queryInfo);
-        
-        if (instructor.getSubqueries() != null && student.getSubqueries() != null) {
-            int minSize = Math.min(instructor.getSubqueries().size(), student.getSubqueries().size());
-            for (int i = 0; i < minSize; i++) {
-                MarkInfo subMark = getMarks(instructor.getSubqueries().get(i), student.getSubqueries().get(i), params);
-                subMark.getSubqueryData().get(0).setLevel(instructor.getSubqueries().get(i).getLevel());
-                subqueryData.addAll(subMark.getSubqueryData());
-            }
+    /** Mark for the DISTINCT dimension: +weight when both agree on DISTINCT, -weight on disagreement, else 0. */
+    private static double distinctMark(boolean instructorDistinct, boolean studentDistinct, PartialMarkParameters params) {
+        if (instructorDistinct && studentDistinct) {
+            return params.getDistinct();
+        } else if (!instructorDistinct && studentDistinct) {
+            return -params.getDistinct();
+        } else if (instructorDistinct && !studentDistinct) {
+            return -params.getDistinct();
+        } else {
+            return 0;
         }
-        
-        markInfo.setSubqueryData(subqueryData);
+    }
 
+    /** Sum positive marks and the achievable maximum across this query and its subqueries. */
+    private static void aggregateScore(MarkInfo markInfo, List<QueryInfo> subqueryData, QueryStructure instructor, PartialMarkParameters params) {
         double totalMarks = 0;
         double totalMaxMarks = 0;
         for (QueryInfo qi : subqueryData) {
@@ -83,7 +113,7 @@ public class PartialMarker {
             for (Double d : qi.getStudentGroupByMarks()) if (d > 0) totalMarks += d;
             for (Double d : qi.getStudentOrderByMarks()) if (d > 0) totalMarks += d;
             if (qi.getStudentHavingMark() > 0) totalMarks += qi.getStudentHavingMark();
-            
+
             if (qi.getInstructorProjections() != null) totalMaxMarks += qi.getInstructorProjections().size() * params.getProjection();
             if (qi.getInstructorPredicates() != null) totalMaxMarks += qi.getInstructorPredicates().size() * params.getPredicate();
             if (qi.getInstructorRelations() != null) totalMaxMarks += qi.getInstructorRelations().size() * params.getRelation();
@@ -101,7 +131,6 @@ public class PartialMarker {
         markInfo.setMarks(Math.max(0, totalMarks));
         markInfo.setMaxMarks(totalMaxMarks);
         markInfo.setPercentage(totalMaxMarks > 0 ? (markInfo.getMarks() / totalMaxMarks) * 100.0 : 0);
-        return markInfo;
     }
 
     private static List<Double> compareLists(List<String> instList, List<String> studList, double weight) {

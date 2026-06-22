@@ -11,7 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpStatus;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -39,20 +41,38 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        // Public, login-free SQL sandbox — read-only, runs against an
+                        // ephemeral in-memory DB, no access to real data.
+                        .requestMatchers("/api/v1/public/**").permitAll()
+                        // SockJS/STOMP handshake (/ws-grading, /ws-grading/info, /ws-grading/**) cannot
+                        // carry the JWT in an Authorization header, so it must be permitted at the HTTP
+                        // layer; otherwise the handshake falls through to anyRequest().authenticated() -> 403.
+                        .requestMatchers("/ws-grading/**").permitAll()
                         .requestMatchers("/api/v1/admin/users/**").hasAnyRole("ADMIN", "INSTRUCTOR")
                         .requestMatchers("/api/v1/admin/courses/**").hasAnyRole("ADMIN", "INSTRUCTOR")
-                        .requestMatchers("/api/v1/admin/lms/**").hasAnyRole("ADMIN", "INSTRUCTOR")
-                        .requestMatchers("/api/v1/admin/audit-logs/**").hasAnyRole("ADMIN", "INSTRUCTOR")
+                        // Audit logs contain system-wide security events (failed logins, password
+                        // resets, impersonations) -> ADMIN only, not instructors.
+                        .requestMatchers("/api/v1/admin/audit-logs/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/assignments/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/schemas/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/student/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/evaluation/**").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                         .requestMatchers("/api/v1/instructor/**").hasAnyRole("ADMIN", "INSTRUCTOR")
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // API docs require authentication (no anonymous exposure on the school server).
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                // A missing/expired/invalid JWT leaves the request anonymous. Without an explicit
+                // entry point Spring answers anonymous-denied with 403, which the SPA cannot tell
+                // apart from a genuine "logged in but lacks the role" 403 -> the client never logs
+                // the user out and they get stranded on a broken page ("Could not load schemas").
+                // Return 401 for unauthenticated requests so the axios interceptor redirects to
+                // login; real authorization failures (authenticated user, wrong role) stay 403.
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -42,16 +42,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import com.microsoft.z3.ArrayExpr;
+import com.microsoft.z3.ArraySort;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
+import com.microsoft.z3.DatatypeSort;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.FuncInterp;
 import com.microsoft.z3.IntExpr;
+import com.microsoft.z3.IntNum;
 import com.microsoft.z3.FuncInterp.Entry;
 import com.microsoft.z3.Model;
 import com.microsoft.z3.Params;
+import com.microsoft.z3.RatNum;
 import com.microsoft.z3.Solver;
+import com.microsoft.z3.Sort;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Tactic;
 
@@ -284,6 +290,12 @@ public class PopulateTestData {
 
 	public String cutRequiredOutputForSMTWithAPI(String SMTFileName, String filePath, TableMap tableMap, String ds)
 			throws Exception {
+		return cutRequiredOutputForSMTWithAPI(SMTFileName, filePath, tableMap, ds, null);
+	}
+
+	public String cutRequiredOutputForSMTWithAPI(String SMTFileName, String filePath, TableMap tableMap, String ds,
+			Map<String, Integer> noOfOutputTuples)
+			throws Exception {
 
 		String sqlFileName = "DS" + SMTFileName.substring(3, SMTFileName.lastIndexOf(".smt")) + ".sql";
 		Map<String, List<String>> queryMap = new HashMap<String, List<String>>();
@@ -475,6 +487,14 @@ public class PopulateTestData {
 			sqlOutput = requiredSqlOutput(cutstr, tableMap);
 			sqlOutput = removeRepeatedqueries(sqlOutput);
 		}
+		// Modern GenerateCVC1 encodes a relation as O_T : (Array Int T_TupleType); the
+		// FuncDecl/_TupleType loop above only matches the older (non-array) encoding and finds
+		// nothing. When no INSERTs were produced and the model is SAT, extract them from the
+		// array model directly.
+		if (result.equalsIgnoreCase("SATISFIABLE") && !sqlOutput.toLowerCase().contains("insert into")) {
+			sqlOutput += generateInsertsFromArrayModel(m, tableMap, noOfOutputTuples);
+		}
+
 		String sqlFileFullPath = Configuration.homeDir + "/temp_smt" + filePath + "/" + sqlFileName;
 		FileWriter file = new FileWriter(sqlFileFullPath);
 		file.write(sqlOutput);
@@ -498,6 +518,124 @@ public class PopulateTestData {
 		// Configuration.homeDir+"/temp_smt"+filePath);
 
 		return sqlFileName;
+	}
+
+	/**
+	 * Array-aware model extraction. Modern GenerateCVC1 encodes each relation as
+	 * {@code O_T : (Array Int T_TupleType)}; the model returns it as a constant/store array.
+	 * For each base table we read {@code select(O_T, i)} for i in 1..count, decompose the
+	 * tuple-type accessors into column values (the trailing XDATA_CNT accessor is the row
+	 * multiplicity), map the -99999 NULL sentinel, and emit INSERT statements.
+	 */
+	public String generateInsertsFromArrayModel(Model m, TableMap tableMap, Map<String, Integer> noOfOutputTuples) {
+		StringBuilder out = new StringBuilder();
+		if (m == null)
+			return "";
+		Context ctx = ConstraintGenerator.ctx;
+		for (FuncDecl<?> decl : m.getDecls()) {
+			String declName = decl.getName().toString();
+			if (!declName.startsWith("O_"))
+				continue;
+			Sort range = decl.getRange();
+			if (!(range instanceof ArraySort))
+				continue;
+			Sort elemSort = ((ArraySort<?, ?>) range).getRange();
+			if (!(elemSort instanceof DatatypeSort))
+				continue;
+			String tableName = declName.substring(2); // drop "O_"
+			Table table = tableMap.getTable(tableName.toUpperCase());
+			if (table == null)
+				continue; // skip subquery arrays (JSQ/DSQ/GSQ) — only real relations
+			FuncDecl<?>[] accessors = ((DatatypeSort<?>) elemSort).getAccessors()[0];
+			int nFields = accessors.length;
+			if (nFields < 1)
+				continue;
+			Expr<?> arr = m.getConstInterp(decl);
+			if (arr == null)
+				continue;
+			int count = lookupTupleCount(noOfOutputTuples, tableName);
+			for (int i = 1; i <= count; i++) {
+				try {
+					@SuppressWarnings({ "unchecked", "rawtypes" })
+					Expr<?> tuple = m.eval(ctx.mkSelect((ArrayExpr) arr, ctx.mkInt(i)), true);
+					long mult = asLong(m.eval(accessors[nFields - 1].apply(tuple), true), 1);
+					if (mult <= 0)
+						continue;
+					List<String> values = new ArrayList<String>();
+					for (int f = 0; f < nFields - 1; f++) {
+						Expr<?> v = m.eval(accessors[f].apply(tuple), true);
+						values.add(formatColumnValue(v, table.getColumn(f)));
+					}
+					String insert = "insert into " + tableName.toLowerCase() + " values ("
+							+ String.join(", ", values) + ");";
+					for (long c = 0; c < mult; c++)
+						out.append(insert).append("\n");
+				} catch (Exception e) {
+					logger.log(Level.WARNING, "Array-model extraction failed for " + tableName + "[" + i + "]: "
+							+ e.getMessage());
+				}
+			}
+		}
+		return out.toString();
+	}
+
+	private int lookupTupleCount(Map<String, Integer> noOfOutputTuples, String tableName) {
+		if (noOfOutputTuples != null) {
+			for (Map.Entry<String, Integer> e : noOfOutputTuples.entrySet()) {
+				if (e.getKey() != null && e.getValue() != null
+						&& e.getKey().replaceAll("\\d", "").equalsIgnoreCase(tableName)) {
+					return Math.max(1, Math.min(e.getValue(), 1000));
+				}
+			}
+		}
+		return 1;
+	}
+
+	private long asLong(Expr<?> v, long dflt) {
+		try {
+			if (v instanceof IntNum)
+				return ((IntNum) v).getInt64();
+			String s = v.toString().replaceAll("[()\\s]", "");
+			return Long.parseLong(s);
+		} catch (Exception e) {
+			return dflt;
+		}
+	}
+
+	private String formatColumnValue(Expr<?> v, Column col) {
+		int sqlType = (col != null) ? col.getDataType() : java.sql.Types.INTEGER;
+		switch (sqlType) {
+			case java.sql.Types.INTEGER:
+			case java.sql.Types.BIGINT:
+			case java.sql.Types.SMALLINT:
+			case java.sql.Types.TINYINT: {
+				long n = asLong(v, -99999);
+				return n == -99999 ? "null" : Long.toString(n);
+			}
+			case java.sql.Types.NUMERIC:
+			case java.sql.Types.DECIMAL:
+			case java.sql.Types.REAL:
+			case java.sql.Types.FLOAT:
+			case java.sql.Types.DOUBLE: {
+				try {
+					if (v instanceof RatNum) {
+						RatNum r = (RatNum) v;
+						double den = r.getBigIntDenominator().doubleValue();
+						double d = r.getBigIntNumerator().doubleValue() / (den == 0 ? 1 : den);
+						return d == -99999.0 ? "null" : Double.toString(d);
+					}
+				} catch (Exception ignored) {
+				}
+				String raw = v.toString().replaceAll("\\s", "");
+				return raw.contains("99999") ? "null" : raw;
+			}
+			default: {
+				String s = v.toString();
+				if (s.length() >= 2 && s.startsWith("\"") && s.endsWith("\""))
+					s = s.substring(1, s.length() - 1);
+				return "'" + s.replace("'", "''") + "'";
+			}
+		}
 	}
 
 	// **********************************************************************************************************/
@@ -1528,7 +1666,7 @@ public class PopulateTestData {
 		{
 			filePath=cvc.tempFilePathWeb;
 		}
-		String apiCutFile = cutRequiredOutputForSMTWithAPI(cvcOutputFileName, filePath, tableMap, ds);
+		String apiCutFile = cutRequiredOutputForSMTWithAPI(cvcOutputFileName, filePath, tableMap, ds, noOfOutputTuples);
 		// System.out.println(apiCutFile);
 
 		if (!apiCutFile.isEmpty())

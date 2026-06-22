@@ -18,6 +18,7 @@ public class SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final com.xdata.repository.DeadlineExtensionRepository deadlineExtensionRepository;
 
     public Submission createSubmission(String loginId, Integer questionId, String query) {
         XDataUser user = userRepository.findByLoginIdIgnoreCase(loginId)
@@ -48,34 +49,22 @@ public class SubmissionService {
         
         LocalDateTime deadline = q.getAssignment().getDeadline();
         LocalDateTime submissionTime = submission.getSubmissionTime();
-        
+
+        // Honour a per-student deadline extension if one exists for this assignment.
+        if (submission.getUser() != null) {
+            LocalDateTime effective = deadlineExtensionRepository
+                    .findByAssignmentIdAndStudentLoginId(q.getAssignment().getId(), submission.getUser().getLoginId())
+                    .map(com.xdata.model.DeadlineExtension::getExtendedDeadline)
+                    .orElse(null);
+            if (effective != null && (deadline == null || effective.isAfter(deadline))) {
+                deadline = effective;
+            }
+        }
+
         if (deadline != null && submissionTime != null && submissionTime.isAfter(deadline)) {
             return q.getAssignment().getPenaltyPercentage() != null ? q.getAssignment().getPenaltyPercentage() / 100.0f : 0.0f;
         }
         return 0.0f;
     }
 
-    public List<Map<String, Object>> getLeaderboard(String courseId, UserRepository userRepository) {
-        List<XDataUser> students = userRepository.findDistinctByCourses_InstructorCourseId(courseId);
-        return students.stream().map(student -> {
-            List<Submission> studentSubs = submissionRepository.findByUser_LoginId(student.getLoginId());
-            double totalMarks = studentSubs.stream()
-                    .filter(s -> s.getQuestion() != null)
-                    .collect(Collectors.groupingBy(s -> s.getQuestion().getId(),
-                            Collectors.maxBy(Comparator.comparing(Submission::getMarks))))
-                    .values().stream()
-                    .mapToDouble(opt -> opt.map(Submission::getMarks).orElse(0.0f))
-                    .sum();
-            
-            Map<String, Object> entry = new HashMap<>();
-            entry.put("username", student.getUsername());
-            String loginId = student.getLoginId();
-            String anonymousId = loginId.length() > 3 ? loginId.substring(0, 2) + "***" + loginId.substring(loginId.length() - 1) : "***";
-            entry.put("loginId", anonymousId);
-            entry.put("xp", student.getXp() != null ? student.getXp() : 0);
-            entry.put("totalMarks", totalMarks);
-            return entry;
-        }).sorted((a, b) -> Double.compare((Double) b.get("totalMarks"), (Double) a.get("totalMarks")))
-        .collect(Collectors.toList());
-    }
 }

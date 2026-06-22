@@ -7,6 +7,8 @@ export interface User {
   courseIds?: string[];
   courseId?: string;
   enabled?: boolean;
+  createdAt?: string;
+  mustChangePassword?: boolean;
 }
 
 export interface Course {
@@ -25,9 +27,12 @@ export interface Assignment {
   deadline: string;
   courseId: string;
   defaultSchemaId?: number;
+  seedSql?: string;
   penaltyPercentage?: number;
   publishedDate?: string;
   lateSubmissionAllowed?: boolean;
+  maxAttempts?: number | null;
+  gradesReleased?: boolean;
   totalQuestions?: number;
   totalMarks?: number;
   achievedMarks?: number;
@@ -41,6 +46,10 @@ export interface Question {
   marks: number;
   assignmentId: number;
   assignment?: Assignment;
+  tags?: string;
+  hints?: string | string[];
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD' | string;
+  description?: string;
   partialMarkInfo?: string;
   partialMarkParameters?: PartialMarkParameters;
 }
@@ -56,6 +65,7 @@ export interface Submission {
   evaluated: boolean;
   markInfoJson?: string;
   instructorFeedback?: string;
+  gradesReleased?: boolean;
 }
 
 export interface Announcement {

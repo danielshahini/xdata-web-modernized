@@ -42,6 +42,13 @@ public class Assignment extends BaseAuditEntity {
     @Column(name = "defaultschemaid")
     private Integer defaultSchemaId;
 
+    // Optional fixed test dataset (INSERT statements) generated/imported once by the instructor.
+    // When present, grading seeds an ephemeral scratch DB with it (see TestDataExecutionStage)
+    // instead of generating per submission or hitting a live connection.
+    @Column(name = "seed_sql", columnDefinition = "TEXT")
+    @JsonProperty("seedSql")
+    private String seedSql;
+
     @Column(name = "assignment_name")
     @NotBlank
     @JsonProperty("name")
@@ -67,6 +74,17 @@ public class Assignment extends BaseAuditEntity {
     @Column(name = "published_date")
     @JsonProperty("publishedDate")
     private LocalDateTime publishedDate;
+
+    // null = unlimited attempts per question
+    @Column(name = "max_attempts")
+    @JsonProperty("maxAttempts")
+    private Integer maxAttempts;
+
+    // when false, grades are withheld from students until the instructor releases them
+    @Column(name = "grades_released")
+    @JsonProperty("gradesReleased")
+    @Builder.Default
+    private Boolean gradesReleased = true;
 
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

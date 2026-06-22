@@ -70,22 +70,30 @@ public class DatasetPlaygroundController {
                 
             if (errorMsg.isPresent()) {
                 response.setSuccess(false);
+                response.setInserts(java.util.List.of());
                 response.setMessage(errorMsg.get());
-            } else if (inserts.isEmpty()) {
-                response.setSuccess(true);
-                response.setMessage("No data could be generated. This might happen if the query result is naturally empty for the given constraints.");
+                return ResponseEntity.unprocessableEntity().body(response);
+            } else if (inserts.stream().noneMatch(s -> !s.startsWith("--"))) {
+                // No real INSERT rows were produced — report honestly instead of "success".
+                response.setSuccess(false);
+                response.setInserts(java.util.List.of());
+                response.setMessage("No test data could be generated for this query. "
+                        + "Complex structures (joins, subqueries, aggregates, some column types) "
+                        + "are currently only supported in a limited way by the data generation.");
+                return ResponseEntity.unprocessableEntity().body(response);
             } else {
+                int n = (int) inserts.stream().filter(s -> !s.startsWith("--")).count();
                 response.setSuccess(true);
-                response.setMessage("Successfully generated " + (int)inserts.stream().filter(s -> !s.startsWith("--")).count() + " insert statements.");
+                response.setMessage(n + " test data row(s) generated.");
+                return ResponseEntity.ok(response);
             }
-            
-            return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error in playground data generation", e);
             DatasetPlaygroundResponse response = new DatasetPlaygroundResponse();
             response.setSuccess(false);
-            response.setMessage("Error: " + e.getMessage());
-            return ResponseEntity.status(500).body(response);
+            response.setMessage("Data generation failed for this query. "
+                    + "Please simplify the query or try again.");
+            return ResponseEntity.unprocessableEntity().body(response);
         }
     }
 

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
+import { useAsyncData } from '../hooks/useAsyncData';
 import api from '../api';
 import { toast } from 'react-hot-toast';
 import { 
@@ -14,6 +15,7 @@ import {
   Edit2,
   CheckCircle,
   XCircle,
+  RefreshCw,
   ToggleLeft,
   ToggleRight
 } from 'lucide-react';
@@ -24,13 +26,11 @@ import InfoTip from './common/InfoTip';
 
 const UserManager: React.FC = () => {
   const { user: currentUser, isAdmin, isInstructor } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [unassignedUsers, setUnassignedUsers] = useState<User[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
   const [showAddExistingModal, setShowAddExistingModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
 
   // Confirmation Modal state
   const [confirmConfig, setConfirmConfig] = useState<{
@@ -69,40 +69,39 @@ const UserManager: React.FC = () => {
   const [resettingUser, setResettingUser] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState('');
 
-  const loadUsers = useCallback(() => api.get('/admin/users')
-    .then(res => setUsers(res.data || []))
-    .catch(err => {
-      console.error('Failed to load users', err);
-      setUsers([]);
-    }), []);
+  const { data: usersData, retry: reloadUsers } = useAsyncData<User[]>(
+    // The backend returns each user's enrolled `courses` (objects), not a flat
+    // `courseIds` array. Normalize so the course column and the edit modal's
+    // checkboxes reflect the actual assignments.
+    () => api.get('/admin/users').then(res => (res.data || []).map((u: any) => ({
+      ...u,
+      courseIds: (u.courseIds && u.courseIds.length)
+        ? u.courseIds
+        : (u.courses || []).map((c: any) => c.instructorCourseId),
+    }))),
+    []
+  );
+  const users = usersData ?? [];
 
-  const loadUnassignedUsers = useCallback(() => api.get('/admin/users/unassigned')
-    .then(res => setUnassignedUsers(res.data || []))
-    .catch(err => {
-      console.error('Failed to load unassigned users', err);
-      setUnassignedUsers([]);
-    }), []);
+  const { data: unassignedData, retry: reloadUnassigned } = useAsyncData<User[]>(
+    () => (isInstructor || isAdmin)
+      ? api.get('/admin/users/unassigned').then(res => res.data || [])
+      : Promise.resolve([]),
+    [isInstructor, isAdmin]
+  );
+  const unassignedUsers = unassignedData ?? [];
 
-  const loadCourses = useCallback(() => api.get('/admin/courses')
-    .then(res => setCourses(res.data || []))
-    .catch(err => {
-      console.error('Failed to load courses', err);
-      setCourses([]);
-    }), []);
-
-  useEffect(() => {
-    loadUsers();
-    loadCourses();
-    if (isInstructor || isAdmin) {
-      loadUnassignedUsers();
-    }
-  }, [loadUsers, loadCourses, loadUnassignedUsers, isInstructor, isAdmin]);
+  const { data: coursesData } = useAsyncData<Course[]>(
+    () => api.get('/admin/courses').then(res => res.data || []),
+    []
+  );
+  const courses = coursesData ?? [];
 
   const createUser = async () => {
     setLoading(true);
     try {
       await api.post('/admin/users', newUser);
-      toast.success('Benutzer erfolgreich erstellt');
+      toast.success('User created successfully');
       setNewUser({ 
         username: '', 
         email: '', 
@@ -111,10 +110,10 @@ const UserManager: React.FC = () => {
         password: '', 
         courseIds: []
       });
-      loadUsers();
-      loadUnassignedUsers();
+      reloadUsers();
+      reloadUnassigned();
     } catch (err: any) {
-      toast.error(err.response?.data || 'Fehler beim Erstellen');
+      toast.error(err.response?.data || 'Error while creating');
     } finally {
       setLoading(false);
     }
@@ -125,19 +124,19 @@ const UserManager: React.FC = () => {
       await api.post(`/admin/users/${loginId}/assign-course`, null, {
         params: { courseId: courseId }
       });
-      toast.success('Kurs erfolgreich zugewiesen');
-      loadUsers();
-      loadUnassignedUsers();
+      toast.success('Course assigned successfully');
+      reloadUsers();
+      reloadUnassigned();
       setShowAddExistingModal(false);
     } catch (err: any) {
-      toast.error(err.response?.data || 'Fehler bei der Zuweisung');
+      toast.error(err.response?.data || 'Error during assignment');
     }
   };
   
   const handleEdit = (user: User) => {
     setEditingUser(user);
     setEditFormData({
-      username: user.username || "Unbekannt",
+      username: user.username || "Unknown",
       email: user.email || '',
       role: user.role,
       courseIds: user.courseIds || []
@@ -150,12 +149,12 @@ const UserManager: React.FC = () => {
     setLoading(true);
     try {
       await api.put(`/admin/users/${editingUser.loginId}`, editFormData);
-      toast.success('Benutzer erfolgreich aktualisiert');
+      toast.success('User updated successfully');
       setShowEditModal(false);
-      loadUsers();
-      loadUnassignedUsers();
+      reloadUsers();
+      reloadUnassigned();
     } catch (err: any) {
-      toast.error(err.response?.data || 'Fehler beim Aktualisieren');
+      toast.error(err.response?.data || 'Error while updating');
     } finally {
       setLoading(false);
     }
@@ -164,16 +163,16 @@ const UserManager: React.FC = () => {
   const toggleStatus = (user: User) => {
     setConfirmConfig({
       isOpen: true,
-      title: user.enabled !== false ? 'Benutzer deaktivieren' : 'Benutzer aktivieren',
-      message: `Möchten Sie den Benutzer ${user.username || "Unbekannt"} wirklich ${user.enabled !== false ? 'deaktivieren' : 'aktivieren'}? ${user.enabled !== false ? 'Der Benutzer kann sich dann nicht mehr anmelden.' : ''}`,
+      title: user.enabled !== false ? 'Disable user' : 'Enable user',
+      message: `Are you sure you want to ${user.enabled !== false ? 'disable' : 'enable'} the user ${user.username || "Unknown"}? ${user.enabled !== false ? 'The user will then no longer be able to sign in.' : ''}`,
       type: user.enabled !== false ? 'warning' : 'info',
       onConfirm: async () => {
         try {
           await api.patch(`/admin/users/${user.loginId}/toggle-status`);
-          toast.success(`Benutzer ${user.enabled !== false ? 'deaktiviert' : 'aktiviert'}`);
-          loadUsers();
+          toast.success(`User ${user.enabled !== false ? 'disabled' : 'enabled'}`);
+          reloadUsers();
         } catch (err: any) {
-          toast.error(err.response?.data || 'Fehler beim Ändern des Status');
+          toast.error(err.response?.data || 'Error while changing status');
         }
       }
     });
@@ -182,17 +181,17 @@ const UserManager: React.FC = () => {
   const deleteUser = (id: string, name: string) => {
     setConfirmConfig({
       isOpen: true,
-      title: 'Benutzer löschen',
-      message: `Möchten Sie den Benutzer ${name} wirklich unwiderruflich löschen? Alle zugehörigen Daten gehen verloren.`,
+      title: 'Delete user',
+      message: `Are you sure you want to permanently delete the user ${name}? All associated data will be lost.`,
       type: 'danger',
       onConfirm: async () => {
         try {
           await api.delete(`/admin/users/${id}`);
-          toast.success('Benutzer gelöscht');
-          loadUsers();
-          loadUnassignedUsers();
+          toast.success('User deleted');
+          reloadUsers();
+          reloadUnassigned();
         } catch (err: any) {
-          toast.error(err.response?.data || 'Fehler beim Löschen');
+          toast.error(err.response?.data || 'Error while deleting');
         }
       }
     });
@@ -202,19 +201,19 @@ const UserManager: React.FC = () => {
     if (!resettingUser || !newPassword) return;
     try {
       await api.post(`/admin/users/${resettingUser}/reset-password`, { password: newPassword });
-      toast.success('Passwort erfolgreich zurückgesetzt');
+      toast.success('Password reset successfully');
       setShowResetModal(false);
       setNewPassword('');
     } catch (err: any) {
-      toast.error(err.response?.data || 'Fehler beim Zurücksetzen');
+      toast.error(err.response?.data || 'Error while resetting');
     }
   };
 
   const handleImpersonate = (loginId: string, name: string) => {
     setConfirmConfig({
       isOpen: true,
-      title: 'Benutzer-Impersonation',
-      message: `Möchten Sie sich wirklich als ${name} anmelden? Ihre aktuelle Sitzung wird unterbrochen.`,
+      title: 'User impersonation',
+      message: `Are you sure you want to sign in as ${name}? Your current session will be interrupted.`,
       type: 'info',
       onConfirm: async () => {
         try {
@@ -222,13 +221,31 @@ const UserManager: React.FC = () => {
           const { token, user } = res.data;
           localStorage.setItem('token', token);
           localStorage.setItem('user', JSON.stringify(user));
-          toast.success(`Angemeldet als ${user.username || "Unbekannt"}.`);
+          toast.success(`Signed in as ${user.username || "Unknown"}.`);
           setTimeout(() => window.location.href = '/', 1000);
         } catch (err: any) {
-          toast.error('Impersonation fehlgeschlagen: ' + (err.response?.data?.message || err.message));
+          toast.error('Impersonation failed: ' + (err.response?.data?.message || err.message));
         }
       }
     });
+  };
+
+  const downloadTemplate = async () => {
+    try {
+      // Fetch through the authenticated api client (a plain <a download> cannot
+      // send the JWT, which made the endpoint return 401).
+      const res = await api.get('/admin/users/template', { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'user_import_template.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error('Template could not be loaded');
+    }
   };
 
   const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,22 +263,27 @@ const UserManager: React.FC = () => {
       const res = await api.post('/admin/users/import-csv', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      toast.success(`${res.data.imported} Studenten importiert (${res.data.skipped} übersprungen)`);
-      loadUsers();
-      loadUnassignedUsers();
+      toast.success(`${res.data.imported} students imported (${res.data.skipped} skipped)`);
+      reloadUsers();
+      reloadUnassigned();
     } catch (err: any) {
-      toast.error('Fehler beim CSV Import: ' + (err.response?.data || err.message));
+      toast.error('Error during CSV import: ' + (err.response?.data || err.message));
     } finally {
       setLoading(false);
       e.target.value = ''; // Reset input
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    (u.username || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredUsers = users.filter(u =>
+    (u.username || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.loginId || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.email || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ).sort((a, b) => {
+    if (sortBy === 'name') return (a.username || '').localeCompare(b.username || '');
+    const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return sortBy === 'newest' ? tb - ta : ta - tb;
+  });
 
   return (
     <div className="space-y-10 animate-fadeIn text-gray-800 dark:text-gray-200">
@@ -275,83 +297,80 @@ const UserManager: React.FC = () => {
       />
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-black tracking-tight dark:text-white">
-          Benutzer <span className="text-blue-600">Verwaltung</span>
-        </h2>
-        <div className="flex flex-wrap gap-3">
-            <a 
-                href={`${api.defaults.baseURL}/admin/users/template`} 
-                className="bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-800 py-2.5 px-4 rounded-xl font-bold hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-all flex items-center shadow-sm"
-                download
-            >
-                <FileImport size={18} className="mr-2" /> Vorlage laden
-            </a>
+        <div>
+          <p className="kicker">{isInstructor ? 'Course participants' : 'Users'}</p>
+          <h2 className="mt-1 section-title text-2xl">User management</h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+            <button onClick={downloadTemplate} className="btn-secondary">
+                <FileImport size={16} /> Template
+            </button>
             {isInstructor && (
-              <button 
-                onClick={() => { loadUnassignedUsers(); setShowAddExistingModal(true); }}
-                className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 py-2.5 px-4 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all flex items-center shadow-sm"
+              <button
+                onClick={() => { reloadUnassigned(); setShowAddExistingModal(true); }}
+                className="btn-secondary"
               >
-                <UserPlus size={18} className="mr-2" /> Bestehende hinzufügen
+                <UserPlus size={16} /> Add existing
               </button>
             )}
-            <label className="cursor-pointer bg-blue-600 text-white py-2.5 px-4 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center shadow-lg shadow-blue-500/20">
-                <FileImport size={18} className="mr-2" /> CSV Importieren
+            <label className="btn-primary cursor-pointer">
+                <FileImport size={16} /> Import CSV
                 <input type="file" accept=".csv" className="hidden" onChange={handleCsvImport} disabled={loading} />
             </label>
-            <InfoTip 
+            <InfoTip
               title="CSV Import Format"
               content={
                 <div className="space-y-2">
-                  <p>Die CSV-Datei sollte folgende Spalten enthalten:</p>
-                  <code className="block bg-gray-100 dark:bg-gray-900 p-2 rounded text-[10px]">
+                  <p>The CSV file should contain the following columns:</p>
+                  <code className="x-code block">
                     username,loginId,password,email,role,courseId
                   </code>
-                  <p>Nutzen Sie den Button "Vorlage laden", um eine beispielhafte Datei herunterzuladen.</p>
+                  <p>Use the "Load template" button to download an example file.</p>
                 </div>
               }
             />
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden relative transition-colors">
-        <div className="absolute top-0 left-0 w-2 h-full bg-blue-600"></div>
-        <h3 className="text-lg font-black mb-6 flex items-center dark:text-white">
-          <UserPlus size={20} className="text-blue-500 mr-2" /> Neuen {isInstructor ? 'Studenten' : 'Benutzer'} anlegen
+      <div className="x-card p-6 sm:p-8 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-brand-600"></div>
+        <h3 className="section-title flex items-center gap-2 mb-6">
+          <UserPlus size={20} className="text-brand-500" /> Create new {isInstructor ? 'student' : 'user'}
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Vollständiger Name</label>
-            <input 
-              placeholder="z.B. Max Mustermann" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all" 
+            <label className="x-label">Full name</label>
+            <input
+              placeholder="e.g. John Doe"
+              className="x-input" 
               value={newUser.username} 
               onChange={e => setNewUser({...newUser, username: e.target.value})} 
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Login ID</label>
+            <label className="x-label">Login ID</label>
             <input 
-              placeholder="z.B. mmuster" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all" 
+              placeholder="e.g. jdoe"
+              className="x-input" 
               value={newUser.loginId} 
               onChange={e => setNewUser({...newUser, loginId: e.target.value})} 
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">E-Mail Adresse</label>
-            <input 
-              placeholder="max@beispiel.de" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all" 
+            <label className="x-label">Email address</label>
+            <input
+              placeholder="john@example.com"
+              className="x-input" 
               value={newUser.email} 
               onChange={e => setNewUser({...newUser, email: e.target.value})} 
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Passwort</label>
+            <label className="x-label">Password</label>
             <input 
               type="password" 
               placeholder="••••••••" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all" 
+              className="x-input" 
               value={newUser.password} 
               onChange={e => setNewUser({...newUser, password: e.target.value})} 
             />
@@ -359,36 +378,37 @@ const UserManager: React.FC = () => {
           {isAdmin && (
             <>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">
-                  Rolle
-                  <InfoTip 
-                    title="Benutzerrollen"
+                <label className="x-label">
+                  Role
+                  <InfoTip
+                    title="User roles"
                     content={
                       <div className="space-y-2">
                         <ul className="list-disc ml-4 space-y-1">
-                          <li><strong>Student:</strong> Kann Aufgaben lösen und Playgrounds nutzen.</li>
-                          <li><strong>Instructor:</strong> Kann Aufgaben, Schemata und Verbindungen verwalten.</li>
-                          <li><strong>Admin:</strong> Hat Vollzugriff auf das gesamte System.</li>
+                          <li><strong>Student:</strong> Can solve assignments and use playgrounds.</li>
+                          <li><strong>Instructor:</strong> Can manage assignments, schemas and connections.</li>
+                          <li><strong>Admin:</strong> Has full access to the entire system.</li>
                         </ul>
                       </div>
                     }
                   />
                 </label>
-                <select 
-                  className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 transition-all appearance-none" 
-                  value={newUser.role} 
+                <select
+                  className="x-select"
+                  value={newUser.role}
                   onChange={e => setNewUser({...newUser, role: e.target.value})}
+                  disabled={!isAdmin}
                 >
                   <option value="STUDENT">STUDENT</option>
-                  <option value="INSTRUCTOR">INSTRUCTOR</option>
-                  <option value="ADMIN">ADMIN</option>
+                  {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
+                  {isAdmin && <option value="ADMIN">ADMIN</option>}
                 </select>
               </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs Zuweisung</label>
+                <label className="x-label">Course assignment</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-[150px] overflow-y-auto">
                   {courses.map(c => (
-                    <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-blue-300 transition-all">
+                    <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card p-2 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer hover:border-brand-300 transition-all">
                       <input 
                         type="checkbox" 
                         className="rounded text-blue-600 focus:ring-blue-500"
@@ -404,17 +424,17 @@ const UserManager: React.FC = () => {
                       <span className="text-[11px] font-bold truncate dark:text-white" title={c.courseName}>{c.courseName}</span>
                     </label>
                   ))}
-                  {courses.length === 0 && <p className="col-span-full text-center text-xs text-gray-400 italic py-2">Keine Kurse verfügbar</p>}
+                  {courses.length === 0 && <p className="col-span-full text-center text-xs text-gray-400 italic py-2">No courses available</p>}
                 </div>
               </div>
             </>
           )}
           {isInstructor && (
              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs Zuweisung (Meine Kurse)</label>
+                <label className="x-label">Course assignment (My courses)</label>
                 <div className="flex flex-wrap gap-2 p-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                     {courses.map(c => (
-                        <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer">
+                        <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card px-3 py-1.5 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer">
                             <input 
                                 type="checkbox" 
                                 checked={newUser.courseIds.includes(c.instructorCourseId)}
@@ -433,124 +453,134 @@ const UserManager: React.FC = () => {
              </div>
           )}
           <div className="flex items-end">
-            <button 
-              onClick={createUser} 
+            <button
+              onClick={createUser}
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-2xl font-black shadow-lg shadow-blue-100 dark:shadow-none hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center disabled:opacity-50"
+              className="btn-primary w-full"
             >
-              {loading ? 'Verarbeite...' : <><UserCheck size={18} className="mr-2" /> {isInstructor ? 'Student Erstellen' : 'Benutzer Erstellen'}</>}
+              {loading ? <><RefreshCw size={16} className="animate-spin" /> Processing…</> : <><UserCheck size={16} /> {isInstructor ? 'Create student' : 'Create user'}</>}
             </button>
           </div>
         </div>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden transition-colors">
-        <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-gray-900/50">
-          <div className="flex items-center space-x-4 w-full md:w-auto">
-            <h3 className="font-black text-gray-800 dark:text-white uppercase tracking-tight text-sm shrink-0">Zugeordnete Benutzer</h3>
-            <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full text-[10px] font-black shrink-0">{filteredUsers.length} Gesamt</span>
+      <div className="x-card overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-ink-border flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <h3 className="section-title text-base shrink-0">Assigned users</h3>
+            <span className="badge-neutral shrink-0">{filteredUsers.length} total</span>
           </div>
-          
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-            <input 
-              type="text"
-              placeholder="Suchen..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
+
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="relative flex-1 md:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder="Name, login ID or email…"
+                className="x-input pl-10 py-2"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <select
+              className="x-select py-2 w-auto shrink-0"
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as 'newest' | 'oldest' | 'name')}
+              title="Sorting"
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="name">Name (A–Z)</option>
+            </select>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-white dark:bg-gray-800">
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Status</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Name</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Login ID</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Kurs</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Rolle</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700 text-right">Aktionen</th>
+              <tr>
+                <th className="x-th">Status</th>
+                <th className="x-th">Name</th>
+                <th className="x-th">Login ID</th>
+                <th className="x-th">Course</th>
+                <th className="x-th">Role</th>
+                <th className="x-th">Created</th>
+                <th className="x-th text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+            <tbody>
               {filteredUsers.map(u => (
-                <tr key={u.loginId} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
-                  <td className="px-8 py-4">
-                     {u.enabled !== false ? (
-                        <span className="flex items-center text-green-500 font-bold text-[10px]">
-                           <CheckCircle size={14} className="mr-1" /> AKTIV
-                        </span>
-                     ) : (
-                        <span className="flex items-center text-red-500 font-bold text-[10px]">
-                           <XCircle size={14} className="mr-1" /> INAKTIV
-                        </span>
-                     )}
+                <tr key={u.loginId} className="x-row">
+                  <td className="x-td">
+                     {u.enabled !== false
+                        ? <span className="badge-success"><CheckCircle size={12} /> Active</span>
+                        : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={12} /> Inactive</span>}
                   </td>
-                  <td className="px-8 py-4">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs mr-3">
+                  <td className="x-td">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center font-bold text-xs uppercase shrink-0">
                         {(u.username || "?").charAt(0)}
                       </div>
-                      <span className="font-bold text-gray-800 dark:text-gray-200">{u.username}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">{u.username}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-4 font-mono text-sm text-gray-500 dark:text-gray-400">{u.loginId}</td>
-                  <td className="px-8 py-4 text-xs font-bold text-gray-600 dark:text-gray-400">
+                  <td className="x-td"><span className="font-mono text-slate-500 dark:text-slate-400">{u.loginId}</span></td>
+                  <td className="x-td">
                      <div className="flex flex-wrap gap-1">
                         {u.courseIds && u.courseIds.length > 0 ? u.courseIds.map(cid => (
-                            <span key={cid} className="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-600 dark:text-gray-300">
-                                {cid}
-                            </span>
-                        )) : <span className="text-gray-300 dark:text-gray-600 italic">Kein Kurs</span>}
+                            <span key={cid} className="badge-neutral font-mono normal-case">{cid}</span>
+                        )) : <span className="text-slate-300 dark:text-slate-600 italic text-sm">No course</span>}
                      </div>
                   </td>
-                  <td className="px-8 py-4">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-tight ${
-                      u.role?.trim().toUpperCase() === 'ADMIN' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 
-                      u.role?.trim().toUpperCase() === 'INSTRUCTOR' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 
-                      'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                    }`}>
+                  <td className="x-td">
+                    <span className={
+                      u.role?.trim().toUpperCase() === 'ADMIN' ? 'badge bg-violet-500/10 text-violet-600 dark:text-violet-300 ring-violet-500/20' :
+                      u.role?.trim().toUpperCase() === 'INSTRUCTOR' ? 'badge-brand' :
+                      'badge-neutral'
+                    }>
                       {u.role}
                     </span>
                   </td>
-                  <td className="px-8 py-4 text-right">
+                  <td className="x-td">
+                    <span className="text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-US') : '–'}
+                    </span>
+                  </td>
+                  <td className="x-td text-right">
                     <div className="flex items-center justify-end space-x-1">
                       <button 
                         onClick={() => toggleStatus(u)} 
-                        className={`p-2 transition-colors ${u.enabled !== false ? 'text-gray-300 dark:text-gray-600 hover:text-orange-500' : 'text-orange-500 hover:text-orange-600'}`}
-                        title={u.enabled !== false ? 'Benutzer deaktivieren' : 'Benutzer aktivieren'}
+                        className={`icon-btn ${u.enabled !== false ? 'hover:text-orange-500' : 'text-orange-500'}`}
+                        title={u.enabled !== false ? 'Disable user' : 'Enable user'}
                       >
                         {u.enabled !== false ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                       </button>
                       {isAdmin && u.loginId !== currentUser?.loginId && (
                         <button 
                           onClick={() => handleImpersonate(u.loginId, u.username)} 
-                          className="p-2 text-gray-300 dark:text-gray-600 hover:text-purple-500 dark:hover:text-purple-400 transition-colors"
-                          title="Als dieser Benutzer anmelden"
+                          className="icon-btn hover:text-purple-500 dark:hover:text-purple-400 transition-colors"
+                          title="Sign in as this user"
                         >
                           <UserSecret size={18} />
                         </button>
                       )}
                       <button 
                         onClick={() => handleEdit(u)} 
-                        className="p-2 text-gray-300 dark:text-gray-600 hover:text-green-500 dark:hover:text-green-400 transition-colors"
-                        title="Benutzer bearbeiten"
+                        className="icon-btn hover:text-green-500 dark:hover:text-green-400 transition-colors"
+                        title="Edit user"
                       >
                         <Edit2 size={18} />
                       </button>
                       <button 
                         onClick={() => { setResettingUser(u.loginId); setShowResetModal(true); }} 
-                        className="p-2 text-gray-300 dark:text-gray-600 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-                        title="Passwort zurücksetzen"
+                        className="icon-btn hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                        title="Reset password"
                       >
                         <Key size={18} />
                       </button>
                       <button 
                         onClick={() => deleteUser(u.id, u.username)} 
-                        className="p-2 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                        title="Benutzer löschen"
+                        className="icon-btn hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        title="Delete user"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -564,13 +594,13 @@ const UserManager: React.FC = () => {
       </div>
 
       {showAddExistingModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-2xl w-full shadow-2xl animate-slideUp max-h-[80vh] flex flex-col transition-colors border border-gray-100 dark:border-gray-700">
+        <div className="modal-overlay">
+          <div className="modal-card max-w-2xl p-6 sm:p-8 max-h-[85vh] flex flex-col">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black dark:text-white flex items-center">
-                <Users className="mr-2 text-blue-500" size={24} /> Studenten ohne Kurszuweisung
+              <h3 className="section-title flex items-center gap-2">
+                <Users className="mr-2 text-blue-500" size={24} /> Students without course assignment
               </h3>
-              <button onClick={() => setShowAddExistingModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button onClick={() => setShowAddExistingModal(false)} className="icon-btn hover:text-hard">
                 <X size={24} />
               </button>
             </div>
@@ -578,15 +608,15 @@ const UserManager: React.FC = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-900/50">
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Name</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">Login ID</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700 text-right">Aktion</th>
+                    <th className="x-th">Name</th>
+                    <th className="x-th">Login ID</th>
+                    <th className="x-th">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                   {unassignedUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-4 py-12 text-center text-gray-400 font-bold italic">Keine kurslosen Studenten gefunden</td>
+                      <td colSpan={3} className="px-4 py-12 text-center text-gray-400 font-bold italic">No students without a course found</td>
                     </tr>
                   ) : (
                     unassignedUsers.map(u => (
@@ -599,7 +629,7 @@ const UserManager: React.FC = () => {
                                 <button 
                                     key={c.instructorCourseId}
                                     onClick={() => assignCourse(u.loginId, c.instructorCourseId)}
-                                    className="bg-blue-600/10 text-blue-600 dark:text-blue-400 py-1 px-3 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition-all border border-blue-200 dark:border-blue-800"
+                                    className="badge-brand hover:bg-brand-600 hover:text-white cursor-pointer transition-colors"
                                 >
                                     + {c.courseName}
                                 </button>
@@ -617,54 +647,55 @@ const UserManager: React.FC = () => {
       )}
 
       {showEditModal && editingUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-2xl w-full shadow-2xl animate-slideUp border border-gray-100 dark:border-gray-700 transition-colors">
+        <div className="modal-overlay">
+          <div className="modal-card max-w-2xl p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black dark:text-white flex items-center">
-                <Edit2 className="mr-2 text-blue-500" size={24} /> Benutzer bearbeiten: <span className="ml-2 text-blue-600">{editingUser.loginId}</span>
+              <h3 className="section-title flex items-center gap-2">
+                <Edit2 className="mr-2 text-blue-500" size={24} /> Edit user: <span className="ml-2 text-blue-600">{editingUser.loginId}</span>
               </h3>
-              <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button onClick={() => setShowEditModal(false)} className="icon-btn hover:text-hard">
                 <X size={24} />
               </button>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Vollständiger Name</label>
-                <input 
-                  className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white" 
-                  value={editFormData.username} 
+                <label className="x-label">Full name</label>
+                <input
+                  className="x-input"
+                  value={editFormData.username}
                   onChange={e => setEditFormData({...editFormData, username: e.target.value})} 
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">E-Mail Adresse</label>
-                <input 
-                  className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white" 
-                  value={editFormData.email} 
+                <label className="x-label">Email address</label>
+                <input
+                  className="x-input"
+                  value={editFormData.email}
                   onChange={e => setEditFormData({...editFormData, email: e.target.value})} 
                 />
               </div>
               {isAdmin && (
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Rolle</label>
-                  <select 
-                    className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold bg-gray-50 dark:bg-gray-900 dark:text-white appearance-none" 
-                    value={editFormData.role} 
+                  <label className="x-label">Role</label>
+                  <select
+                    className="x-select"
+                    value={editFormData.role}
                     onChange={e => setEditFormData({...editFormData, role: e.target.value})}
+                    disabled={!isAdmin}
                   >
                     <option value="STUDENT">STUDENT</option>
-                    <option value="INSTRUCTOR">INSTRUCTOR</option>
-                    <option value="ADMIN">ADMIN</option>
+                      {isAdmin && <option value="INSTRUCTOR">INSTRUCTOR</option>}
+                    {isAdmin && <option value="ADMIN">ADMIN</option>}
                   </select>
                 </div>
               )}
               
               <div className="space-y-1 md:col-span-2">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Kurs Zuweisung</label>
+                <label className="x-label">Course assignment</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 max-h-[200px] overflow-y-auto custom-scrollbar">
                   {courses.filter(c => isAdmin || (isInstructor && currentUser?.courseIds?.includes(c.instructorCourseId))).map(c => (
-                    <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-blue-300 transition-all">
+                    <label key={c.instructorCourseId} className="flex items-center space-x-2 bg-white dark:bg-ink-card p-2 rounded-xl border border-slate-200 dark:border-ink-border cursor-pointer hover:border-brand-300 transition-all">
                       <input 
                         type="checkbox" 
                         className="rounded text-blue-600 focus:ring-blue-500"
@@ -687,16 +718,16 @@ const UserManager: React.FC = () => {
             <div className="flex gap-4">
               <button 
                 onClick={() => setShowEditModal(false)}
-                className="flex-1 px-6 py-3 rounded-2xl font-black text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                className="btn-secondary flex-1"
               >
-                Abbrechen
+                Cancel
               </button>
-              <button 
+              <button
                 onClick={handleUpdateUser}
                 disabled={loading}
-                className="flex-1 px-6 py-3 rounded-2xl font-black bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100 dark:shadow-none transition-all disabled:opacity-50"
+                className="btn-primary flex-1"
               >
-                {loading ? 'Speichern...' : 'Änderungen speichern'}
+                {loading ? 'Saving...' : 'Save changes'}
               </button>
             </div>
           </div>
@@ -704,21 +735,21 @@ const UserManager: React.FC = () => {
       )}
 
       {showResetModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-slideUp border border-gray-100 dark:border-gray-700">
+        <div className="modal-overlay">
+          <div className="modal-card max-w-md p-6 sm:p-8">
             <div className="flex items-center space-x-3 mb-4">
                <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg">
                   <Key className="text-orange-600 dark:text-orange-400" size={20} />
                </div>
-               <h3 className="text-xl font-black dark:text-white">Passwort zurücksetzen</h3>
+               <h3 className="section-title">Reset password</h3>
             </div>
             <p className="text-gray-500 dark:text-gray-400 mb-6 font-medium leading-relaxed">
-              Geben Sie ein neues Passwort für <span className="text-blue-600 font-bold">{resettingUser}</span> ein.
+              Enter a new password for <span className="text-blue-600 font-bold">{resettingUser}</span>.
             </p>
-            <input 
-              type="password" 
-              className="w-full px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none font-bold mb-6 bg-gray-50 dark:bg-gray-900 dark:text-white" 
-              placeholder="Neues Passwort"
+            <input
+              type="password"
+              className="x-input mb-6"
+              placeholder="New password"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
               autoFocus
@@ -726,15 +757,15 @@ const UserManager: React.FC = () => {
             <div className="flex gap-4">
               <button 
                 onClick={() => setShowResetModal(false)}
-                className="flex-1 px-6 py-3 rounded-2xl font-black text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                className="btn-secondary flex-1"
               >
-                Abbrechen
+                Cancel
               </button>
-              <button 
+              <button
                 onClick={handleResetPassword}
-                className="flex-1 px-6 py-3 rounded-2xl font-black bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100 dark:shadow-none transition-all"
+                className="btn-primary flex-1"
               >
-                Speichern
+                Save
               </button>
             </div>
           </div>

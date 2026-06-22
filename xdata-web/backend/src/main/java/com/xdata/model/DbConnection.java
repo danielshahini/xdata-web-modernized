@@ -1,6 +1,7 @@
 package com.xdata.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
 public class DbConnection extends BaseAuditEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "connection_id")
     private Integer id;
 
     @Column(name = "connection_name")
@@ -65,6 +67,10 @@ public class DbConnection extends BaseAuditEntity {
         return url;
     }
 
+    // Lazy association: never serialized directly (would trigger
+    // LazyInitializationException once the session is closed — OSIV is off).
+    // The course is exposed to clients only via the transient `courseId`.
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     private Course course;

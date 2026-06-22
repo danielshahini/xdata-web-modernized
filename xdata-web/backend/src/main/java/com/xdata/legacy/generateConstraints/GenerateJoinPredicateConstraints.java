@@ -1934,7 +1934,7 @@ public class GenerateJoinPredicateConstraints {
 		for (Table table : tables) {
 			if (table == null)
 				continue;
-			if (table.getTableName().equals(left)) { // gives col index of t1
+			if (table.getTableName().equalsIgnoreCase(left)) { // gives col index of t1
 				l_index += table.getColumnIndex(n.getLeft().getColumn().getColumnName());
 				l_flag = 1;
 				break;
@@ -1946,7 +1946,7 @@ public class GenerateJoinPredicateConstraints {
 		for (Table table : tables) {
 			if (table == null)
 				continue;
-			if (table.getTableName().equals(right)) // gives col index of t1
+			if (table.getTableName().equalsIgnoreCase(right)) // gives col index of t1
 			{
 				r_index += table.getColumnIndex(n.getRight().getColumn().getColumnName());
 				r_flag = 1;
@@ -4259,7 +4259,7 @@ public class GenerateJoinPredicateConstraints {
 		for (Table table : tables) {
 			if (table == null)
 				continue;
-			if (table.getTableName().equals(left)) { // gives col index of t1
+			if (table.getTableName().equalsIgnoreCase(left)) { // gives col index of t1
 				for (int i = l_index; i < l_index + table.getNoOfColumn(); i++) {
 					if (jtColumns.get(i).split("__")[1].replaceAll("\\d", "")
 							.equalsIgnoreCase(n.getLeft().getColumn().getColumnName().replaceAll("\\d", ""))) {
@@ -4280,7 +4280,7 @@ public class GenerateJoinPredicateConstraints {
 			for (Table table : tables) {
 				if (table == null)
 					continue;
-				if (table.getTableName().equals(right)) // gives col index of t1
+				if (table.getTableName().equalsIgnoreCase(right)) // gives col index of t1
 				{
 					for (int i = r_index; i < r_index + table.getNoOfColumn(); i++) {
 						if (jtColumns.get(i).split("__")[1].replaceAll("\\d", "")
@@ -4398,7 +4398,7 @@ public class GenerateJoinPredicateConstraints {
 		for (Table table : tables) {
 			if (table == null)
 				continue;
-			if (table.getTableName().equals(left)) { // gives col index of t1
+			if (table.getTableName().equalsIgnoreCase(left)) { // gives col index of t1
 				l_index += table.getColumnIndex(n.getLeft().getColumn().getColumnName());
 				l_flag = 1;
 				break;
@@ -4410,7 +4410,7 @@ public class GenerateJoinPredicateConstraints {
 		for (Table table : tables) {
 			if (table == null)
 				continue;
-			if (table.getTableName().equals(right)) // gives col index of t1
+			if (table.getTableName().equalsIgnoreCase(right)) // gives col index of t1
 			{
 				r_index += table.getColumnIndex(n.getRight().getColumn().getColumnName());
 				r_flag = 1;

@@ -4,31 +4,68 @@ import Editor from '@monaco-editor/react';
 import { toast } from 'react-hot-toast';
 import WebSocketService from '../services/WebSocketService';
 import { useAuth } from '../context/AuthContext';
-import { 
-  BookOpen, 
-  CheckCircle, 
-  Clock, 
-  HelpCircle, 
-  History, 
-  Send, 
+import { createSqlCompletionProvider } from '../utils/sqlCompletion';
+import { useAsyncData } from '../hooks/useAsyncData';
+import {
+  BookOpen,
+  CheckCircle,
+  Clock,
+  History,
+  Send,
   ChevronRight,
   Award,
   RefreshCw,
-  LayoutDashboard,
   Bell,
   Code,
   Trophy,
   Target,
-  BarChart2,
   MessageSquare,
-  Award as AwardIcon,
   Database,
-  XCircle
+  XCircle,
+  Sparkles,
+  Circle,
+  Play,
+  BookMarked,
+  Flame,
+  TrendingUp,
+  Medal,
+  Lock,
+  Table,
+  FileText,
+  GitCompareArrows,
 } from 'lucide-react';
 import { Assignment, Question, Submission, Announcement } from '../types';
 import Skeleton from './common/Skeleton';
 import MarkInfoDisplay from './MarkInfoDisplay';
+import DiffTable from './DiffTable';
 import SchemaVisualizer from './SchemaVisualizer';
+
+interface Achievement {
+  key: string;
+  label: string;
+  description: string;
+  icon: string;
+  earned: boolean;
+  current: number;
+  target: number;
+  progress: number;
+}
+
+interface LeaderboardEntry {
+  rank: number;
+  displayName: string;
+  points: number;
+  solved: number;
+  xp: number;
+  isMe: boolean;
+}
+
+interface LeaderboardData {
+  totalStudents: number;
+  entries: LeaderboardEntry[];
+  me?: LeaderboardEntry | null;
+  percentile?: number;
+}
 
 interface DashboardData {
   studentName: string;
@@ -37,6 +74,11 @@ interface DashboardData {
   level: number;
   nextLevelXp: number;
   currentLevelXp: number;
+  streak: number;
+  submissionsToday: number;
+  dailyGoal: number;
+  activeDaysTotal: number;
+  achievements: Achievement[];
   assignments: {
     id: number;
     assignmentId: number;
@@ -50,12 +92,36 @@ interface DashboardData {
   }[];
 }
 
+// Maps an achievement's backend icon name to a lucide icon component.
+const badgeIcons: Record<string, React.ComponentType<any>> = {
+  Sparkles, Target, Trophy, Award, TrendingUp, Flame,
+};
+
+// Difficulty prefers the teacher-set value; if unset, it's derived from the
+// question's point value (LeetCode-style).
+const DIFF_LABEL: Record<string, { key: 'easy' | 'medium' | 'hard'; label: string }> = {
+  EASY: { key: 'easy', label: 'Easy' },
+  MEDIUM: { key: 'medium', label: 'Medium' },
+  HARD: { key: 'hard', label: 'Hard' },
+};
+const difficultyOf = (q: { difficulty?: string; marks: number }): { key: 'easy' | 'medium' | 'hard'; label: string } => {
+  const d = q.difficulty?.toUpperCase();
+  if (d && DIFF_LABEL[d]) return DIFF_LABEL[d];
+  if (q.marks <= 2) return { key: 'easy', label: 'Easy' };
+  if (q.marks <= 5) return { key: 'medium', label: 'Medium' };
+  return { key: 'hard', label: 'Hard' };
+};
+
 const StudentDashboard: React.FC = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [materials, setMaterials] = useState<any[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<any | null>(null);
+  const [revealedHints, setRevealedHints] = useState(0);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [attempts, setAttempts] = useState<Submission[]>([]);
   const [sql, setSql] = useState('');
@@ -63,24 +129,30 @@ const StudentDashboard: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [showSchema, setShowSchema] = useState(false);
-  const [schemaMetadata, setSchemaMetadata] = useState<any>(null);
+  const [showSample, setShowSample] = useState(false);
+  const [sampleData, setSampleData] = useState<any | null>(null);
+  const [comparison, setComparison] = useState<{ submissionId: number; data: any } | null>(null);
+  const [loadingComparison, setLoadingComparison] = useState(false);
+  // Question id whose submission is currently being graded (awaiting the
+  // WebSocket result push). Used to show a "grading…" state instead of a
+  // misleading 0% from the not-yet-graded submission.
+  const [gradingQuestionId, setGradingQuestionId] = useState<number | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null);
   const completionProviderRef = useRef<any>(null);
 
-  const { user } = useAuth();
+  const { user, isDark } = useAuth();
 
-  useEffect(() => {
-    if (selectedQuestion?.assignment?.defaultSchemaId) {
-      api.get(`/schemas/${selectedQuestion.assignment.defaultSchemaId}/metadata`)
-        .then(res => setSchemaMetadata(res.data))
-        .catch(() => setSchemaMetadata(null));
-    } else if (selectedAssignment?.defaultSchemaId) {
-       api.get(`/schemas/${selectedAssignment.defaultSchemaId}/metadata`)
-        .then(res => setSchemaMetadata(res.data))
-        .catch(() => setSchemaMetadata(null));
-    } else {
-      setSchemaMetadata(null);
-    }
-  }, [selectedQuestion, selectedAssignment]);
+  const { data: schemaMetadata } = useAsyncData<any>(
+    () => {
+      const schemaId = (selectedQuestion as any)?.defaultSchemaId
+        ?? selectedQuestion?.assignment?.defaultSchemaId
+        ?? selectedAssignment?.defaultSchemaId;
+      return schemaId
+        ? api.get(`/schemas/${schemaId}/metadata`).then(res => res.data).catch(() => null)
+        : Promise.resolve(null);
+    },
+    [selectedQuestion, selectedAssignment]
+  );
 
   useEffect(() => {
     let isCancelled = false;
@@ -91,42 +163,8 @@ const StudentDashboard: React.FC = () => {
           if (completionProviderRef.current) {
             completionProviderRef.current.dispose();
           }
-          completionProviderRef.current = monaco.languages.registerCompletionItemProvider('sql', {
-            triggerCharacters: ['.', ' '],
-            provideCompletionItems: (model, position) => {
-              const word = model.getWordUntilPosition(position);
-              const range = {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: word.startColumn,
-                endColumn: word.endColumn,
-              };
-
-              const suggestions: any[] = [];
-              
-              schemaMetadata.tables.forEach((table: any) => {
-                suggestions.push({
-                  label: table.tableName,
-                  kind: monaco.languages.CompletionItemKind.Class,
-                  insertText: table.tableName,
-                  detail: 'Tabelle',
-                  range
-                });
-                
-                table.columns.forEach((col: any) => {
-                  suggestions.push({
-                    label: col.columnName,
-                    kind: monaco.languages.CompletionItemKind.Field,
-                    insertText: col.columnName,
-                    detail: `${table.tableName} (${col.dataType})`,
-                    range
-                  });
-                });
-              });
-
-              return { suggestions };
-            }
-          });
+          completionProviderRef.current = monaco.languages.registerCompletionItemProvider(
+            'sql', createSqlCompletionProvider(monaco, schemaMetadata));
         });
       });
     }
@@ -156,7 +194,7 @@ const StudentDashboard: React.FC = () => {
       const res = await api.get('/student/dashboard');
       setDashboard(res.data);
     } catch (e) {
-      console.error("Dashboard konnte nicht geladen werden");
+      console.error("Failed to load dashboard");
     }
   }, []);
 
@@ -165,31 +203,44 @@ const StudentDashboard: React.FC = () => {
       const res = await api.get('/announcements');
       setAnnouncements(res.data || []);
     } catch (e) {
-      console.error("Ankündigungen konnten nicht geladen werden");
+      console.error("Failed to load announcements");
     }
+    try {
+      const m = await api.get('/materials');
+      setMaterials(m.data || []);
+    } catch (e) { /* ignore */ }
   }, []);
 
   const loadSubmissions = useCallback(() => {
     api.get('/student/submissions').then(res => setSubmissions(res.data || []));
   }, []);
 
+  const loadLeaderboard = useCallback(() => {
+    api.get('/student/leaderboard').then(res => setLeaderboard(res.data)).catch(() => { /* non-critical */ });
+  }, []);
+
   useEffect(() => {
     loadDashboard();
     loadAnnouncements();
     loadSubmissions();
+    loadLeaderboard();
 
     if (user) {
       WebSocketService.connect().then(() => {
         WebSocketService.subscribe(`/topic/grading/${user.loginId}`, (data) => {
-          toast.success(`Aufgabe "${data.question.name}" wurde bewertet: ${(data.marks * 100).toFixed(0)}%`);
+          toast.success(`Assignment "${data.question.name}" has been graded: ${(data.marks * 100).toFixed(0)}%`);
+          // Clear the "grading…" state for the graded question so the real result shows.
+          setGradingQuestionId(prev => (prev === data.questionId ? null : prev));
+          setRunResult(null);
           loadSubmissions();
           loadDashboard();
+          loadLeaderboard();
         });
       });
     }
 
     return () => WebSocketService.disconnect();
-  }, [loadDashboard, loadAnnouncements, loadSubmissions, user]);
+  }, [loadDashboard, loadAnnouncements, loadSubmissions, loadLeaderboard, user]);
 
   const loadAttempts = async (questionId: number) => {
     try {
@@ -197,7 +248,7 @@ const StudentDashboard: React.FC = () => {
       setAttempts(res.data || []);
       setShowHistory(true);
     } catch (e) {
-      console.error("Fehler beim Laden der Versuche");
+      console.error("Failed to load attempts");
     }
   };
 
@@ -206,23 +257,86 @@ const StudentDashboard: React.FC = () => {
       const res = await api.get(`/student/assignments/${assignmentId}/questions`);
       setQuestions(res.data || []);
     } catch (e) {
-      toast.error("Fehler beim Laden der Fragen");
+      toast.error("Failed to load questions");
+    }
+  };
+
+  const runQuery = async () => {
+    if (!selectedQuestion || !sql.trim()) return;
+    setRunning(true);
+    setRunResult(null);
+    try {
+      const res = await api.post('/student/run', { questionId: selectedQuestion.id, query: sql });
+      setRunResult(res.data);
+    } catch (e: any) {
+      setRunResult({ error: e.response?.data || 'Execution failed.' });
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const requestRegrade = async (submissionId: number) => {
+    const message = window.prompt('Reason for the regrade request (optional):') ?? '';
+    try {
+      await api.post(`/student/submissions/${submissionId}/regrade-request`, { message });
+      toast.success('Regrade request submitted');
+    } catch {
+      toast.error('Failed to submit regrade request');
+    }
+  };
+
+  const toggleSampleData = async () => {
+    const next = !showSample;
+    setShowSample(next); setShowSchema(false); setShowCheatSheet(false);
+    const assignmentId = selectedAssignment?.id ?? (selectedQuestion as any)?.assignmentId;
+    if (next && !sampleData && assignmentId) {
+      try {
+        const res = await api.get(`/student/assignments/${assignmentId}/sample-data`);
+        setSampleData(res.data);
+      } catch { toast.error('Failed to load sample data.'); }
+    }
+  };
+
+  const loadComparison = async (submissionId: number) => {
+    if (comparison?.submissionId === submissionId) { setComparison(null); return; }
+    setLoadingComparison(true);
+    try {
+      const res = await api.get(`/student/submissions/${submissionId}/result-comparison`);
+      setComparison({ submissionId, data: res.data });
+    } catch (e: any) {
+      toast.error('Result comparison not available.');
+    } finally {
+      setLoadingComparison(false);
     }
   };
 
   const submitSolution = async () => {
     if (!selectedQuestion || !sql.trim()) return;
+    const qId = selectedQuestion.id;
     setLoading(true);
+    // Show a "grading…" state immediately (before the request resolves) so the
+    // panel never flashes the not-yet-graded 0% result. Cleared by the WebSocket
+    // result push, or by the fallback below if no push arrives.
+    setGradingQuestionId(qId);
+    // Drop the stale run preview so it doesn't sit next to "Last result".
+    setRunResult(null);
     try {
       await api.post('/student/submit', {
-        questionId: selectedQuestion.id,
+        questionId: qId,
         query: sql
       });
-      toast.success("Abgabe erfolgreich! Bewertung läuft...");
+      toast.success("Submission successful! Grading in progress...");
       setSql('');
-      loadSubmissions();
+      // Fallback in case the live push never arrives (e.g. WS dropped or the
+      // backend grading failed): refresh and clear the grading state.
+      setTimeout(() => {
+        setGradingQuestionId(prev => (prev === qId ? null : prev));
+        loadSubmissions();
+        loadDashboard();
+      }, 12000);
     } catch (e) {
-      toast.error("Fehler bei der Abgabe");
+      toast.error("Failed to submit");
+      setGradingQuestionId(prev => (prev === qId ? null : prev));
     } finally {
       setLoading(false);
     }
@@ -238,85 +352,118 @@ const StudentDashboard: React.FC = () => {
   };
 
   const sqlHints = [
-    { cmd: 'SELECT', desc: 'Spalten auswählen', example: 'SELECT * FROM users;' },
-    { cmd: 'WHERE', desc: 'Filtern', example: 'WHERE age > 18' },
-    { cmd: 'JOIN', desc: 'Tabellen verbinden', example: 'JOIN orders ON users.id = orders.user_id' },
-    { cmd: 'GROUP BY', desc: 'Gruppieren', example: 'GROUP BY department' },
-    { cmd: 'ORDER BY', desc: 'Sortieren', example: 'ORDER BY created_at DESC' },
-    { cmd: 'COUNT', desc: 'Zählen', example: 'SELECT COUNT(*) FROM users;' },
-    { cmd: 'IN', desc: 'In Liste', example: 'WHERE id IN (1, 2, 3)' },
-    { cmd: 'LIKE', desc: 'Mustervergleich', example: "WHERE name LIKE 'A%'" }
+    { cmd: 'SELECT', desc: 'Select columns', example: 'SELECT * FROM users;' },
+    { cmd: 'WHERE', desc: 'Filter', example: 'WHERE age > 18' },
+    { cmd: 'JOIN', desc: 'Join tables', example: 'JOIN orders ON users.id = orders.user_id' },
+    { cmd: 'GROUP BY', desc: 'Group', example: 'GROUP BY department' },
+    { cmd: 'ORDER BY', desc: 'Sort', example: 'ORDER BY created_at DESC' },
+    { cmd: 'COUNT', desc: 'Count', example: 'SELECT COUNT(*) FROM users;' },
+    { cmd: 'IN', desc: 'In list', example: 'WHERE id IN (1, 2, 3)' },
+    { cmd: 'LIKE', desc: 'Pattern match', example: "WHERE name LIKE 'A%'" }
   ];
 
-  if (!dashboard) return <div className="p-8"><Skeleton count={3} /></div>;
+  if (!dashboard) return <div className="max-w-7xl mx-auto"><Skeleton count={3} /></div>;
 
   const totalAchieved = dashboard.assignments.reduce((acc, curr) => acc + curr.achievedMarks, 0);
   const totalMax = dashboard.assignments.reduce((acc, curr) => acc + curr.totalMarks, 0);
   const overallPercentage = totalMax > 0 ? (totalAchieved / totalMax) * 100 : 0;
+  const levelSpan = dashboard.nextLevelXp - dashboard.currentLevelXp;
+  const xpIntoLevel = levelSpan > 0 ? ((dashboard.xp - dashboard.currentLevelXp) / levelSpan) * 100 : 0;
+  const solvedTotal = dashboard.assignments.reduce((a, c) => a + c.solvedQuestions, 0);
+  const questionsTotal = dashboard.assignments.reduce((a, c) => a + c.totalQuestions, 0);
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn pb-20">
-      <div className="bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 p-8 rounded-[2rem] shadow-2xl text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
-        
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-2">
-               <h1 className="text-4xl font-black tracking-tight">Hallo, {dashboard.studentName}! 👋</h1>
-               <div className="bg-yellow-400 text-blue-900 px-4 py-1 rounded-2xl font-black text-sm shadow-lg flex items-center gap-2">
-                  <AwardIcon size={16} /> Level {dashboard.level}
-               </div>
+    <div className="max-w-7xl mx-auto space-y-6 animate-fadeIn pb-20">
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden rounded-3xl bg-ink-bg text-white p-7 md:p-9">
+        <div className="absolute inset-0 bg-grid opacity-50" />
+        <div className="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-brand-600/30 blur-3xl" />
+        <div className="absolute -bottom-24 left-1/3 h-60 w-60 rounded-full bg-xp-500/10 blur-3xl" />
+
+        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-7">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3">
+              <p className="kicker text-brand-400">{dashboard.courseName || 'Your learning dashboard'}</p>
             </div>
-            <p className="opacity-90 font-medium flex items-center text-lg mb-4">
-              <LayoutDashboard size={20} className="mr-2" /> {dashboard.courseName || 'Willkommen zurück in Ihrem Lern-Dashboard'}
-            </p>
-            
-            <div className="max-w-md bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
-                  <span>XP: {dashboard.xp}</span>
-                  <span>Nächstes Level: {dashboard.nextLevelXp}</span>
-               </div>
-               <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
-                  <div 
-                    className="bg-yellow-400 h-full transition-all duration-1000" 
-                    style={{ 
-                      width: `${((dashboard.xp - dashboard.currentLevelXp) / (dashboard.nextLevelXp - dashboard.currentLevelXp)) * 100}%` 
-                    }}
-                  ></div>
-               </div>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="bg-white/20 p-5 rounded-3xl backdrop-blur-md border border-white/20 flex items-center shadow-xl">
-              <Trophy className="text-yellow-400 mr-4" size={36} />
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Gesamt-Score</p>
-                <p className="text-2xl font-black">{totalAchieved.toFixed(1)} / {totalMax.toFixed(1)}</p>
-                <div className="w-full bg-white/30 h-1.5 rounded-full mt-2 overflow-hidden">
-                  <div className="bg-yellow-400 h-full transition-all duration-1000" style={{ width: `${overallPercentage}%` }}></div>
+            <h1 className="mt-2 font-display text-3xl md:text-4xl font-extrabold tracking-tight">
+              Hello, {dashboard.studentName}.
+            </h1>
+
+            {/* XP / level bar */}
+            <div className="mt-6 max-w-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-xp-500/15 text-xp-400 px-2.5 py-1 text-xs font-bold">
+                  <Sparkles size={13} /> Level {dashboard.level}
+                </span>
+                <span className="font-mono text-xs text-slate-400">
+                  {dashboard.xp} / {dashboard.nextLevelXp} XP
+                </span>
+              </div>
+              <div className="h-2.5 w-full rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-xp-500 to-xp-400 transition-all duration-1000"
+                  style={{ width: `${Math.max(0, Math.min(100, xpIntoLevel))}%` }}
+                />
+              </div>
+
+              {/* Streak + daily goal */}
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold ${
+                    dashboard.streak > 0 ? 'bg-orange-500/15 text-orange-400' : 'bg-white/5 text-slate-400'
+                  }`}
+                  title="Consecutive days with activity"
+                >
+                  <Flame size={13} /> {dashboard.streak} {dashboard.streak === 1 ? 'day' : 'days'} streak
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[11px] text-slate-400">
+                    Today {Math.min(dashboard.submissionsToday, dashboard.dailyGoal)}/{dashboard.dailyGoal}
+                  </span>
+                  <div className="flex gap-1">
+                    {Array.from({ length: dashboard.dailyGoal }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-2 w-5 rounded-full transition-colors ${
+                          i < dashboard.submissionsToday ? 'bg-easy' : 'bg-white/10'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  {dashboard.submissionsToday >= dashboard.dailyGoal && (
+                    <span className="text-[11px] font-bold text-easy">Daily goal achieved ✓</span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-8">
+          {/* Stat tiles */}
+          <div className="grid grid-cols-3 gap-3 lg:gap-4 shrink-0">
+            <StatTile icon={<Trophy size={18} />} label="Score" value={`${overallPercentage.toFixed(0)}%`} sub={`${totalAchieved.toFixed(0)}/${totalMax.toFixed(0)} pts`} accent="xp" />
+            <StatTile icon={<Target size={18} />} label="Solved" value={`${solvedTotal}`} sub={`of ${questionsTotal}`} accent="brand" />
+            <StatTile icon={<BookOpen size={18} />} label="Modules" value={`${dashboard.assignments.length}`} sub="active" accent="brand" />
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── Left: announcements + assignment list ── */}
+        <div className="lg:col-span-1 space-y-6">
           {announcements.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-6 shadow-xl shadow-blue-500/5 border border-gray-100 dark:border-gray-700">
-              <h2 className="text-lg font-black mb-4 flex items-center dark:text-white uppercase tracking-wider text-[12px]">
-                <Bell size={18} className="mr-2 text-blue-500" /> Ankündigungen
+            <div className="x-card p-5">
+              <h2 className="flex items-center gap-2 mb-4">
+                <Bell size={16} className="text-brand-500" />
+                <span className="kicker">Announcements</span>
               </h2>
-              <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
                 {announcements.map(a => (
-                  <div key={a.id} className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-                    <p className="font-bold text-blue-900 dark:text-blue-300 text-sm mb-1">{a.title}</p>
-                    <p className="text-xs text-blue-700 dark:text-blue-400 mb-2 opacity-80">{a.content}</p>
-                    <div className="flex justify-between items-center text-[10px] font-bold opacity-60">
-                       <span>{a.course?.courseName}</span>
-                       <span>{new Date(a.createdAt).toLocaleDateString()}</span>
+                  <div key={a.id} className="p-3.5 rounded-xl bg-brand-50 dark:bg-brand-500/10 border border-brand-100 dark:border-brand-500/20">
+                    <p className="font-semibold text-brand-900 dark:text-brand-200 text-sm">{a.title}</p>
+                    <p className="text-xs text-brand-700/80 dark:text-brand-300/70 mt-1 leading-relaxed">{a.content}</p>
+                    <div className="flex justify-between items-center text-[10px] font-medium text-brand-500/70 mt-2 font-mono">
+                      <span>{a.course?.courseName}</span>
+                      <span>{new Date(a.createdAt).toLocaleDateString('en-US')}</span>
                     </div>
                   </div>
                 ))}
@@ -324,190 +471,364 @@ const StudentDashboard: React.FC = () => {
             </div>
           )}
 
-          <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-6 shadow-xl shadow-blue-500/5 border border-gray-100 dark:border-gray-700">
-            <h2 className="text-lg font-black mb-6 flex items-center dark:text-white uppercase tracking-wider text-[12px]">
-              <BookOpen size={18} className="mr-2 text-blue-500" /> Meine Aufgaben
-            </h2>
-            <div className="space-y-4">
-              {dashboard.assignments.map(a => (
-                <button
-                  key={a.id}
-                  onClick={() => {
-                    setSelectedAssignment(a as any);
-                    setSelectedQuestion(null);
-                    loadQuestions(a.id);
-                  }}
-                  className={`w-full text-left p-5 rounded-3xl border transition-all relative overflow-hidden group ${
-                    selectedAssignment?.id === a.id
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-4 ring-blue-500/10' 
-                    : 'border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <span className="font-black dark:text-white text-base block mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{a.name}</span>
-                      <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                        <span className="flex items-center"><Clock size={12} className="mr-1" /> {new Date(a.deadline).toLocaleDateString()}</span>
-                        <span className="flex items-center text-blue-500"><Target size={12} className="mr-1" /> {a.solvedQuestions}/{a.totalQuestions} gelöst</span>
+          {materials.length > 0 && (
+            <div className="x-card p-5">
+              <h2 className="flex items-center gap-2 mb-4">
+                <BookMarked size={16} className="text-brand-500" />
+                <span className="kicker">Learning materials</span>
+              </h2>
+              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                {materials.map(m => (
+                  <div key={m.id} className="p-3 rounded-xl border border-slate-200 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/40">
+                    {m.type === 'LINK'
+                      ? <a href={m.content} target="_blank" rel="noreferrer" className="font-semibold text-brand-600 hover:underline text-sm break-words">{m.title}</a>
+                      : <><p className="font-semibold text-slate-900 dark:text-white text-sm">{m.title}</p>
+                         <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-line">{m.content}</p></>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Leaderboard ── */}
+          {leaderboard && leaderboard.totalStudents > 0 && (
+            <div className="x-card p-5">
+              <h2 className="flex items-center justify-between mb-4">
+                <span className="flex items-center gap-2">
+                  <Trophy size={16} className="text-xp-500" />
+                  <span className="kicker">Leaderboard</span>
+                </span>
+                {leaderboard.me && (
+                  <span className="text-[11px] font-mono text-slate-400">
+                    #{leaderboard.me.rank} / {leaderboard.totalStudents}
+                    {typeof leaderboard.percentile === 'number' && ` · Top ${100 - leaderboard.percentile}%`}
+                  </span>
+                )}
+              </h2>
+              <div className="space-y-1.5">
+                {leaderboard.entries.map(e => (
+                  <div
+                    key={e.rank}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl border transition-colors ${
+                      e.isMe
+                        ? 'border-brand-300 dark:border-brand-500/40 bg-brand-50 dark:bg-brand-500/10'
+                        : 'border-transparent hover:bg-slate-50 dark:hover:bg-ink-soft'
+                    }`}
+                  >
+                    <span className="w-6 shrink-0 flex justify-center">
+                      {e.rank <= 3
+                        ? <Medal size={16} className={e.rank === 1 ? 'text-xp-500' : e.rank === 2 ? 'text-slate-400' : 'text-orange-400'} />
+                        : <span className="font-mono text-xs text-slate-400">{e.rank}</span>}
+                    </span>
+                    <span className={`flex-1 min-w-0 truncate text-sm font-semibold ${e.isMe ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'}`}>
+                      {e.displayName}
+                    </span>
+                    <span className="font-mono text-[11px] text-slate-400 shrink-0">{e.solved} solved</span>
+                    <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0 w-12 text-right">{e.points} pts</span>
+                  </div>
+                ))}
+                {leaderboard.me && !leaderboard.entries.some(e => e.isMe) && (
+                  <>
+                    <div className="text-center text-slate-300 dark:text-slate-600 text-xs">···</div>
+                    <div className="flex items-center gap-3 px-3 py-2 rounded-xl border border-brand-300 dark:border-brand-500/40 bg-brand-50 dark:bg-brand-500/10">
+                      <span className="w-6 shrink-0 text-center font-mono text-xs text-brand-600 dark:text-brand-300">{leaderboard.me.rank}</span>
+                      <span className="flex-1 min-w-0 truncate text-sm font-semibold text-brand-700 dark:text-brand-300">{leaderboard.me.displayName}</span>
+                      <span className="font-mono text-[11px] text-slate-400 shrink-0">{leaderboard.me.solved} solved</span>
+                      <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0 w-12 text-right">{leaderboard.me.points} pts</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Achievements ── */}
+          {dashboard.achievements && dashboard.achievements.length > 0 && (
+            <div className="x-card p-5">
+              <h2 className="flex items-center justify-between mb-4">
+                <span className="flex items-center gap-2">
+                  <Award size={16} className="text-brand-500" />
+                  <span className="kicker">Badges</span>
+                </span>
+                <span className="text-[11px] font-mono text-slate-400">
+                  {dashboard.achievements.filter(a => a.earned).length}/{dashboard.achievements.length}
+                </span>
+              </h2>
+              <div className="grid grid-cols-2 gap-2.5">
+                {dashboard.achievements.map(a => {
+                  const Icon = badgeIcons[a.icon] || Award;
+                  return (
+                    <div
+                      key={a.key}
+                      title={a.description}
+                      className={`p-3 rounded-xl border flex flex-col gap-1.5 transition-all ${
+                        a.earned
+                          ? 'border-xp-500/30 bg-xp-500/5'
+                          : 'border-slate-200 dark:border-ink-border bg-slate-50/60 dark:bg-ink-soft/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`grid place-items-center h-7 w-7 rounded-lg shrink-0 ${a.earned ? 'bg-xp-500 text-white' : 'bg-slate-200 dark:bg-ink-border text-slate-400'}`}>
+                          {a.earned ? <Icon size={15} /> : <Lock size={13} />}
+                        </span>
+                        <span className={`text-xs font-bold leading-tight ${a.earned ? 'text-slate-800 dark:text-white' : 'text-slate-400'}`}>{a.label}</span>
                       </div>
+                      {!a.earned && a.target > 1 && (
+                        <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-ink-border overflow-hidden">
+                          <div className="h-full rounded-full bg-brand-400 transition-all" style={{ width: `${a.progress}%` }} />
+                        </div>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <span className="text-xs font-black text-blue-600 dark:text-blue-400 block">{a.percentage.toFixed(0)}%</span>
-                      <ChevronRight size={18} className="text-gray-300 ml-auto mt-1" />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="x-card p-5">
+            <h2 className="flex items-center gap-2 mb-4">
+              <BookOpen size={16} className="text-brand-500" />
+              <span className="kicker">My assignments</span>
+            </h2>
+            <div className="space-y-2.5">
+              {dashboard.assignments.map(a => {
+                const active = selectedAssignment?.id === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => {
+                      setSelectedAssignment(a as any);
+                      setSelectedQuestion(null);
+                      loadQuestions(a.id);
+                    }}
+                    className={`w-full text-left p-4 rounded-xl border transition-all group ${
+                      active
+                        ? 'border-brand-400 dark:border-brand-500 bg-brand-50 dark:bg-brand-500/10 ring-2 ring-brand-500/15'
+                        : 'border-slate-200 dark:border-ink-border hover:border-brand-300 dark:hover:border-brand-500/40 hover:bg-slate-50 dark:hover:bg-ink-soft'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start gap-2 mb-2.5">
+                      <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">{a.name}</span>
+                      <span className="font-mono text-xs font-bold text-brand-600 dark:text-brand-300 shrink-0">{a.percentage.toFixed(0)}%</span>
                     </div>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-blue-500 h-full transition-all duration-700 ease-out" 
-                      style={{ width: `${a.percentage}%` }}
-                    ></div>
-                  </div>
-                </button>
-              ))}
+                    <div className="flex items-center gap-3 text-[11px] font-medium text-slate-400 mb-2.5">
+                      <span className="flex items-center gap-1"><Clock size={12} /> {new Date(a.deadline).toLocaleDateString('en-US')}</span>
+                      <span className="flex items-center gap-1 text-easy"><Target size={12} /> {a.solvedQuestions}/{a.totalQuestions}</span>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-ink-soft h-1.5 rounded-full overflow-hidden">
+                      <div className="bg-brand-500 h-full rounded-full transition-all duration-700" style={{ width: `${a.percentage}%` }} />
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-8">
+        {/* ── Right: questions + editor ── */}
+        <div className="lg:col-span-2 space-y-6">
           {selectedAssignment ? (
-            <div className="animate-slideUp space-y-8">
-              <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-8 shadow-xl shadow-blue-500/5 border border-gray-100 dark:border-gray-700">
-                <div className="flex justify-between items-center mb-6">
-                   <h3 className="text-sm font-black dark:text-white uppercase tracking-widest text-gray-400 flex items-center">
-                     <BarChart2 size={16} className="mr-2" /> Fragen in {selectedAssignment.name}
-                   </h3>
-                   <div className="flex items-center gap-2">
-                     <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase">
-                       {selectedAssignment.totalQuestions || questions.length} Aufgaben
-                     </span>
-                     <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase">
-                       {selectedAssignment.totalMarks || questions.reduce((acc, q) => acc + q.marks, 0)} Punkte Gesamt
-                     </span>
-                   </div>
+            <div className="animate-slideUp space-y-6">
+              <div className="x-card p-6">
+                <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
+                  <span className="kicker">Questions · {selectedAssignment.name}</span>
+                  <div className="flex items-center gap-2 font-mono text-[11px]">
+                    <span className="px-2.5 py-1 bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 rounded-md font-semibold">
+                      {selectedAssignment.totalQuestions || questions.length} questions
+                    </span>
+                    <span className="px-2.5 py-1 bg-slate-100 dark:bg-ink-soft text-slate-500 dark:text-slate-400 rounded-md font-semibold">
+                      {selectedAssignment.totalMarks || questions.reduce((acc, q) => acc + q.marks, 0)} pts
+                    </span>
+                  </div>
                 </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+
+                {/* LeetCode-style problem list */}
+                <div className="divide-y divide-slate-100 dark:divide-ink-border -mx-1">
                   {questions.map((q, idx) => {
                     const status = getQuestionStatus(q.id);
+                    const diff = difficultyOf(q);
+                    const active = selectedQuestion?.id === q.id;
                     return (
                       <button
                         key={q.id}
-                        onClick={() => {
-                          setSelectedQuestion(q);
-                          setSql('');
-                        }}
-                        className={`p-6 rounded-[1.5rem] border flex flex-col items-center transition-all relative ${
-                          selectedQuestion?.id === q.id
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-lg shadow-blue-500/10'
-                          : 'border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        onClick={() => { setSelectedQuestion(q); setSql(''); setRunResult(null); setRevealedHints(0); setShowSample(false); setSampleData(null); setComparison(null); }}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
+                          active ? 'bg-brand-50 dark:bg-brand-500/10' : 'hover:bg-slate-50 dark:hover:bg-ink-soft'
                         }`}
                       >
-                        <span className="text-[10px] font-black text-gray-400 mb-2 uppercase">Nr. {idx + 1}</span>
-                        <span className="font-black text-sm dark:text-white mb-3 text-center line-clamp-1">{q.name}</span>
-                        
-                        <div className="relative">
-                          {status === 'SOLVED' ? (
-                            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400">
-                              <CheckCircle size={20} />
-                            </div>
-                          ) : status === 'PARTIAL' ? (
-                            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-full text-yellow-600 dark:text-yellow-400">
-                              <RefreshCw size={20} className="animate-spin-slow" />
-                            </div>
-                          ) : status === 'FAILED' ? (
-                             <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full text-red-600 dark:text-red-400">
-                               <XCircle size={20} />
-                             </div>
-                          ) : (
-                            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-300">
-                              <HelpCircle size={20} />
-                            </div>
+                        <span className="shrink-0">
+                          {status === 'SOLVED' ? <CheckCircle size={18} className="text-easy" />
+                            : status === 'PARTIAL' ? <RefreshCw size={18} className="text-medium" />
+                            : status === 'FAILED' ? <XCircle size={18} className="text-hard" />
+                            : <Circle size={18} className="text-slate-300 dark:text-slate-600" />}
+                        </span>
+                        <span className="font-mono text-xs text-slate-400 w-7 shrink-0">{(idx + 1).toString().padStart(2, '0')}</span>
+                        <span className="flex-1 min-w-0">
+                          <span className={`block truncate text-sm font-medium ${active ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'}`}>
+                            {q.name}
+                          </span>
+                          {(q as any).tags && (
+                            <span className="hidden sm:flex flex-wrap gap-1 mt-1">
+                              {String((q as any).tags).split(',').map((t: string) => t.trim()).filter(Boolean).slice(0, 4).map((t: string) => (
+                                <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-ink-soft text-slate-500 dark:text-slate-400">{t}</span>
+                              ))}
+                            </span>
                           )}
-                        </div>
-                        <span className="mt-3 text-[9px] font-black text-gray-400 uppercase tracking-widest">{q.marks} Pkt.</span>
+                        </span>
+                        <span className={`pill pill-${diff.key} shrink-0`}>{diff.label}</span>
+                        <span className="font-mono text-[11px] text-slate-400 w-12 text-right shrink-0">{q.marks} pts</span>
+                        <ChevronRight size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
                       </button>
                     );
                   })}
+                  {questions.length === 0 && (
+                    <p className="px-3 py-6 text-sm text-slate-400 text-center">No questions in this module.</p>
+                  )}
                 </div>
               </div>
 
               {selectedQuestion && (
-                <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-10 shadow-2xl shadow-blue-500/10 border border-gray-100 dark:border-gray-700 animate-slideUp">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div className="x-card p-6 md:p-8 animate-slideUp">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-2xl font-black dark:text-white tracking-tight">{selectedQuestion.name}</h3>
-                        <span className="bg-blue-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-blue-500/30">
-                          {selectedQuestion.marks} Punkte
-                        </span>
+                      <div className="flex items-center gap-2.5 mb-1.5">
+                        <h3 className="font-display text-xl font-bold text-slate-900 dark:text-white tracking-tight">{selectedQuestion.name}</h3>
+                        <span className={`pill pill-${difficultyOf(selectedQuestion).key}`}>{difficultyOf(selectedQuestion).label}</span>
+                        <span className="font-mono text-xs font-semibold text-slate-400">{selectedQuestion.marks} pts</span>
                       </div>
-                      <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                        <button onClick={() => loadAttempts(selectedQuestion.id)} className="flex items-center text-blue-500 hover:text-blue-600 transition-colors">
-                          <History size={12} className="mr-1" /> Verlauf ansehen
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <button 
-                         onClick={() => { setShowSchema(!showSchema); setShowCheatSheet(false); }}
-                         className={`flex items-center text-xs font-black px-5 py-3 rounded-2xl border transition-all ${
-                           showSchema 
-                           ? 'bg-blue-600 text-white border-blue-700 shadow-lg shadow-blue-500/30' 
-                           : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border-blue-100 dark:border-blue-800 hover:bg-blue-100'
-                         }`}
-                      >
-                         <Database size={16} className="mr-2" /> {showSchema ? 'Schema ausblenden' : 'Datenbank-Schema'}
+                      <button onClick={() => loadAttempts(selectedQuestion.id)} className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                        <History size={13} /> View history
                       </button>
-                      <button 
-                         onClick={() => { setShowCheatSheet(!showCheatSheet); setShowSchema(false); }}
-                         className={`flex items-center text-xs font-black px-5 py-3 rounded-2xl border transition-all ${
-                            showCheatSheet 
-                            ? 'bg-indigo-600 text-white border-indigo-700 shadow-lg shadow-indigo-500/30' 
-                            : 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100'
-                         }`}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setShowSchema(!showSchema); setShowCheatSheet(false); }}
+                        className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2.5 rounded-xl border transition-all ${
+                          showSchema
+                            ? 'bg-brand-600 text-white border-brand-600 shadow-sm'
+                            : 'text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/10 border-brand-100 dark:border-brand-500/20 hover:bg-brand-100 dark:hover:bg-brand-500/20'
+                        }`}
                       >
-                         <Code size={16} className="mr-2" /> {showCheatSheet ? 'Cheat Sheet ausblenden' : 'SQL Cheat Sheet'}
+                        <Database size={15} /> {showSchema ? 'Schema off' : 'Schema'}
+                      </button>
+                      <button
+                        onClick={() => { setShowCheatSheet(!showCheatSheet); setShowSchema(false); }}
+                        className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2.5 rounded-xl border transition-all ${
+                          showCheatSheet
+                            ? 'bg-slate-800 text-white border-slate-800 shadow-sm'
+                            : 'text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-ink-soft border-slate-200 dark:border-ink-border hover:bg-slate-200 dark:hover:bg-ink-border'
+                        }`}
+                      >
+                        <Code size={15} /> {showCheatSheet ? 'Cheat sheet off' : 'Cheat sheet'}
+                      </button>
+                      <button
+                        onClick={toggleSampleData}
+                        className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2.5 rounded-xl border transition-all ${
+                          showSample
+                            ? 'bg-brand-600 text-white border-brand-600 shadow-sm'
+                            : 'text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/10 border-brand-100 dark:border-brand-500/20 hover:bg-brand-100 dark:hover:bg-brand-500/20'
+                        }`}
+                      >
+                        <Table size={15} /> {showSample ? 'Sample data off' : 'Sample data'}
                       </button>
                     </div>
                   </div>
 
+                  {selectedQuestion.description?.trim() && (
+                    <div className="mb-6 p-5 rounded-2xl bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-ink-border">
+                      <span className="kicker flex items-center gap-1.5 mb-2"><FileText size={14} className="text-brand-500" /> Problem statement</span>
+                      <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line leading-relaxed">{selectedQuestion.description}</p>
+                    </div>
+                  )}
+
                   {showCheatSheet && (
-                    <div className="mb-8 p-6 rounded-3xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 grid grid-cols-2 md:grid-cols-4 gap-6 animate-fadeIn">
-                       {sqlHints.map(hint => (
-                         <div key={hint.cmd} className="space-y-1 group">
-                            <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest group-hover:scale-105 transition-transform origin-left">{hint.cmd}</p>
-                            <p className="text-[10px] dark:text-gray-400 font-medium">{hint.desc}</p>
-                            <p className="text-[9px] font-mono bg-white dark:bg-gray-800 p-2 rounded-xl border dark:border-gray-700 mt-2 shadow-sm text-gray-500">{hint.example}</p>
-                         </div>
-                       ))}
+                    <div className="mb-6 p-5 rounded-2xl bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-ink-border grid grid-cols-2 md:grid-cols-4 gap-5 animate-fadeIn">
+                      {sqlHints.map(hint => (
+                        <div key={hint.cmd} className="space-y-1.5">
+                          <p className="font-mono text-xs font-bold text-brand-500">{hint.cmd}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">{hint.desc}</p>
+                          <p className="text-[10px] font-mono bg-white dark:bg-ink-card p-2 rounded-lg border border-slate-200 dark:border-ink-border text-slate-500">{hint.example}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {Array.isArray(selectedQuestion.hints) && selectedQuestion.hints.length > 0 && (
+                    <div className="mb-6 p-5 rounded-2xl bg-xp-500/5 border border-xp-500/20 animate-fadeIn">
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <span className="kicker flex items-center gap-1.5"><Sparkles size={14} className="text-xp-600" /> Hints</span>
+                        {revealedHints < selectedQuestion.hints.length && (
+                          <button onClick={() => setRevealedHints(h => h + 1)} className="btn-secondary text-xs py-1.5">
+                            Show hint ({revealedHints}/{selectedQuestion.hints.length})
+                          </button>
+                        )}
+                      </div>
+                      {revealedHints === 0 ? (
+                        <p className="text-sm text-slate-400 italic">Stuck? Reveal hints step by step.</p>
+                      ) : (
+                        <ol className="space-y-2 list-decimal list-inside">
+                          {(selectedQuestion.hints as string[]).slice(0, revealedHints).map((h, i) => (
+                            <li key={i} className="text-sm text-slate-700 dark:text-slate-200">{h}</li>
+                          ))}
+                        </ol>
+                      )}
                     </div>
                   )}
 
                   {showSchema && schemaMetadata && (
-                    <div className="mb-8 p-6 rounded-3xl bg-blue-50/30 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 animate-fadeIn">
-                       <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-4">Schema: {schemaMetadata.schemaName}</h4>
-                       <SchemaVisualizer metadata={schemaMetadata} />
+                    <div className="mb-6 p-5 rounded-2xl bg-brand-50/50 dark:bg-brand-500/5 border border-brand-100 dark:border-brand-500/20 animate-fadeIn">
+                      <h4 className="kicker text-brand-500 mb-3">Schema · {schemaMetadata.schemaName}</h4>
+                      <SchemaVisualizer metadata={schemaMetadata} />
                     </div>
                   )}
 
-                  <div className="rounded-[2rem] border-4 border-gray-50 dark:border-gray-900 overflow-hidden mb-8 h-[350px] shadow-2xl relative" 
-                       data-lpignore="true" 
-                       data-form-type="other"
-                       data-ignore-autofill="true">
+                  {showSample && (
+                    <div className="mb-6 p-5 rounded-2xl bg-brand-50/50 dark:bg-brand-500/5 border border-brand-100 dark:border-brand-500/20 animate-fadeIn space-y-4">
+                      <h4 className="kicker text-brand-500">Sample data {sampleData?.schemaName ? `· ${sampleData.schemaName}` : ''}</h4>
+                      {!sampleData ? (
+                        <p className="text-sm text-slate-400 italic">Loading …</p>
+                      ) : (sampleData.tables || []).length === 0 ? (
+                        <p className="text-sm text-slate-400 italic">{sampleData.error || 'No sample data available.'}</p>
+                      ) : (
+                        (sampleData.tables || []).map((t: any) => (
+                          <div key={t.tableName} className="rounded-xl border border-slate-200 dark:border-ink-border overflow-hidden">
+                            <div className="px-4 py-2 bg-white/60 dark:bg-ink-card/60 border-b border-slate-200 dark:border-ink-border flex items-center gap-2">
+                              <Table size={13} className="text-brand-500" />
+                              <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-200">{t.tableName}</span>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left border-collapse text-xs">
+                                <thead><tr>{(t.columns || []).map((c: string, i: number) => <th key={i} className="x-th !py-2">{c}</th>)}</tr></thead>
+                                <tbody>
+                                  {(t.rows || []).map((r: any[], ri: number) => (
+                                    <tr key={ri} className="x-row">{r.map((cell, ci) => <td key={ci} className="x-td !py-2 font-mono">{cell === null ? <span className="text-slate-300 italic">NULL</span> : String(cell)}</td>)}</tr>
+                                  ))}
+                                  {(t.rows || []).length === 0 && <tr><td className="x-td !py-2 text-slate-400 italic" colSpan={(t.columns || []).length || 1}>{t.error ? 'not available' : 'no rows'}</td></tr>}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+
+                  <div className="rounded-2xl border border-slate-200 dark:border-ink-border overflow-hidden mb-5 h-[350px] shadow-inner"
+                       data-lpignore="true" data-form-type="other" data-ignore-autofill="true">
                     <Editor
                       height="100%"
                       defaultLanguage="sql"
-                      theme="vs-dark"
+                      theme={isDark ? 'vs-dark' : 'light'}
                       value={sql}
                       onChange={(v) => setSql(v || '')}
                       onMount={handleEditorMount}
-                      loading={<div className="flex items-center justify-center h-full dark:bg-gray-900 dark:text-gray-400 font-black uppercase tracking-widest text-xs animate-pulse">Initialisiere SQL Editor...</div>}
+                      loading={<div className="flex items-center justify-center h-full bg-slate-50 dark:bg-ink-bg text-slate-400 font-mono text-xs animate-pulse">Loading SQL editor …</div>}
                       options={{
                         minimap: { enabled: false },
                         fontSize: 15,
                         fontFamily: "'JetBrains Mono', monospace",
                         lineNumbers: 'on',
-                        padding: { top: 20, bottom: 20 },
+                        padding: { top: 18, bottom: 18 },
                         automaticLayout: true,
                         suggestOnTriggerCharacters: true,
                         wordWrap: 'on',
@@ -525,115 +846,195 @@ const StudentDashboard: React.FC = () => {
                     />
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={runQuery}
+                      disabled={running || !sql.trim()}
+                      className="btn-secondary sm:w-48 justify-center py-4"
+                    >
+                      {running ? <RefreshCw className="animate-spin" size={18} /> : <Play size={18} />}
+                      Run
+                    </button>
                     <button
                       onClick={submitSolution}
                       disabled={loading || !sql.trim()}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white py-5 rounded-3xl font-black shadow-2xl shadow-blue-500/20 transition-all flex items-center justify-center disabled:opacity-50 group active:scale-[0.98]"
+                      className="btn-primary flex-1 py-4 text-base group justify-center"
                     >
-                      {loading ? <RefreshCw className="animate-spin mr-3" /> : <Send className="mr-3 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
-                      Antwort überprüfen & einreichen
+                      {loading ? <RefreshCw className="animate-spin" size={18} /> : <Send size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
+                      Submit answer & check
                     </button>
                   </div>
 
-                  {submissions.filter(s => s.questionId === selectedQuestion.id).sort((a,b) => new Date(b.submissionTime).getTime() - new Date(a.submissionTime).getTime()).slice(0, 1).map(s => (
-                    <div key={s.submissionId} className="mt-10 p-8 rounded-[2rem] border-2 border-blue-50 dark:border-blue-900/30 bg-blue-50/20 dark:bg-blue-900/10 animate-fadeIn">
-                      <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-3">
-                           <div className="p-2 bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-500/30">
-                             <Award size={20} />
-                           </div>
-                           <span className="text-sm font-black uppercase tracking-widest dark:text-white">Dein letztes Ergebnis</span>
+                  {runResult && (
+                    <div className="mt-5 rounded-2xl border border-slate-200 dark:border-ink-border overflow-hidden animate-fadeIn">
+                      {runResult.error ? (
+                        <div className="p-4 bg-hard/5 text-hard text-sm font-mono">{runResult.error}</div>
+                      ) : (
+                        <div>
+                          <div className="px-4 py-2 bg-slate-50 dark:bg-ink-soft border-b border-slate-200 dark:border-ink-border flex items-center justify-between">
+                            <span className="kicker">Result (preview)</span>
+                            <span className="text-xs text-slate-400">{runResult.rowCount} row(s){runResult.truncated ? ' · truncated to 100' : ''}</span>
+                          </div>
+                          <div className="overflow-x-auto max-h-72">
+                            <table className="w-full text-left border-collapse text-sm">
+                              <thead>
+                                <tr>{(runResult.columns || []).map((c: string, i: number) => <th key={i} className="x-th">{c}</th>)}</tr>
+                              </thead>
+                              <tbody>
+                                {(runResult.rows || []).map((r: any[], ri: number) => (
+                                  <tr key={ri} className="x-row">
+                                    {r.map((cell, ci) => <td key={ci} className="x-td font-mono text-xs">{cell === null ? <span className="text-slate-300 italic">NULL</span> : String(cell)}</td>)}
+                                  </tr>
+                                ))}
+                                {(runResult.rows || []).length === 0 && (
+                                  <tr><td className="x-td text-slate-400 italic" colSpan={(runResult.columns || []).length || 1}>No rows.</td></tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                        <span className={`text-2xl font-black ${s.marks >= 1.0 ? 'text-green-500' : s.marks > 0 ? 'text-yellow-500' : 'text-red-500'}`}>
-                          {(s.marks * 100).toFixed(0)}% Korrekt
+                      )}
+                    </div>
+                  )}
+
+                  {gradingQuestionId === selectedQuestion.id && (
+                    <div className="mt-6 p-5 rounded-2xl border border-brand-200 dark:border-brand-500/30 bg-brand-50/60 dark:bg-brand-500/10 animate-fadeIn flex items-center gap-4">
+                      <RefreshCw className="animate-spin text-brand-500 shrink-0" size={22} />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-white">Grading …</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Your submission is being checked automatically. The result will appear shortly.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {gradingQuestionId !== selectedQuestion.id && submissions.filter(s => s.questionId === selectedQuestion.id).sort((a,b) => new Date(b.submissionTime).getTime() - new Date(a.submissionTime).getTime()).slice(0, 1).map(s => (
+                    <div key={s.submissionId} className="mt-6 p-6 rounded-2xl border border-slate-200 dark:border-ink-border bg-slate-50/60 dark:bg-ink-bg animate-fadeIn">
+                      {s.gradesReleased === false ? (
+                        <div className="flex items-center gap-4">
+                          <RefreshCw className="text-medium shrink-0" size={22} />
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800 dark:text-white">Submitted — grade not yet released</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Your solution has been saved. The grade will become visible once your instructor releases it.</p>
+                          </div>
+                        </div>
+                      ) : (
+                      <>
+                      <div className="flex justify-between items-center mb-5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="grid place-items-center h-9 w-9 rounded-lg bg-brand-600 text-white">
+                            <Award size={18} />
+                          </div>
+                          <span className="kicker">Last result</span>
+                        </div>
+                        <span className={`font-display text-2xl font-extrabold ${s.marks >= 1.0 ? 'text-easy' : s.marks > 0 ? 'text-medium' : 'text-hard'}`}>
+                          {(s.marks * 100).toFixed(0)}%
                         </span>
                       </div>
-                      
+
                       {s.instructorFeedback && (
-                         <div className="mb-6 p-5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 flex items-start shadow-sm">
-                            <MessageSquare className="text-amber-500 mr-4 shrink-0" size={20} />
-                            <div>
-                               <p className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase mb-1 tracking-widest">Feedback vom Dozenten</p>
-                               <p className="text-sm font-medium dark:text-amber-200">{s.instructorFeedback}</p>
-                            </div>
-                         </div>
+                        <div className="mb-5 p-4 rounded-xl bg-xp-500/10 border border-xp-500/20 flex items-start gap-3">
+                          <MessageSquare className="text-xp-600 shrink-0" size={18} />
+                          <div>
+                            <p className="kicker text-xp-600 mb-1">Feedback from instructor</p>
+                            <p className="text-sm text-slate-700 dark:text-slate-200">{s.instructorFeedback}</p>
+                          </div>
+                        </div>
                       )}
 
-                      <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border dark:border-gray-700">
-                         <MarkInfoDisplay markInfoJson={s.markInfoJson} />
+                      <div className="bg-white dark:bg-ink-card rounded-xl p-5 border border-slate-200 dark:border-ink-border">
+                        <MarkInfoDisplay markInfoJson={s.markInfoJson} />
                       </div>
+                      <div className="mt-4 flex flex-wrap justify-end gap-2">
+                        <button onClick={() => loadComparison(s.submissionId)} disabled={loadingComparison} className="btn-secondary text-xs">
+                          <GitCompareArrows size={14} /> {comparison?.submissionId === s.submissionId ? 'Hide comparison' : 'Compare expected output'}
+                        </button>
+                        <button onClick={() => requestRegrade(s.submissionId)} className="btn-secondary text-xs">
+                          <MessageSquare size={14} /> Request regrade
+                        </button>
+                      </div>
+
+                      {comparison?.submissionId === s.submissionId && (
+                        <div className="mt-4 rounded-xl border border-slate-200 dark:border-ink-border p-4 animate-fadeIn">
+                          {comparison.data.error ? (
+                            <p className="text-sm text-slate-400 italic">{comparison.data.error}</p>
+                          ) : (
+                            <div className="space-y-4">
+                              {comparison.data.match
+                                ? <span className="badge badge-success"><CheckCircle size={12} /> Result matches the expected output</span>
+                                : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={12} /> {(comparison.data.missing?.length || 0)} row(s) missing · {(comparison.data.extra?.length || 0)} extra</span>}
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <DiffTable title="Expected output" data={comparison.data.expected} highlight={comparison.data.missing} accent="easy" />
+                                <DiffTable title="Your output" data={comparison.data.actual} highlight={comparison.data.extra} accent="hard" />
+                              </div>
+                              <p className="text-[11px] text-slate-400">Green = in the expected output but missing from yours. Red = in your output but not expected.</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      </>
+                      )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-[500px] bg-white dark:bg-gray-800 rounded-[3rem] border-4 border-dashed border-gray-100 dark:border-gray-700 text-gray-400 group transition-all hover:border-blue-100 dark:hover:border-blue-900/30">
-              <div className="relative mb-6">
-                <BookOpen size={80} className="opacity-10 group-hover:opacity-20 transition-opacity" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                   <ChevronRight size={32} className="text-blue-500 opacity-20 group-hover:translate-x-2 transition-transform" />
-                </div>
+            <div className="flex flex-col items-center justify-center h-[460px] x-card bg-grid text-center px-6">
+              <div className="grid place-items-center h-16 w-16 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-500 mb-5">
+                <BookOpen size={30} />
               </div>
-              <p className="text-xl font-black uppercase tracking-widest opacity-40">Wählen Sie ein Assignment</p>
-              <p className="text-sm font-bold mt-2 opacity-30">Klicken Sie links auf eine Aufgabe, um die Fragen zu laden</p>
+              <p className="font-display text-lg font-bold text-slate-700 dark:text-slate-200">Select a module</p>
+              <p className="text-sm text-slate-400 mt-1.5 max-w-xs">Click an assignment on the left to load its questions and start solving.</p>
             </div>
           )}
         </div>
       </div>
 
+      {/* ── History modal ── */}
       {showHistory && selectedQuestion && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-10 max-w-4xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-white/10 dark:border-gray-700 custom-scrollbar relative">
-            <button 
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={() => setShowHistory(false)}>
+          <div className="x-card p-8 max-w-3xl w-full max-h-[85vh] overflow-y-auto relative animate-slideUp" onClick={e => e.stopPropagation()}>
+            <button
               onClick={() => setShowHistory(false)}
-              className="absolute top-8 right-8 bg-gray-100 dark:bg-gray-700 p-3 rounded-2xl text-gray-500 dark:text-gray-300 hover:bg-gray-200 hover:scale-110 transition-all z-10"
+              className="absolute top-6 right-6 grid place-items-center h-9 w-9 rounded-lg bg-slate-100 dark:bg-ink-soft text-slate-500 hover:bg-slate-200 dark:hover:bg-ink-border transition-colors"
             >
-              <XCircle size={24} />
+              <XCircle size={20} />
             </button>
-            
-            <div className="mb-10">
-              <h3 className="text-3xl font-black dark:text-white flex items-center tracking-tight">
-                <History className="mr-4 text-blue-500" size={32} /> Abgabe-Verlauf
+
+            <div className="mb-7">
+              <h3 className="font-display text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                <History className="text-brand-500" size={24} /> Submission history
               </h3>
-              <p className="text-gray-400 font-bold uppercase tracking-widest text-xs mt-2 ml-12">Alle Versuche für: {selectedQuestion.name}</p>
+              <p className="kicker mt-1.5 ml-9">{selectedQuestion.name}</p>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-4">
               {attempts.map((attempt) => (
-                <div key={attempt.submissionId} className="p-8 rounded-3xl bg-gray-50/50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 hover:border-blue-200 transition-all group">
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-4">
-                       <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm border dark:border-gray-700 font-black text-xs text-gray-400">
-                          {new Date(attempt.submissionTime).getHours()}:{new Date(attempt.submissionTime).getMinutes().toString().padStart(2, '0')}
-                       </div>
-                       <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{new Date(attempt.submissionTime).toLocaleDateString()}</span>
-                    </div>
-                    <span className={`text-lg font-black ${attempt.marks >= 1.0 ? 'text-green-500' : attempt.marks > 0 ? 'text-yellow-500' : 'text-red-500'}`}>
+                <div key={attempt.submissionId} className="p-5 rounded-2xl bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-ink-border">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="font-mono text-xs text-slate-400">
+                      {new Date(attempt.submissionTime).toLocaleDateString('en-US')} · {new Date(attempt.submissionTime).getHours()}:{new Date(attempt.submissionTime).getMinutes().toString().padStart(2, '0')}
+                    </span>
+                    <span className={`font-display text-lg font-bold ${attempt.marks >= 1.0 ? 'text-easy' : attempt.marks > 0 ? 'text-medium' : 'text-hard'}`}>
                       {(attempt.marks * 100).toFixed(0)}%
                     </span>
                   </div>
-                  <div className="relative group/code">
-                    <pre className="p-5 bg-white dark:bg-gray-800 rounded-2xl text-sm font-mono dark:text-blue-300 overflow-x-auto mb-4 border dark:border-gray-700 shadow-inner">
-                      {attempt.query}
-                    </pre>
-                  </div>
+                  <pre className="p-4 bg-white dark:bg-ink-card rounded-xl text-sm font-mono text-brand-700 dark:text-brand-300 overflow-x-auto border border-slate-200 dark:border-ink-border">
+                    {attempt.query}
+                  </pre>
                   {attempt.instructorFeedback && (
-                     <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 text-xs flex items-start">
-                        <MessageSquare size={16} className="text-amber-500 mr-3 shrink-0" />
-                        <div>
-                           <span className="font-black text-amber-600 uppercase tracking-widest text-[9px] block mb-1">Feedback:</span>
-                           <span className="font-medium dark:text-amber-200 leading-relaxed">{attempt.instructorFeedback}</span>
-                        </div>
-                     </div>
+                    <div className="mt-3 p-3.5 rounded-xl bg-xp-500/10 border border-xp-500/20 text-xs flex items-start gap-2.5">
+                      <MessageSquare size={15} className="text-xp-600 shrink-0" />
+                      <div>
+                        <span className="kicker text-xp-600 block mb-1">Feedback</span>
+                        <span className="text-slate-700 dark:text-slate-200 leading-relaxed">{attempt.instructorFeedback}</span>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
               {attempts.length === 0 && (
-                <div className="text-center py-10 opacity-30">
-                  <p className="font-black italic">Keine vorherigen Abgaben gefunden.</p>
-                </div>
+                <p className="text-center py-10 text-sm text-slate-400">No previous submissions found.</p>
               )}
             </div>
           </div>
@@ -642,5 +1043,16 @@ const StudentDashboard: React.FC = () => {
     </div>
   );
 };
+
+const StatTile: React.FC<{ icon: React.ReactNode; label: string; value: string; sub: string; accent: 'brand' | 'xp' }> = ({ icon, label, value, sub, accent }) => (
+  <div className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm px-4 py-3.5 min-w-[92px]">
+    <div className={`flex items-center gap-1.5 ${accent === 'xp' ? 'text-xp-400' : 'text-brand-400'}`}>
+      {icon}
+      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</span>
+    </div>
+    <p className="mt-1.5 font-display text-2xl font-extrabold text-white leading-none">{value}</p>
+    <p className="mt-1 font-mono text-[10px] text-slate-500">{sub}</p>
+  </div>
+);
 
 export default StudentDashboard;

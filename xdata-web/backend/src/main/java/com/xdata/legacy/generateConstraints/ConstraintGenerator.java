@@ -146,6 +146,33 @@ public class ConstraintGenerator {
 		// solver = ctx.mkSolver();
 	}
 
+	/**
+	 * Fully recreate the Z3 context for a new generation run.
+	 *
+	 * <p>The context is static and accumulates declarations (enum sorts are named after
+	 * columns), so reusing it across runs throws "enumeration sort name is already declared".
+	 * Earlier attempts to just reassign {@code ctx} failed because the cached {@code intNull}/
+	 * {@code realNull} consts still belonged to the old context (causing "other is null"
+	 * Z3 NPEs). This rebuilds the context together with every static value derived from it,
+	 * so each run starts from a clean, self-consistent context. Must be called while holding
+	 * the datagen engine lock (the static state is shared).
+	 */
+	public static void resetContext() {
+		try {
+			ctx = new Context();
+			solver = ctx.mkSolver();
+			intNull = ctx.mkIntConst("intNullVal");
+			realNull = ctx.mkRealConst("realNullVal");
+		} catch (Throwable t) {
+			System.err.println("WARNING: Could not reset native Z3 context in ConstraintGenerator: " + t.getMessage());
+		}
+		ctxSorts = new HashMap<String, Sort>();
+		ctxFuncDecls = new HashMap<String, FuncDecl>();
+		ctxConsts = new HashMap<String, Expr>();
+		enumArrayIndex = "";
+		enumIndexVar = "";
+	}
+
 	/*
 	 * Returns the Z3 solver corresponding to context
 	 */
@@ -1310,7 +1337,16 @@ public class ConstraintGenerator {
 			String nullVal = "NULL_" + col + "_1";
 			colValues.add(nullVal);
 
-			EnumSort colSort = ctx.mkEnumSort(col.getColumnName(), colValues.toArray(new String[colValues.size()]));
+			// Reuse an already-declared sort for this column; re-declaring the same name in
+			// the Z3 context (e.g. across mutation iterations in one run) throws
+			// "enumeration sort name is already declared".
+			EnumSort colSort;
+			if (ctxSorts.containsKey(col.getColumnName())) {
+				colSort = (EnumSort) ctxSorts.get(col.getColumnName());
+			} else {
+				colSort = ctx.mkEnumSort(col.getColumnName(), colValues.toArray(new String[colValues.size()]));
+				ctxSorts.put(col.getColumnName(), colSort);
+			}
 
 			for (int i = 0; i < colSort.getConsts().length - 1; i++) { // all but last value, which is for null
 				notnullValuesChar.put(colSort.getConsts()[i], 0);
@@ -4525,9 +4561,12 @@ public class ConstraintGenerator {
 	}
 
 	public static void putEnumSortInContext(String enumArrayIndex, Vector<String> enumArrayIndexData) {
-		// TODO Auto-generated method stub
-		if (ctxConsts.containsKey(enumArrayIndex)) {
-			ctxConsts.remove(enumArrayIndex);
+		// An enum sort with this name may already be declared in the current Z3 context
+		// (generateSolver_Header runs once for the base dataset and again per mutation type).
+		// Re-declaring the same sort name throws Z3 "enumeration sort name is already
+		// declared", so reuse the existing one.
+		if (ctxSorts.containsKey(enumArrayIndex)) {
+			return;
 		}
 		EnumSort colSort = ctx.mkEnumSort(enumArrayIndex,
 				enumArrayIndexData.toArray(new String[enumArrayIndexData.size()]));

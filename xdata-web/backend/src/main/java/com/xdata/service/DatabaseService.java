@@ -31,14 +31,14 @@ public class DatabaseService {
 
     public Connection getConnection(DbConnection dbConn) throws SQLException {
         if (dbConn == null || dbConn.getUrl() == null) {
-            throw new SQLException("Datenbankverbindung oder URL ist null");
+            throw new SQLException("Database connection or URL is null");
         }
-        log.info("Versuche Verbindung zu {} mit User {}...", dbConn.getUrl(), dbConn.getUser());
+        log.info("Attempting connection to {} with user {}...", dbConn.getUrl(), dbConn.getUser());
         loadDriver(dbConn.getUrl());
         try {
             return DriverManager.getConnection(dbConn.getUrl(), dbConn.getUser(), dbConn.getPassword());
         } catch (SQLException e) {
-            log.error("Verbindungsfehler zu {}: {}", dbConn.getUrl(), e.getMessage());
+            log.error("Connection error to {}: {}", dbConn.getUrl(), e.getMessage());
             throw e;
         }
     }
@@ -47,7 +47,7 @@ public class DatabaseService {
         try (Connection conn = getConnection(dbConn)) {
             return conn.isValid(5);
         } catch (Exception e) {
-            log.error("Verbindungstest fehlgeschlagen für {}: {}", dbConn.getUrl(), e.getMessage());
+            log.error("Connection test failed for {}: {}", dbConn.getUrl(), e.getMessage());
             return false;
         }
     }

@@ -72,7 +72,7 @@ public class UserController {
         user.setLoginId(user.getLoginId().trim());
 
         if (userRepository.findByLoginIdIgnoreCase(user.getLoginId()).isPresent()) {
-            return ResponseEntity.badRequest().body("Benutzer mit Login-ID " + user.getLoginId() + " existiert bereits.");
+            return ResponseEntity.badRequest().body("User with login ID " + user.getLoginId() + " already exists.");
         }
 
         Set<String> targetCourseIds = new HashSet<>();
@@ -96,46 +96,62 @@ public class UserController {
 
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             if (!isValidPassword(user.getPassword())) {
-                return ResponseEntity.badRequest().body("Passwort muss mindestens 8 Zeichen lang sein.");
+                return ResponseEntity.badRequest().body("Password must be at least 8 characters long.");
             }
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         } else {
             String randomPass = UUID.randomUUID().toString().substring(0, 12);
             user.setPassword(passwordEncoder.encode(randomPass));
-            log.info("Zufallspasswort für {} generiert.", user.getLoginId());
+            log.info("Random password generated for {}.", user.getLoginId());
         }
 
+        // Force a password change on first login (admin/instructor sets the initial one).
+        user.setMustChangePassword(true);
         XDataUser savedUser = userRepository.saveAndFlush(user);
         auditService.log("USER_CREATED", user.getLoginId(), "Role: " + user.getRole());
         return ResponseEntity.ok(savedUser);
     }
 
     @PutMapping("/{loginId}")
-    public ResponseEntity<?> updateUser(@PathVariable String loginId, @RequestBody XDataUser userData) {
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<?> updateUser(@PathVariable String loginId, @RequestBody Map<String, Object> body) {
+        // Read fields explicitly from the JSON body. (Binding to the XDataUser
+        // entity dropped the incoming courseIds because of its derived transient
+        // property, which silently wiped a user's course assignments on save.)
+        final String newUsername = body.get("username") != null ? body.get("username").toString() : null;
+        final String newEmail = body.get("email") != null ? body.get("email").toString() : null;
+        final String newRole = body.get("role") != null ? body.get("role").toString() : null;
+        final String newPassword = body.get("password") != null ? body.get("password").toString() : null;
+        final Boolean newEnabled = body.get("enabled") instanceof Boolean ? (Boolean) body.get("enabled") : null;
+        final boolean courseIdsProvided = body.containsKey("courseIds") && body.get("courseIds") instanceof List;
+        final List<String> newCourseIds = courseIdsProvided
+                ? ((List<Object>) body.get("courseIds")).stream().map(String::valueOf).toList()
+                : null;
+
         return userRepository.findByLoginIdIgnoreCase(loginId).map(user -> {
             boolean isSelf = accessControlService.getCurrentUserLoginId().equalsIgnoreCase(loginId);
 
-            if (isSelf && !userData.isEnabled() && user.isEnabled()) {
-                return ResponseEntity.badRequest().body("Man kann sich nicht selbst deaktivieren.");
+            if (isSelf && newEnabled != null && !newEnabled && user.isEnabled()) {
+                return ResponseEntity.badRequest().body("You cannot deactivate yourself.");
             }
 
             if (accessControlService.isInstructor()) {
                 if (!"STUDENT".equalsIgnoreCase(user.getRole()) && !"INSTRUCTOR".equalsIgnoreCase(user.getRole())) {
-                    return ResponseEntity.status(403).body("Dozenten können nur Studenten oder Dozenten bearbeiten.");
+                    return ResponseEntity.status(403).body("Instructors can only edit students or instructors.");
                 }
                 List<String> instructorCourses = accessControlService.getUserCourseIds();
                 boolean hasAccess = isSelf || user.getCourses().stream().anyMatch(c -> instructorCourses.contains(c.getInstructorCourseId()));
-                
+
                 if (!hasAccess && !"STUDENT".equalsIgnoreCase(user.getRole())) {
-                    return ResponseEntity.status(403).body("Keine Berechtigung für diesen Benutzer.");
+                    return ResponseEntity.status(403).body("No permission for this user.");
                 }
-                
-                user.setUsername(userData.getUsername());
-                user.setEmail(userData.getEmail());
-                user.setEnabled(userData.isEnabled());
-                
-                if (userData.getCourseIds() != null) {
-                    Set<String> targetIds = new HashSet<>(userData.getCourseIds());
+
+                if (newUsername != null) user.setUsername(newUsername);
+                if (newEmail != null) user.setEmail(newEmail);
+                if (newEnabled != null) user.setEnabled(newEnabled);
+
+                if (newCourseIds != null) {
+                    Set<String> targetIds = new HashSet<>(newCourseIds);
                     targetIds.removeIf(cid -> !instructorCourses.contains(cid));
                     user.getCourses().removeIf(c -> instructorCourses.contains(c.getInstructorCourseId()));
                     for (String cid : targetIds) {
@@ -143,24 +159,24 @@ public class UserController {
                     }
                 }
             } else {
-                user.setUsername(userData.getUsername());
-                user.setEmail(userData.getEmail());
-                user.setRole(userData.getRole());
-                user.setEnabled(userData.isEnabled());
-                
-                if (userData.getCourseIds() != null) {
+                if (newUsername != null) user.setUsername(newUsername);
+                if (newEmail != null) user.setEmail(newEmail);
+                if (newRole != null) user.setRole(newRole);
+                if (newEnabled != null) user.setEnabled(newEnabled);
+
+                if (newCourseIds != null) {
                     user.setCourses(new HashSet<>());
-                    for (String cid : userData.getCourseIds()) {
+                    for (String cid : newCourseIds) {
                         courseRepository.findByInstructorCourseId(cid).ifPresent(user.getCourses()::add);
                     }
                 }
             }
-            
-            if (userData.getPassword() != null && !userData.getPassword().isEmpty()) {
-                if (!isValidPassword(userData.getPassword())) {
-                    return ResponseEntity.badRequest().body("Passwort muss mindestens 8 Zeichen lang sein.");
+
+            if (newPassword != null && !newPassword.isEmpty()) {
+                if (!isValidPassword(newPassword)) {
+                    return ResponseEntity.badRequest().body("Password must be at least 8 characters long.");
                 }
-                user.setPassword(passwordEncoder.encode(userData.getPassword()));
+                user.setPassword(passwordEncoder.encode(newPassword));
             }
 
             XDataUser updated = userRepository.saveAndFlush(user);
@@ -173,18 +189,18 @@ public class UserController {
     public ResponseEntity<?> toggleUserStatus(@PathVariable String loginId) {
         String currentLoginId = accessControlService.getCurrentUserLoginId();
         if (currentLoginId.equalsIgnoreCase(loginId)) {
-            return ResponseEntity.badRequest().body("Man kann seinen eigenen Status nicht ändern.");
+            return ResponseEntity.badRequest().body("You cannot change your own status.");
         }
 
         return userRepository.findByLoginIdIgnoreCase(loginId).map(user -> {
             if (accessControlService.isInstructor()) {
                 if (!"STUDENT".equalsIgnoreCase(user.getRole())) {
-                    return ResponseEntity.status(403).body("Dozenten können nur Studenten-Status ändern.");
+                    return ResponseEntity.status(403).body("Instructors can only change student status.");
                 }
                 List<String> myCourseIds = accessControlService.getUserCourseIds();
                 boolean isMyStudent = user.getCourses().stream().anyMatch(c -> myCourseIds.contains(c.getInstructorCourseId()));
                 if (!isMyStudent) {
-                    return ResponseEntity.status(403).body("Student nicht in Ihren Kursen.");
+                    return ResponseEntity.status(403).body("Student not in your courses.");
                 }
             }
             user.setEnabled(!user.isEnabled());
@@ -212,7 +228,7 @@ public class UserController {
 
             if (accessControlService.isInstructor()) {
                 if (!"STUDENT".equalsIgnoreCase(user.getRole()) && !"INSTRUCTOR".equalsIgnoreCase(user.getRole())) {
-                    return ResponseEntity.badRequest().body("Nur Studenten oder Dozenten erlaubt.");
+                    return ResponseEntity.badRequest().body("Only students or instructors allowed.");
                 }
                 List<String> instructorCourses = accessControlService.getUserCourseIds();
                 targetIds.removeIf(id -> !instructorCourses.contains(id));
@@ -220,8 +236,17 @@ public class UserController {
                 return ResponseEntity.status(403).build();
             }
 
+            if (targetIds.isEmpty()) {
+                return ResponseEntity.badRequest().body("No valid course ID provided.");
+            }
             for (String cid : targetIds) {
-                courseRepository.findByInstructorCourseId(cid).ifPresent(user.getCourses()::add);
+                var course = courseRepository.findByInstructorCourseId(cid);
+                if (course.isEmpty()) {
+                    // Fail loudly instead of silently no-op'ing (e.g. when a numeric DB id
+                    // is passed instead of the instructorCourseId).
+                    return ResponseEntity.badRequest().body("Course not found: " + cid);
+                }
+                user.getCourses().add(course.get());
             }
             userRepository.saveAndFlush(user);
             return ResponseEntity.ok(user);
@@ -232,13 +257,16 @@ public class UserController {
     public ResponseEntity<?> resetPassword(@PathVariable String loginId, @RequestBody Map<String, String> request) {
         String newPassword = request.get("password");
         if (!isValidPassword(newPassword)) {
-            return ResponseEntity.badRequest().body("Passwort muss mindestens 8 Zeichen lang sein.");
+            return ResponseEntity.badRequest().body("Password must be at least 8 characters long.");
         }
         return userRepository.findByLoginIdIgnoreCase(loginId).map(user -> {
             user.setPassword(passwordEncoder.encode(newPassword));
+            user.setMustChangePassword(true); // force the user to set their own on next login
+            user.setFailedLoginAttempts(0);
+            user.setLockedUntil(null);
             userRepository.saveAndFlush(user);
             auditService.log("PASSWORD_RESET_ADMIN", loginId, "Reset by " + accessControlService.getCurrentUserLoginId());
-            return ResponseEntity.ok("Passwort erfolgreich zurückgesetzt.");
+            return ResponseEntity.ok("Password reset successfully.");
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -268,10 +296,13 @@ public class UserController {
 
     @PostMapping({"/import", "/import-csv"})
     public ResponseEntity<?> importUsers(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) return ResponseEntity.badRequest().body("Datei ist leer.");
+        if (file.isEmpty()) return ResponseEntity.badRequest().body("File is empty.");
         int imported = 0;
         int skipped = 0;
         List<String> logs = new ArrayList<>();
+        // Instructors may only import STUDENTS into their own courses; admins may set any role.
+        final boolean isAdmin = accessControlService.isAdmin();
+        final List<String> instructorCourses = isAdmin ? null : accessControlService.getUserCourseIds();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String line = reader.readLine(); // header
             while ((line = reader.readLine()) != null) {
@@ -284,8 +315,16 @@ public class UserController {
                 String role = parts.length > 4 ? parts[4].trim().toUpperCase() : "STUDENT";
                 String courseId = parts.length > 5 ? parts[5].trim() : null;
 
+                // Enforce least privilege for instructors regardless of CSV contents.
+                if (!isAdmin) {
+                    role = "STUDENT";
+                    if (courseId != null && !instructorCourses.contains(courseId)) {
+                        courseId = null;
+                    }
+                }
+
                 if (userRepository.findByLoginIdIgnoreCase(loginId).isPresent()) {
-                    logs.add("Übersprungen: " + loginId + " existiert bereits.");
+                    logs.add("Skipped: " + loginId + " already exists.");
                     skipped++;
                     continue;
                 }
@@ -297,6 +336,7 @@ public class UserController {
                 newUser.setEmail(email);
                 newUser.setRole(role);
                 newUser.setEnabled(true);
+                newUser.setMustChangePassword(true);
 
                 if (password != null && !password.isEmpty()) {
                     newUser.setPassword(passwordEncoder.encode(password));
@@ -310,12 +350,12 @@ public class UserController {
                 }
 
                 userRepository.save(newUser);
-                logs.add("Importiert: " + loginId);
+                logs.add("Imported: " + loginId);
                 imported++;
             }
             userRepository.flush();
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Fehler beim Import: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error during import: " + e.getMessage());
         }
         Map<String, Object> result = new HashMap<>();
         result.put("imported", imported);

@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import api from '../api';
 import Editor, { loader } from '@monaco-editor/react';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, XCircle, Info, Database, BarChart3, Settings, ChevronDown, ChevronUp, Beaker } from 'lucide-react';
+import { Database, BarChart3, Settings, ChevronDown, ChevronUp, Beaker } from 'lucide-react';
 import MarkInfoDisplay from './MarkInfoDisplay';
 import InfoTip from './common/InfoTip';
 import { PartialMarkParameters, MarkInfo } from '../types';
+import { createSqlCompletionProvider } from '../utils/sqlCompletion';
+import { useAsyncData } from '../hooks/useAsyncData';
 
 interface Schema {
   id: number;
@@ -37,24 +39,16 @@ const SqlLab: React.FC = () => {
   const [queryStudent, setQueryStudent] = useState('SELECT user_name FROM xdata_users;');
   const [params, setParams] = useState<PartialMarkParameters>(defaultParams);
   
-  const [loadingEquivalence, setLoadingEquivalence] = useState(false);
   const [loadingGrading, setLoadingGrading] = useState(false);
-  
-  const [isEquivalent, setIsEquivalent] = useState<boolean | null>(null);
   const [markInfo, setMarkInfo] = useState<MarkInfo | null>(null);
   const [showParams, setShowParams] = useState(false);
-  const [schemaMetadata, setSchemaMetadata] = useState<any>(null);
+  const { data: schemaMetadata } = useAsyncData<any>(
+    () => selectedSchema
+      ? api.get(`/schemas/${selectedSchema}/metadata`).then(res => res.data).catch(() => null)
+      : Promise.resolve(null),
+    [selectedSchema]
+  );
   const completionProviderRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (selectedSchema) {
-      api.get(`/schemas/${selectedSchema}/metadata`)
-        .then(res => setSchemaMetadata(res.data))
-        .catch(() => setSchemaMetadata(null));
-    } else {
-      setSchemaMetadata(null);
-    }
-  }, [selectedSchema]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -64,39 +58,8 @@ const SqlLab: React.FC = () => {
         if (completionProviderRef.current) {
           completionProviderRef.current.dispose();
         }
-        completionProviderRef.current = monaco.languages.registerCompletionItemProvider('sql', {
-          triggerCharacters: ['.', ' '],
-          provideCompletionItems: (model, position) => {
-            const word = model.getWordUntilPosition(position);
-            const range = {
-              startLineNumber: position.lineNumber,
-              endLineNumber: position.lineNumber,
-              startColumn: word.startColumn,
-              endColumn: word.endColumn,
-            };
-
-            const suggestions: any[] = [];
-            schemaMetadata.tables.forEach((table: any) => {
-              suggestions.push({
-                label: table.tableName,
-                kind: monaco.languages.CompletionItemKind.Class,
-                insertText: table.tableName,
-                detail: 'Tabelle',
-                range
-              });
-              table.columns.forEach((col: any) => {
-                suggestions.push({
-                  label: col.columnName,
-                  kind: monaco.languages.CompletionItemKind.Field,
-                  insertText: col.columnName,
-                  detail: `${table.tableName} (${col.dataType})`,
-                  range
-                });
-              });
-            });
-            return { suggestions };
-          }
-        });
+        completionProviderRef.current = monaco.languages.registerCompletionItemProvider(
+          'sql', createSqlCompletionProvider(monaco, schemaMetadata));
       });
     }
     return () => {
@@ -126,43 +89,26 @@ const SqlLab: React.FC = () => {
         setSchemas(res.data);
         if (res.data.length > 0) setSelectedSchema(res.data[0].id);
       })
-      .catch(() => toast.error('Fehler beim Laden der Schemata.'));
+      .catch(() => toast.error('Failed to load schemas.'));
   }, []);
 
   const handleFullAnalysis = async () => {
-    setLoadingEquivalence(true);
     setLoadingGrading(true);
-    setIsEquivalent(null);
     setMarkInfo(null);
 
     try {
-      const [equivRes, markRes] = await Promise.all([
-        api.post('/evaluation/playground/smt-check', { 
-          query1: queryPattern, 
-          query2: queryStudent,
-          schemaId: selectedSchema
-        }),
-        api.post('/evaluation/playground/partial-marking', { 
-          patternQuery: queryPattern, 
-          studentQuery: queryStudent,
-          schemaId: selectedSchema,
-          params
-        })
-      ]);
-
-      setIsEquivalent(equivRes.data.equivalent);
+      const markRes = await api.post('/evaluation/playground/partial-marking', {
+        patternQuery: queryPattern,
+        studentQuery: queryStudent,
+        schemaId: selectedSchema,
+        params
+      });
       setMarkInfo(markRes.data);
-
-      if (equivRes.data.equivalent) {
-        toast.success('Analyse abgeschlossen: Abfragen sind äquivalent!');
-      } else {
-        toast.error('Abfragen sind NICHT äquivalent.');
-      }
+      toast.success('Structural evaluation complete.');
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.response?.data || 'Fehler bei der Analyse.';
-      toast.error(typeof msg === 'string' ? msg : 'Fehler bei der Analyse.');
+      const msg = err.response?.data?.message || err.response?.data || 'Analysis failed.';
+      toast.error(typeof msg === 'string' ? msg : 'Analysis failed.');
     } finally {
-      setLoadingEquivalence(false);
       setLoadingGrading(false);
     }
   };
@@ -175,61 +121,57 @@ const SqlLab: React.FC = () => {
     <div className="space-y-8 animate-fadeIn">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-black dark:text-white">
-            SQL <span className="text-blue-600">Diagnose Labor</span>
-            <InfoTip 
-              title="Was ist das SQL Diagnose Labor?"
+          <h2 className="text-2xl font-bold dark:text-white">
+            SQL <span className="text-brand-600">Diagnostic Lab</span>
+            <InfoTip
+              title="What is the SQL Diagnostic Lab?"
               content={
                 <div className="space-y-2">
-                  <p>Dieses Labor bietet zwei Arten der Analyse:</p>
-                  <ul className="list-disc ml-4 space-y-1">
-                    <li><strong>Logik prüfen:</strong> Vergleicht zwei Abfragen mathematisch auf Basis von automatisch generierten Testdaten.</li>
-                    <li><strong>Bewertung simulieren:</strong> Führt eine strukturelle Teilbewertung durch, um zu sehen, wie viele Punkte eine studentische Lösung erzielen würde.</li>
-                  </ul>
+                  <p><strong>Simulate grading:</strong> Performs a structural partial evaluation of the student solution against the model solution (projections, predicates, joins, group-by, …) and shows how many points it would score.</p>
                 </div>
               }
             />
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">Das universelle Tool für Logik-Prüfung und Bewertungs-Simulation.</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">Structural grading simulation for SQL solutions.</p>
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
           <div className="flex-1 md:w-64 relative">
              <Database className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
              <select 
-               className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 font-bold focus:ring-4 focus:ring-blue-500/10 outline-none appearance-none transition-all dark:text-white"
+               className="x-select pl-12"
                value={selectedSchema || ''}
                onChange={(e) => setSelectedSchema(parseInt(e.target.value))}
              >
-               <option value="">Kein Schema / Standard-DB</option>
+               <option value="">No schema / default DB</option>
                {schemas.map(s => <option key={s.id} value={s.id}>{s.schemaName}</option>)}
              </select>
           </div>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden transition-all">
+      <div className="bg-white dark:bg-ink-card rounded-2xl border border-slate-200 dark:border-ink-border shadow-xl overflow-hidden transition-all">
         <button 
           onClick={() => setShowParams(!showParams)}
           className="w-full flex items-center justify-between p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
         >
           <div className="flex items-center">
-            <Settings className="text-blue-600 mr-3" size={20} />
-            <span className="font-black text-gray-700 dark:text-gray-200">Bewertungs-Gewichte anpassen</span>
+            <Settings className="text-brand-600 mr-3" size={20} />
+            <span className="font-bold text-gray-700 dark:text-gray-200">Adjust grading weights</span>
           </div>
           {showParams ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
         </button>
         
         {showParams && (
-          <div className="p-8 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="p-8 border-t border-slate-200 dark:border-ink-border bg-gray-50/50 dark:bg-ink-soft/20 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
             {(Object.keys(defaultParams) as Array<keyof PartialMarkParameters>).map(key => (
               <div key={key} className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-wider">{key}</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">{key}</label>
                 <input 
                   type="number"
                   value={params[key]}
                   onChange={e => updateParam(key, e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 font-bold focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"
+                  className="x-input py-2"
                 />
               </div>
             ))}
@@ -238,15 +180,15 @@ const SqlLab: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl space-y-4">
+        <div className="bg-white dark:bg-ink-card p-6 rounded-2xl border border-slate-200 dark:border-ink-border shadow-xl space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black dark:text-white flex items-center gap-2">
+            <h3 className="text-lg font-bold dark:text-white flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-sm italic">M</span>
-              Musterlösung
+              Model solution
             </h3>
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Dozenten View</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Instructor View</span>
           </div>
-          <div className="h-64 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-inner relative" 
+          <div className="h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-ink-border shadow-inner relative" 
                data-lpignore="true"
                data-form-type="other"
                data-ignore-autofill="true">
@@ -257,11 +199,11 @@ const SqlLab: React.FC = () => {
               value={queryPattern}
               onChange={(val) => setQueryPattern(val || '')}
               onMount={handleEditorMount}
-              loading={<div className="flex items-center justify-center h-full dark:bg-gray-900 dark:text-gray-400">Lade Editor...</div>}
-              options={{ 
-                minimap: { enabled: false }, 
-                fontSize: 14, 
-                fontWeight: '700', 
+              loading={<div className="flex items-center justify-center h-full dark:bg-ink-soft dark:text-gray-400">Loading editor...</div>}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontWeight: '700',
                 padding: { top: 16 },
                 automaticLayout: true,
                 wordWrap: 'on',
@@ -274,15 +216,15 @@ const SqlLab: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl space-y-4">
+        <div className="bg-white dark:bg-ink-card p-6 rounded-2xl border border-slate-200 dark:border-ink-border shadow-xl space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black dark:text-white flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-sm italic">S</span>
-              Studentische Abfrage
+            <h3 className="text-lg font-bold dark:text-white flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center text-sm italic">S</span>
+              Student query
             </h3>
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Test Kandidat</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Test Candidate</span>
           </div>
-          <div className="h-64 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-inner relative" 
+          <div className="h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-ink-border shadow-inner relative" 
                data-lpignore="true"
                data-form-type="other"
                data-ignore-autofill="true">
@@ -293,7 +235,7 @@ const SqlLab: React.FC = () => {
               value={queryStudent}
               onChange={(val) => setQueryStudent(val || '')}
               onMount={handleEditorMount}
-              loading={<div className="flex items-center justify-center h-full dark:bg-gray-900 dark:text-gray-400">Lade Editor...</div>}
+              loading={<div className="flex items-center justify-center h-full dark:bg-ink-soft dark:text-gray-400">Loading editor...</div>}
               options={{ 
                 minimap: { enabled: false }, 
                 fontSize: 14, 
@@ -314,56 +256,26 @@ const SqlLab: React.FC = () => {
       <div className="flex flex-col gap-4">
           <button 
             onClick={handleFullAnalysis}
-            disabled={loadingEquivalence || loadingGrading}
-            className="w-full py-6 bg-blue-600 text-white rounded-[32px] font-black flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-500/25 disabled:opacity-50 group"
+            disabled={loadingGrading}
+            className="btn-primary w-full py-4 text-base"
           >
-            {loadingEquivalence || loadingGrading ? (
+            {loadingGrading ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
             ) : (
               <Beaker className="group-hover:rotate-12 transition-transform" size={24} />
             )}
-            <span className="text-xl">Vollständige Analyse & Bewertung durchführen</span>
+            <span className="text-xl">Run structural evaluation</span>
           </button>
       </div>
 
-      {(isEquivalent !== null || markInfo) && (
+      {markInfo && (
         <div className="space-y-6 animate-slideIn">
-          {isEquivalent !== null && (
-            <div className={`p-8 rounded-[40px] border flex items-center shadow-xl ${
-              isEquivalent 
-                ? 'bg-green-50 border-green-100 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400' 
-                : 'bg-red-50 border-red-100 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
-            }`}>
-              <div className={`p-4 rounded-3xl mr-6 ${isEquivalent ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                {isEquivalent ? <CheckCircle size={40} /> : <XCircle size={40} />}
-              </div>
-              <div className="flex-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Diagnose Ergebnis</p>
-                <div className="flex items-center justify-between">
-                  <h4 className="text-3xl font-black">{isEquivalent ? 'Äquivalent' : 'Nicht Äquivalent'}</h4>
-                  {markInfo && (
-                    <div className="text-right bg-white/50 dark:bg-black/20 px-6 py-2 rounded-2xl border border-current opacity-80">
-                      <span className="text-2xl font-black">{(markInfo.percentage || 0).toFixed(0)}%</span>
-                      <span className="text-[10px] font-black uppercase ml-1">Score</span>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-2 flex items-center text-sm font-bold opacity-80 italic">
-                  <Info size={14} className="mr-2" />
-                  {isEquivalent 
-                    ? 'Beide Queries liefern auf allen relevanten Testdatensätzen identische Ergebnismengen.' 
-                    : 'Auf den generierten Testdaten liefern die Abfragen unterschiedliche Resultate. Siehe strukturelle Analyse unten für Details.'}
-                </div>
-              </div>
-            </div>
-          )}
-
           {markInfo && (
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-[40px] border border-gray-100 dark:border-gray-700 shadow-xl space-y-6 transition-colors">
-              <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-700/50 pb-6">
-                <h3 className="text-xl font-black flex items-center dark:text-white uppercase tracking-wider">
-                  <BarChart3 className="text-blue-600 mr-3" size={24} /> 
-                  Strukturelle <span className="text-blue-600 ml-2">Analyse & Feedback</span>
+            <div className="bg-white dark:bg-ink-card p-8 rounded-[40px] border border-slate-200 dark:border-ink-border shadow-xl space-y-6 transition-colors">
+              <div className="flex items-center justify-between border-b border-gray-50 dark:border-ink-border/50 pb-6">
+                <h3 className="text-xl font-bold flex items-center dark:text-white uppercase tracking-wider">
+                  <BarChart3 className="text-brand-600 mr-3" size={24} /> 
+                  Structural <span className="text-brand-600 ml-2">Analysis & Feedback</span>
                 </h3>
               </div>
               <MarkInfoDisplay data={markInfo} />

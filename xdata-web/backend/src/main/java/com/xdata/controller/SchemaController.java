@@ -4,6 +4,7 @@ import com.xdata.dto.SchemaMetadataDTO;
 import com.xdata.model.SchemaInfo;
 import com.xdata.service.core.SchemaService;
 import com.xdata.service.AccessControlService;
+import com.xdata.security.CourseAccessGuard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class SchemaController {
 
     private final SchemaService schemaService;
     private final AccessControlService accessControlService;
+    private final CourseAccessGuard courseAccessGuard;
     private final com.xdata.repository.CourseRepository courseRepository;
 
     @GetMapping
@@ -43,9 +45,7 @@ public class SchemaController {
     @GetMapping("/course/{courseId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR', 'STUDENT')")
     public ResponseEntity<List<SchemaInfo>> getSchemasByCourse(@PathVariable String courseId) {
-        if (!accessControlService.canAccessCourse(courseId)) {
-            return ResponseEntity.status(403).build();
-        }
+        courseAccessGuard.requireCourseAccess(courseId);
         return ResponseEntity.ok(schemaService.getSchemasByCourse(courseId));
     }
 
@@ -56,9 +56,7 @@ public class SchemaController {
             @RequestParam("schemaName") String schemaName,
             @RequestParam("file") MultipartFile file) throws IOException {
 
-        if (!accessControlService.canAccessCourse(courseId)) {
-            return ResponseEntity.status(403).build();
-        }
+        courseAccessGuard.requireCourseAccess(courseId);
 
         String content = new String(file.getBytes(), StandardCharsets.UTF_8);
         
@@ -81,9 +79,7 @@ public class SchemaController {
         return schemaService.getSchemaById(id)
                 .map(schema -> {
                     String courseId = schema.getCourse() != null ? schema.getCourse().getInstructorCourseId() : null;
-                    if (!accessControlService.canAccessCourse(courseId)) {
-                        return ResponseEntity.status(403).<SchemaMetadataDTO>build();
-                    }
+                    courseAccessGuard.requireCourseAccess(courseId);
                     return ResponseEntity.ok(schemaService.getSchemaMetadata(id));
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -95,31 +91,10 @@ public class SchemaController {
         return schemaService.getSchemaById(id)
                 .map(schema -> {
                     String courseId = schema.getCourse() != null ? schema.getCourse().getInstructorCourseId() : null;
-                    if (!accessControlService.canAccessCourse(courseId)) {
-                        return ResponseEntity.status(403).<Void>build();
-                    }
+                    courseAccessGuard.requireCourseAccess(courseId);
                     schemaService.deleteSchema(id);
                     return ResponseEntity.ok().<Void>build();
                 })
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/datasets")
-    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR', 'STUDENT')")
-    public ResponseEntity<List<String>> getDefaultDataSets() {
-        // Dummy-Implementierung, da die Datensätze im Dateisystem oder einer speziellen Tabelle liegen könnten
-        return ResponseEntity.ok(java.util.Arrays.asList("Dataset1", "Dataset2", "Dataset3"));
-    }
-
-    @PostMapping("/sample-data/upload")
-    @PreAuthorize("hasAnyRole('ADMIN', 'INSTRUCTOR')")
-    public ResponseEntity<?> uploadSampleData(
-            @RequestParam("schemaName") String schemaName,
-            @RequestParam("file") MultipartFile file) throws IOException {
-        
-        // Logik zum Hochladen von Beispieldaten in das Schema
-        String content = new String(file.getBytes(), StandardCharsets.UTF_8);
-        // Hier würde normalerweise ein Service aufgerufen, der die Daten in die DB schreibt
-        return ResponseEntity.ok("Sample data uploaded to " + schemaName);
     }
 }

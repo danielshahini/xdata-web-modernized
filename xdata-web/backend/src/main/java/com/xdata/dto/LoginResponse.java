@@ -14,7 +14,9 @@ import java.util.Set;
 public class LoginResponse {
     private String token;
     private String username;
+    private String loginId;
     private String role;
     private String courseId;
     private Set<String> courseIds;
+    private boolean mustChangePassword;
 }

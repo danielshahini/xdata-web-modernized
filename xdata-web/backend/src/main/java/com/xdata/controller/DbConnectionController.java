@@ -3,11 +3,13 @@ package com.xdata.controller;
 import com.xdata.model.DbConnection;
 import com.xdata.repository.DbConnectionRepository;
 import com.xdata.repository.CourseRepository;
+import com.xdata.security.CourseAccessGuard;
 import com.xdata.service.AccessControlService;
 import com.xdata.service.AuditService;
 import com.xdata.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -28,26 +30,41 @@ public class DbConnectionController {
     private final DbConnectionRepository dbConnectionRepository;
     private final CourseRepository courseRepository;
     private final AccessControlService accessControlService;
+    private final CourseAccessGuard courseAccessGuard;
     private final AuditService auditService;
     private final DatabaseService databaseService;
+
+    @Value("${spring.datasource.url}")
+    private String systemDbUrl;
 
     @GetMapping
     public ResponseEntity<List<DbConnection>> getAllConnections() {
         if (accessControlService.isAdmin()) {
             log.info("Admin fetching all connections");
-            return ResponseEntity.ok(dbConnectionRepository.findAll());
+            return ResponseEntity.ok(hydrateCourseIds(dbConnectionRepository.findAll()));
         }
         List<String> courseIds = accessControlService.getUserCourseIds();
-        log.info("Fetching connections for user '{}' with courses: {}", 
+        log.info("Fetching connections for user '{}' with courses: {}",
             accessControlService.getCurrentUserLoginId(), courseIds);
-            
+
         if (!courseIds.isEmpty()) {
             List<DbConnection> connections = dbConnectionRepository.findByCourse_InstructorCourseIdIn(courseIds);
             log.info("Found {} connections for instructor", connections.size());
-            return ResponseEntity.ok(connections);
+            return ResponseEntity.ok(hydrateCourseIds(connections));
         }
         log.warn("No courses found for user '{}'", accessControlService.getCurrentUserLoginId());
         return ResponseEntity.ok(new ArrayList<>());
+    }
+
+    /**
+     * Snapshot each connection's courseId into its transient field while the JPA
+     * session is still open (OSIV is off). Without this, Jackson would trigger a
+     * LazyInitializationException on the lazy {@code course} proxy during response
+     * serialization — which produced a 500 on the admin {@code findAll()} path.
+     */
+    private List<DbConnection> hydrateCourseIds(List<DbConnection> connections) {
+        connections.forEach(c -> c.setCourseId(c.getCourseId()));
+        return connections;
     }
 
     @PostMapping
@@ -55,10 +72,7 @@ public class DbConnectionController {
         String courseId = connection.getCourseId();
         log.info("Request to create connection '{}' for course '{}'", connection.getName(), courseId);
 
-        if (!accessControlService.canAccessCourse(courseId)) {
-            log.warn("Permission denied for course '{}'", courseId);
-            return ResponseEntity.status(403).body("Keine Berechtigung für diesen Kurs.");
-        }
+        courseAccessGuard.requireCourseAccess(courseId);
 
         // Normalize URL
         connection.setUrl(normalizeUrl(connection.getUrl()));
@@ -75,14 +89,14 @@ public class DbConnectionController {
         }
 
         if (connection.getCourse() == null) {
-            return ResponseEntity.status(400).body("Zugehöriger Kurs wurde nicht gefunden.");
+            return ResponseEntity.status(400).body("Associated course was not found.");
         }
 
         // Test connection
         String testError = testConnectionInternal(connection);
         if (testError != null) {
             log.warn("Connection test failed for connection '{}': {}", connection.getName(), testError);
-            return ResponseEntity.status(400).body("Verbindungstest vor Speichern fehlgeschlagen: " + testError);
+            return ResponseEntity.status(400).body("Connection test before saving failed: " + testError);
         }
 
         try {
@@ -92,7 +106,7 @@ public class DbConnectionController {
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             log.error("Error saving connection: {}", e.getMessage());
-            return ResponseEntity.status(500).body("Interner Fehler beim Speichern: " + e.getMessage());
+            return ResponseEntity.status(500).body("Internal error while saving: " + e.getMessage());
         }
     }
 
@@ -104,10 +118,9 @@ public class DbConnectionController {
             
             log.info("Request to update connection ID {} ('{}'). Course: {} -> {}", id, existing.getName(), existingCourseId, newCourseId);
 
-            if (!accessControlService.canAccessCourse(existingCourseId) || 
-                (newCourseId != null && !accessControlService.canAccessCourse(newCourseId))) {
-                log.warn("Permission denied for updating connection ID {}", id);
-                return ResponseEntity.status(403).body("Keine Berechtigung.");
+            courseAccessGuard.requireCourseAccess(existingCourseId);
+            if (newCourseId != null) {
+                courseAccessGuard.requireCourseAccess(newCourseId);
             }
 
             // Update fields
@@ -132,7 +145,7 @@ public class DbConnectionController {
             String testError = testConnectionInternal(existing);
             if (testError != null) {
                 log.warn("Connection test failed for updating connection ID {}: {}", id, testError);
-                return ResponseEntity.status(400).body("Verbindungstest vor Update fehlgeschlagen: " + testError);
+                return ResponseEntity.status(400).body("Connection test before update failed: " + testError);
             }
 
             DbConnection saved = dbConnectionRepository.save(existing);
@@ -145,9 +158,7 @@ public class DbConnectionController {
     public ResponseEntity<Void> deleteConnection(@PathVariable Integer id) {
         return dbConnectionRepository.findById(id).map(existing -> {
             String courseId = existing.getCourse() != null ? existing.getCourse().getInstructorCourseId() : null;
-            if (!accessControlService.canAccessCourse(courseId)) {
-                return ResponseEntity.status(403).<Void>build();
-            }
+            courseAccessGuard.requireCourseAccess(courseId);
             dbConnectionRepository.deleteById(id);
             auditService.log("DB_CONNECTION_DELETED", "ID: " + id, "");
             return ResponseEntity.ok().<Void>build();
@@ -156,10 +167,8 @@ public class DbConnectionController {
 
     @GetMapping("/test")
     public ResponseEntity<String> testAllConnections() {
-        if (!accessControlService.isAdmin()) {
-            return ResponseEntity.status(403).body("Nur Administratoren können alle Verbindungen testen.");
-        }
-        
+        courseAccessGuard.requireAdmin();
+
         List<DbConnection> connections = dbConnectionRepository.findAll();
         StringBuilder results = new StringBuilder();
         int success = 0;
@@ -174,7 +183,7 @@ public class DbConnectionController {
             }
         }
         
-        String summary = String.format("Test abgeschlossen. %d/%d Verbindungen ERFOLGREICH.\n\n%s", 
+        String summary = String.format("Test completed. %d/%d connections SUCCESSFUL.\n\n%s",
                                        success, connections.size(), results.toString());
         return ResponseEntity.ok(summary);
     }
@@ -183,31 +192,34 @@ public class DbConnectionController {
     public ResponseEntity<String> testConnection(@PathVariable Integer id) {
         return dbConnectionRepository.findById(id).map(conn -> {
             String courseId = conn.getCourse() != null ? conn.getCourse().getInstructorCourseId() : null;
-            if (!accessControlService.canAccessCourse(courseId)) {
-                return ResponseEntity.status(403).body("Keine Berechtigung.");
-            }
+            courseAccessGuard.requireCourseAccess(courseId);
 
             String testError = testConnectionInternal(conn);
             if (testError == null) {
                 return ResponseEntity.ok("Connection successful");
             } else {
-                return ResponseEntity.status(400).body("Verbindungstest fehlgeschlagen: " + testError);
+                return ResponseEntity.status(400).body("Connection test failed: " + testError);
             }
         }).orElse(ResponseEntity.notFound().build());
     }
 
     private String validateConnectionData(DbConnection conn, boolean isNew) {
         if (conn.getName() == null || conn.getName().trim().isEmpty()) {
-            return "Name der Verbindung darf nicht leer sein.";
+            return "Connection name must not be empty.";
         }
         if (conn.getUrl() == null || conn.getUrl().trim().isEmpty()) {
-            return "Datenbank-URL darf nicht leer sein.";
+            return "Database URL must not be empty.";
+        }
+        // Reject the application's own system database here (at save time) instead of
+        // only failing later when the connection is used for an assignment.
+        if (systemDbUrl != null && conn.getUrl().trim().equalsIgnoreCase(systemDbUrl.trim())) {
+            return "The system database must not be used as a connection for security reasons.";
         }
         if (conn.getUser() == null || conn.getUser().trim().isEmpty()) {
-            return "Datenbank-Benutzer darf nicht leer sein.";
+            return "Database user must not be empty.";
         }
         if (isNew && (conn.getPassword() == null || conn.getPassword().trim().isEmpty())) {
-            return "Passwort darf nicht leer sein.";
+            return "Password must not be empty.";
         }
         return null;
     }
@@ -235,7 +247,7 @@ public class DbConnectionController {
             if (testConn.isValid(5)) {
                 return null; // Success
             } else {
-                return "Die Verbindung konnte nicht validiert werden.";
+                return "The connection could not be validated.";
             }
         } catch (Exception e) {
             return e.getMessage();
