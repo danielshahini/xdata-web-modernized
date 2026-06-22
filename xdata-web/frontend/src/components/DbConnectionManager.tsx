@@ -41,19 +41,19 @@ const DbConnectionManager: React.FC = () => {
     try {
       const res = await api.get(`/instructor/connections/${id}/test`);
       if (res.data === true || res.data === "Connection successful") {
-        toast.success("Verbindung erfolgreich!");
+        toast.success("Connection successful!");
       } else {
-        toast.error("Verbindung fehlgeschlagen — bitte Zugangsdaten und Erreichbarkeit der Datenbank prüfen.");
+        toast.error("Connection failed — please check the credentials and that the database is reachable.");
       }
     } catch (e: any) {
-      toast.error("Verbindungstest fehlgeschlagen — prüfe URL, Zugangsdaten und Erreichbarkeit der Datenbank.");
+      toast.error("Connection test failed — check the URL, credentials, and that the database is reachable.");
     }
   };
 
   const handleSave = async () => {
     if (!editingConnection) return;
     if (!editingConnection.name || !editingConnection.url || !editingConnection.courseId) {
-      toast.error("Bitte alle Pflichtfelder ausfüllen");
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -65,9 +65,9 @@ const DbConnectionManager: React.FC = () => {
       }
       setEditingConnection(null);
       reloadConnections();
-      toast.success("Verbindung erfolgreich gespeichert");
+      toast.success("Connection saved successfully");
     } catch (e) {
-      toast.error("Fehler beim Speichern der Verbindung");
+      toast.error("Error saving the connection");
     }
   };
 
@@ -75,10 +75,10 @@ const DbConnectionManager: React.FC = () => {
     if (!deleteModal.id) return;
     try {
       await api.delete(`/instructor/connections/${deleteModal.id}`);
-      toast.success("Verbindung gelöscht");
+      toast.success("Connection deleted");
       reloadConnections();
     } catch (e) {
-      toast.error("Fehler beim Löschen");
+      toast.error("Error deleting");
     }
   };
 
@@ -88,17 +88,17 @@ const DbConnectionManager: React.FC = () => {
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, id: null })}
         onConfirm={handleDelete}
-        title="Verbindung löschen"
-        message="Möchten Sie diese Datenbankverbindung wirklich löschen? Alle Aufgaben, die diese Verbindung nutzen, werden nicht mehr funktionieren."
+        title="Delete Connection"
+        message="Do you really want to delete this database connection? All tasks that use this connection will no longer work."
       />
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">Datenbank <span className="text-brand-600">Verbindungen</span></h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">Database <span className="text-brand-600">Connections</span></h2>
         {!editingConnection && (
           <button 
             onClick={() => setEditingConnection({ name: '', url: '', user: '', password: '', courseId: '' })}
             className="btn-primary"
           >
-            <Plus className="mr-2" size={18} /> Neue Verbindung
+            <Plus className="mr-2" size={18} /> New Connection
           </button>
         )}
       </div>
@@ -106,47 +106,47 @@ const DbConnectionManager: React.FC = () => {
       {editingConnection ? (
         <div className="bg-white dark:bg-ink-card rounded-2xl border border-slate-200 dark:border-ink-border shadow-xl overflow-hidden animate-slideUp transition-colors">
           <div className="px-8 py-6 bg-gray-50 dark:bg-ink-soft/50 border-b border-slate-200 dark:border-ink-border flex justify-between items-center transition-colors">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white">Verbindung <span className="text-brand-600">{editingConnection.id ? 'bearbeiten' : 'erstellen'}</span></h3>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white"><span className="text-brand-600">{editingConnection.id ? 'Edit' : 'Create'}</span> Connection</h3>
             <div className="flex space-x-3">
-              <button onClick={() => setEditingConnection(null)} className="btn-secondary"><X size={16} /> Abbrechen</button>
-              <button onClick={handleSave} className="btn-primary"><Save size={16} /> Speichern</button>
+              <button onClick={() => setEditingConnection(null)} className="btn-secondary"><X size={16} /> Cancel</button>
+              <button onClick={handleSave} className="btn-primary"><Save size={16} /> Save</button>
             </div>
           </div>
           <div className="p-8 grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="x-label">Name der Verbindung</label>
-              <input 
+              <label className="x-label">Connection Name</label>
+              <input
                 className="x-input"
                 value={editingConnection.name}
                 onChange={e => setEditingConnection({...editingConnection, name: e.target.value})}
-                placeholder="z.B. Postgres Haupt-DB"
+                placeholder="e.g. Postgres Main DB"
               />
             </div>
             <div className="space-y-2">
-              <label className="x-label">Kurs</label>
+              <label className="x-label">Course</label>
               <select 
                 className="x-select"
                 value={editingConnection.courseId}
                 onChange={e => setEditingConnection({...editingConnection, courseId: e.target.value})}
               >
-                <option value="" className="dark:bg-ink-soft">Kurs wählen...</option>
+                <option value="" className="dark:bg-ink-soft">Select course...</option>
                 {courses.map(c => <option key={c.id} value={c.instructorCourseId} className="dark:bg-ink-soft">{c.courseName} ({c.instructorCourseId})</option>)}
               </select>
             </div>
             <div className="md:col-span-2 space-y-2">
               <label className="x-label">
                 JDBC URL
-                <InfoTip 
-                  title="JDBC Verbindungs-URL" 
+                <InfoTip
+                  title="JDBC Connection URL"
                   content={
                     <div className="space-y-2">
-                      <p>Das Format hängt von der verwendeten Datenbank ab:</p>
+                      <p>The format depends on the database being used:</p>
                       <ul className="list-disc ml-4 space-y-1">
                         <li><strong>PostgreSQL:</strong> jdbc:postgresql://localhost:5432/dbname</li>
                         <li><strong>MySQL:</strong> jdbc:mysql://localhost:3306/dbname</li>
                         <li><strong>Oracle:</strong> jdbc:oracle:thin:@localhost:1521:xe</li>
                       </ul>
-                      <p className="mt-2 font-bold text-brand-500">Hinweis: Die Datenbank muss für das System erreichbar sein.</p>
+                      <p className="mt-2 font-bold text-brand-500">Note: The database must be reachable by the system.</p>
                     </div>
                   } 
                 />
@@ -159,7 +159,7 @@ const DbConnectionManager: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="x-label">Benutzername</label>
+              <label className="x-label">Username</label>
               <input 
                 className="x-input"
                 value={editingConnection.user}
@@ -167,7 +167,7 @@ const DbConnectionManager: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="x-label">Passwort</label>
+              <label className="x-label">Password</label>
               <input 
                 type="password"
                 className="x-input"
@@ -187,9 +187,9 @@ const DbConnectionManager: React.FC = () => {
                   <Plug size={24} />
                 </div>
                 <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => conn.id && handleTest(conn.id)} className="icon-btn hover:text-easy" title="Verbindung testen"><FlaskConical size={18}/></button>
-                  <button onClick={() => setEditingConnection(conn)} className="icon-btn hover:text-brand-600" title="Bearbeiten"><Edit size={18}/></button>
-                  <button onClick={() => conn.id && setDeleteModal({ isOpen: true, id: conn.id })} className="icon-btn hover:text-hard" title="Löschen"><Trash2 size={18}/></button>
+                  <button onClick={() => conn.id && handleTest(conn.id)} className="icon-btn hover:text-easy" title="Test Connection"><FlaskConical size={18}/></button>
+                  <button onClick={() => setEditingConnection(conn)} className="icon-btn hover:text-brand-600" title="Edit"><Edit size={18}/></button>
+                  <button onClick={() => conn.id && setDeleteModal({ isOpen: true, id: conn.id })} className="icon-btn hover:text-hard" title="Delete"><Trash2 size={18}/></button>
                 </div>
               </div>
               <h3 className="text-lg font-bold text-gray-800 dark:text-white">{conn.name}</h3>
@@ -202,7 +202,7 @@ const DbConnectionManager: React.FC = () => {
           ))}
           {connections.length === 0 && !connectionsLoading && (
             <div className="col-span-full py-20 text-center text-gray-400 italic bg-gray-50 dark:bg-ink-card/50 rounded-2xl border border-dashed border-gray-200 dark:border-ink-border transition-colors">
-              Noch keine Datenbankverbindungen konfiguriert.
+              No database connections configured yet.
             </div>
           )}
         </div>

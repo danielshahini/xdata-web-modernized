@@ -35,13 +35,13 @@ public class SubmissionComparisonService {
      */
     public Map<String, Object> compare(DbConnection conn, String instructorQuery, String studentQuery) {
         if (conn == null || conn.getUrl() == null) {
-            return Map.of("error", "Für diese Aufgabe ist keine Datenbank konfiguriert.");
+            return Map.of("error", "No database is configured for this task.");
         }
         try {
             sqlSandboxService.validateQuery(instructorQuery);
             sqlSandboxService.validateQuery(studentQuery);
         } catch (Exception e) {
-            return Map.of("error", "Vergleich nicht möglich (nur SELECT-Abfragen).");
+            return Map.of("error", "Comparison not possible (SELECT queries only).");
         }
         try (Connection c = databaseService.getConnection(conn)) {
             Map<String, Object> expected = runReadOnly(c, instructorQuery, 100);
@@ -64,9 +64,9 @@ public class SubmissionComparisonService {
             out.put("match", missing.isEmpty() && remaining.isEmpty());
             return out;
         } catch (SQLException e) {
-            return Map.of("error", "SQL-Fehler: " + e.getMessage());
+            return Map.of("error", "SQL error: " + e.getMessage());
         } catch (Exception e) {
-            return Map.of("error", "Vergleich fehlgeschlagen.");
+            return Map.of("error", "Comparison failed.");
         }
     }
 

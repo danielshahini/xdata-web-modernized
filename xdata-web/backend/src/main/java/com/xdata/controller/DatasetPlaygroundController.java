@@ -77,22 +77,22 @@ public class DatasetPlaygroundController {
                 // No real INSERT rows were produced — report honestly instead of "success".
                 response.setSuccess(false);
                 response.setInserts(java.util.List.of());
-                response.setMessage("Für diese Abfrage konnten keine Testdaten erzeugt werden. "
-                        + "Komplexe Strukturen (Joins, Subqueries, Aggregate, einige Spaltentypen) "
-                        + "werden von der Datengenerierung derzeit nur eingeschränkt unterstützt.");
+                response.setMessage("No test data could be generated for this query. "
+                        + "Complex structures (joins, subqueries, aggregates, some column types) "
+                        + "are currently only supported in a limited way by the data generation.");
                 return ResponseEntity.unprocessableEntity().body(response);
             } else {
                 int n = (int) inserts.stream().filter(s -> !s.startsWith("--")).count();
                 response.setSuccess(true);
-                response.setMessage(n + " Testdaten-Zeile(n) generiert.");
+                response.setMessage(n + " test data row(s) generated.");
                 return ResponseEntity.ok(response);
             }
         } catch (Exception e) {
             log.error("Error in playground data generation", e);
             DatasetPlaygroundResponse response = new DatasetPlaygroundResponse();
             response.setSuccess(false);
-            response.setMessage("Die Datengenerierung ist für diese Abfrage fehlgeschlagen. "
-                    + "Bitte vereinfache die Query oder versuche es erneut.");
+            response.setMessage("Data generation failed for this query. "
+                    + "Please simplify the query or try again.");
             return ResponseEntity.unprocessableEntity().body(response);
         }
     }

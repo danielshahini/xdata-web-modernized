@@ -53,17 +53,17 @@ public class PublicSandboxService {
             PRIMARY KEY (student_id, course_id)
         );
         INSERT INTO students (id, name, age, major, gpa) VALUES
-            (1, 'Alice',   22, 'Informatik', 3.8),
-            (2, 'Bob',     24, 'Mathematik', 3.2),
-            (3, 'Carol',   21, 'Informatik', 3.9),
-            (4, 'Dave',    23, 'Physik',     2.9),
-            (5, 'Erin',    20, 'Informatik', 3.5),
-            (6, 'Frank',   25, 'Mathematik', 2.7);
+            (1, 'Alice',   22, 'Computer Science', 3.8),
+            (2, 'Bob',     24, 'Mathematics',      3.2),
+            (3, 'Carol',   21, 'Computer Science', 3.9),
+            (4, 'Dave',    23, 'Physics',          2.9),
+            (5, 'Erin',    20, 'Computer Science', 3.5),
+            (6, 'Frank',   25, 'Mathematics',      2.7);
         INSERT INTO courses (course_id, title, credits) VALUES
-            (10, 'Datenbanken', 6),
-            (20, 'Algorithmen', 6),
+            (10, 'Databases',   6),
+            (20, 'Algorithms',  6),
             (30, 'Analysis',    9),
-            (40, 'Statistik',   3);
+            (40, 'Statistics',  3);
         INSERT INTO enrollments (student_id, course_id, grade) VALUES
             (1, 10, 1.3), (1, 20, 1.7), (2, 30, 2.3), (3, 10, 1.0),
             (3, 20, 1.3), (4, 30, 2.7), (5, 10, 1.7), (5, 40, 2.0),
@@ -73,10 +73,10 @@ public class PublicSandboxService {
     /** Example queries surfaced in the UI so newcomers have a starting point. */
     public List<Map<String, String>> exampleQueries() {
         List<Map<String, String>> ex = new ArrayList<>();
-        ex.add(example("Alle Studierenden", "SELECT * FROM students;"));
-        ex.add(example("Filtern & sortieren", "SELECT name, gpa FROM students\nWHERE gpa > 3.0\nORDER BY gpa DESC;"));
-        ex.add(example("Join über Tabellen", "SELECT s.name, c.title, e.grade\nFROM enrollments e\nJOIN students s ON s.id = e.student_id\nJOIN courses c ON c.course_id = e.course_id;"));
-        ex.add(example("Gruppieren & zählen", "SELECT major, COUNT(*) AS anzahl, ROUND(AVG(gpa), 2) AS schnitt\nFROM students\nGROUP BY major\nORDER BY anzahl DESC;"));
+        ex.add(example("All students", "SELECT * FROM students;"));
+        ex.add(example("Filter & sort", "SELECT name, gpa FROM students\nWHERE gpa > 3.0\nORDER BY gpa DESC;"));
+        ex.add(example("Join across tables", "SELECT s.name, c.title, e.grade\nFROM enrollments e\nJOIN students s ON s.id = e.student_id\nJOIN courses c ON c.course_id = e.course_id;"));
+        ex.add(example("Group & count", "SELECT major, COUNT(*) AS anzahl, ROUND(AVG(gpa), 2) AS schnitt\nFROM students\nGROUP BY major\nORDER BY anzahl DESC;"));
         return ex;
     }
 
@@ -97,7 +97,7 @@ public class PublicSandboxService {
                 col("course_id", "INT", true, "courses", "course_id"),
                 col("grade", "DECIMAL", false, null, null));
         Map<String, Object> meta = new LinkedHashMap<>();
-        meta.put("schemaName", "Universität (Demo)");
+        meta.put("schemaName", "University (Demo)");
         meta.put("tables", List.of(students, courses, enrollments));
         return meta;
     }
@@ -105,12 +105,12 @@ public class PublicSandboxService {
     /** Validate, run against a throwaway H2 instance, and return columns/rows or an error. */
     public Map<String, Object> run(String query) {
         if (query == null || query.isBlank()) {
-            return Map.of("error", "Bitte gib eine SQL-Abfrage ein.");
+            return Map.of("error", "Please enter a SQL query.");
         }
         try {
             sqlSandboxService.validateQuery(query);
         } catch (Exception e) {
-            return Map.of("error", "Nur lesende SELECT-Abfragen sind erlaubt.");
+            return Map.of("error", "Only read-only SELECT queries are allowed.");
         }
 
         try (Connection c = DriverManager.getConnection("jdbc:h2:mem:;MODE=PostgreSQL;DB_CLOSE_DELAY=0")) {
@@ -145,9 +145,9 @@ public class PublicSandboxService {
                 }
             }
         } catch (SQLException e) {
-            return Map.of("error", "SQL-Fehler: " + e.getMessage());
+            return Map.of("error", "SQL error: " + e.getMessage());
         } catch (Exception e) {
-            return Map.of("error", "Ausführung fehlgeschlagen.");
+            return Map.of("error", "Execution failed.");
         }
     }
 

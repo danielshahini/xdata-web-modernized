@@ -146,12 +146,12 @@ public class SubmissionAnalytics {
             return tq > 0 && sq >= tq;
         });
         List<Map<String, Object>> achievements = new ArrayList<>();
-        achievements.add(badge("first_solve", "Erste Lösung", "Löse deine erste Aufgabe", "Sparkles", solvedTotal >= 1, solvedTotal, 1));
-        achievements.add(badge("ten_solved", "Fleißig", "Löse 10 Aufgaben", "Target", solvedTotal >= 10, solvedTotal, 10));
-        achievements.add(badge("pro_solver", "SQL-Profi", "Löse 25 Aufgaben", "Trophy", solvedTotal >= 25, solvedTotal, 25));
-        achievements.add(badge("perfect_module", "Perfektionist", "Schließe ein Modul zu 100 % ab", "Award", anyModuleComplete, anyModuleComplete ? 1 : 0, 1));
-        achievements.add(badge("level_up", "Aufsteiger", "Erreiche Level 5", "TrendingUp", level >= 5, level, 5));
-        achievements.add(badge("on_fire", "Serientäter", "3 Tage in Folge aktiv", "Flame", streak >= 3, streak, 3));
+        achievements.add(badge("first_solve", "First Solution", "Solve your first task", "Sparkles", solvedTotal >= 1, solvedTotal, 1));
+        achievements.add(badge("ten_solved", "Diligent", "Solve 10 tasks", "Target", solvedTotal >= 10, solvedTotal, 10));
+        achievements.add(badge("pro_solver", "SQL Pro", "Solve 25 tasks", "Trophy", solvedTotal >= 25, solvedTotal, 25));
+        achievements.add(badge("perfect_module", "Perfectionist", "Complete a module to 100%", "Award", anyModuleComplete, anyModuleComplete ? 1 : 0, 1));
+        achievements.add(badge("level_up", "Climber", "Reach level 5", "TrendingUp", level >= 5, level, 5));
+        achievements.add(badge("on_fire", "On a Roll", "Active 3 days in a row", "Flame", streak >= 3, streak, 3));
         dashboard.put("achievements", achievements);
 
         return dashboard;
@@ -200,7 +200,7 @@ public class SubmissionAnalytics {
             }
             boolean isMe = u.getLoginId().equals(me.getLoginId());
             Map<String, Object> r = new LinkedHashMap<>();
-            r.put("displayName", isMe ? "Du" : privacyName(u.getUsername()));
+            r.put("displayName", isMe ? "You" : privacyName(u.getUsername()));
             r.put("xp", u.getXp() != null ? u.getXp() : 0);
             r.put("points", Math.round(points * 100.0) / 100.0);
             r.put("solved", solved);
@@ -237,7 +237,7 @@ public class SubmissionAnalytics {
 
     /** "Erika Lehrer" -> "Erika L."; single-token names are returned unchanged. */
     private String privacyName(String username) {
-        if (username == null || username.isBlank()) return "Anonym";
+        if (username == null || username.isBlank()) return "Anonymous";
         String[] parts = username.trim().split("\\s+");
         if (parts.length == 1) return parts[0];
         return parts[0] + " " + parts[parts.length - 1].substring(0, 1).toUpperCase() + ".";
@@ -358,7 +358,7 @@ public class SubmissionAnalytics {
             csv.append(",").append(((String) a.get("name")).replace(",", " "));
             grandTotal += (double) a.get("totalMarks");
         }
-        csv.append(",Gesamt (von ").append(Math.round(grandTotal * 100.0) / 100.0).append(")\n");
+        csv.append(",Total (out of ").append(Math.round(grandTotal * 100.0) / 100.0).append(")\n");
 
         for (Map<String, Object> s : studentRows) {
             String loginId = (String) s.get("loginId");

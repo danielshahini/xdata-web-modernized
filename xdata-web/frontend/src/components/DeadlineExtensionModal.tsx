@@ -21,30 +21,30 @@ const DeadlineExtensionModal: React.FC<Props> = ({ assignmentId, assignmentName,
       ]);
       setExtensions(ext.data || []);
       setStudents((users.data || []).filter((u: any) => (u.role || '').toUpperCase() === 'STUDENT'));
-    } catch { toast.error('Fristen konnten nicht geladen werden'); }
+    } catch { toast.error('Deadlines could not be loaded'); }
   }, [assignmentId]);
 
   useEffect(() => { load(); }, [load]);
 
   const add = async () => {
-    if (!studentLoginId || !deadline) { toast.error('Bitte Studierende:n und Datum wählen'); return; }
+    if (!studentLoginId || !deadline) { toast.error('Please select a student and a date'); return; }
     setLoading(true);
     try {
       await api.post(`/assignments/${assignmentId}/extensions`, { studentLoginId, extendedDeadline: deadline });
-      toast.success('Frist gesetzt');
+      toast.success('Deadline set');
       setStudentLoginId(''); setDeadline('');
       load();
     } catch (e: any) {
-      toast.error(e.response?.data || 'Fehler beim Setzen der Frist');
+      toast.error(e.response?.data || 'Error setting the deadline');
     } finally { setLoading(false); }
   };
 
   const remove = async (sid: string) => {
     try {
       await api.delete(`/assignments/${assignmentId}/extensions/${sid}`);
-      toast.success('Frist entfernt');
+      toast.success('Deadline removed');
       load();
-    } catch { toast.error('Fehler beim Entfernen'); }
+    } catch { toast.error('Error removing'); }
   };
 
   const nameFor = (sid: string) => students.find(s => s.loginId === sid)?.username || sid;
@@ -53,29 +53,29 @@ const DeadlineExtensionModal: React.FC<Props> = ({ assignmentId, assignmentName,
     <div className="modal-overlay">
       <div className="modal-card max-w-lg p-6 sm:p-8">
         <div className="flex items-start justify-between mb-1">
-          <h3 className="section-title flex items-center gap-2"><CalendarClock size={20} className="text-brand-500" /> Fristverlängerungen</h3>
-          <button onClick={onClose} className="icon-btn" aria-label="Schließen"><X size={18} /></button>
+          <h3 className="section-title flex items-center gap-2"><CalendarClock size={20} className="text-brand-500" /> Deadline extensions</h3>
+          <button onClick={onClose} className="icon-btn" aria-label="Close"><X size={18} /></button>
         </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Individuelle Deadline für „{assignmentName}". Bis dahin fällt keine Verspätungs-Strafe an.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Individual deadline for "{assignmentName}". No late penalty applies until then.</p>
 
         <div className="flex flex-col sm:flex-row gap-2 mb-5">
           <select className="x-select flex-1" value={studentLoginId} onChange={e => setStudentLoginId(e.target.value)}>
-            <option value="">Studierende:n wählen…</option>
+            <option value="">Select a student…</option>
             {students.map(s => <option key={s.loginId} value={s.loginId}>{s.username} ({s.loginId})</option>)}
           </select>
           <input type="datetime-local" className="x-input sm:w-52" value={deadline} onChange={e => setDeadline(e.target.value)} />
-          <button onClick={add} disabled={loading} className="btn-primary shrink-0"><Plus size={16} /> Setzen</button>
+          <button onClick={add} disabled={loading} className="btn-primary shrink-0"><Plus size={16} /> Set</button>
         </div>
 
         <div className="space-y-2 max-h-64 overflow-auto">
-          {extensions.length === 0 && <p className="text-sm text-slate-400 italic">Noch keine Verlängerungen.</p>}
+          {extensions.length === 0 && <p className="text-sm text-slate-400 italic">No extensions yet.</p>}
           {extensions.map(ex => (
             <div key={ex.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/40">
               <div className="min-w-0">
                 <p className="font-semibold text-slate-900 dark:text-white truncate">{nameFor(ex.studentLoginId)}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(ex.extendedDeadline).toLocaleString('de-DE')}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(ex.extendedDeadline).toLocaleString('en-US')}</p>
               </div>
-              <button onClick={() => remove(ex.studentLoginId)} className="icon-btn hover:text-hard shrink-0" aria-label="Entfernen"><Trash2 size={16} /></button>
+              <button onClick={() => remove(ex.studentLoginId)} className="icon-btn hover:text-hard shrink-0" aria-label="Remove"><Trash2 size={16} /></button>
             </div>
           ))}
         </div>

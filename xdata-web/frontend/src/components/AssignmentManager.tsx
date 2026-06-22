@@ -106,7 +106,7 @@ const AssignmentManager: React.FC = () => {
         loadAssignments(res.data[0].instructorCourseId);
       }
     } catch (e) {
-      console.error("Fehler beim Laden der Kurse");
+      console.error("Failed to load courses");
     }
   }, [loadAssignments]);
 
@@ -116,7 +116,7 @@ const AssignmentManager: React.FC = () => {
 
   const startCreate = () => {
     if (!selectedCourseId) {
-      toast.error('Bitte zuerst einen Kurs auswählen. Ist dir keiner zugeordnet, wende dich an einen Admin.');
+      toast.error('Please select a course first. If none is assigned to you, contact an admin.');
       return;
     }
     setEditingAssignment({
@@ -142,17 +142,17 @@ const AssignmentManager: React.FC = () => {
 
   const saveAssignment = async () => {
     // Client-side validation: surface a clear, friendly message instead of a
-    // confusing backend 403/500 (e.g. an empty courseId → "Zugriff verweigert").
+    // confusing backend 403/500 (e.g. an empty courseId → "Access denied").
     if (!editingAssignment.id && !selectedCourseId) {
-      toast.error('Bitte zuerst oben einen Kurs auswählen.');
+      toast.error('Please select a course above first.');
       return null;
     }
     if (!editingAssignment.name?.trim()) {
-      toast.error('Bitte einen Namen für die Aufgabe angeben.');
+      toast.error('Please provide a name for the assignment.');
       return null;
     }
     if (!editingAssignment.connection?.id) {
-      toast.error('Bitte eine Ziel-Datenbank wählen (unter „Erweiterte Einstellungen"). Lege ggf. zuerst eine Verbindung unter „Datenbanken" an.');
+      toast.error('Please choose a target database (under "Advanced Settings"). If needed, first create a connection under "Databases".');
       return null;
     }
     try {
@@ -160,28 +160,28 @@ const AssignmentManager: React.FC = () => {
       if (editingAssignment.id) {
         const res = await api.put(`/assignments/${editingAssignment.id}`, editingAssignment);
         savedAssignment = res.data;
-        toast.success("Aufgabe aktualisiert");
+        toast.success("Assignment updated");
       } else {
         const res = await api.post(`/assignments?courseId=${encodeURIComponent(selectedCourseId)}`, editingAssignment);
         savedAssignment = res.data;
         setEditingAssignment(savedAssignment);
-        toast.success("Aufgabe erstellt");
+        toast.success("Assignment created");
       }
       loadAssignments(selectedCourseId);
       return savedAssignment;
     } catch (e: any) {
       const msg = e.response?.status === 403
-        ? 'Kein Zugriff auf diesen Kurs — bitte wähle einen deiner eigenen Kurse.'
+        ? 'No access to this course — please select one of your own courses.'
         : (e.response?.data?.details || e.response?.data?.message
-            || (typeof e.response?.data === 'string' ? e.response.data : 'Bitte Eingaben prüfen.'));
-      toast.error(`Speichern fehlgeschlagen: ${msg}`);
+            || (typeof e.response?.data === 'string' ? e.response.data : 'Please check your input.'));
+      toast.error(`Save failed: ${msg}`);
       return null;
     }
   };
 
   const addQuestion = () => {
     const newQ: any = {
-      name: `Frage ${questions.length + 1}`,
+      name: `Question ${questions.length + 1}`,
       instructorQuery: 'SELECT * FROM ',
       marks: 10.0,
       partialMarkParameters: { ...defaultParams }
@@ -190,8 +190,8 @@ const AssignmentManager: React.FC = () => {
   };
 
   const saveQuestion = async (q: any, idx: number) => {
-    if (!q.name?.trim()) { toast.error('Bitte einen Titel für die Frage angeben.'); return; }
-    if (!q.instructorQuery?.trim()) { toast.error(`Bitte eine Musterlösung (SQL) für „${q.name}" angeben.`); return; }
+    if (!q.name?.trim()) { toast.error('Please provide a title for the question.'); return; }
+    if (!q.instructorQuery?.trim()) { toast.error(`Please provide a solution (SQL) for "${q.name}".`); return; }
     if (!editingAssignment?.id) {
         const saved = await saveAssignment();
         if (!saved) return;
@@ -207,27 +207,27 @@ const AssignmentManager: React.FC = () => {
         newQs[idx] = res.data;
         setQuestions(newQs);
       }
-      toast.success(`Frage "${q.name}" gespeichert`);
+      toast.success(`Question "${q.name}" saved`);
     } catch (e: any) {
       // The backend returns the validation message as a plain string body
-      // (e.g. "Fehler in der Musterlösung: …"), not a JSON {message}.
+      // (e.g. "Error in the solution: …"), not a JSON {message}.
       const msg = typeof e.response?.data === 'string'
         ? e.response.data
-        : (e.response?.data?.message || 'Ungültige Abfrage');
-      toast.error(`SQL Fehler in "${q.name}": ${msg}`);
+        : (e.response?.data?.message || 'Invalid query');
+      toast.error(`SQL error in "${q.name}": ${msg}`);
     }
   };
 
   const saveAllQuestions = async () => {
-    if (questions.length === 0) { toast.error('Füge zuerst mindestens eine Frage hinzu.'); return; }
+    if (questions.length === 0) { toast.error('Add at least one question first.'); return; }
     const invalid = questions.find(q => !q.name?.trim() || !(q as any).instructorQuery?.trim());
-    if (invalid) { toast.error('Jede Frage braucht einen Titel und eine Musterlösung (SQL).'); return; }
+    if (invalid) { toast.error('Every question needs a title and a solution (SQL).'); return; }
     if (!editingAssignment?.id) {
         const saved = await saveAssignment();
         if (!saved) return;
     }
 
-    toast.loading("Speichere alle Fragen...", { id: 'save-all' });
+    toast.loading("Saving all questions...", { id: 'save-all' });
     let successCount = 0;
     const failed: string[] = [];
     for(let i=0; i < questions.length; i++) {
@@ -241,13 +241,13 @@ const AssignmentManager: React.FC = () => {
                 questions[i] = res.data;
             }
             successCount++;
-        } catch(e) { failed.push(q.name || `Frage ${i + 1}`); }
+        } catch(e) { failed.push(q.name || `Question ${i + 1}`); }
     }
     setQuestions([...questions]);
     if (failed.length === 0) {
-      toast.success(`${successCount} von ${questions.length} Fragen gespeichert`, { id: 'save-all' });
+      toast.success(`${successCount} of ${questions.length} questions saved`, { id: 'save-all' });
     } else {
-      toast.error(`Gespeichert: ${successCount}/${questions.length}. Fehlerhaft: ${failed.join(', ')} — prüfe deren Musterlösung.`, { id: 'save-all' });
+      toast.error(`Saved: ${successCount}/${questions.length}. Failed: ${failed.join(', ')} — check their solution.`, { id: 'save-all' });
     }
   };
 
@@ -261,9 +261,9 @@ const AssignmentManager: React.FC = () => {
       const newQs = [...questions];
       newQs.splice(idx, 1);
       setQuestions(newQs);
-      toast.success("Frage entfernt");
+      toast.success("Question removed");
     } catch (e) {
-      toast.error("Fehler beim Löschen");
+      toast.error("Failed to delete");
     }
   };
 
@@ -271,20 +271,20 @@ const AssignmentManager: React.FC = () => {
     if (!deleteModal.id) return;
     try {
       await api.delete(`/assignments/${deleteModal.id}`);
-      toast.success("Assignment gelöscht");
+      toast.success("Assignment deleted");
       loadAssignments(selectedCourseId);
     } catch (e) {
-      toast.error("Löschen fehlgeschlagen");
+      toast.error("Delete failed");
     }
   };
 
   const duplicateAssignment = async (id: number) => {
     try {
       await api.post(`/assignments/${id}/duplicate`);
-      toast.success("Assignment dupliziert");
+      toast.success("Assignment duplicated");
       loadAssignments(selectedCourseId);
     } catch (e) {
-      toast.error("Duplizieren fehlgeschlagen");
+      toast.error("Duplication failed");
     }
   };
 
@@ -309,7 +309,7 @@ const AssignmentManager: React.FC = () => {
     return (
       <div className="space-y-6 animate-fadeIn">
         <button onClick={() => setShowStats(null)} className="btn-ghost mb-6">
-          <ChevronLeft size={18} /> Zurück zur Übersicht
+          <ChevronLeft size={18} /> Back to overview
         </button>
         <AssignmentStats assignmentId={showStats} />
       </div>
@@ -322,8 +322,8 @@ const AssignmentManager: React.FC = () => {
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, type: null, id: null })}
         onConfirm={handleConfirmDelete}
-        title={deleteModal.type === 'question' ? 'Frage löschen' : 'Assignment löschen'}
-        message={deleteModal.type === 'question' ? 'Soll diese Frage wirklich entfernt werden?' : 'Soll dieses Assignment mit allen Fragen gelöscht werden?'}
+        title={deleteModal.type === 'question' ? 'Delete question' : 'Delete assignment'}
+        message={deleteModal.type === 'question' ? 'Do you really want to remove this question?' : 'Should this assignment and all its questions be deleted?'}
       />
 
       {extensionsFor && (
@@ -342,8 +342,8 @@ const AssignmentManager: React.FC = () => {
                 <ClipboardList size={32} />
               </div>
               <div>
-                <h3 className="text-2xl font-bold dark:text-white tracking-tight">Aufgaben-Verwaltung</h3>
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Erstellen und verwalten Sie Kursinhalte</p>
+                <h3 className="text-2xl font-bold dark:text-white tracking-tight">Assignment Management</h3>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Create and manage course materials</p>
               </div>
             </div>
             <div className="flex gap-4 w-full md:w-auto">
@@ -352,11 +352,11 @@ const AssignmentManager: React.FC = () => {
                 value={selectedCourseId}
                 onChange={e => loadAssignments(e.target.value)}
               >
-                {courses.length === 0 && <option value="">Kein Kurs verfügbar</option>}
+                {courses.length === 0 && <option value="">No course available</option>}
                 {courses.map(c => <option key={c.instructorCourseId} value={c.instructorCourseId}>{c.courseName}</option>)}
               </select>
               <button onClick={startCreate} disabled={!selectedCourseId} className="btn-primary">
-                <Plus size={18} /> Neu
+                <Plus size={18} /> New
               </button>
             </div>
           </div>
@@ -365,7 +365,7 @@ const AssignmentManager: React.FC = () => {
             <div className="mb-8 flex items-start gap-3 p-5 rounded-2xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20">
               <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={20} />
               <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-                Dir ist noch kein Kurs zugeordnet. Bitte einen Admin, dich einem Kurs zuzuweisen — danach kannst du Aufgaben anlegen.
+                No course is assigned to you yet. Please ask an admin to assign you to a course — after that you can create assignments.
               </p>
             </div>
           )}
@@ -380,11 +380,11 @@ const AssignmentManager: React.FC = () => {
                     ID: {a.id}
                   </span>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                    <button onClick={() => editAssignment(a)} className="icon-btn hover:text-brand-600" title="Bearbeiten"><Edit size={18}/></button>
-                    <button onClick={() => duplicateAssignment(a.id)} className="icon-btn hover:text-amber-500" title="Duplizieren"><Copy size={18}/></button>
-                    <button onClick={() => setShowStats(a.id)} className="icon-btn hover:text-easy" title="Statistiken"><BarChart3 size={18}/></button>
-                    <button onClick={() => setExtensionsFor(a)} className="icon-btn hover:text-brand-600" title="Fristverlängerungen"><CalendarClock size={18}/></button>
-                    <button onClick={() => setDeleteModal({ isOpen: true, type: 'assignment', id: a.id })} className="icon-btn hover:text-hard" title="Löschen"><Trash2 size={18}/></button>
+                    <button onClick={() => editAssignment(a)} className="icon-btn hover:text-brand-600" title="Edit"><Edit size={18}/></button>
+                    <button onClick={() => duplicateAssignment(a.id)} className="icon-btn hover:text-amber-500" title="Duplicate"><Copy size={18}/></button>
+                    <button onClick={() => setShowStats(a.id)} className="icon-btn hover:text-easy" title="Statistics"><BarChart3 size={18}/></button>
+                    <button onClick={() => setExtensionsFor(a)} className="icon-btn hover:text-brand-600" title="Deadline extensions"><CalendarClock size={18}/></button>
+                    <button onClick={() => setDeleteModal({ isOpen: true, type: 'assignment', id: a.id })} className="icon-btn hover:text-hard" title="Delete"><Trash2 size={18}/></button>
                   </div>
                 </div>
                 
@@ -393,16 +393,16 @@ const AssignmentManager: React.FC = () => {
                 {assignmentStats[a.id] && assignmentStats[a.id].some(q => q.successRate < 0.4 && q.uniqueUsers > 2) && (
                   <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl flex items-center gap-3 animate-pulse">
                     <AlertCircle className="text-red-500" size={18} />
-                    <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tight">Kritische Erfolgsrate bei Fragen!</span>
+                    <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-tight">Critical success rate on questions!</span>
                   </div>
                 )}
                 
                 <div className="space-y-3 relative z-10">
                   <div className="flex items-center text-xs text-gray-400 font-bold uppercase tracking-wider">
-                     <Database size={14} className="mr-3 text-brand-500" /> Schema: {schemas.find(s => s.id === a.defaultSchemaId)?.schemaName || 'Standard'}
+                     <Database size={14} className="mr-3 text-brand-500" /> Schema: {schemas.find(s => s.id === a.defaultSchemaId)?.schemaName || 'Default'}
                   </div>
                   <div className="flex items-center text-xs text-gray-400 font-bold uppercase tracking-wider">
-                     <Calendar size={14} className="mr-3 text-brand-500" /> Deadline: {new Date(a.deadline).toLocaleDateString()}
+                     <Calendar size={14} className="mr-3 text-brand-500" /> Deadline: {new Date(a.deadline).toLocaleDateString('en-US')}
                   </div>
                   <div className="pt-4 flex items-center gap-2">
                     {(!a.publishedDate || new Date(a.publishedDate) <= new Date()) ? (
@@ -411,7 +411,7 @@ const AssignmentManager: React.FC = () => {
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg flex items-center border border-amber-100 dark:border-amber-800">
-                        <Settings size={12} className="mr-2"/> Geplant: {new Date(a.publishedDate).toLocaleDateString()}
+                        <Settings size={12} className="mr-2"/> Scheduled: {new Date(a.publishedDate).toLocaleDateString('en-US')}
                       </span>
                     )}
                   </div>
@@ -422,8 +422,8 @@ const AssignmentManager: React.FC = () => {
             {assignments.length === 0 && (
               <div className="col-span-full py-20 text-center bg-gray-50 dark:bg-ink-soft/30 rounded-[2.5rem] border-4 border-dashed border-slate-200 dark:border-ink-border">
                  <Zap className="mx-auto mb-4 text-gray-300" size={48} />
-                 <p className="text-gray-400 font-bold uppercase tracking-widest">Keine Assignments gefunden</p>
-                 <button onClick={startCreate} className="mt-4 text-brand-500 font-bold hover:underline">Erstes Assignment erstellen</button>
+                 <p className="text-gray-400 font-bold uppercase tracking-widest">No assignments found</p>
+                 <button onClick={startCreate} className="mt-4 text-brand-500 font-bold hover:underline">Create first assignment</button>
               </div>
             )}
           </div>
@@ -432,7 +432,7 @@ const AssignmentManager: React.FC = () => {
         <div className="bg-white dark:bg-ink-card rounded-[2.5rem] p-10 shadow-2xl shadow-blue-500/5 border border-slate-200 dark:border-ink-border animate-slideUp">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b dark:border-ink-border pb-8">
             <button onClick={() => setEditingAssignment(null)} className="btn-ghost">
-              <ChevronLeft size={18} /> Zurück
+              <ChevronLeft size={18} /> Back
             </button>
             <div className="flex items-center gap-2">
                {[1, 2].map(step => (
@@ -442,15 +442,15 @@ const AssignmentManager: React.FC = () => {
                     className={`flex items-center gap-2 px-6 py-2 rounded-full cursor-pointer transition-all ${wizardStep === step ? 'bg-brand-500 text-white shadow-lg' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'}`}
                    >
                      <span className="text-sm font-bold">{step === 1 ? <Layout size={16}/> : <FileText size={16}/>}</span>
-                     <span className="text-[10px] font-bold uppercase tracking-widest">{step === 1 ? 'Basis-Konfiguration' : 'Fragen-Katalog'}</span>
+                     <span className="text-[10px] font-bold uppercase tracking-widest">{step === 1 ? 'Base Configuration' : 'Question Catalog'}</span>
                    </div>
                    {step === 1 && <div className="w-8 h-0.5 bg-gray-100 dark:bg-gray-700"></div>}
                  </React.Fragment>
                ))}
             </div>
             <div className="bg-indigo-50 dark:bg-indigo-900/30 px-6 py-3 rounded-2xl border border-indigo-100 dark:border-indigo-800">
-               <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-1">Gesamtpunktzahl</span>
-               <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{totalPoints.toFixed(1)} Pkt.</span>
+               <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-1">Total Points</span>
+               <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{totalPoints.toFixed(1)} pts</span>
             </div>
           </div>
 
@@ -458,12 +458,12 @@ const AssignmentManager: React.FC = () => {
             <div className="space-y-8 animate-fadeIn">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                   <label className="x-label">Name des Assignments</label>
+                   <label className="x-label">Assignment name</label>
                    <input
                       className="x-input"
                       value={editingAssignment.name}
                       onChange={e => setEditingAssignment({...editingAssignment, name: e.target.value})}
-                      placeholder="z.B. Woche 1: SELECT Statements"
+                      placeholder="e.g. Week 1: SELECT Statements"
                    />
                 </div>
                 <div className="space-y-4">
@@ -484,7 +484,7 @@ const AssignmentManager: React.FC = () => {
                   className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                   aria-expanded={showAdvAssignment}
                 >
-                  <Settings size={14} /> Erweiterte Einstellungen
+                  <Settings size={14} /> Advanced Settings
                   <ChevronDown size={14} className={`transition-transform ${showAdvAssignment ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -493,10 +493,10 @@ const AssignmentManager: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-5">
                     <div className="space-y-4">
                        <label className="x-label flex items-center">
-                         Ziel-Datenbank
+                         Target database
                          <InfoTip
-                           title="Verbindung"
-                           content="An welche Datenbank sollen die Abfragen der Studenten gesendet werden?"
+                           title="Connection"
+                           content="Which database should the students' queries be sent to?"
                          />
                        </label>
                        <select
@@ -507,16 +507,16 @@ const AssignmentManager: React.FC = () => {
                             connection: { id: parseInt(e.target.value) }
                           })}
                        >
-                          <option value="">Verbindung wählen...</option>
+                          <option value="">Select connection...</option>
                           {dbConnections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                        </select>
                     </div>
                     <div className="space-y-4">
                        <label className="x-label flex items-center">
-                         Standard-Schema
+                         Default schema
                          <InfoTip
                            title="Schema"
-                           content="Welches Schema sehen Studierende im Schema-Explorer und in der SQL-Autovervollständigung?"
+                           content="Which schema do students see in the schema explorer and in SQL autocomplete?"
                          />
                        </label>
                        <select
@@ -527,12 +527,12 @@ const AssignmentManager: React.FC = () => {
                             defaultSchemaId: e.target.value ? parseInt(e.target.value) : null
                           })}
                        >
-                          <option value="">Standard (keines)</option>
+                          <option value="">Default (none)</option>
                           {schemas.map(s => <option key={s.id} value={s.id}>{s.schemaName}</option>)}
                        </select>
                     </div>
                     <div className="space-y-4">
-                       <label className="x-label">Veröffentlichung</label>
+                       <label className="x-label">Publication</label>
                        <input
                           type="datetime-local"
                           className="x-input"
@@ -541,7 +541,7 @@ const AssignmentManager: React.FC = () => {
                        />
                     </div>
                     <div className="space-y-4">
-                       <label className="x-label">Penalty (Verspätung)</label>
+                       <label className="x-label">Penalty (Late)</label>
                        <div className="flex items-center h-[60px] gap-4 px-6 bg-gray-50 dark:bg-ink-soft rounded-2xl border-2 border-gray-50 dark:border-ink-border">
                           <input
                             type="checkbox"
@@ -549,7 +549,7 @@ const AssignmentManager: React.FC = () => {
                             checked={editingAssignment.lateSubmissionAllowed || false}
                             onChange={e => setEditingAssignment({...editingAssignment, lateSubmissionAllowed: e.target.checked})}
                           />
-                          <span className="text-sm font-bold text-gray-500 uppercase">Aktiviert</span>
+                          <span className="text-sm font-bold text-gray-500 uppercase">Enabled</span>
                           {editingAssignment.lateSubmissionAllowed && (
                             <div className="flex items-center gap-2 ml-auto">
                               <input
@@ -565,19 +565,19 @@ const AssignmentManager: React.FC = () => {
                     </div>
                     <div className="space-y-4">
                        <label className="x-label flex items-center">
-                         Max. Versuche
-                         <InfoTip title="Versuche" content="Maximale Anzahl an Abgaben pro Frage. Leer = unbegrenzt." />
+                         Max. attempts
+                         <InfoTip title="Attempts" content="Maximum number of submissions per question. Empty = unlimited." />
                        </label>
                        <input
                           type="number" min="1"
-                          placeholder="unbegrenzt"
+                          placeholder="unlimited"
                           className="x-input"
                           value={editingAssignment.maxAttempts ?? ''}
                           onChange={e => setEditingAssignment({...editingAssignment, maxAttempts: e.target.value ? parseInt(e.target.value) : null})}
                        />
                     </div>
                     <div className="space-y-4">
-                       <label className="x-label">Noten-Freigabe</label>
+                       <label className="x-label">Grade release</label>
                        <label className="flex items-center h-[60px] gap-4 px-6 bg-gray-50 dark:bg-ink-soft rounded-2xl border-2 border-gray-50 dark:border-ink-border cursor-pointer">
                           <input
                             type="checkbox"
@@ -585,17 +585,17 @@ const AssignmentManager: React.FC = () => {
                             checked={editingAssignment.gradesReleased !== false}
                             onChange={e => setEditingAssignment({...editingAssignment, gradesReleased: e.target.checked})}
                           />
-                          <span className="text-sm font-bold text-gray-500 uppercase">{editingAssignment.gradesReleased !== false ? 'Sichtbar' : 'Verborgen'}</span>
+                          <span className="text-sm font-bold text-gray-500 uppercase">{editingAssignment.gradesReleased !== false ? 'Visible' : 'Hidden'}</span>
                        </label>
                     </div>
                   </div>
 
                   <div className="mt-6 space-y-2">
                     <label className="x-label flex items-center">
-                      Testdaten (optional)
+                      Test data (optional)
                       <InfoTip
-                        title="Feste Testdaten"
-                        content="INSERT-Anweisungen, die einmal pro Aufgabe gespeichert werden. Beim Bewerten werden Referenz- und Studenten-Abfrage auf einer Wegwerf-Datenbank mit genau diesen Daten ausgeführt und verglichen — schnell, deterministisch und ohne Live-Datenbank. Voraussetzung: ein Standard-Schema ist gesetzt. Generieren kannst du sie im Dataset-Playground."
+                        title="Fixed test data"
+                        content="INSERT statements stored once per assignment. During grading, the reference and student query are run and compared on a throwaway database with exactly this data — fast, deterministic, and without a live database. Requirement: a default schema is set. You can generate them in the Dataset Playground."
                       />
                     </label>
                     <textarea
@@ -606,7 +606,7 @@ const AssignmentManager: React.FC = () => {
                     />
                     <div className="flex flex-wrap items-center gap-3">
                       <label className="btn-secondary cursor-pointer text-xs">
-                        <Upload size={14} /> .sql laden
+                        <Upload size={14} /> Load .sql
                         <input
                           type="file"
                           accept=".sql,.txt"
@@ -621,7 +621,7 @@ const AssignmentManager: React.FC = () => {
                           }}
                         />
                       </label>
-                      <span className="text-[11px] text-gray-400">Einmal pro Aufgabe — wird beim Bewerten auf einer Wegwerf-DB genutzt (Standard-Schema erforderlich).</span>
+                      <span className="text-[11px] text-gray-400">Once per assignment — used during grading on a throwaway DB (default schema required).</span>
                     </div>
                   </div>
                   </>
@@ -633,7 +633,7 @@ const AssignmentManager: React.FC = () => {
                   onClick={async () => { const saved = await saveAssignment(); if (saved) setWizardStep(2); }}
                   className="btn-primary"
                  >
-                    Nächster Schritt <ChevronRight size={18} />
+                    Next Step <ChevronRight size={18} />
                  </button>
               </div>
             </div>
@@ -641,15 +641,15 @@ const AssignmentManager: React.FC = () => {
             <div className="space-y-10 animate-fadeIn">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                  <h3 className="text-2xl font-bold dark:text-white">Fragenkatalog</h3>
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Definieren Sie die Aufgabenstellungen</p>
+                  <h3 className="text-2xl font-bold dark:text-white">Question Catalog</h3>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Define the problem statements</p>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
                   <button onClick={addQuestion} className="btn-secondary flex-1 md:flex-none">
-                    <Plus size={18} /> Hinzufügen
+                    <Plus size={18} /> Add
                   </button>
                   <button onClick={saveAllQuestions} className="btn-primary flex-1 md:flex-none">
-                    <Save size={18} /> Alle speichern
+                    <Save size={18} /> Save all
                   </button>
                 </div>
               </div>
@@ -660,7 +660,7 @@ const AssignmentManager: React.FC = () => {
                     <div className="flex justify-between items-start mb-8 gap-6">
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-6">
                         <div className="md:col-span-3 space-y-2">
-                          <label className="x-label">Fragentitel</label>
+                          <label className="x-label">Question title</label>
                           <input 
                             className="x-input"
                             value={q.name}
@@ -672,7 +672,7 @@ const AssignmentManager: React.FC = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="x-label">Punkte</label>
+                          <label className="x-label">Points</label>
                           <input 
                             type="number"
                             className="x-input text-center"
@@ -685,7 +685,7 @@ const AssignmentManager: React.FC = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="x-label">Schwierigkeit</label>
+                          <label className="x-label">Difficulty</label>
                           <select
                             className="x-select"
                             value={(q as any).difficulty || ''}
@@ -695,7 +695,7 @@ const AssignmentManager: React.FC = () => {
                               setQuestions(newQs);
                             }}
                           >
-                            <option value="">Auto (nach Punkten)</option>
+                            <option value="">Auto (by points)</option>
                             <option value="EASY">Easy</option>
                             <option value="MEDIUM">Medium</option>
                             <option value="HARD">Hard</option>
@@ -703,45 +703,45 @@ const AssignmentManager: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => saveQuestion(q, idx)} className="icon-btn hover:text-easy" title="Frage speichern"><Check size={20} /></button>
-                        <button onClick={() => setDeleteModal({ isOpen: true, type: 'question', id: q.id, idx })} className="icon-btn hover:text-hard" title="Frage löschen"><Trash2 size={20} /></button>
+                        <button onClick={() => saveQuestion(q, idx)} className="icon-btn hover:text-easy" title="Save question"><Check size={20} /></button>
+                        <button onClick={() => setDeleteModal({ isOpen: true, type: 'question', id: q.id, idx })} className="icon-btn hover:text-hard" title="Delete question"><Trash2 size={20} /></button>
                       </div>
                     </div>
 
                     <div className="space-y-2 mb-6">
-                      <label className="x-label">Aufgabenstellung (sehen die Studierenden)</label>
+                      <label className="x-label">Problem statement (visible to students)</label>
                       <textarea
                         className="x-input h-28 resize-y"
                         value={(q as any).description || ''}
-                        placeholder="Beschreibe die Aufgabe in Worten, z. B.: Gib die Namen aller Studierenden aus, die älter als 22 sind, sortiert nach Name."
+                        placeholder="Describe the task in words, e.g.: Output the names of all students older than 22, sorted by name."
                         onChange={e => { const n = [...questions]; (n[idx] as any).description = e.target.value; setQuestions(n); }}
                       />
                     </div>
 
                     <div className="space-y-2 mb-6">
-                      <label className="x-label">Themen-Tags (kommagetrennt)</label>
+                      <label className="x-label">Topic tags (comma-separated)</label>
                       <input
                         className="x-input"
                         value={(q as any).tags || ''}
-                        placeholder="z. B. JOIN, GROUP BY, Subquery"
+                        placeholder="e.g. JOIN, GROUP BY, Subquery"
                         onChange={e => { const n = [...questions]; (n[idx] as any).tags = e.target.value; setQuestions(n); }}
                       />
                     </div>
 
                     <div className="space-y-2 mb-6">
-                      <label className="x-label">Hinweise (einer pro Zeile, progressiv)</label>
+                      <label className="x-label">Hints (one per line, progressive)</label>
                       <textarea
                         className="x-input h-24 resize-y"
                         value={typeof (q as any).hints === 'string' ? (q as any).hints : (Array.isArray((q as any).hints) ? (q as any).hints.join('\n') : '')}
-                        placeholder={'Denk an die WHERE-Klausel.\nVergleiche mit >.'}
+                        placeholder={'Think about the WHERE clause.\nCompare with >.'}
                         onChange={e => { const n = [...questions]; (n[idx] as any).hints = e.target.value; setQuestions(n); }}
                       />
                     </div>
 
                     <div className="space-y-3 mb-8">
                        <div className="flex justify-between items-center px-1">
-                          <label className="x-label !mb-0">Musterlösung (SQL)</label>
-                          <span className="text-[9px] font-bold text-brand-500 uppercase tracking-tighter">Wird gegen Schema geprüft</span>
+                          <label className="x-label !mb-0">Solution (SQL)</label>
+                          <span className="text-[9px] font-bold text-brand-500 uppercase tracking-tighter">Validated against schema</span>
                        </div>
                        <textarea 
                          className="x-input font-mono min-h-[120px]"
@@ -760,7 +760,7 @@ const AssignmentManager: React.FC = () => {
                         onClick={() => setShowQuestionParams(showQuestionParams === idx ? null : idx)}
                         className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold uppercase tracking-widest text-[10px] transition-all ${showQuestionParams === idx ? 'bg-brand-500 text-white' : 'bg-white dark:bg-ink-card text-gray-400 border dark:border-ink-border hover:text-brand-500'}`}
                       >
-                        <Settings size={14} /> Gewichte {showQuestionParams === idx ? 'ausblenden' : 'anpassen'}
+                        <Settings size={14} /> {showQuestionParams === idx ? 'Hide weights' : 'Adjust weights'}
                       </button>
                     </div>
 
@@ -787,13 +787,13 @@ const AssignmentManager: React.FC = () => {
 
               <div className="pt-10 flex justify-between">
                 <button onClick={() => setWizardStep(1)} className="btn-ghost">
-                  <ChevronLeft size={18} /> Metadaten anpassen
+                  <ChevronLeft size={18} /> Edit metadata
                 </button>
                 <button
                   onClick={async () => { const saved = await saveAssignment(); if (saved) setEditingAssignment(null); }}
                   className="btn-primary"
                 >
-                  <CheckCircle2 size={18} /> Fertigstellen & Speichern
+                  <CheckCircle2 size={18} /> Finish & Save
                 </button>
               </div>
             </div>

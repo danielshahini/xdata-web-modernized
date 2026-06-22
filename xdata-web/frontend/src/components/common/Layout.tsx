@@ -17,8 +17,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const navItems: NavItem[] = [
     { to: '/', label: 'Dashboard', icon: <LayoutDashboard size={16} />, show: true },
-    { to: '/playground', label: 'SQL-Labor', icon: <Beaker size={16} />, show: isAdmin || isInstructor },
-    { to: '/dataset-playground', label: 'Dataset-Playground', icon: <FlaskConical size={16} />, show: isAdmin || isInstructor },
+    { to: '/playground', label: 'SQL Lab', icon: <Beaker size={16} />, show: isAdmin || isInstructor },
+    { to: '/dataset-playground', label: 'Dataset Playground', icon: <FlaskConical size={16} />, show: isAdmin || isInstructor },
   ];
 
   const handleLogout = () => {
@@ -67,8 +67,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <button
               onClick={toggleTheme}
               className="icon-btn"
-              title={isDark ? 'Hellmodus' : 'Dunkelmodus'}
-              aria-label="Theme umschalten"
+              title={isDark ? 'Light mode' : 'Dark mode'}
+              aria-label="Toggle theme"
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
@@ -78,23 +78,23 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <UserIcon size={15} />
               </div>
               <div className="flex flex-col pr-1">
-                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-none">{user?.username || 'Benutzer'}</span>
+                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-none">{user?.username || 'User'}</span>
                 <span className="mt-1 font-mono text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider leading-none">{user?.role}</span>
               </div>
               <div className="h-5 w-px bg-slate-200 dark:bg-ink-border" />
               <button
                 onClick={() => setShowChangePw(true)}
                 className="icon-btn h-7 w-7 hover:text-brand-600"
-                title="Passwort ändern"
-                aria-label="Passwort ändern"
+                title="Change password"
+                aria-label="Change password"
               >
                 <KeyRound size={16} />
               </button>
               <button
                 onClick={handleLogout}
                 className="icon-btn h-7 w-7 hover:text-hard"
-                title="Abmelden"
-                aria-label="Abmelden"
+                title="Sign out"
+                aria-label="Sign out"
               >
                 <LogOut size={16} />
               </button>
@@ -103,7 +103,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="icon-btn md:hidden"
-              aria-label="Menü"
+              aria-label="Menu"
             >
               {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -140,7 +140,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-hard hover:bg-hard/10 transition-colors text-sm font-semibold"
               >
                 <LogOut size={16} />
-                <span>Abmelden</span>
+                <span>Sign out</span>
               </button>
             </div>
           </div>
@@ -154,7 +154,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <footer className="border-t border-slate-200 dark:border-ink-border py-6">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-400 dark:text-slate-500">
           <span className="font-mono text-xs">XData IIT Bombay · Automated SQL Grading</span>
-          <span>&copy; {new Date().getFullYear()} — gebaut zum Lernen, Query für Query.</span>
+          <span>&copy; {new Date().getFullYear()} — built for learning, query by query.</span>
         </div>
       </footer>
 

@@ -12,7 +12,7 @@ const DiffTable: React.FC<{ title: string; data: any; highlight?: any[][]; accen
     <div className="rounded-xl border border-slate-200 dark:border-ink-border overflow-hidden">
       <div className="px-4 py-2 bg-white/60 dark:bg-ink-card/60 border-b border-slate-200 dark:border-ink-border flex items-center justify-between">
         <span className="kicker">{title}</span>
-        <span className="text-[10px] text-slate-400">{rows.length} Zeile(n){data?.truncated ? ' · gekürzt' : ''}</span>
+        <span className="text-[10px] text-slate-400">{rows.length} row(s){data?.truncated ? ' · truncated' : ''}</span>
       </div>
       <div className="overflow-x-auto max-h-72">
         <table className="w-full text-left border-collapse text-xs">
@@ -23,7 +23,7 @@ const DiffTable: React.FC<{ title: string; data: any; highlight?: any[][]; accen
                 {r.map((cell, ci) => <td key={ci} className="x-td !py-2 font-mono">{cell === null ? <span className="text-slate-300 italic">NULL</span> : String(cell)}</td>)}
               </tr>
             ))}
-            {rows.length === 0 && <tr><td className="x-td !py-2 text-slate-400 italic" colSpan={cols.length || 1}>keine Zeilen</td></tr>}
+            {rows.length === 0 && <tr><td className="x-td !py-2 text-slate-400 italic" colSpan={cols.length || 1}>no rows</td></tr>}
           </tbody>
         </table>
       </div>

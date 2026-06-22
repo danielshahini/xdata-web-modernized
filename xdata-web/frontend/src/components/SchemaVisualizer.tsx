@@ -34,7 +34,7 @@ const SchemaVisualizer: React.FC<SchemaVisualizerProps> = ({ metadata }) => {
                 <TableIcon size={16} className="text-brand-500" />
                 <span className="font-bold text-xs uppercase tracking-wider dark:text-white">{table.tableName}</span>
               </div>
-              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{table.columns.length} Spalten</span>
+              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{table.columns.length} Columns</span>
             </div>
             <div className="p-4 space-y-1.5">
               {table.columns.map(col => (
@@ -49,7 +49,7 @@ const SchemaVisualizer: React.FC<SchemaVisualizerProps> = ({ metadata }) => {
                       {col.columnName}
                     </span>
                     {col.referencesTable && (
-                      <span className="text-[9px] font-mono text-brand-500 truncate shrink-0" title={`Fremdschlüssel → ${col.referencesTable}.${col.referencesColumn}`}>
+                      <span className="text-[9px] font-mono text-brand-500 truncate shrink-0" title={`Foreign key → ${col.referencesTable}.${col.referencesColumn}`}>
                         → {col.referencesTable}.{col.referencesColumn}
                       </span>
                     )}
@@ -64,8 +64,8 @@ const SchemaVisualizer: React.FC<SchemaVisualizerProps> = ({ metadata }) => {
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-4 text-[10px] font-semibold text-gray-400">
-        <span className="flex items-center gap-1.5"><KeyRound size={11} className="text-xp-500" /> Primärschlüssel</span>
-        {hasRelations && <span className="flex items-center gap-1.5"><Link2 size={11} className="text-brand-400" /> Fremdschlüssel (Beziehung)</span>}
+        <span className="flex items-center gap-1.5"><KeyRound size={11} className="text-xp-500" /> Primary key</span>
+        {hasRelations && <span className="flex items-center gap-1.5"><Link2 size={11} className="text-brand-400" /> Foreign key (relationship)</span>}
       </div>
     </div>
   );

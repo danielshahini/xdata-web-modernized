@@ -46,15 +46,15 @@ public class AssignmentController {
     public ResponseEntity<?> createAssignment(@RequestBody Assignment assignment, @RequestParam String courseId) {
         log.info("Request to create assignment: {} for course: {}", assignment.getName(), courseId);
         // Guard a blank courseId up front: otherwise requireCourseAccess turns it into a
-        // confusing 403 ("Zugriff verweigert") instead of a clear "no course selected".
+        // confusing 403 ("Access denied") instead of a clear "no course selected".
         if (courseId == null || courseId.isBlank()) {
-            return ResponseEntity.badRequest().body("Kein Kurs ausgewählt. Bitte zuerst einen Kurs wählen.");
+            return ResponseEntity.badRequest().body("No course selected. Please choose a course first.");
         }
         courseAccessGuard.requireCourseAccess(courseId);
 
 
         if (assignment.getConnection() == null || assignment.getConnection().getId() == null) {
-            return ResponseEntity.badRequest().body("Eine Datenbankverbindung ist zwingend erforderlich.");
+            return ResponseEntity.badRequest().body("A database connection is required.");
         }
 
         // Resolve connection from DB
@@ -66,7 +66,7 @@ public class AssignmentController {
                 log.error("Error creating assignment: {}", e.getMessage());
                 return ResponseEntity.status(400).body(e.getMessage());
             }
-        }).orElse(ResponseEntity.badRequest().body("Die gewählte Datenbankverbindung wurde nicht gefunden."));
+        }).orElse(ResponseEntity.badRequest().body("The selected database connection was not found."));
     }
 
     @PutMapping("/{id}")
@@ -119,13 +119,13 @@ public class AssignmentController {
             String studentLoginId = body.get("studentLoginId");
             String deadlineStr = body.get("extendedDeadline");
             if (studentLoginId == null || studentLoginId.isBlank() || deadlineStr == null || deadlineStr.isBlank()) {
-                return ResponseEntity.badRequest().body("studentLoginId und extendedDeadline sind erforderlich.");
+                return ResponseEntity.badRequest().body("studentLoginId and extendedDeadline are required.");
             }
             java.time.LocalDateTime when;
             try {
                 when = java.time.LocalDateTime.parse(deadlineStr);
             } catch (Exception e) {
-                return ResponseEntity.badRequest().body("Ungültiges Datumsformat.");
+                return ResponseEntity.badRequest().body("Invalid date format.");
             }
             com.xdata.model.DeadlineExtension ext = deadlineExtensionRepository
                     .findByAssignmentIdAndStudentLoginId(id, studentLoginId)

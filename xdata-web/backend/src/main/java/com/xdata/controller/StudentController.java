@@ -105,24 +105,24 @@ public class StudentController {
         Object qIdObj = body != null ? body.get("questionId") : null;
         String query = body != null ? (String) body.get("query") : null;
         if (qIdObj == null || query == null || query.isBlank()) {
-            return ResponseEntity.badRequest().body("questionId und query sind erforderlich.");
+            return ResponseEntity.badRequest().body("questionId and query are required.");
         }
         Integer questionId;
         try {
             questionId = (qIdObj instanceof Integer) ? (Integer) qIdObj : Integer.parseInt(qIdObj.toString());
         } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("Ungültige questionId.");
+            return ResponseEntity.badRequest().body("Invalid questionId.");
         }
 
         return questionRepository.findById(questionId).map(question -> {
             Assignment assignment = question.getAssignment();
             if (assignment == null) {
-                return ResponseEntity.status(403).body("Zugriff verweigert für diesen Kurs.");
+                return ResponseEntity.status(403).body("Access denied for this course.");
             }
             courseAccessGuard.requireCourseAccess(assignment.getCourseId());
-            
+
             if (assignment.getPublishedDate() != null && assignment.getPublishedDate().isAfter(LocalDateTime.now())) {
-                return ResponseEntity.status(403).body("Diese Aufgabe ist noch nicht veröffentlicht.");
+                return ResponseEntity.status(403).body("This assignment is not yet published.");
             }
 
             // Enforce the per-question attempt limit, if configured on the assignment.
@@ -134,7 +134,7 @@ public class StudentController {
                         .size();
                 if (used >= maxAttempts) {
                     return ResponseEntity.status(403)
-                            .body("Maximale Anzahl an Versuchen (" + maxAttempts + ") für diese Frage erreicht.");
+                            .body("Maximum number of attempts (" + maxAttempts + ") for this question reached.");
                 }
             }
 
@@ -172,30 +172,30 @@ public class StudentController {
         Object qIdObj = body != null ? body.get("questionId") : null;
         String query = body != null ? (String) body.get("query") : null;
         if (qIdObj == null || query == null || query.isBlank()) {
-            return ResponseEntity.badRequest().body("questionId und query sind erforderlich.");
+            return ResponseEntity.badRequest().body("questionId and query are required.");
         }
         Integer questionId;
         try {
             questionId = (qIdObj instanceof Integer) ? (Integer) qIdObj : Integer.parseInt(qIdObj.toString());
         } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("Ungültige questionId.");
+            return ResponseEntity.badRequest().body("Invalid questionId.");
         }
 
         return questionRepository.findById(questionId).map(question -> {
             Assignment assignment = question.getAssignment();
-            if (assignment == null) return ResponseEntity.status(403).body("Zugriff verweigert.");
+            if (assignment == null) return ResponseEntity.status(403).body("Access denied.");
             courseAccessGuard.requireCourseAccess(assignment.getCourseId());
 
             // Only allow read-only SELECTs.
             try {
                 sqlSandboxService.validateQuery(query);
             } catch (Exception e) {
-                return ResponseEntity.ok(Map.of("error", "Nur lesende SELECT-Abfragen sind erlaubt."));
+                return ResponseEntity.ok(Map.of("error", "Only read-only SELECT queries are allowed."));
             }
 
             com.xdata.model.DbConnection conn = assignment.getConnection();
             if (conn == null || conn.getUrl() == null) {
-                return ResponseEntity.ok(Map.of("error", "Für diese Aufgabe ist keine Datenbank konfiguriert."));
+                return ResponseEntity.ok(Map.of("error", "No database is configured for this assignment."));
             }
 
             final int MAX_ROWS = 100;
@@ -227,9 +227,9 @@ public class StudentController {
                     return ResponseEntity.ok(out);
                 }
             } catch (java.sql.SQLException e) {
-                return ResponseEntity.ok(Map.of("error", "SQL-Fehler: " + e.getMessage()));
+                return ResponseEntity.ok(Map.of("error", "SQL error: " + e.getMessage()));
             } catch (Exception e) {
-                return ResponseEntity.ok(Map.of("error", "Ausführung fehlgeschlagen: " + e.getMessage()));
+                return ResponseEntity.ok(Map.of("error", "Execution failed: " + e.getMessage()));
             }
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -252,7 +252,7 @@ public class StudentController {
         Assignment assignment = question != null ? question.getAssignment() : null;
         if (assignment == null) return ResponseEntity.notFound().build();
         if (Boolean.FALSE.equals(assignment.getGradesReleased())) {
-            return ResponseEntity.status(403).body(Map.of("error", "Ergebnisvergleich erst nach Notenfreigabe verfügbar."));
+            return ResponseEntity.status(403).body(Map.of("error", "Result comparison is only available after grade release."));
         }
         return ResponseEntity.ok(comparisonService.compare(
                 assignment.getConnection(), question.getInstructorQuery(), s.getQuery()));
@@ -273,7 +273,7 @@ public class StudentController {
             }
             com.xdata.model.DbConnection conn = assignment.getConnection();
             if (conn == null || conn.getUrl() == null) {
-                return ResponseEntity.ok(Map.of("error", "Für diese Aufgabe ist keine Datenbank konfiguriert."));
+                return ResponseEntity.ok(Map.of("error", "No database is configured for this assignment."));
             }
             com.xdata.dto.SchemaMetadataDTO meta = schemaService.getSchemaMetadata(schemaId);
             List<Map<String, Object>> tables = new java.util.ArrayList<>();
@@ -312,7 +312,7 @@ public class StudentController {
                     tables.add(entry);
                 }
             } catch (Exception e) {
-                return ResponseEntity.ok(Map.of("error", "Beispieldaten nicht verfügbar."));
+                return ResponseEntity.ok(Map.of("error", "Sample data not available."));
             }
             Map<String, Object> out = new HashMap<>();
             out.put("schemaName", meta.getSchemaName());
@@ -338,7 +338,7 @@ public class StudentController {
                 .status("OPEN")
                 .build();
         regradeRequestRepository.save(r);
-        return ResponseEntity.ok(java.util.Map.of("message", "Anfechtung eingereicht."));
+        return ResponseEntity.ok(java.util.Map.of("message", "Objection submitted."));
     }
 
     @GetMapping("/submissions")

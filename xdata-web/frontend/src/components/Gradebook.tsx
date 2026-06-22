@@ -25,7 +25,7 @@ const Gradebook: React.FC = () => {
     setLoading(true);
     api.get(`/admin/courses/${courseId}/gradebook`)
       .then(r => setGb(r.data))
-      .catch(() => toast.error('Notenbuch konnte nicht geladen werden'))
+      .catch(() => toast.error('Failed to load gradebook'))
       .finally(() => setLoading(false));
   }, [courseId]);
 
@@ -35,9 +35,9 @@ const Gradebook: React.FC = () => {
       const r = await api.get(`/admin/courses/${courseId}/gradebook/export`, { responseType: 'blob' });
       const url = URL.createObjectURL(r.data);
       const a = document.createElement('a');
-      a.href = url; a.download = `notenbuch.csv`;
+      a.href = url; a.download = `gradebook.csv`;
       document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    } catch { toast.error('Export fehlgeschlagen'); }
+    } catch { toast.error('Export failed'); }
   };
 
   const pct = (achieved: number, total: number) => total > 0 ? Math.round((achieved / total) * 100) : 0;
@@ -47,8 +47,8 @@ const Gradebook: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <p className="kicker">Bewertung</p>
-          <h2 className="mt-1 section-title text-2xl flex items-center gap-2"><BookOpen size={22} className="text-brand-500" /> Notenbuch</h2>
+          <p className="kicker">Grading</p>
+          <h2 className="mt-1 section-title text-2xl flex items-center gap-2"><BookOpen size={22} className="text-brand-500" /> Gradebook</h2>
         </div>
         <div className="flex items-center gap-2">
           <select className="x-select w-auto" value={courseId ?? ''} onChange={e => setCourseId(Number(e.target.value))}>
@@ -65,11 +65,11 @@ const Gradebook: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
-                <th className="x-th sticky left-0 bg-white dark:bg-ink-card">Schüler:in</th>
+                <th className="x-th sticky left-0 bg-white dark:bg-ink-card">Student</th>
                 {gb.assignments.map(a => (
-                  <th key={a.id} className="x-th text-center" title={`max ${a.totalMarks} Pkt`}>{a.name}</th>
+                  <th key={a.id} className="x-th text-center" title={`max ${a.totalMarks} pts`}>{a.name}</th>
                 ))}
-                <th className="x-th text-center">Gesamt</th>
+                <th className="x-th text-center">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -99,7 +99,7 @@ const Gradebook: React.FC = () => {
             </tbody>
           </table>
         ) : (
-          <div className="empty-state"><BookOpen className="text-slate-300 dark:text-slate-600 mb-3" size={36} /><p className="text-sm text-slate-500">Keine Studierenden oder Aufgaben in diesem Kurs.</p></div>
+          <div className="empty-state"><BookOpen className="text-slate-300 dark:text-slate-600 mb-3" size={36} /><p className="text-sm text-slate-500">No students or assignments in this course.</p></div>
         )}
       </div>
     </div>

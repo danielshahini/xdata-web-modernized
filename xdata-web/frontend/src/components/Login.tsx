@@ -25,19 +25,19 @@ const Login: React.FC = () => {
       const response = await api.post('/auth/login', { loginId, password });
       setAuthState('ok');
       login(response.data.token, response.data);
-      toast.success('Erfolgreich angemeldet!');
+      toast.success('Signed in successfully!');
     } catch (err: any) {
       setAuthState('error');
       console.error('Login error details:', err);
       if (!err.response) {
-        toast.error('Netzwerkfehler: Backend nicht erreichbar.');
+        toast.error('Network error: backend unreachable.');
       } else if (err.response.status === 423) {
         const mins = err.response.headers?.['x-lock-minutes'];
-        toast.error(`Konto vorübergehend gesperrt (zu viele Fehlversuche).${mins ? ` Bitte in ${mins} Min erneut versuchen.` : ''}`);
+        toast.error(`Account temporarily locked (too many failed attempts).${mins ? ` Please try again in ${mins} min.` : ''}`);
       } else if (err.response.status === 401) {
-        toast.error('Ungültige Anmeldedaten');
+        toast.error('Invalid credentials');
       } else {
-        toast.error(err.response.data?.message || 'Login fehlgeschlagen');
+        toast.error(err.response.data?.message || 'Sign-in failed');
       }
     } finally {
       setLoading(false);
@@ -49,10 +49,10 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       await api.post('/auth/forgot-password', { email });
-      toast.success('Reset-Link wurde gesendet (falls E-Mail existiert)');
+      toast.success('Reset link sent (if the email exists)');
       setShowForgot(false);
     } catch (err) {
-      toast.error('Fehler beim Senden der E-Mail');
+      toast.error('Error sending the email');
     } finally {
       setLoading(false);
     }
@@ -65,9 +65,9 @@ const Login: React.FC = () => {
   const maskedPw = password ? '•'.repeat(Math.min(password.length, 10)) : '';
   const queryConsole = (
     <pre className="px-5 py-4 font-mono text-[13px] leading-[1.7] overflow-x-auto whitespace-pre">
-<span className="text-brand-400">SELECT</span> <span className="text-slate-200">*</span> <span className="text-brand-400">FROM</span> <span className="text-slate-200">lernende</span>{'\n'}
+<span className="text-brand-400">SELECT</span> <span className="text-slate-200">*</span> <span className="text-brand-400">FROM</span> <span className="text-slate-200">users</span>{'\n'}
 <span className="text-brand-400">WHERE</span>  <span className="text-slate-200">login_id</span> <span className="text-slate-500">=</span> <span className="text-easy">'{loginId || <span className="text-slate-600">…</span>}'</span>{!loginId && <span className="ml-px inline-block w-[2px] h-[1.05em] -mb-[2px] bg-brand-400 animate-pulse align-middle" aria-hidden="true" />}{'\n'}
-<span className="text-slate-500">  </span><span className="text-brand-400">AND</span>  <span className="text-slate-200">passwort</span> <span className="text-slate-500">=</span> <span className="text-xp-400">crypt</span><span className="text-slate-500">(</span><span className="text-easy">'{maskedPw || <span className="text-slate-600">…</span>}'</span><span className="text-slate-500">);</span>
+<span className="text-slate-500">  </span><span className="text-brand-400">AND</span>  <span className="text-slate-200">password</span> <span className="text-slate-500">=</span> <span className="text-xp-400">crypt</span><span className="text-slate-500">(</span><span className="text-easy">'{maskedPw || <span className="text-slate-600">…</span>}'</span><span className="text-slate-500">);</span>
     </pre>
   );
 
@@ -76,23 +76,23 @@ const Login: React.FC = () => {
       case 'running':
         return (
           <span className="flex items-center gap-2 text-brand-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-400 animate-pulse" /> wird ausgeführt …
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-400 animate-pulse" /> running …
           </span>
         );
       case 'ok':
         return (
           <span className="flex items-center gap-1.5 text-easy">
-            <CheckCircle2 size={13} /> 1 Zeile · authentifiziert
+            <CheckCircle2 size={13} /> 1 row · authenticated
           </span>
         );
       case 'error':
         return (
           <span className="flex items-center gap-1.5 text-hard">
-            <XOctagon size={13} /> 0 Zeilen · Zugriff verweigert
+            <XOctagon size={13} /> 0 rows · access denied
           </span>
         );
       default:
-        return <span className="text-slate-500">bereit · drücke Anmelden zum Ausführen</span>;
+        return <span className="text-slate-500">ready · press Sign in to run</span>;
     }
   })();
 
@@ -115,11 +115,11 @@ const Login: React.FC = () => {
         </div>
 
         <div className="relative">
-          <p className="kicker text-brand-400">Lernplattform für Datenbanken</p>
+          <p className="kicker text-brand-400">Learning platform for databases</p>
           <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-tight text-white">
-            SQL beherrschen,
+            Master SQL,
             <br />
-            <span className="text-brand-400">Query für Query.</span>
+            <span className="text-brand-400">Query by Query.</span>
           </h1>
 
           {/* Live query console — the brand artifact, parameterised by the form */}
@@ -142,7 +142,7 @@ const Login: React.FC = () => {
             <span className="pill pill-medium">Medium</span>
             <span className="pill pill-hard">Hard</span>
             <span className="flex items-center gap-1.5 text-xp-400">
-              <Sparkles size={14} /> XP sammeln
+              <Sparkles size={14} /> Earn XP
             </span>
           </div>
         </div>
@@ -165,43 +165,43 @@ const Login: React.FC = () => {
 
           {showForgot ? (
             <>
-              <p className="kicker text-brand-500 mb-2">Konto wiederherstellen</p>
-              <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Passwort zurücksetzen</h2>
+              <p className="kicker text-brand-500 mb-2">Recover account</p>
+              <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Reset password</h2>
               <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-                Gib deine E-Mail ein — wir senden dir einen Reset-Link.
+                Enter your email — we'll send you a reset link.
               </p>
               <form className="mt-7 space-y-5" onSubmit={handleForgot}>
                 <div>
-                  <label className="kicker block mb-1.5 ml-0.5">E-Mail-Adresse</label>
+                  <label className="kicker block mb-1.5 ml-0.5">Email address</label>
                   <div className="relative">
                     <Mail size={18} className="absolute inset-y-0 left-3.5 my-auto text-slate-400" />
-                    <input type="email" required className={inputBase} placeholder="name@beispiel.de" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <input type="email" required className={inputBase} placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                   </div>
                 </div>
                 <button type="submit" disabled={loading} className="btn-primary w-full py-3">
-                  {loading ? 'Sende …' : 'Reset-Link senden'}
+                  {loading ? 'Sending …' : 'Send reset link'}
                 </button>
                 <button type="button" onClick={() => setShowForgot(false)} className="block w-full text-center text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
-                  Zurück zum Login
+                  Back to login
                 </button>
               </form>
             </>
           ) : (
             <>
-              <p className="kicker text-brand-500 mb-2">Anmeldung</p>
-              <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Willkommen zurück</h2>
-              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">Melde dich an und setze deine Reise fort.</p>
+              <p className="kicker text-brand-500 mb-2">Sign in</p>
+              <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">Sign in and continue your journey.</p>
 
               {/* Mobile-only mini query strip so the signature shows on small screens too */}
               <div className="lg:hidden mt-5 rounded-xl border border-slate-200 dark:border-ink-border bg-slate-50 dark:bg-ink-card/80 px-4 py-3 font-mono text-[12px] overflow-x-auto">
                 <span className="text-brand-500 dark:text-brand-400">SELECT</span> <span className="text-slate-500">* </span>
-                <span className="text-brand-500 dark:text-brand-400">FROM</span> <span className="text-slate-700 dark:text-slate-200">lernende</span> <span className="text-brand-500 dark:text-brand-400">WHERE</span>{' '}
-                <span className="text-easy">'{loginId || '…'}'</span>
+                <span className="text-brand-500 dark:text-brand-400">FROM</span> <span className="text-slate-700 dark:text-slate-200">users</span> <span className="text-brand-500 dark:text-brand-400">WHERE</span>{' '}
+                <span className="text-easy">'{loginId || '...'}'</span>
               </div>
 
               <form className="mt-6 space-y-5" onSubmit={handleLogin}>
                 <div>
-                  <label htmlFor="loginId" className="kicker block mb-1.5 ml-0.5">Benutzerkennung</label>
+                  <label htmlFor="loginId" className="kicker block mb-1.5 ml-0.5">User ID</label>
                   <div className="relative">
                     <UserIcon size={18} className="absolute inset-y-0 left-3.5 my-auto text-slate-400 z-10" />
                     <input
@@ -215,9 +215,9 @@ const Login: React.FC = () => {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5 ml-0.5">
-                    <label htmlFor="password" className="kicker">Passwort</label>
+                    <label htmlFor="password" className="kicker">Password</label>
                     <button type="button" onClick={() => setShowForgot(true)} className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors normal-case tracking-normal">
-                      Vergessen?
+                      Forgot?
                     </button>
                   </div>
                   <div className="relative">
@@ -232,7 +232,7 @@ const Login: React.FC = () => {
                 </div>
 
                 <button type="submit" disabled={loading} className="btn-primary w-full py-3 group">
-                  {loading ? 'Führe aus …' : (<><span>Anmelden</span><ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" /></>)}
+                  {loading ? 'Running …' : (<><span>Sign in</span><ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" /></>)}
                 </button>
               </form>
             </>
@@ -240,7 +240,7 @@ const Login: React.FC = () => {
 
           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-ink-border text-center">
             <Link to="/try-sql" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 transition-colors">
-              <Sparkles size={15} /> SQL ohne Anmeldung ausprobieren
+              <Sparkles size={15} /> Try SQL without signing in
               <ArrowRight size={14} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
             </Link>
           </div>

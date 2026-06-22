@@ -11,30 +11,30 @@ public class SqlSandboxService {
 
     public void validateQuery(String sql) {
         if (sql == null || sql.trim().isEmpty()) {
-            throw new RuntimeException("SQL Query darf nicht leer sein.");
+            throw new RuntimeException("SQL query must not be empty.");
         }
 
-        // Grundlegende Prüfung auf gefährliche Keywords (zusätzlich zu JSqlParser)
+        // Basic check for dangerous keywords (in addition to JSqlParser)
         String upperSql = sql.toUpperCase();
         if (upperSql.contains("DROP") || upperSql.contains("DELETE") || upperSql.contains("UPDATE") || upperSql.contains("TRUNCATE") || upperSql.contains("ALTER")) {
-            throw new RuntimeException("Nur Lesezugriffe (SELECT) sind in der Sandbox erlaubt.");
+            throw new RuntimeException("Only read access (SELECT) is allowed in the sandbox.");
         }
 
         try {
             Statement statement = CCJSqlParserUtil.parse(sql);
             if (!(statement instanceof Select)) {
-                throw new RuntimeException("Nur SELECT-Statements sind erlaubt.");
+                throw new RuntimeException("Only SELECT statements are allowed.");
             }
 
-            // Prüfung auf kartesische Produkte (vereinfacht)
+            // Check for cartesian products (simplified)
             if (upperSql.contains(",") && !upperSql.contains("WHERE") && !upperSql.contains("JOIN")) {
-                 // Mögliches kartesisches Produkt: SELECT * FROM t1, t2
-                 // Wir lassen es für kleine Aufgaben evtl. zu, aber hier warnen wir oder blocken es.
-                 // log.warn("Potentielles kartesisches Produkt erkannt.");
+                 // Possible cartesian product: SELECT * FROM t1, t2
+                 // We may allow it for small tasks, but here we warn or block it.
+                 // log.warn("Potential cartesian product detected.");
             }
 
         } catch (JSQLParserException e) {
-            throw new RuntimeException("Ungültige SQL-Syntax: " + e.getMessage());
+            throw new RuntimeException("Invalid SQL syntax: " + e.getMessage());
         }
     }
 }

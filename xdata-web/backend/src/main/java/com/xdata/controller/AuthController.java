@@ -47,19 +47,19 @@ public class AuthController {
         String loginIdInput = request.getLoginId() != null ? request.getLoginId().trim() : "";
         String passwordInput = request.getPassword();
         
-        log.info("Login-Versuch fuer: {}", loginIdInput);
+        log.info("Login attempt for: {}", loginIdInput);
         
         XDataUser user = userRepository.findByLoginIdIgnoreCase(loginIdInput)
                 .orElse(null);
 
         if (user == null) {
-            log.error("LOGIN_FAILED: Benutzer {} nicht gefunden.", loginIdInput);
+            log.error("LOGIN_FAILED: User {} not found.", loginIdInput);
             auditService.log("LOGIN_FAILED", loginIdInput, "User not found");
             return ResponseEntity.status(401).build();
         }
 
         if (user.isEnabled() == false) {
-            log.warn("LOGIN_FAILED: Benutzer {} ist deaktiviert.", loginIdInput);
+            log.warn("LOGIN_FAILED: User {} is disabled.", loginIdInput);
             auditService.log("LOGIN_FAILED", loginIdInput, "Account disabled");
             return ResponseEntity.status(401).body(null);
         }
@@ -67,7 +67,7 @@ public class AuthController {
         // Brute-force lockout: refuse while the cooldown window is active.
         if (loginAttemptService.isLocked(user)) {
             long mins = loginAttemptService.minutesRemaining(user);
-            log.warn("LOGIN_BLOCKED: Konto {} gesperrt ({} min verbleibend).", user.getLoginId(), mins);
+            log.warn("LOGIN_BLOCKED: Account {} locked ({} min remaining).", user.getLoginId(), mins);
             auditService.log("LOGIN_BLOCKED", user.getLoginId(), "Account locked, " + mins + " min remaining");
             return ResponseEntity.status(423).header("X-Lock-Minutes", String.valueOf(mins)).build();
         }
@@ -77,7 +77,7 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(user.getLoginId(), passwordInput)
             );
         } catch (Exception e) {
-            log.error("LOGIN_FAILED: Passwort-Match fehlgeschlagen fuer {}.", user.getLoginId());
+            log.error("LOGIN_FAILED: Password match failed for {}.", user.getLoginId());
             auditService.log("LOGIN_FAILED", user.getLoginId(), "Invalid password");
             loginAttemptService.recordFailure(user.getLoginId());
             return ResponseEntity.status(401).build();
@@ -117,24 +117,24 @@ public class AuthController {
         String newPassword = request.get("newPassword");
 
         if (newPassword == null || newPassword.length() < 8) {
-            return ResponseEntity.badRequest().body("Das neue Passwort muss mindestens 8 Zeichen lang sein.");
+            return ResponseEntity.badRequest().body("The new password must be at least 8 characters long.");
         }
 
         XDataUser user = userRepository.findByLoginIdIgnoreCase(currentLoginId).orElse(null);
         if (user == null) return ResponseEntity.status(401).build();
 
         if (oldPassword == null || !passwordEncoder.matches(oldPassword, user.getPassword())) {
-            return ResponseEntity.status(400).body("Das aktuelle Passwort ist falsch.");
+            return ResponseEntity.status(400).body("The current password is incorrect.");
         }
         if (passwordEncoder.matches(newPassword, user.getPassword())) {
-            return ResponseEntity.badRequest().body("Das neue Passwort muss sich vom alten unterscheiden.");
+            return ResponseEntity.badRequest().body("The new password must differ from the old one.");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setMustChangePassword(false);
         userRepository.save(user);
         auditService.log("PASSWORD_CHANGED_SELF", user.getLoginId(), "Self-service change");
-        return ResponseEntity.ok(Map.of("message", "Passwort erfolgreich geändert."));
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully."));
     }
 
     @PostMapping("/forgot-password")
@@ -161,8 +161,8 @@ public class AuthController {
         String token = request.get("token");
         String newPassword = request.get("password");
         if (newPassword == null || newPassword.length() < 8) {
-            return ResponseEntity.badRequest().body("Passwort muss mindestens 8 Zeichen lang sein.");
-        }        
+            return ResponseEntity.badRequest().body("Password must be at least 8 characters long.");
+        }
         return tokenRepository.findByToken(token)
             .map(resetToken -> {
                 if (resetToken.isExpired()) {

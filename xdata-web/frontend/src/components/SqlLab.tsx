@@ -89,7 +89,7 @@ const SqlLab: React.FC = () => {
         setSchemas(res.data);
         if (res.data.length > 0) setSelectedSchema(res.data[0].id);
       })
-      .catch(() => toast.error('Fehler beim Laden der Schemata.'));
+      .catch(() => toast.error('Failed to load schemas.'));
   }, []);
 
   const handleFullAnalysis = async () => {
@@ -104,10 +104,10 @@ const SqlLab: React.FC = () => {
         params
       });
       setMarkInfo(markRes.data);
-      toast.success('Strukturelle Bewertung abgeschlossen.');
+      toast.success('Structural evaluation complete.');
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.response?.data || 'Fehler bei der Analyse.';
-      toast.error(typeof msg === 'string' ? msg : 'Fehler bei der Analyse.');
+      const msg = err.response?.data?.message || err.response?.data || 'Analysis failed.';
+      toast.error(typeof msg === 'string' ? msg : 'Analysis failed.');
     } finally {
       setLoadingGrading(false);
     }
@@ -122,17 +122,17 @@ const SqlLab: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold dark:text-white">
-            SQL <span className="text-brand-600">Diagnose Labor</span>
-            <InfoTip 
-              title="Was ist das SQL Diagnose Labor?"
+            SQL <span className="text-brand-600">Diagnostic Lab</span>
+            <InfoTip
+              title="What is the SQL Diagnostic Lab?"
               content={
                 <div className="space-y-2">
-                  <p><strong>Bewertung simulieren:</strong> Führt eine strukturelle Teilbewertung der studentischen Lösung gegen die Musterlösung durch (Projektionen, Prädikate, Joins, Group-By, …) und zeigt, wie viele Punkte sie erzielen würde.</p>
+                  <p><strong>Simulate grading:</strong> Performs a structural partial evaluation of the student solution against the model solution (projections, predicates, joins, group-by, …) and shows how many points it would score.</p>
                 </div>
               }
             />
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">Strukturelle Bewertungs-Simulation für SQL-Lösungen.</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">Structural grading simulation for SQL solutions.</p>
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
@@ -143,7 +143,7 @@ const SqlLab: React.FC = () => {
                value={selectedSchema || ''}
                onChange={(e) => setSelectedSchema(parseInt(e.target.value))}
              >
-               <option value="">Kein Schema / Standard-DB</option>
+               <option value="">No schema / default DB</option>
                {schemas.map(s => <option key={s.id} value={s.id}>{s.schemaName}</option>)}
              </select>
           </div>
@@ -157,7 +157,7 @@ const SqlLab: React.FC = () => {
         >
           <div className="flex items-center">
             <Settings className="text-brand-600 mr-3" size={20} />
-            <span className="font-bold text-gray-700 dark:text-gray-200">Bewertungs-Gewichte anpassen</span>
+            <span className="font-bold text-gray-700 dark:text-gray-200">Adjust grading weights</span>
           </div>
           {showParams ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
         </button>
@@ -184,9 +184,9 @@ const SqlLab: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold dark:text-white flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-sm italic">M</span>
-              Musterlösung
+              Model solution
             </h3>
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Dozenten View</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Instructor View</span>
           </div>
           <div className="h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-ink-border shadow-inner relative" 
                data-lpignore="true"
@@ -199,11 +199,11 @@ const SqlLab: React.FC = () => {
               value={queryPattern}
               onChange={(val) => setQueryPattern(val || '')}
               onMount={handleEditorMount}
-              loading={<div className="flex items-center justify-center h-full dark:bg-ink-soft dark:text-gray-400">Lade Editor...</div>}
-              options={{ 
-                minimap: { enabled: false }, 
-                fontSize: 14, 
-                fontWeight: '700', 
+              loading={<div className="flex items-center justify-center h-full dark:bg-ink-soft dark:text-gray-400">Loading editor...</div>}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontWeight: '700',
                 padding: { top: 16 },
                 automaticLayout: true,
                 wordWrap: 'on',
@@ -220,9 +220,9 @@ const SqlLab: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold dark:text-white flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-950/30 text-brand-600 flex items-center justify-center text-sm italic">S</span>
-              Studentische Abfrage
+              Student query
             </h3>
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Test Kandidat</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-full">Test Candidate</span>
           </div>
           <div className="h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-ink-border shadow-inner relative" 
                data-lpignore="true"
@@ -235,7 +235,7 @@ const SqlLab: React.FC = () => {
               value={queryStudent}
               onChange={(val) => setQueryStudent(val || '')}
               onMount={handleEditorMount}
-              loading={<div className="flex items-center justify-center h-full dark:bg-ink-soft dark:text-gray-400">Lade Editor...</div>}
+              loading={<div className="flex items-center justify-center h-full dark:bg-ink-soft dark:text-gray-400">Loading editor...</div>}
               options={{ 
                 minimap: { enabled: false }, 
                 fontSize: 14, 
@@ -264,7 +264,7 @@ const SqlLab: React.FC = () => {
             ) : (
               <Beaker className="group-hover:rotate-12 transition-transform" size={24} />
             )}
-            <span className="text-xl">Strukturelle Bewertung durchführen</span>
+            <span className="text-xl">Run structural evaluation</span>
           </button>
       </div>
 
@@ -275,7 +275,7 @@ const SqlLab: React.FC = () => {
               <div className="flex items-center justify-between border-b border-gray-50 dark:border-ink-border/50 pb-6">
                 <h3 className="text-xl font-bold flex items-center dark:text-white uppercase tracking-wider">
                   <BarChart3 className="text-brand-600 mr-3" size={24} /> 
-                  Strukturelle <span className="text-brand-600 ml-2">Analyse & Feedback</span>
+                  Structural <span className="text-brand-600 ml-2">Analysis & Feedback</span>
                 </h3>
               </div>
               <MarkInfoDisplay data={markInfo} />

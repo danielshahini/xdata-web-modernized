@@ -37,31 +37,31 @@ const AuditLogViewer: React.FC = () => {
           onClick={() => setFilters({username: '', action: '', from: '', to: ''})}
           className="text-xs font-bold text-brand-600 uppercase hover:underline"
         >
-          Filter zurücksetzen
+          Reset filters
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 dark:bg-ink-card/50 p-6 rounded-2xl border border-slate-200 dark:border-ink-border transition-colors">
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Benutzer</label>
-          <input 
-            placeholder="Name..." 
+          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">User</label>
+          <input
+            placeholder="Name..."
             className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-card text-sm font-bold focus:ring-2 focus:ring-brand-500 outline-none dark:text-white transition-colors"
             value={filters.username}
             onChange={e => setFilters({...filters, username: e.target.value})}
           />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Aktion</label>
-          <input 
-            placeholder="z.B. DELETE..." 
+          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Action</label>
+          <input
+            placeholder="e.g. DELETE..."
             className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-card text-sm font-bold focus:ring-2 focus:ring-brand-500 outline-none dark:text-white transition-colors"
             value={filters.action}
             onChange={e => setFilters({...filters, action: e.target.value})}
           />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Von</label>
+          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">From</label>
           <input 
             type="date"
             className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-card text-sm font-bold focus:ring-2 focus:ring-brand-500 outline-none dark:text-white transition-colors"
@@ -70,7 +70,7 @@ const AuditLogViewer: React.FC = () => {
           />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Bis</label>
+          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">To</label>
           <input 
             type="date"
             className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-ink-border bg-white dark:bg-ink-card text-sm font-bold focus:ring-2 focus:ring-brand-500 outline-none dark:text-white transition-colors"
@@ -84,10 +84,10 @@ const AuditLogViewer: React.FC = () => {
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="bg-gray-50/50 dark:bg-ink-soft/50 transition-colors">
-                <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Zeitpunkt</th>
-                <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Aktion</th>
-                <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Ausgeführt von</th>
-                <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Ziel</th>
+                <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Timestamp</th>
+                <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Action</th>
+                <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Performed by</th>
+                <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Target</th>
                 <th className="px-6 py-4 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] border-b border-slate-200 dark:border-ink-border">Details</th>
               </tr>
             </thead>
@@ -95,7 +95,7 @@ const AuditLogViewer: React.FC = () => {
               {logs.map(log => (
                 <tr key={log.id} className="hover:bg-brand-50/20 dark:hover:bg-blue-900/20 transition-colors">
                   <td className="px-6 py-4 text-gray-500 dark:text-gray-400 font-medium">
-                    {new Date(log.timestamp).toLocaleString()}
+                    {new Date(log.timestamp).toLocaleString('en-US')}
                   </td>
                   <td className="px-6 py-4 font-bold text-gray-800 dark:text-white">
                     <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${

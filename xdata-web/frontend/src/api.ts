@@ -29,8 +29,8 @@ api.interceptors.response.use(
       }
     }
     
-    // Bei 403 (Forbidden) werfen wir den Fehler nur weiter, damit die Komponente ihn fangen kann
-    // Ein Redirect an dieser Stelle ist oft zu aggressiv und führt zu Endlosschleifen
+    // On 403 (Forbidden) we just re-throw the error so the component can catch it
+    // A redirect here is often too aggressive and leads to infinite loops
     
     return Promise.reject(error);
   }

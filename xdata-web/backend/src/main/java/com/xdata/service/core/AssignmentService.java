@@ -45,28 +45,28 @@ public class AssignmentService {
 
     public void validateConnection(com.xdata.model.DbConnection connection) throws Exception {
         if (connection == null || connection.getUrl() == null) {
-            throw new IllegalArgumentException("Keine gültige Datenbankverbindung angegeben.");
+            throw new IllegalArgumentException("No valid database connection provided.");
         }
 
         if (connection.getUrl().equalsIgnoreCase(systemDbUrl)) {
-            log.warn("Sicherheitswarnung: Aufgabe versucht die System-Datenbank zu nutzen!");
-            throw new Exception("Die System-Datenbank darf aus Sicherheitsgründen nicht für Aufgaben verwendet werden.");
+            log.warn("Security warning: task is attempting to use the system database!");
+            throw new Exception("For security reasons, the system database must not be used for tasks.");
         }
 
-        // Teste die Verbindung aktiv
+        // Actively test the connection
         try (Connection conn = databaseService.getConnection(connection)) {
             if (!conn.isValid(5)) {
-                throw new Exception("Die Datenbankverbindung konnte nicht validiert werden (Timeout).");
+                throw new Exception("The database connection could not be validated (timeout).");
             }
         } catch (Exception e) {
-            throw new Exception("Fehler beim Verbindungsaufbau: " + e.getMessage());
+            throw new Exception("Error while establishing the connection: " + e.getMessage());
         }
     }
 
     @Transactional
     public Assignment createAssignment(Assignment assignment, String courseId) throws Exception {
         com.xdata.model.Course course = courseRepository.findByInstructorCourseId(courseId)
-                .orElseThrow(() -> new Exception("Kurs nicht gefunden: " + courseId));
+                .orElseThrow(() -> new Exception("Course not found: " + courseId));
         
         assignment.setCourse(course);
         validateConnection(assignment.getConnection());
@@ -103,7 +103,7 @@ public class AssignmentService {
     public void validateQuestionQuery(Question question) throws Exception {
         Assignment assignment = question.getAssignment();
         if (assignment == null || assignment.getConnection() == null) {
-            throw new Exception("Assignment oder Datenbankverbindung fehlt.");
+            throw new Exception("Assignment or database connection is missing.");
         }
 
         String query = question.getInstructorQuery();
@@ -113,10 +113,10 @@ public class AssignmentService {
 
         try (Connection conn = databaseService.getConnection(connection)) {
             try (java.sql.PreparedStatement pstmt = conn.prepareStatement(query)) {
-                // Erfolgreich
+                // Success
             }
         } catch (Exception e) {
-            throw new Exception("SQL-Validierung fehlgeschlagen: " + e.getMessage());
+            throw new Exception("SQL validation failed: " + e.getMessage());
         }
     }
 
@@ -144,7 +144,7 @@ public class AssignmentService {
                 .orElseThrow(() -> new RuntimeException("Assignment not found"));
         
         Assignment copy = new Assignment();
-        copy.setName(original.getName() + " (Kopie)");
+        copy.setName(original.getName() + " (Copy)");
         copy.setCourse(original.getCourse());
         copy.setConnection(original.getConnection());
         copy.setDefaultSchemaId(original.getDefaultSchemaId());

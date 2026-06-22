@@ -38,7 +38,7 @@ public class QuestionController {
     public ResponseEntity<?> createQuestion(@RequestBody Question question, @RequestParam(required = false) Integer assignmentId) {
         log.info("Request to create question. Body: {}", question);
         if (question == null) {
-            return ResponseEntity.badRequest().body("Frage-Daten fehlen.");
+            return ResponseEntity.badRequest().body("Question data is missing.");
         }
         log.info("Question detail: name={}, marks={}, query={}, assignmentId={}", 
             question.getName(), question.getMarks(), question.getInstructorQuery(), question.getAssignmentId());
@@ -47,7 +47,7 @@ public class QuestionController {
         log.info("Resolved assignmentId: {}", actualAssignmentId);
         
         if (actualAssignmentId == null) {
-            return ResponseEntity.badRequest().body("assignmentId ist erforderlich.");
+            return ResponseEntity.badRequest().body("assignmentId is required.");
         }
 
         return assignmentService.getAssignmentById(actualAssignmentId).map(assignment -> {
@@ -60,8 +60,8 @@ public class QuestionController {
                 log.info("Successfully saved question with ID: {}", saved.getId());
                 return ResponseEntity.ok(saved);
             } catch (Exception e) {
-                log.error("Fehler bei SQL-Validierung: {}", e.getMessage());
-                return ResponseEntity.status(400).body("Fehler in der Musterlösung: " + e.getMessage());
+                log.error("Error during SQL validation: {}", e.getMessage());
+                return ResponseEntity.status(400).body("Error in the model solution: " + e.getMessage());
             }
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -90,8 +90,8 @@ public class QuestionController {
                         log.info("Successfully updated question with ID: {}", saved.getId());
                         return ResponseEntity.ok(saved);
                     } catch (Exception e) {
-                        log.error("Fehler bei SQL-Update-Validierung: {}", e.getMessage());
-                        return ResponseEntity.status(400).body("Fehler in der Musterlösung: " + e.getMessage());
+                        log.error("Error during SQL update validation: {}", e.getMessage());
+                        return ResponseEntity.status(400).body("Error in the model solution: " + e.getMessage());
                     }
                 })
                 .orElse(ResponseEntity.notFound().build());

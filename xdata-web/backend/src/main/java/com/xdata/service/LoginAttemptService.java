@@ -42,7 +42,7 @@ public class LoginAttemptService {
             u.setFailedLoginAttempts(attempts);
             if (attempts >= MAX_ATTEMPTS) {
                 u.setLockedUntil(LocalDateTime.now().plusMinutes(LOCK_MINUTES));
-                log.warn("Konto {} nach {} Fehlversuchen für {} Minuten gesperrt.", loginId, attempts, LOCK_MINUTES);
+                log.warn("Account {} locked for {} minutes after {} failed attempts.", loginId, LOCK_MINUTES, attempts);
             }
             userRepository.save(u);
         });

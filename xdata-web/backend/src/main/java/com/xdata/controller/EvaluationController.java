@@ -37,7 +37,7 @@ public class EvaluationController {
         courseAccessGuard.requireInstructorOrAdmin();
         return questionRepository.findById(questionId).map(q -> {
             evaluationService.evaluateQuestionAsync(q.getAssignment().getId(), q.getId(), q.getAssignment().getCourseId());
-            return ResponseEntity.ok("Bewertung gestartet");
+            return ResponseEntity.ok("Evaluation started");
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -77,7 +77,7 @@ public class EvaluationController {
             return ResponseEntity.ok(markInfo);
         } catch (Exception e) {
             log.error("Simulation error: ", e);
-            return ResponseEntity.status(400).body(Map.of("message", "Fehler bei der Simulation: " + e.getMessage()));
+            return ResponseEntity.status(400).body(Map.of("message", "Error during simulation: " + e.getMessage()));
         }
     }
 
@@ -180,10 +180,10 @@ public class EvaluationController {
     public ResponseEntity<?> overrideMark(@PathVariable Integer submissionId, @RequestBody Map<String, Object> body) {
         courseAccessGuard.requireInstructorOrAdmin();
         Object marksObj = body.get("marks"); // percentage 0..100
-        if (marksObj == null) return ResponseEntity.badRequest().body("marks (0-100) ist erforderlich.");
+        if (marksObj == null) return ResponseEntity.badRequest().body("marks (0-100) is required.");
         double pct;
-        try { pct = Double.parseDouble(marksObj.toString()); } catch (Exception e) { return ResponseEntity.badRequest().body("Ungültige Note."); }
-        if (pct < 0 || pct > 100) return ResponseEntity.badRequest().body("Note muss zwischen 0 und 100 liegen.");
+        try { pct = Double.parseDouble(marksObj.toString()); } catch (Exception e) { return ResponseEntity.badRequest().body("Invalid mark."); }
+        if (pct < 0 || pct > 100) return ResponseEntity.badRequest().body("Mark must be between 0 and 100.");
         String reason = body.get("reason") != null ? body.get("reason").toString() : null;
 
         return submissionRepository.findById(submissionId).map(s -> {
@@ -191,7 +191,7 @@ public class EvaluationController {
             s.setManuallyGraded(true);
             if (reason != null && !reason.isBlank()) {
                 String prev = s.getInstructorFeedback();
-                s.setInstructorFeedback((prev != null && !prev.isBlank() ? prev + "\n" : "") + "[Manuelle Korrektur] " + reason);
+                s.setInstructorFeedback((prev != null && !prev.isBlank() ? prev + "\n" : "") + "[Manual correction] " + reason);
             }
             submissionRepository.save(s);
             // Resolve any open regrade requests for this submission.

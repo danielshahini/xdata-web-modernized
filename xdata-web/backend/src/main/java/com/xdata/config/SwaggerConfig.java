@@ -13,7 +13,7 @@ public class SwaggerConfig {
     public OpenAPI xdataOpenAPI() {
         return new OpenAPI()
                 .info(new Info().title("XData API")
-                        .description("API Dokumentation für das XData Web Backend")
+                        .description("API documentation for the XData Web Backend")
                         .version("v0.0.1")
                         .license(new License().name("Apache 2.0").url("http://springdoc.org")));
     }

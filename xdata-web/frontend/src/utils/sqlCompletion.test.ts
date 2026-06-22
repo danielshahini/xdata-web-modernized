@@ -34,7 +34,7 @@ test('tags tables as Class and columns as Field, with detail', () => {
   const table = suggestions.find((s: any) => s.label === 'users');
   const column = suggestions.find((s: any) => s.label === 'id');
   expect(table.kind).toBe(monaco.languages.CompletionItemKind.Class);
-  expect(table.detail).toBe('Tabelle');
+  expect(table.detail).toBe('Table');
   expect(column.kind).toBe(monaco.languages.CompletionItemKind.Field);
   expect(column.detail).toBe('users (INT)');
 });

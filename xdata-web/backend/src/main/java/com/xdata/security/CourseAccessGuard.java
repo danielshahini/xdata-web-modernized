@@ -40,6 +40,6 @@ public class CourseAccessGuard {
     }
 
     private AccessDeniedException denied() {
-        return new AccessDeniedException("Keine Berechtigung für diese Aktion.");
+        return new AccessDeniedException("No permission for this action.");
     }
 }

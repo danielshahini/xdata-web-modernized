@@ -14,7 +14,7 @@ const MarkInfoDisplay: React.FC<MarkInfoDisplayProps> = ({ data, markInfoJson })
     try {
       markData = JSON.parse(markInfoJson);
     } catch (e) {
-      console.error("Fehler beim Parsen der MarkInfo", e);
+      console.error("Error parsing MarkInfo", e);
       return null;
     }
   }
@@ -25,7 +25,7 @@ const MarkInfoDisplay: React.FC<MarkInfoDisplayProps> = ({ data, markInfoJson })
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-brand-50 dark:bg-brand-950/20 p-4 rounded-2xl border border-blue-100 dark:border-brand-800">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest">Gesamtbewertung</span>
+          <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest">Overall score</span>
           <span className="text-2xl font-bold dark:text-white">
             {markData.marks.toFixed(1)} <span className="text-gray-400 text-sm font-bold">/ {markData.maxMarks.toFixed(1)}</span>
           </span>
@@ -44,28 +44,28 @@ const MarkInfoDisplay: React.FC<MarkInfoDisplayProps> = ({ data, markInfoJson })
 
 const QueryLevelDisplay: React.FC<{ qi: QueryInfo }> = ({ qi }) => {
   const rows = [
-    { label: 'Tabellen (FROM)', student: qi.studentRelations, instructor: qi.instructorRelations, marks: qi.studentRelationMarks },
-    { label: 'Spalten (SELECT)', student: qi.studentProjections, instructor: qi.instructorProjections, marks: qi.studentProjectionMarks },
-    { label: 'Bedingungen (WHERE)', student: qi.studentPredicates, instructor: qi.instructorPredicates, marks: qi.studentPredicateMarks },
-    { label: 'Verbindungen (JOIN)', student: qi.studentJoins, instructor: qi.instructorJoins, marks: qi.studentJoinMarks },
-    { label: 'Gruppierung (GROUP BY)', student: qi.studentGroupBy, instructor: qi.instructorGroupBy, marks: qi.studentGroupByMarks },
-    { label: 'Sortierung (ORDER BY)', student: qi.studentOrderBy, instructor: qi.instructorOrderBy, marks: qi.studentOrderByMarks },
+    { label: 'Tables (FROM)', student: qi.studentRelations, instructor: qi.instructorRelations, marks: qi.studentRelationMarks },
+    { label: 'Columns (SELECT)', student: qi.studentProjections, instructor: qi.instructorProjections, marks: qi.studentProjectionMarks },
+    { label: 'Conditions (WHERE)', student: qi.studentPredicates, instructor: qi.instructorPredicates, marks: qi.studentPredicateMarks },
+    { label: 'Joins (JOIN)', student: qi.studentJoins, instructor: qi.instructorJoins, marks: qi.studentJoinMarks },
+    { label: 'Grouping (GROUP BY)', student: qi.studentGroupBy, instructor: qi.instructorGroupBy, marks: qi.studentGroupByMarks },
+    { label: 'Sorting (ORDER BY)', student: qi.studentOrderBy, instructor: qi.instructorOrderBy, marks: qi.studentOrderByMarks },
   ];
 
   return (
     <div className="bg-white dark:bg-ink-card rounded-2xl border border-slate-200 dark:border-ink-border overflow-hidden shadow-sm">
       <div className="bg-gray-50 dark:bg-ink-soft/50 px-6 py-3 border-b border-slate-200 dark:border-ink-border">
         <h4 className="font-bold text-sm uppercase tracking-tight text-gray-500 dark:text-gray-400">
-          {qi.level === 1 ? 'Hauptabfrage' : `Unterabfrage Ebene ${qi.level}`}
+          {qi.level === 1 ? 'Main query' : `Subquery level ${qi.level}`}
         </h4>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 dark:border-ink-border">
-              <th className="px-6 py-3 w-1/4">Komponente</th>
-              <th className="px-6 py-3 w-3/8">Deine Lösung</th>
-              <th className="px-6 py-3 w-3/8">Musterlösung</th>
+              <th className="px-6 py-3 w-1/4">Component</th>
+              <th className="px-6 py-3 w-3/8">Your solution</th>
+              <th className="px-6 py-3 w-3/8">Model solution</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
@@ -109,18 +109,18 @@ const QueryLevelDisplay: React.FC<{ qi: QueryInfo }> = ({ qi }) => {
             </tr>
 
             <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition-colors">
-              <td className="px-6 py-4 font-bold text-sm text-gray-600 dark:text-gray-300">Duplikate (DISTINCT)</td>
+              <td className="px-6 py-4 font-bold text-sm text-gray-600 dark:text-gray-300">Duplicates (DISTINCT)</td>
               <td className="px-6 py-4">
                  <div className={`flex items-center space-x-2 text-xs font-bold ${qi.studentDistinctMark >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                     {qi.studentDistinctMark >= 0 ? <Check size={14} /> : <X size={14} />}
-                    <span>{qi.studentDistinct ? 'Ja' : 'Nein'}</span>
+                    <span>{qi.studentDistinct ? 'Yes' : 'No'}</span>
                     <span className="text-[10px] bg-gray-100 dark:bg-ink-soft px-1.5 py-0.5 rounded">
                       {qi.studentDistinctMark >= 0 ? '+' : ''}{qi.studentDistinctMark.toFixed(1)}
                     </span>
                  </div>
               </td>
               <td className="px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase font-bold tracking-widest">
-                {qi.instructorDistinct ? 'Ja' : 'Nein'}
+                {qi.instructorDistinct ? 'Yes' : 'No'}
               </td>
             </tr>
           </tbody>

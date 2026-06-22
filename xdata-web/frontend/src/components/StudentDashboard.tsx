@@ -194,7 +194,7 @@ const StudentDashboard: React.FC = () => {
       const res = await api.get('/student/dashboard');
       setDashboard(res.data);
     } catch (e) {
-      console.error("Dashboard konnte nicht geladen werden");
+      console.error("Failed to load dashboard");
     }
   }, []);
 
@@ -203,7 +203,7 @@ const StudentDashboard: React.FC = () => {
       const res = await api.get('/announcements');
       setAnnouncements(res.data || []);
     } catch (e) {
-      console.error("Ankündigungen konnten nicht geladen werden");
+      console.error("Failed to load announcements");
     }
     try {
       const m = await api.get('/materials');
@@ -228,7 +228,7 @@ const StudentDashboard: React.FC = () => {
     if (user) {
       WebSocketService.connect().then(() => {
         WebSocketService.subscribe(`/topic/grading/${user.loginId}`, (data) => {
-          toast.success(`Aufgabe "${data.question.name}" wurde bewertet: ${(data.marks * 100).toFixed(0)}%`);
+          toast.success(`Assignment "${data.question.name}" has been graded: ${(data.marks * 100).toFixed(0)}%`);
           // Clear the "grading…" state for the graded question so the real result shows.
           setGradingQuestionId(prev => (prev === data.questionId ? null : prev));
           setRunResult(null);
@@ -248,7 +248,7 @@ const StudentDashboard: React.FC = () => {
       setAttempts(res.data || []);
       setShowHistory(true);
     } catch (e) {
-      console.error("Fehler beim Laden der Versuche");
+      console.error("Failed to load attempts");
     }
   };
 
@@ -257,7 +257,7 @@ const StudentDashboard: React.FC = () => {
       const res = await api.get(`/student/assignments/${assignmentId}/questions`);
       setQuestions(res.data || []);
     } catch (e) {
-      toast.error("Fehler beim Laden der Fragen");
+      toast.error("Failed to load questions");
     }
   };
 
@@ -269,19 +269,19 @@ const StudentDashboard: React.FC = () => {
       const res = await api.post('/student/run', { questionId: selectedQuestion.id, query: sql });
       setRunResult(res.data);
     } catch (e: any) {
-      setRunResult({ error: e.response?.data || 'Ausführung fehlgeschlagen.' });
+      setRunResult({ error: e.response?.data || 'Execution failed.' });
     } finally {
       setRunning(false);
     }
   };
 
   const requestRegrade = async (submissionId: number) => {
-    const message = window.prompt('Begründung für die Anfechtung (optional):') ?? '';
+    const message = window.prompt('Reason for the regrade request (optional):') ?? '';
     try {
       await api.post(`/student/submissions/${submissionId}/regrade-request`, { message });
-      toast.success('Anfechtung eingereicht');
+      toast.success('Regrade request submitted');
     } catch {
-      toast.error('Anfechtung konnte nicht eingereicht werden');
+      toast.error('Failed to submit regrade request');
     }
   };
 
@@ -293,7 +293,7 @@ const StudentDashboard: React.FC = () => {
       try {
         const res = await api.get(`/student/assignments/${assignmentId}/sample-data`);
         setSampleData(res.data);
-      } catch { toast.error('Beispieldaten konnten nicht geladen werden.'); }
+      } catch { toast.error('Failed to load sample data.'); }
     }
   };
 
@@ -304,7 +304,7 @@ const StudentDashboard: React.FC = () => {
       const res = await api.get(`/student/submissions/${submissionId}/result-comparison`);
       setComparison({ submissionId, data: res.data });
     } catch (e: any) {
-      toast.error('Ergebnisvergleich nicht verfügbar.');
+      toast.error('Result comparison not available.');
     } finally {
       setLoadingComparison(false);
     }
@@ -318,14 +318,14 @@ const StudentDashboard: React.FC = () => {
     // panel never flashes the not-yet-graded 0% result. Cleared by the WebSocket
     // result push, or by the fallback below if no push arrives.
     setGradingQuestionId(qId);
-    // Drop the stale run preview so it doesn't sit next to "Letztes Ergebnis".
+    // Drop the stale run preview so it doesn't sit next to "Last result".
     setRunResult(null);
     try {
       await api.post('/student/submit', {
         questionId: qId,
         query: sql
       });
-      toast.success("Abgabe erfolgreich! Bewertung läuft...");
+      toast.success("Submission successful! Grading in progress...");
       setSql('');
       // Fallback in case the live push never arrives (e.g. WS dropped or the
       // backend grading failed): refresh and clear the grading state.
@@ -335,7 +335,7 @@ const StudentDashboard: React.FC = () => {
         loadDashboard();
       }, 12000);
     } catch (e) {
-      toast.error("Fehler bei der Abgabe");
+      toast.error("Failed to submit");
       setGradingQuestionId(prev => (prev === qId ? null : prev));
     } finally {
       setLoading(false);
@@ -352,14 +352,14 @@ const StudentDashboard: React.FC = () => {
   };
 
   const sqlHints = [
-    { cmd: 'SELECT', desc: 'Spalten auswählen', example: 'SELECT * FROM users;' },
-    { cmd: 'WHERE', desc: 'Filtern', example: 'WHERE age > 18' },
-    { cmd: 'JOIN', desc: 'Tabellen verbinden', example: 'JOIN orders ON users.id = orders.user_id' },
-    { cmd: 'GROUP BY', desc: 'Gruppieren', example: 'GROUP BY department' },
-    { cmd: 'ORDER BY', desc: 'Sortieren', example: 'ORDER BY created_at DESC' },
-    { cmd: 'COUNT', desc: 'Zählen', example: 'SELECT COUNT(*) FROM users;' },
-    { cmd: 'IN', desc: 'In Liste', example: 'WHERE id IN (1, 2, 3)' },
-    { cmd: 'LIKE', desc: 'Mustervergleich', example: "WHERE name LIKE 'A%'" }
+    { cmd: 'SELECT', desc: 'Select columns', example: 'SELECT * FROM users;' },
+    { cmd: 'WHERE', desc: 'Filter', example: 'WHERE age > 18' },
+    { cmd: 'JOIN', desc: 'Join tables', example: 'JOIN orders ON users.id = orders.user_id' },
+    { cmd: 'GROUP BY', desc: 'Group', example: 'GROUP BY department' },
+    { cmd: 'ORDER BY', desc: 'Sort', example: 'ORDER BY created_at DESC' },
+    { cmd: 'COUNT', desc: 'Count', example: 'SELECT COUNT(*) FROM users;' },
+    { cmd: 'IN', desc: 'In list', example: 'WHERE id IN (1, 2, 3)' },
+    { cmd: 'LIKE', desc: 'Pattern match', example: "WHERE name LIKE 'A%'" }
   ];
 
   if (!dashboard) return <div className="max-w-7xl mx-auto"><Skeleton count={3} /></div>;
@@ -383,10 +383,10 @@ const StudentDashboard: React.FC = () => {
         <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-7">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3">
-              <p className="kicker text-brand-400">{dashboard.courseName || 'Dein Lern-Dashboard'}</p>
+              <p className="kicker text-brand-400">{dashboard.courseName || 'Your learning dashboard'}</p>
             </div>
             <h1 className="mt-2 font-display text-3xl md:text-4xl font-extrabold tracking-tight">
-              Hallo, {dashboard.studentName}.
+              Hello, {dashboard.studentName}.
             </h1>
 
             {/* XP / level bar */}
@@ -412,13 +412,13 @@ const StudentDashboard: React.FC = () => {
                   className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold ${
                     dashboard.streak > 0 ? 'bg-orange-500/15 text-orange-400' : 'bg-white/5 text-slate-400'
                   }`}
-                  title="Aufeinanderfolgende Tage mit Aktivität"
+                  title="Consecutive days with activity"
                 >
-                  <Flame size={13} /> {dashboard.streak} {dashboard.streak === 1 ? 'Tag' : 'Tage'} Streak
+                  <Flame size={13} /> {dashboard.streak} {dashboard.streak === 1 ? 'day' : 'days'} streak
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[11px] text-slate-400">
-                    Heute {Math.min(dashboard.submissionsToday, dashboard.dailyGoal)}/{dashboard.dailyGoal}
+                    Today {Math.min(dashboard.submissionsToday, dashboard.dailyGoal)}/{dashboard.dailyGoal}
                   </span>
                   <div className="flex gap-1">
                     {Array.from({ length: dashboard.dailyGoal }).map((_, i) => (
@@ -431,7 +431,7 @@ const StudentDashboard: React.FC = () => {
                     ))}
                   </div>
                   {dashboard.submissionsToday >= dashboard.dailyGoal && (
-                    <span className="text-[11px] font-bold text-easy">Tagesziel erreicht ✓</span>
+                    <span className="text-[11px] font-bold text-easy">Daily goal achieved ✓</span>
                   )}
                 </div>
               </div>
@@ -440,9 +440,9 @@ const StudentDashboard: React.FC = () => {
 
           {/* Stat tiles */}
           <div className="grid grid-cols-3 gap-3 lg:gap-4 shrink-0">
-            <StatTile icon={<Trophy size={18} />} label="Score" value={`${overallPercentage.toFixed(0)}%`} sub={`${totalAchieved.toFixed(0)}/${totalMax.toFixed(0)} Pkt`} accent="xp" />
-            <StatTile icon={<Target size={18} />} label="Gelöst" value={`${solvedTotal}`} sub={`von ${questionsTotal}`} accent="brand" />
-            <StatTile icon={<BookOpen size={18} />} label="Module" value={`${dashboard.assignments.length}`} sub="aktiv" accent="brand" />
+            <StatTile icon={<Trophy size={18} />} label="Score" value={`${overallPercentage.toFixed(0)}%`} sub={`${totalAchieved.toFixed(0)}/${totalMax.toFixed(0)} pts`} accent="xp" />
+            <StatTile icon={<Target size={18} />} label="Solved" value={`${solvedTotal}`} sub={`of ${questionsTotal}`} accent="brand" />
+            <StatTile icon={<BookOpen size={18} />} label="Modules" value={`${dashboard.assignments.length}`} sub="active" accent="brand" />
           </div>
         </div>
       </section>
@@ -454,7 +454,7 @@ const StudentDashboard: React.FC = () => {
             <div className="x-card p-5">
               <h2 className="flex items-center gap-2 mb-4">
                 <Bell size={16} className="text-brand-500" />
-                <span className="kicker">Ankündigungen</span>
+                <span className="kicker">Announcements</span>
               </h2>
               <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
                 {announcements.map(a => (
@@ -463,7 +463,7 @@ const StudentDashboard: React.FC = () => {
                     <p className="text-xs text-brand-700/80 dark:text-brand-300/70 mt-1 leading-relaxed">{a.content}</p>
                     <div className="flex justify-between items-center text-[10px] font-medium text-brand-500/70 mt-2 font-mono">
                       <span>{a.course?.courseName}</span>
-                      <span>{new Date(a.createdAt).toLocaleDateString()}</span>
+                      <span>{new Date(a.createdAt).toLocaleDateString('en-US')}</span>
                     </div>
                   </div>
                 ))}
@@ -475,7 +475,7 @@ const StudentDashboard: React.FC = () => {
             <div className="x-card p-5">
               <h2 className="flex items-center gap-2 mb-4">
                 <BookMarked size={16} className="text-brand-500" />
-                <span className="kicker">Lernmaterial</span>
+                <span className="kicker">Learning materials</span>
               </h2>
               <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                 {materials.map(m => (
@@ -496,7 +496,7 @@ const StudentDashboard: React.FC = () => {
               <h2 className="flex items-center justify-between mb-4">
                 <span className="flex items-center gap-2">
                   <Trophy size={16} className="text-xp-500" />
-                  <span className="kicker">Rangliste</span>
+                  <span className="kicker">Leaderboard</span>
                 </span>
                 {leaderboard.me && (
                   <span className="text-[11px] font-mono text-slate-400">
@@ -523,8 +523,8 @@ const StudentDashboard: React.FC = () => {
                     <span className={`flex-1 min-w-0 truncate text-sm font-semibold ${e.isMe ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'}`}>
                       {e.displayName}
                     </span>
-                    <span className="font-mono text-[11px] text-slate-400 shrink-0">{e.solved} gelöst</span>
-                    <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0 w-12 text-right">{e.points} Pkt</span>
+                    <span className="font-mono text-[11px] text-slate-400 shrink-0">{e.solved} solved</span>
+                    <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0 w-12 text-right">{e.points} pts</span>
                   </div>
                 ))}
                 {leaderboard.me && !leaderboard.entries.some(e => e.isMe) && (
@@ -533,8 +533,8 @@ const StudentDashboard: React.FC = () => {
                     <div className="flex items-center gap-3 px-3 py-2 rounded-xl border border-brand-300 dark:border-brand-500/40 bg-brand-50 dark:bg-brand-500/10">
                       <span className="w-6 shrink-0 text-center font-mono text-xs text-brand-600 dark:text-brand-300">{leaderboard.me.rank}</span>
                       <span className="flex-1 min-w-0 truncate text-sm font-semibold text-brand-700 dark:text-brand-300">{leaderboard.me.displayName}</span>
-                      <span className="font-mono text-[11px] text-slate-400 shrink-0">{leaderboard.me.solved} gelöst</span>
-                      <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0 w-12 text-right">{leaderboard.me.points} Pkt</span>
+                      <span className="font-mono text-[11px] text-slate-400 shrink-0">{leaderboard.me.solved} solved</span>
+                      <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0 w-12 text-right">{leaderboard.me.points} pts</span>
                     </div>
                   </>
                 )}
@@ -548,7 +548,7 @@ const StudentDashboard: React.FC = () => {
               <h2 className="flex items-center justify-between mb-4">
                 <span className="flex items-center gap-2">
                   <Award size={16} className="text-brand-500" />
-                  <span className="kicker">Abzeichen</span>
+                  <span className="kicker">Badges</span>
                 </span>
                 <span className="text-[11px] font-mono text-slate-400">
                   {dashboard.achievements.filter(a => a.earned).length}/{dashboard.achievements.length}
@@ -588,7 +588,7 @@ const StudentDashboard: React.FC = () => {
           <div className="x-card p-5">
             <h2 className="flex items-center gap-2 mb-4">
               <BookOpen size={16} className="text-brand-500" />
-              <span className="kicker">Meine Aufgaben</span>
+              <span className="kicker">My assignments</span>
             </h2>
             <div className="space-y-2.5">
               {dashboard.assignments.map(a => {
@@ -612,7 +612,7 @@ const StudentDashboard: React.FC = () => {
                       <span className="font-mono text-xs font-bold text-brand-600 dark:text-brand-300 shrink-0">{a.percentage.toFixed(0)}%</span>
                     </div>
                     <div className="flex items-center gap-3 text-[11px] font-medium text-slate-400 mb-2.5">
-                      <span className="flex items-center gap-1"><Clock size={12} /> {new Date(a.deadline).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1"><Clock size={12} /> {new Date(a.deadline).toLocaleDateString('en-US')}</span>
                       <span className="flex items-center gap-1 text-easy"><Target size={12} /> {a.solvedQuestions}/{a.totalQuestions}</span>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-ink-soft h-1.5 rounded-full overflow-hidden">
@@ -631,13 +631,13 @@ const StudentDashboard: React.FC = () => {
             <div className="animate-slideUp space-y-6">
               <div className="x-card p-6">
                 <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
-                  <span className="kicker">Fragen · {selectedAssignment.name}</span>
+                  <span className="kicker">Questions · {selectedAssignment.name}</span>
                   <div className="flex items-center gap-2 font-mono text-[11px]">
                     <span className="px-2.5 py-1 bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 rounded-md font-semibold">
-                      {selectedAssignment.totalQuestions || questions.length} Aufgaben
+                      {selectedAssignment.totalQuestions || questions.length} questions
                     </span>
                     <span className="px-2.5 py-1 bg-slate-100 dark:bg-ink-soft text-slate-500 dark:text-slate-400 rounded-md font-semibold">
-                      {selectedAssignment.totalMarks || questions.reduce((acc, q) => acc + q.marks, 0)} Pkt
+                      {selectedAssignment.totalMarks || questions.reduce((acc, q) => acc + q.marks, 0)} pts
                     </span>
                   </div>
                 </div>
@@ -676,13 +676,13 @@ const StudentDashboard: React.FC = () => {
                           )}
                         </span>
                         <span className={`pill pill-${diff.key} shrink-0`}>{diff.label}</span>
-                        <span className="font-mono text-[11px] text-slate-400 w-12 text-right shrink-0">{q.marks} Pkt</span>
+                        <span className="font-mono text-[11px] text-slate-400 w-12 text-right shrink-0">{q.marks} pts</span>
                         <ChevronRight size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
                       </button>
                     );
                   })}
                   {questions.length === 0 && (
-                    <p className="px-3 py-6 text-sm text-slate-400 text-center">Keine Fragen in diesem Modul.</p>
+                    <p className="px-3 py-6 text-sm text-slate-400 text-center">No questions in this module.</p>
                   )}
                 </div>
               </div>
@@ -694,10 +694,10 @@ const StudentDashboard: React.FC = () => {
                       <div className="flex items-center gap-2.5 mb-1.5">
                         <h3 className="font-display text-xl font-bold text-slate-900 dark:text-white tracking-tight">{selectedQuestion.name}</h3>
                         <span className={`pill pill-${difficultyOf(selectedQuestion).key}`}>{difficultyOf(selectedQuestion).label}</span>
-                        <span className="font-mono text-xs font-semibold text-slate-400">{selectedQuestion.marks} Pkt</span>
+                        <span className="font-mono text-xs font-semibold text-slate-400">{selectedQuestion.marks} pts</span>
                       </div>
                       <button onClick={() => loadAttempts(selectedQuestion.id)} className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors">
-                        <History size={13} /> Verlauf ansehen
+                        <History size={13} /> View history
                       </button>
                     </div>
                     <div className="flex gap-2">
@@ -709,7 +709,7 @@ const StudentDashboard: React.FC = () => {
                             : 'text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/10 border-brand-100 dark:border-brand-500/20 hover:bg-brand-100 dark:hover:bg-brand-500/20'
                         }`}
                       >
-                        <Database size={15} /> {showSchema ? 'Schema aus' : 'Schema'}
+                        <Database size={15} /> {showSchema ? 'Schema off' : 'Schema'}
                       </button>
                       <button
                         onClick={() => { setShowCheatSheet(!showCheatSheet); setShowSchema(false); }}
@@ -719,7 +719,7 @@ const StudentDashboard: React.FC = () => {
                             : 'text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-ink-soft border-slate-200 dark:border-ink-border hover:bg-slate-200 dark:hover:bg-ink-border'
                         }`}
                       >
-                        <Code size={15} /> {showCheatSheet ? 'Cheat-Sheet aus' : 'Cheat-Sheet'}
+                        <Code size={15} /> {showCheatSheet ? 'Cheat sheet off' : 'Cheat sheet'}
                       </button>
                       <button
                         onClick={toggleSampleData}
@@ -729,14 +729,14 @@ const StudentDashboard: React.FC = () => {
                             : 'text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/10 border-brand-100 dark:border-brand-500/20 hover:bg-brand-100 dark:hover:bg-brand-500/20'
                         }`}
                       >
-                        <Table size={15} /> {showSample ? 'Beispieldaten aus' : 'Beispieldaten'}
+                        <Table size={15} /> {showSample ? 'Sample data off' : 'Sample data'}
                       </button>
                     </div>
                   </div>
 
                   {selectedQuestion.description?.trim() && (
                     <div className="mb-6 p-5 rounded-2xl bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-ink-border">
-                      <span className="kicker flex items-center gap-1.5 mb-2"><FileText size={14} className="text-brand-500" /> Aufgabenstellung</span>
+                      <span className="kicker flex items-center gap-1.5 mb-2"><FileText size={14} className="text-brand-500" /> Problem statement</span>
                       <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line leading-relaxed">{selectedQuestion.description}</p>
                     </div>
                   )}
@@ -756,15 +756,15 @@ const StudentDashboard: React.FC = () => {
                   {Array.isArray(selectedQuestion.hints) && selectedQuestion.hints.length > 0 && (
                     <div className="mb-6 p-5 rounded-2xl bg-xp-500/5 border border-xp-500/20 animate-fadeIn">
                       <div className="flex items-center justify-between gap-3 mb-3">
-                        <span className="kicker flex items-center gap-1.5"><Sparkles size={14} className="text-xp-600" /> Hinweise</span>
+                        <span className="kicker flex items-center gap-1.5"><Sparkles size={14} className="text-xp-600" /> Hints</span>
                         {revealedHints < selectedQuestion.hints.length && (
                           <button onClick={() => setRevealedHints(h => h + 1)} className="btn-secondary text-xs py-1.5">
-                            Hinweis anzeigen ({revealedHints}/{selectedQuestion.hints.length})
+                            Show hint ({revealedHints}/{selectedQuestion.hints.length})
                           </button>
                         )}
                       </div>
                       {revealedHints === 0 ? (
-                        <p className="text-sm text-slate-400 italic">Du steckst fest? Decke schrittweise Hinweise auf.</p>
+                        <p className="text-sm text-slate-400 italic">Stuck? Reveal hints step by step.</p>
                       ) : (
                         <ol className="space-y-2 list-decimal list-inside">
                           {(selectedQuestion.hints as string[]).slice(0, revealedHints).map((h, i) => (
@@ -784,11 +784,11 @@ const StudentDashboard: React.FC = () => {
 
                   {showSample && (
                     <div className="mb-6 p-5 rounded-2xl bg-brand-50/50 dark:bg-brand-500/5 border border-brand-100 dark:border-brand-500/20 animate-fadeIn space-y-4">
-                      <h4 className="kicker text-brand-500">Beispieldaten {sampleData?.schemaName ? `· ${sampleData.schemaName}` : ''}</h4>
+                      <h4 className="kicker text-brand-500">Sample data {sampleData?.schemaName ? `· ${sampleData.schemaName}` : ''}</h4>
                       {!sampleData ? (
-                        <p className="text-sm text-slate-400 italic">Lädt …</p>
+                        <p className="text-sm text-slate-400 italic">Loading …</p>
                       ) : (sampleData.tables || []).length === 0 ? (
-                        <p className="text-sm text-slate-400 italic">{sampleData.error || 'Keine Beispieldaten verfügbar.'}</p>
+                        <p className="text-sm text-slate-400 italic">{sampleData.error || 'No sample data available.'}</p>
                       ) : (
                         (sampleData.tables || []).map((t: any) => (
                           <div key={t.tableName} className="rounded-xl border border-slate-200 dark:border-ink-border overflow-hidden">
@@ -803,7 +803,7 @@ const StudentDashboard: React.FC = () => {
                                   {(t.rows || []).map((r: any[], ri: number) => (
                                     <tr key={ri} className="x-row">{r.map((cell, ci) => <td key={ci} className="x-td !py-2 font-mono">{cell === null ? <span className="text-slate-300 italic">NULL</span> : String(cell)}</td>)}</tr>
                                   ))}
-                                  {(t.rows || []).length === 0 && <tr><td className="x-td !py-2 text-slate-400 italic" colSpan={(t.columns || []).length || 1}>{t.error ? 'nicht verfügbar' : 'keine Zeilen'}</td></tr>}
+                                  {(t.rows || []).length === 0 && <tr><td className="x-td !py-2 text-slate-400 italic" colSpan={(t.columns || []).length || 1}>{t.error ? 'not available' : 'no rows'}</td></tr>}
                                 </tbody>
                               </table>
                             </div>
@@ -822,7 +822,7 @@ const StudentDashboard: React.FC = () => {
                       value={sql}
                       onChange={(v) => setSql(v || '')}
                       onMount={handleEditorMount}
-                      loading={<div className="flex items-center justify-center h-full bg-slate-50 dark:bg-ink-bg text-slate-400 font-mono text-xs animate-pulse">SQL-Editor wird geladen …</div>}
+                      loading={<div className="flex items-center justify-center h-full bg-slate-50 dark:bg-ink-bg text-slate-400 font-mono text-xs animate-pulse">Loading SQL editor …</div>}
                       options={{
                         minimap: { enabled: false },
                         fontSize: 15,
@@ -853,7 +853,7 @@ const StudentDashboard: React.FC = () => {
                       className="btn-secondary sm:w-48 justify-center py-4"
                     >
                       {running ? <RefreshCw className="animate-spin" size={18} /> : <Play size={18} />}
-                      Ausführen
+                      Run
                     </button>
                     <button
                       onClick={submitSolution}
@@ -861,7 +861,7 @@ const StudentDashboard: React.FC = () => {
                       className="btn-primary flex-1 py-4 text-base group justify-center"
                     >
                       {loading ? <RefreshCw className="animate-spin" size={18} /> : <Send size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
-                      Antwort einreichen & prüfen
+                      Submit answer & check
                     </button>
                   </div>
 
@@ -872,8 +872,8 @@ const StudentDashboard: React.FC = () => {
                       ) : (
                         <div>
                           <div className="px-4 py-2 bg-slate-50 dark:bg-ink-soft border-b border-slate-200 dark:border-ink-border flex items-center justify-between">
-                            <span className="kicker">Ergebnis (Vorschau)</span>
-                            <span className="text-xs text-slate-400">{runResult.rowCount} Zeile(n){runResult.truncated ? ' · gekürzt auf 100' : ''}</span>
+                            <span className="kicker">Result (preview)</span>
+                            <span className="text-xs text-slate-400">{runResult.rowCount} row(s){runResult.truncated ? ' · truncated to 100' : ''}</span>
                           </div>
                           <div className="overflow-x-auto max-h-72">
                             <table className="w-full text-left border-collapse text-sm">
@@ -887,7 +887,7 @@ const StudentDashboard: React.FC = () => {
                                   </tr>
                                 ))}
                                 {(runResult.rows || []).length === 0 && (
-                                  <tr><td className="x-td text-slate-400 italic" colSpan={(runResult.columns || []).length || 1}>Keine Zeilen.</td></tr>
+                                  <tr><td className="x-td text-slate-400 italic" colSpan={(runResult.columns || []).length || 1}>No rows.</td></tr>
                                 )}
                               </tbody>
                             </table>
@@ -901,8 +901,8 @@ const StudentDashboard: React.FC = () => {
                     <div className="mt-6 p-5 rounded-2xl border border-brand-200 dark:border-brand-500/30 bg-brand-50/60 dark:bg-brand-500/10 animate-fadeIn flex items-center gap-4">
                       <RefreshCw className="animate-spin text-brand-500 shrink-0" size={22} />
                       <div>
-                        <p className="text-sm font-semibold text-slate-800 dark:text-white">Wird bewertet …</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Deine Abgabe wird automatisch geprüft. Das Ergebnis erscheint gleich.</p>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-white">Grading …</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Your submission is being checked automatically. The result will appear shortly.</p>
                       </div>
                     </div>
                   )}
@@ -913,8 +913,8 @@ const StudentDashboard: React.FC = () => {
                         <div className="flex items-center gap-4">
                           <RefreshCw className="text-medium shrink-0" size={22} />
                           <div>
-                            <p className="text-sm font-semibold text-slate-800 dark:text-white">Eingereicht — Bewertung noch nicht freigegeben</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Deine Lösung wurde gespeichert. Die Note wird sichtbar, sobald deine Dozentin sie freigibt.</p>
+                            <p className="text-sm font-semibold text-slate-800 dark:text-white">Submitted — grade not yet released</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Your solution has been saved. The grade will become visible once your instructor releases it.</p>
                           </div>
                         </div>
                       ) : (
@@ -924,7 +924,7 @@ const StudentDashboard: React.FC = () => {
                           <div className="grid place-items-center h-9 w-9 rounded-lg bg-brand-600 text-white">
                             <Award size={18} />
                           </div>
-                          <span className="kicker">Letztes Ergebnis</span>
+                          <span className="kicker">Last result</span>
                         </div>
                         <span className={`font-display text-2xl font-extrabold ${s.marks >= 1.0 ? 'text-easy' : s.marks > 0 ? 'text-medium' : 'text-hard'}`}>
                           {(s.marks * 100).toFixed(0)}%
@@ -935,7 +935,7 @@ const StudentDashboard: React.FC = () => {
                         <div className="mb-5 p-4 rounded-xl bg-xp-500/10 border border-xp-500/20 flex items-start gap-3">
                           <MessageSquare className="text-xp-600 shrink-0" size={18} />
                           <div>
-                            <p className="kicker text-xp-600 mb-1">Feedback vom Dozenten</p>
+                            <p className="kicker text-xp-600 mb-1">Feedback from instructor</p>
                             <p className="text-sm text-slate-700 dark:text-slate-200">{s.instructorFeedback}</p>
                           </div>
                         </div>
@@ -946,10 +946,10 @@ const StudentDashboard: React.FC = () => {
                       </div>
                       <div className="mt-4 flex flex-wrap justify-end gap-2">
                         <button onClick={() => loadComparison(s.submissionId)} disabled={loadingComparison} className="btn-secondary text-xs">
-                          <GitCompareArrows size={14} /> {comparison?.submissionId === s.submissionId ? 'Vergleich ausblenden' : 'Erwartete Ausgabe vergleichen'}
+                          <GitCompareArrows size={14} /> {comparison?.submissionId === s.submissionId ? 'Hide comparison' : 'Compare expected output'}
                         </button>
                         <button onClick={() => requestRegrade(s.submissionId)} className="btn-secondary text-xs">
-                          <MessageSquare size={14} /> Bewertung anfechten
+                          <MessageSquare size={14} /> Request regrade
                         </button>
                       </div>
 
@@ -960,13 +960,13 @@ const StudentDashboard: React.FC = () => {
                           ) : (
                             <div className="space-y-4">
                               {comparison.data.match
-                                ? <span className="badge badge-success"><CheckCircle size={12} /> Ergebnis stimmt mit der erwarteten Ausgabe überein</span>
-                                : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={12} /> {(comparison.data.missing?.length || 0)} Zeile(n) fehlen · {(comparison.data.extra?.length || 0)} zu viel</span>}
+                                ? <span className="badge badge-success"><CheckCircle size={12} /> Result matches the expected output</span>
+                                : <span className="badge bg-hard/10 text-hard ring-hard/20"><XCircle size={12} /> {(comparison.data.missing?.length || 0)} row(s) missing · {(comparison.data.extra?.length || 0)} extra</span>}
                               <div className="grid md:grid-cols-2 gap-4">
-                                <DiffTable title="Erwartete Ausgabe" data={comparison.data.expected} highlight={comparison.data.missing} accent="easy" />
-                                <DiffTable title="Deine Ausgabe" data={comparison.data.actual} highlight={comparison.data.extra} accent="hard" />
+                                <DiffTable title="Expected output" data={comparison.data.expected} highlight={comparison.data.missing} accent="easy" />
+                                <DiffTable title="Your output" data={comparison.data.actual} highlight={comparison.data.extra} accent="hard" />
                               </div>
-                              <p className="text-[11px] text-slate-400">Grün = in der erwarteten Ausgabe, aber in deiner fehlt. Rot = in deiner Ausgabe, aber nicht erwartet.</p>
+                              <p className="text-[11px] text-slate-400">Green = in the expected output but missing from yours. Red = in your output but not expected.</p>
                             </div>
                           )}
                         </div>
@@ -983,8 +983,8 @@ const StudentDashboard: React.FC = () => {
               <div className="grid place-items-center h-16 w-16 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-500 mb-5">
                 <BookOpen size={30} />
               </div>
-              <p className="font-display text-lg font-bold text-slate-700 dark:text-slate-200">Wähle ein Modul</p>
-              <p className="text-sm text-slate-400 mt-1.5 max-w-xs">Klicke links auf eine Aufgabe, um ihre Fragen zu laden und mit dem Lösen zu beginnen.</p>
+              <p className="font-display text-lg font-bold text-slate-700 dark:text-slate-200">Select a module</p>
+              <p className="text-sm text-slate-400 mt-1.5 max-w-xs">Click an assignment on the left to load its questions and start solving.</p>
             </div>
           )}
         </div>
@@ -1003,7 +1003,7 @@ const StudentDashboard: React.FC = () => {
 
             <div className="mb-7">
               <h3 className="font-display text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                <History className="text-brand-500" size={24} /> Abgabe-Verlauf
+                <History className="text-brand-500" size={24} /> Submission history
               </h3>
               <p className="kicker mt-1.5 ml-9">{selectedQuestion.name}</p>
             </div>
@@ -1013,7 +1013,7 @@ const StudentDashboard: React.FC = () => {
                 <div key={attempt.submissionId} className="p-5 rounded-2xl bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-ink-border">
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-mono text-xs text-slate-400">
-                      {new Date(attempt.submissionTime).toLocaleDateString()} · {new Date(attempt.submissionTime).getHours()}:{new Date(attempt.submissionTime).getMinutes().toString().padStart(2, '0')}
+                      {new Date(attempt.submissionTime).toLocaleDateString('en-US')} · {new Date(attempt.submissionTime).getHours()}:{new Date(attempt.submissionTime).getMinutes().toString().padStart(2, '0')}
                     </span>
                     <span className={`font-display text-lg font-bold ${attempt.marks >= 1.0 ? 'text-easy' : attempt.marks > 0 ? 'text-medium' : 'text-hard'}`}>
                       {(attempt.marks * 100).toFixed(0)}%
@@ -1034,7 +1034,7 @@ const StudentDashboard: React.FC = () => {
                 </div>
               ))}
               {attempts.length === 0 && (
-                <p className="text-center py-10 text-sm text-slate-400">Keine vorherigen Abgaben gefunden.</p>
+                <p className="text-center py-10 text-sm text-slate-400">No previous submissions found.</p>
               )}
             </div>
           </div>

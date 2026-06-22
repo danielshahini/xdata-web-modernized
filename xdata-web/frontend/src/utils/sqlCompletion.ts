@@ -28,7 +28,7 @@ export function createSqlCompletionProvider(monaco: any, schemaMetadata: SchemaM
           label: table.tableName,
           kind: monaco.languages.CompletionItemKind.Class,
           insertText: table.tableName,
-          detail: 'Tabelle',
+          detail: 'Table',
           range,
         });
         (table.columns || []).forEach((col: any) => {

@@ -39,7 +39,7 @@ const TrySql: React.FC = () => {
       const res = await api.post('/public/sql/run', { query: sql });
       setResult(res.data);
     } catch (e) {
-      setResult({ error: 'Verbindung fehlgeschlagen. Bitte versuche es erneut.' });
+      setResult({ error: 'Connection failed. Please try again.' });
     } finally {
       setRunning(false);
     }
@@ -54,11 +54,11 @@ const TrySql: React.FC = () => {
             XData<span className="text-brand-600">/sql</span>
           </Link>
           <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} aria-label="Theme umschalten" className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-ink-soft transition-colors">
+            <button onClick={toggleTheme} aria-label="Toggle theme" className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-ink-soft transition-colors">
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <Link to="/login" className="btn-primary text-sm py-2.5 px-4">
-              Anmelden <ArrowRight size={15} />
+              Sign in <ArrowRight size={15} />
             </Link>
           </div>
         </div>
@@ -67,13 +67,13 @@ const TrySql: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Hero */}
         <div className="space-y-2">
-          <span className="kicker text-brand-500 flex items-center gap-1.5"><Sparkles size={14} /> Kostenlos · ohne Anmeldung</span>
+          <span className="kicker text-brand-500 flex items-center gap-1.5"><Sparkles size={14} /> Free · no sign-up</span>
           <h1 className="font-display text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            SQL ausprobieren — sofort, im Browser
+            Try SQL — instantly, in your browser
           </h1>
           <p className="text-slate-500 dark:text-slate-400 max-w-2xl">
-            Schreibe eine <span className="font-mono font-semibold text-brand-600">SELECT</span>-Abfrage gegen eine Beispiel-Datenbank und führe sie direkt aus.
-            Keine Installation, kein Login. Nur Lesezugriff.
+            Write a <span className="font-mono font-semibold text-brand-600">SELECT</span> query against a sample database and run it right away.
+            No installation, no login. Read-only access.
           </p>
         </div>
 
@@ -83,15 +83,15 @@ const TrySql: React.FC = () => {
             <div className="x-card p-5">
               <h2 className="flex items-center gap-2 mb-4">
                 <Database size={16} className="text-brand-500" />
-                <span className="kicker">Beispiel-Datenbank</span>
+                <span className="kicker">Sample database</span>
               </h2>
-              {schema ? <SchemaVisualizerCompact metadata={schema} /> : <p className="text-sm text-slate-400">Lädt …</p>}
+              {schema ? <SchemaVisualizerCompact metadata={schema} /> : <p className="text-sm text-slate-400">Loading …</p>}
             </div>
 
             <div className="x-card p-5">
               <h2 className="flex items-center gap-2 mb-4">
                 <Table size={16} className="text-brand-500" />
-                <span className="kicker">Beispiel-Abfragen</span>
+                <span className="kicker">Sample queries</span>
               </h2>
               <div className="space-y-2">
                 {examples.map(ex => (
@@ -111,8 +111,8 @@ const TrySql: React.FC = () => {
           <section className="lg:col-span-2 space-y-5 order-1 lg:order-2">
             <div className="x-card overflow-hidden">
               <div className="px-4 py-2.5 border-b border-slate-200 dark:border-ink-border flex items-center justify-between">
-                <span className="kicker">SQL-Editor</span>
-                <span className="font-mono text-[11px] text-slate-400">nur SELECT</span>
+                <span className="kicker">SQL editor</span>
+                <span className="font-mono text-[11px] text-slate-400">SELECT only</span>
               </div>
               <div className="h-[300px]">
                 <Editor
@@ -121,7 +121,7 @@ const TrySql: React.FC = () => {
                   theme={isDark ? 'vs-dark' : 'light'}
                   value={sql}
                   onChange={(v) => setSql(v || '')}
-                  loading={<div className="flex items-center justify-center h-full text-slate-400 font-mono text-xs animate-pulse">SQL-Editor wird geladen …</div>}
+                  loading={<div className="flex items-center justify-center h-full text-slate-400 font-mono text-xs animate-pulse">Loading SQL editor …</div>}
                   options={{
                     minimap: { enabled: false },
                     fontSize: 15,
@@ -138,7 +138,7 @@ const TrySql: React.FC = () => {
 
             <button onClick={run} disabled={running || !sql.trim()} className="btn-primary w-full py-4 text-base justify-center">
               {running ? <RefreshCw className="animate-spin" size={18} /> : <Play size={18} />}
-              Abfrage ausführen
+              Run query
             </button>
 
             {result && (
@@ -148,8 +148,8 @@ const TrySql: React.FC = () => {
                 ) : (
                   <div>
                     <div className="px-4 py-2 bg-slate-50 dark:bg-ink-soft border-b border-slate-200 dark:border-ink-border flex items-center justify-between">
-                      <span className="kicker">Ergebnis</span>
-                      <span className="text-xs text-slate-400">{result.rowCount} Zeile(n){result.truncated ? ' · gekürzt auf 100' : ''}</span>
+                      <span className="kicker">Result</span>
+                      <span className="text-xs text-slate-400">{result.rowCount} row(s){result.truncated ? ' · truncated to 100' : ''}</span>
                     </div>
                     <div className="overflow-x-auto max-h-96">
                       <table className="w-full text-left border-collapse text-sm">
@@ -163,7 +163,7 @@ const TrySql: React.FC = () => {
                             </tr>
                           ))}
                           {(result.rows || []).length === 0 && (
-                            <tr><td className="x-td text-slate-400 italic" colSpan={(result.columns || []).length || 1}>Keine Zeilen.</td></tr>
+                            <tr><td className="x-td text-slate-400 italic" colSpan={(result.columns || []).length || 1}>No rows.</td></tr>
                           )}
                         </tbody>
                       </table>
@@ -178,11 +178,11 @@ const TrySql: React.FC = () => {
               <div className="absolute -top-16 -right-10 h-44 w-44 rounded-full bg-brand-600/30 blur-3xl" />
               <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <p className="font-display text-lg font-bold">Bereit für mehr als die Sandbox?</p>
-                  <p className="text-sm text-slate-300 mt-0.5">Mit einem Konto bekommst du Kurse, Aufgaben mit automatischer Bewertung, XP, Hinweise und eine Rangliste.</p>
+                  <p className="font-display text-lg font-bold">Ready for more than the sandbox?</p>
+                  <p className="text-sm text-slate-300 mt-0.5">With an account you get courses, assignments with automatic grading, XP, hints and a leaderboard.</p>
                 </div>
                 <Link to="/login" className="btn-primary shrink-0 py-3 px-5 whitespace-nowrap">
-                  Jetzt anmelden <ArrowRight size={16} />
+                  Sign up now <ArrowRight size={16} />
                 </Link>
               </div>
             </div>

@@ -73,12 +73,12 @@ const DatasetPlayground: React.FC = () => {
       if (response.data.success && inserts.length > 0) {
         setResults(inserts);
         setMessage(response.data.message);
-        toast.success(`${inserts.length} Testdaten-Zeile(n) generiert`);
+        toast.success(`${inserts.length} test data row(s) generated`);
       } else {
         // success flag but no rows
         setResults([]);
-        setMessage(response.data.message || 'Für diese Abfrage konnten keine Testdaten erzeugt werden.');
-        toast('Keine Testdaten erzeugt', { icon: 'ℹ️' });
+        setMessage(response.data.message || 'No test data could be generated for this query.');
+        toast('No test data generated', { icon: 'ℹ️' });
       }
     } catch (err: any) {
       console.error('Generation error', err);
@@ -86,9 +86,9 @@ const DatasetPlayground: React.FC = () => {
       // The backend returns 422 with a clear, user-facing message for queries it
       // cannot handle; surface that instead of a generic error.
       const msg = err.response?.data?.message
-        || 'Die Datengenerierung ist fehlgeschlagen. Bitte vereinfache die Abfrage oder versuche es erneut.';
+        || 'Data generation failed. Please simplify the query or try again.';
       setMessage(msg);
-      toast.error('Keine Testdaten erzeugt');
+      toast.error('No test data generated');
     } finally {
       setLoading(false);
     }
@@ -143,7 +143,7 @@ const DatasetPlayground: React.FC = () => {
             Dataset <span className="text-brand-600">Playground</span>
           </h1>
           <p className="text-slate-500 dark:text-gray-400 mt-2 font-medium">
-            Generiere gezielt Datensätze, um Mutanten deiner SQL-Abfrage zu erkennen.
+            Generate targeted datasets to detect mutants of your SQL query.
           </p>
         </div>
         
@@ -161,7 +161,7 @@ const DatasetPlayground: React.FC = () => {
             className="btn-secondary"
           >
             {uploading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            Schema laden (.sql)
+            Load schema (.sql)
           </button>
         </div>
       </div>
@@ -170,7 +170,7 @@ const DatasetPlayground: React.FC = () => {
         <div className="space-y-6">
           <div className="bg-white dark:bg-ink-card rounded-2xl shadow-xl dark:shadow-none border border-slate-100 dark:border-ink-border p-8 transition-colors">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">
-              Datenbankschema auswählen
+              Select database schema
             </label>
             <div className="flex gap-4">
               <select
@@ -178,7 +178,7 @@ const DatasetPlayground: React.FC = () => {
                 value={selectedSchema || ''}
                 onChange={(e) => setSelectedSchema(Number(e.target.value))}
               >
-                <option value="" disabled>Schema wählen...</option>
+                <option value="" disabled>Select schema...</option>
                 {schemas.map(s => (
                   <option key={s.id} value={s.id}>{s.schemaName}</option>
                 ))}
@@ -195,7 +195,7 @@ const DatasetPlayground: React.FC = () => {
 
           <div className="bg-white dark:bg-ink-card rounded-2xl shadow-xl dark:shadow-none border border-slate-100 dark:border-ink-border overflow-hidden transition-colors">
             <div className="p-5 border-b border-slate-50 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/50 flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Referenz-Abfrage (SQL)</span>
+              <span className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Reference query (SQL)</span>
             </div>
             <div className="h-48 border-b dark:border-ink-border relative"
                  data-lpignore="true"
@@ -217,13 +217,13 @@ const DatasetPlayground: React.FC = () => {
               />
               {!query && (
                 <div className="pointer-events-none absolute top-3 left-[3.4rem] font-mono text-[14px] text-slate-400 dark:text-gray-600 select-none">
-                  z.&nbsp;B. SELECT name FROM students WHERE age &gt; 20;
+                  e.&nbsp;g. SELECT name FROM students WHERE age &gt; 20;
                 </div>
               )}
             </div>
 
             <div className="bg-white dark:bg-ink-card p-6 border-t border-slate-50 dark:border-ink-border">
-                <h3 className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-4 ml-1">Mutationstypen</h3>
+                <h3 className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-4 ml-1">Mutation types</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
                     { id: 'SELECTION', label: 'Selection' },
@@ -259,7 +259,7 @@ const DatasetPlayground: React.FC = () => {
                 className="btn-primary py-4 text-base"
               >
                 {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
-                Dataset generieren
+                Generate dataset
               </button>
             </div>
           </div>
@@ -268,13 +268,13 @@ const DatasetPlayground: React.FC = () => {
         <div className="space-y-6">
           <div className="bg-white dark:bg-ink-card rounded-2xl shadow-xl dark:shadow-none border border-slate-100 dark:border-ink-border flex flex-col h-full min-h-[500px] overflow-hidden transition-colors">
             <div className="p-5 border-b border-slate-50 dark:border-ink-border bg-slate-50/50 dark:bg-ink-soft/50 flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Generierter Datensatz (SQL Inserts)</span>
+              <span className="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Generated dataset (SQL inserts)</span>
               {results.length > 0 && (
                 <div className="flex gap-2">
                   <button
                     onClick={copyToClipboard}
                     className="icon-btn"
-                    title="Kopieren"
+                    title="Copy"
                   >
                     <Copy className="w-5 h-5" />
                   </button>
@@ -300,7 +300,7 @@ const DatasetPlayground: React.FC = () => {
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-4">
                   <RefreshCw className="w-12 h-12 animate-spin" />
-                  <p>SMT Solver rechnet...</p>
+                  <p>SMT solver is computing...</p>
                 </div>
               ) : results.length > 0 ? (
                 <pre className="whitespace-pre-wrap">
@@ -309,7 +309,7 @@ const DatasetPlayground: React.FC = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-slate-500 text-center gap-2">
                   <Database className="w-12 h-12 opacity-20" />
-                  <p>Noch kein Datensatz generiert.<br/>Klicke auf "Dataset generieren".</p>
+                  <p>No dataset generated yet.<br/>Click "Generate dataset".</p>
                 </div>
               )}
             </div>

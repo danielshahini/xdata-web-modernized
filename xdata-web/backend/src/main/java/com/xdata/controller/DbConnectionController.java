@@ -89,14 +89,14 @@ public class DbConnectionController {
         }
 
         if (connection.getCourse() == null) {
-            return ResponseEntity.status(400).body("Zugehöriger Kurs wurde nicht gefunden.");
+            return ResponseEntity.status(400).body("Associated course was not found.");
         }
 
         // Test connection
         String testError = testConnectionInternal(connection);
         if (testError != null) {
             log.warn("Connection test failed for connection '{}': {}", connection.getName(), testError);
-            return ResponseEntity.status(400).body("Verbindungstest vor Speichern fehlgeschlagen: " + testError);
+            return ResponseEntity.status(400).body("Connection test before saving failed: " + testError);
         }
 
         try {
@@ -106,7 +106,7 @@ public class DbConnectionController {
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             log.error("Error saving connection: {}", e.getMessage());
-            return ResponseEntity.status(500).body("Interner Fehler beim Speichern: " + e.getMessage());
+            return ResponseEntity.status(500).body("Internal error while saving: " + e.getMessage());
         }
     }
 
@@ -145,7 +145,7 @@ public class DbConnectionController {
             String testError = testConnectionInternal(existing);
             if (testError != null) {
                 log.warn("Connection test failed for updating connection ID {}: {}", id, testError);
-                return ResponseEntity.status(400).body("Verbindungstest vor Update fehlgeschlagen: " + testError);
+                return ResponseEntity.status(400).body("Connection test before update failed: " + testError);
             }
 
             DbConnection saved = dbConnectionRepository.save(existing);
@@ -183,7 +183,7 @@ public class DbConnectionController {
             }
         }
         
-        String summary = String.format("Test abgeschlossen. %d/%d Verbindungen ERFOLGREICH.\n\n%s", 
+        String summary = String.format("Test completed. %d/%d connections SUCCESSFUL.\n\n%s",
                                        success, connections.size(), results.toString());
         return ResponseEntity.ok(summary);
     }
@@ -198,28 +198,28 @@ public class DbConnectionController {
             if (testError == null) {
                 return ResponseEntity.ok("Connection successful");
             } else {
-                return ResponseEntity.status(400).body("Verbindungstest fehlgeschlagen: " + testError);
+                return ResponseEntity.status(400).body("Connection test failed: " + testError);
             }
         }).orElse(ResponseEntity.notFound().build());
     }
 
     private String validateConnectionData(DbConnection conn, boolean isNew) {
         if (conn.getName() == null || conn.getName().trim().isEmpty()) {
-            return "Name der Verbindung darf nicht leer sein.";
+            return "Connection name must not be empty.";
         }
         if (conn.getUrl() == null || conn.getUrl().trim().isEmpty()) {
-            return "Datenbank-URL darf nicht leer sein.";
+            return "Database URL must not be empty.";
         }
         // Reject the application's own system database here (at save time) instead of
         // only failing later when the connection is used for an assignment.
         if (systemDbUrl != null && conn.getUrl().trim().equalsIgnoreCase(systemDbUrl.trim())) {
-            return "Die System-Datenbank darf aus Sicherheitsgründen nicht als Verbindung verwendet werden.";
+            return "The system database must not be used as a connection for security reasons.";
         }
         if (conn.getUser() == null || conn.getUser().trim().isEmpty()) {
-            return "Datenbank-Benutzer darf nicht leer sein.";
+            return "Database user must not be empty.";
         }
         if (isNew && (conn.getPassword() == null || conn.getPassword().trim().isEmpty())) {
-            return "Passwort darf nicht leer sein.";
+            return "Password must not be empty.";
         }
         return null;
     }
@@ -247,7 +247,7 @@ public class DbConnectionController {
             if (testConn.isValid(5)) {
                 return null; // Success
             } else {
-                return "Die Verbindung konnte nicht validiert werden.";
+                return "The connection could not be validated.";
             }
         } catch (Exception e) {
             return e.getMessage();

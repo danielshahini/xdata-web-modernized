@@ -56,7 +56,7 @@ const SchemaManager: React.FC = () => {
       const res = await api.get(`/schemas/${schemaId}/metadata`);
       setViewingMetadata(res.data);
     } catch (e) {
-      toast.error("Fehler beim Laden der Metadaten");
+      toast.error("Error loading the metadata");
     }
   };
 
@@ -82,7 +82,7 @@ const SchemaManager: React.FC = () => {
 
   const uploadSchema = async () => {
     if (!selectedCourseId || !newSchemaName || !selectedFile) {
-      toast.error('Bitte füllen Sie alle Felder aus');
+      toast.error('Please fill in all fields');
       return;
     }
 
@@ -96,12 +96,12 @@ const SchemaManager: React.FC = () => {
       await api.post('/schemas/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      toast.success('Schema erfolgreich hochgeladen');
+      toast.success('Schema uploaded successfully');
       reloadSchemas();
       setNewSchemaName('');
       setSelectedFile(null);
     } catch (err) {
-      toast.error('Fehler beim Hochladen des Schemas');
+      toast.error('Error uploading the schema');
     } finally {
       setLoading(false);
     }
@@ -111,10 +111,10 @@ const SchemaManager: React.FC = () => {
     if (!deleteModal.id) return;
     try {
       await api.delete(`/schemas/${deleteModal.id}`);
-      toast.success("Schema gelöscht");
+      toast.success("Schema deleted");
       reloadSchemas();
     } catch (err) {
-      toast.error('Fehler beim Löschen des Schemas');
+      toast.error('Error deleting the schema');
     }
   };
 
@@ -124,11 +124,11 @@ const SchemaManager: React.FC = () => {
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, id: null })}
         onConfirm={deleteSchema}
-        title="Schema löschen"
-        message="Sind Sie sicher, dass Sie dieses Schema löschen möchten? Alle zugehörigen Aufgaben könnten beeinträchtigt werden."
+        title="Delete Schema"
+        message="Are you sure you want to delete this schema? All associated tasks could be affected."
       />
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">Schema <span className="text-brand-600">Verwaltung</span></h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">Schema <span className="text-brand-600">Management</span></h2>
       </div>
       
       <div className="bg-gray-50 dark:bg-ink-card/50 p-6 rounded-2xl border border-slate-200 dark:border-ink-border flex flex-col md:flex-row gap-4 items-center transition-colors">
@@ -139,7 +139,7 @@ const SchemaManager: React.FC = () => {
             value={selectedCourseId}
             onChange={(e) => setSelectedCourseId(e.target.value)}
           >
-            <option value="">-- Kurs auswählen --</option>
+            <option value="">-- Select course --</option>
             {courses.map(c => (
               <option key={c.id} value={c.instructorCourseId}>{c.courseName}</option>
             ))}
@@ -152,14 +152,14 @@ const SchemaManager: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="x-card p-8 sticky top-24">
               <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
-                <CloudUpload className="text-brand-500 mr-2" size={24} /> Neues Schema
+                <CloudUpload className="text-brand-500 mr-2" size={24} /> New Schema
               </h3>
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="x-label">Anzeigename</label>
-                  <input 
-                    type="text" 
-                    placeholder="z.B. Universität DB" 
+                  <label className="x-label">Display Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. University DB"
                     className="x-input"
                     value={newSchemaName}
                     onChange={(e) => setNewSchemaName(e.target.value)}
@@ -167,16 +167,16 @@ const SchemaManager: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="x-label">
-                    DDL Datei (.sql)
-                    <InfoTip 
-                      title="Was ist eine DDL-Datei?" 
+                    DDL File (.sql)
+                    <InfoTip
+                      title="What is a DDL file?"
                       content={
                         <div className="space-y-2">
-                          <p>Eine <strong>Data Definition Language</strong> Datei enthält SQL-Befehle zum Erstellen von Tabellen.</p>
+                          <p>A <strong>Data Definition Language</strong> file contains SQL commands for creating tables.</p>
                           <pre className="bg-gray-100 dark:bg-ink-soft p-2 rounded text-[10px] font-mono">
                             {`CREATE TABLE Students (\n  id INT PRIMARY KEY,\n  name VARCHAR(50)\n);`}
                           </pre>
-                          <p>Das System nutzt diese Datei, um die Tabellenstruktur für die Aufgaben zu verstehen.</p>
+                          <p>The system uses this file to understand the table structure for the tasks.</p>
                         </div>
                       }
                     />
@@ -184,7 +184,7 @@ const SchemaManager: React.FC = () => {
                   <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-200 dark:border-ink-border border-dashed rounded-2xl cursor-pointer bg-gray-50 dark:bg-ink-soft hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       {selectedFile ? <FileCheck className="text-green-500 mb-2" size={32} /> : <FileCode className="text-gray-400 mb-2" size={32} />}
-                      <p className="text-xs font-bold text-gray-500 px-4 text-center">{selectedFile ? selectedFile.name : 'SQL Datei auswählen'}</p>
+                      <p className="text-xs font-bold text-gray-500 px-4 text-center">{selectedFile ? selectedFile.name : 'Select SQL file'}</p>
                     </div>
                     <input type="file" className="hidden" onChange={handleFileUpload} accept=".sql,.txt" />
                   </label>
@@ -195,7 +195,7 @@ const SchemaManager: React.FC = () => {
                   className="btn-primary w-full"
                 >
                   {loading ? <RefreshCw className="animate-spin" size={18} /> : <Upload size={18} />}
-                  Schema Hochladen
+                  Upload Schema
                 </button>
               </div>
             </div>
@@ -203,7 +203,7 @@ const SchemaManager: React.FC = () => {
 
           <div className="lg:col-span-2 space-y-6">
             <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
-              <Layers className="text-brand-500 mr-2" size={24} /> Vorhandene Schemata
+              <Layers className="text-brand-500 mr-2" size={24} /> Existing Schemas
             </h3>
             <div className="grid gap-4">
               {schemas.map(s => (
@@ -216,7 +216,7 @@ const SchemaManager: React.FC = () => {
                       <h4 className="font-bold text-gray-800 dark:text-white text-lg leading-none mb-1 truncate">{s.schemaName}</h4>
                       <div className="flex items-center space-x-2">
                         <span className="text-[10px] font-bold uppercase text-gray-400 dark:text-gray-500 tracking-tighter bg-gray-100 dark:bg-ink-soft px-2 py-0.5 rounded shrink-0">SQL DDL</span>
-                        <span className="text-xs text-gray-400 dark:text-gray-600 font-medium italic truncate">Vorschau: {s.content.substring(0, 30)}...</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-600 font-medium italic truncate">Preview: {s.content.substring(0, 30)}...</span>
                       </div>
                     </div>
                   </div>
@@ -224,14 +224,14 @@ const SchemaManager: React.FC = () => {
                     <div className="flex items-center space-x-1">
                       <button 
                         className="icon-btn hover:text-brand-600"
-                        title="Metadaten ansehen"
+                        title="View metadata"
                         onClick={() => loadMetadata(s.id)}
                       >
                         <Table size={18} />
                       </button>
                       <button 
                         className="icon-btn hover:text-brand-600"
-                        title="DDL ansehen"
+                        title="View DDL"
                         onClick={() => toast(s.content)}
                       >
                         <Eye size={18} />
@@ -239,7 +239,7 @@ const SchemaManager: React.FC = () => {
                       <button 
                         onClick={() => setDeleteModal({ isOpen: true, id: s.id })}
                         className="icon-btn hover:text-hard"
-                        title="Löschen"
+                        title="Delete"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -252,8 +252,8 @@ const SchemaManager: React.FC = () => {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
                   <div className="bg-white dark:bg-ink-card rounded-[40px] shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col transition-colors border border-slate-200 dark:border-ink-border">
                     <div className="p-8 bg-gray-50 dark:bg-ink-soft border-b border-slate-200 dark:border-ink-border flex justify-between items-center transition-colors">
-                      <h3 className="text-2xl font-bold text-gray-800 dark:text-white uppercase tracking-tight">Metadaten: <span className="text-brand-600">{viewingMetadata.schemaName}</span></h3>
-                      <button onClick={() => setViewingMetadata(null)} className="icon-btn hover:text-hard" title="Schließen">
+                      <h3 className="text-2xl font-bold text-gray-800 dark:text-white uppercase tracking-tight">Metadata: <span className="text-brand-600">{viewingMetadata.schemaName}</span></h3>
+                      <button onClick={() => setViewingMetadata(null)} className="icon-btn hover:text-hard" title="Close">
                         <X size={22} />
                       </button>
                     </div>
@@ -282,7 +282,7 @@ const SchemaManager: React.FC = () => {
               {schemas.length === 0 && (
                 <div className="py-20 text-center bg-gray-50 dark:bg-ink-card/50 rounded-2xl border border-dashed border-gray-200 dark:border-ink-border transition-colors">
                   <Database className="text-gray-200 dark:text-gray-700 mx-auto mb-4" size={64} />
-                  <p className="text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest text-xs">Keine Schemata gefunden.</p>
+                  <p className="text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest text-xs">No schemas found.</p>
                 </div>
               )}
             </div>
@@ -291,7 +291,7 @@ const SchemaManager: React.FC = () => {
       ) : (
         <div className="py-20 text-center text-gray-400 dark:text-gray-600 bg-white dark:bg-ink-card rounded-2xl border border-slate-200 dark:border-ink-border shadow-sm transition-colors">
           <MousePointer className="mx-auto mb-4 opacity-20" size={64} />
-          <p className="font-bold uppercase tracking-widest text-sm">Bitte wähle zuerst einen Kurs aus.</p>
+          <p className="font-bold uppercase tracking-widest text-sm">Please select a course first.</p>
         </div>
       )}
     </div>

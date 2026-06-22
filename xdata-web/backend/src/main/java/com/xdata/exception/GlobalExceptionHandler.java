@@ -33,10 +33,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
-        log.warn("Zugriff verweigert auf {}: {}", request.getDescription(false), ex.getMessage());
+        log.warn("Access denied on {}: {}", request.getDescription(false), ex.getMessage());
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("message", "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen.");
+        body.put("message", "Access denied: you do not have the required permissions.");
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
 
@@ -45,44 +45,44 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class,
                        HttpMessageNotReadableException.class})
     public ResponseEntity<Object> handleBadRequest(Exception ex, WebRequest request) {
-        log.warn("Ungültige Anfrage bei {}: {}", request.getDescription(false), ex.getMessage());
-        return respond(HttpStatus.BAD_REQUEST, "Ungültige oder unvollständige Anfrage.", ex.getMessage());
+        log.warn("Invalid request at {}: {}", request.getDescription(false), ex.getMessage());
+        return respond(HttpStatus.BAD_REQUEST, "Invalid or incomplete request.", ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Object> handleTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
-        log.warn("Parameter-Typfehler bei {}: {}", request.getDescription(false), ex.getMessage());
-        return respond(HttpStatus.BAD_REQUEST, "Ungültiger Parameter '" + ex.getName() + "'.", null);
+        log.warn("Parameter type error at {}: {}", request.getDescription(false), ex.getMessage());
+        return respond(HttpStatus.BAD_REQUEST, "Invalid parameter '" + ex.getName() + "'.", null);
     }
 
     @ExceptionHandler({NoSuchElementException.class, NoResourceFoundException.class})
     public ResponseEntity<Object> handleNotFound(Exception ex, WebRequest request) {
-        log.warn("Ressource nicht gefunden bei {}: {}", request.getDescription(false), ex.getMessage());
-        return respond(HttpStatus.NOT_FOUND, "Die angeforderte Ressource wurde nicht gefunden.", null);
+        log.warn("Resource not found at {}: {}", request.getDescription(false), ex.getMessage());
+        return respond(HttpStatus.NOT_FOUND, "The requested resource was not found.", null);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<Object> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, WebRequest request) {
-        log.warn("Methode nicht erlaubt bei {}: {}", request.getDescription(false), ex.getMessage());
-        return respond(HttpStatus.METHOD_NOT_ALLOWED, "Diese HTTP-Methode wird für die Ressource nicht unterstützt.", null);
+        log.warn("Method not allowed at {}: {}", request.getDescription(false), ex.getMessage());
+        return respond(HttpStatus.METHOD_NOT_ALLOWED, "This HTTP method is not supported for the resource.", null);
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Object> handleRuntimeException(RuntimeException ex, WebRequest request) {
-        log.error("Unerwarteter Laufzeitfehler bei {}: ", request.getDescription(false), ex);
+        log.error("Unexpected runtime error at {}: ", request.getDescription(false), ex);
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("message", "Ein interner Fehler ist aufgetreten.");
+        body.put("message", "An internal error occurred.");
         body.put("details", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
-        log.error("Interner Systemfehler bei {}: ", request.getDescription(false), ex);
+        log.error("Internal system error at {}: ", request.getDescription(false), ex);
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("message", "Ein interner Fehler ist aufgetreten.");
+        body.put("message", "An internal error occurred.");
         body.put("details", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }

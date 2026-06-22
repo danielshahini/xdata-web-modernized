@@ -94,8 +94,8 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
         allSubs.push(...((subs.data || []) as Submission[]));
       }
 
-      const sid = (s: any) => s.studentId ?? s.user?.loginId ?? 'unbekannt';
-      const sname = (s: any) => s.user?.username ?? s.studentId ?? 'Unbekannt';
+      const sid = (s: any) => s.studentId ?? s.user?.loginId ?? 'unknown';
+      const sname = (s: any) => s.user?.username ?? s.studentId ?? 'Unknown';
       const qOf = (s: any) => s.questionId ?? s.question?.id;
 
       // Per-question analytics, based on each student's best attempt.
@@ -155,12 +155,12 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
   const handleFeedback = async (submissionId: number) => {
     try {
       await api.post(`/evaluation/submissions/${submissionId}/feedback`, { feedback: feedbackText });
-      toast.success("Feedback gespeichert");
+      toast.success("Feedback saved");
       setEditingFeedbackId(null);
       setFeedbackText('');
       reloadAll();
     } catch (e) {
-      toast.error("Fehler beim Speichern");
+      toast.error("Error while saving");
     }
   };
 
@@ -176,22 +176,22 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
       link.click();
       link.remove();
     } catch (e) {
-      toast.error("Fehler beim Exportieren");
+      toast.error("Error while exporting");
     }
   };
 
   if (loading) return (
     <div className="p-8 text-center flex flex-col items-center justify-center dark:text-gray-400">
       <RefreshCw className="animate-spin mb-4 text-brand-500" size={48} />
-      <p className="font-bold uppercase tracking-widest text-xs">Analyse-Daten werden aufbereitet...</p>
+      <p className="font-bold uppercase tracking-widest text-xs">Preparing analytics data...</p>
     </div>
   );
 
   if (!summary || !analytics) return (
     <div className="p-10 text-center bg-gray-50 dark:bg-ink-soft rounded-2xl border border-dashed border-gray-200 dark:border-ink-border">
       <Search className="mx-auto mb-4 opacity-20 dark:text-white" size={48} />
-      <p className="text-gray-400 font-bold italic">Keine Aufgabe ausgewählt.</p>
-      <p className="text-gray-400 text-sm mt-2">Öffne die Statistik über das Diagramm-Symbol einer Aufgabe in der Aufgaben-Liste.</p>
+      <p className="text-gray-400 font-bold italic">No assignment selected.</p>
+      <p className="text-gray-400 text-sm mt-2">Open the statistics via the chart icon of an assignment in the assignment list.</p>
     </div>
   );
 
@@ -199,13 +199,13 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
     <div className="space-y-8 animate-fadeIn">
       <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-ink-soft p-1 rounded-xl border border-slate-200 dark:border-ink-border w-fit">
         <button onClick={() => setActiveTab('overview')} className={`x-tab ${activeTab === 'overview' ? 'x-tab-active' : ''}`}>
-          Übersicht
+          Overview
         </button>
         <button onClick={() => setActiveTab('submissions')} className={`x-tab ${activeTab === 'submissions' ? 'x-tab-active' : ''}`}>
-          Abgaben &amp; Feedback
+          Submissions &amp; Feedback
         </button>
         <button onClick={() => setActiveTab('plagiarism')} className={`x-tab ${activeTab === 'plagiarism' ? 'x-tab-active' : ''}`}>
-          Plagiats-Check ({plagiarism.length})
+          Plagiarism check ({plagiarism.length})
         </button>
       </div>
 
@@ -214,25 +214,25 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="x-card p-8">
               <TrendingUp className="text-brand-500 mb-4" size={32} />
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ø Gesamt-Punkte</div>
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ø Total points</div>
               <div className="text-3xl font-bold dark:text-white">
                 {(analytics.questionAnalytics.reduce((acc, q) => acc + q.averageMarks, 0)).toFixed(1)}
               </div>
             </div>
             <div className="x-card p-8">
               <FileSpreadsheet className="text-green-500 mb-4" size={32} />
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Exportieren</div>
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Export</div>
               <button 
                 onClick={handleExport}
                 className="mt-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center"
               >
-                Als CSV herunterladen
+                Download as CSV
               </button>
             </div>
             <div className="x-card p-8">
               <AlertTriangle className={`mb-4 ${plagiarism.length > 0 ? 'text-red-500' : 'text-gray-300'}`} size={32} />
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Plagiats-Verdacht</div>
-              <div className="text-3xl font-bold dark:text-white">{plagiarism.length} Fälle</div>
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Suspected plagiarism</div>
+              <div className="text-3xl font-bold dark:text-white">{plagiarism.length} cases</div>
             </div>
           </div>
 
@@ -263,8 +263,8 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
             <thead className="bg-gray-50 dark:bg-ink-soft/50">
               <tr>
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Student</th>
-                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Aufgabe</th>
-                <th className="px-6 py-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ergebnis</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Assignment</th>
+                <th className="px-6 py-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">Result</th>
                 <th className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">Feedback</th>
               </tr>
             </thead>
@@ -300,7 +300,7 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
                         className={`text-sm font-bold flex items-center justify-end w-full ${s.instructorFeedback ? 'text-brand-500' : 'text-gray-300'}`}
                       >
                         <MessageSquare size={16} className="mr-2" />
-                        {s.instructorFeedback ? 'Bearbeiten' : 'Feedback geben'}
+                        {s.instructorFeedback ? 'Edit' : 'Give feedback'}
                       </button>
                     )}
                   </td>
@@ -318,9 +318,9 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center">
                   <ShieldAlert className="text-red-500 mr-3" size={24} />
-                  <span className="font-bold dark:text-white">Verdacht: {p.student1} ↔ {p.student2}</span>
+                  <span className="font-bold dark:text-white">Suspected: {p.student1} ↔ {p.student2}</span>
                 </div>
-                <span className="text-xl font-bold text-red-600">{(p.similarity * 100).toFixed(1)}% Ähnlichkeit</span>
+                <span className="text-xl font-bold text-red-600">{(p.similarity * 100).toFixed(1)}% similarity</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -337,7 +337,7 @@ const AssignmentStats: React.FC<StatsProps> = ({ assignmentId }) => {
           {plagiarism.length === 0 && (
             <div className="text-center py-20 bg-gray-50 dark:bg-ink-soft/50 rounded-2xl border border-dashed border-gray-200 dark:border-ink-border">
                <CheckCircle className="mx-auto mb-4 text-green-500 opacity-20" size={48} />
-               <p className="text-gray-400 font-bold italic">Keine auffälligen Ähnlichkeiten gefunden.</p>
+               <p className="text-gray-400 font-bold italic">No notable similarities found.</p>
             </div>
           )}
         </div>
