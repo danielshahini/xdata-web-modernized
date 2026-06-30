@@ -196,6 +196,7 @@ configuration. Override them only for a real deployment.
 xdata-web/
 ├── xdata-web/backend       Spring Boot application (grading core, REST API, security)
 ├── xdata-web/frontend      React + TypeScript single-page app
+├── docs/xdata-web-user-guide.pdf   Screenshot-based user handbook (admin/instructor/student)
 ├── docs/adr/               Architecture Decision Records
 ├── uploads/                Shared volume for schema and data uploads
 ├── docker-compose.yml      Database + backend + frontend orchestration
