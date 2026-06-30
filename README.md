@@ -177,6 +177,19 @@ The system is configured via environment variables (see `docker-compose.yml`):
 All variables have working defaults, so `docker compose up --build` runs with zero
 configuration. Override them only for a real deployment.
 
+## Troubleshooting
+
+| Symptom | Cause & fix |
+|---------|-------------|
+| `Bind for 0.0.0.0:80 failed: port is already allocated` (or `:8080` / `:5433`) | Another process holds the port. Stop it, or remap the host port in `docker-compose.yml` (e.g. `"8081:80"` for the frontend) and use the new port. |
+| Frontend loads but every request fails / "Network Error" | The backend isn't up yet or port `8080` is blocked. Wait for the `backend` healthcheck to pass, then reload. Check `docker compose logs backend`. |
+| Backend container exits or restarts on boot | Usually the database wasn't ready, or a schema mismatch. Check `docker compose logs backend`; for a clean slate run `docker compose down -v && docker compose up --build`. |
+| Login as `admin1` fails | The DB was created by an older run. Reset it: `docker compose down -v` then `docker compose up`. |
+| Build is killed / runs out of memory | Give Docker more RAM (Docker Desktop → Settings → Resources → Memory, ~4 GB+). |
+| First build is very slow | Normal — it compiles the backend and frontend from scratch. Subsequent starts reuse the cached images. |
+| Changed code but don't see it | Rebuild the images: `docker compose up --build` (plain `up` reuses old images). |
+| Inspect the database directly | Connect any Postgres client to `localhost:5433`, db `xdatadb`, user `postgres`, password `1709`. |
+
 ## Project structure
 
 ```
