@@ -299,7 +299,13 @@ public class DatasetGenerationService {
             String body = cvc.getCVCStr();
             return (header != null ? header : "") + "\n" + (body != null ? body : "") + "\n(check-sat)";
         } catch (Exception e) {
-            log.error("Failed to generate SMT constraints: ", e);
+            // Expected while the SMT-equivalence rung is dormant (see ADR 0002): the
+            // legacy datagen/parser cannot build equivalence constraints in the grading
+            // path, so we abstain (return null -> INCONCLUSIVE) and the chain falls
+            // through to assigned-DB / partial marking. This is a safe fallback, not an
+            // error, so it must not be logged at ERROR with a stack trace.
+            log.debug("SMT equivalence constraints unavailable (dormant rung), abstaining: {}",
+                    e.getMessage());
             return null;
         }
     }
