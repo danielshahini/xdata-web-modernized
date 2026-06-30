@@ -73,53 +73,84 @@ The backend is layered with a **ports-and-adapters** boundary around impure work
 
 Architecture decisions are recorded in [`docs/adr/`](docs/adr).
 
-## Getting started (Docker)
+## Quick start
 
-Prerequisites: [Docker](https://www.docker.com/get-started) and
-[Docker Compose](https://docs.docker.com/compose/install/).
+**The only thing you need installed is [Docker](https://www.docker.com/get-started)**
+(Docker Desktop already includes Docker Compose). You do **not** need to install
+Java, Node, PostgreSQL, or the Z3 solver — everything runs in containers.
 
 From the repository root:
 
 ```bash
-docker compose up --build        # add -d to run detached
+docker compose up --build        # add -d to run in the background
 ```
 
-This starts three services — PostgreSQL, the Spring Boot backend, and the React
-frontend.
+That single command builds and starts all three services — PostgreSQL, the
+Spring Boot backend, and the React frontend. On first run the backend creates the
+database schema and a default admin user automatically (Flyway migrations), so
+there is **no manual database setup**. The first build takes a few minutes; later
+starts are fast.
+
+When the logs settle, open **<http://localhost>** and log in (see
+[credentials](#default-credentials) below).
+
+```bash
+docker compose down        # stop everything
+docker compose down -v     # stop AND wipe the database (fresh start next time)
+```
+
+> **Ports used:** `80` (frontend), `8080` (backend API), `5433` (database).
+> Make sure these are free. A local PostgreSQL on `5432` will **not** clash — the
+> database container is published on `5433`.
+
+### Where things are
 
 | Service | URL |
 |---------|-----|
-| Frontend | <http://localhost> (port 80) |
+| Frontend (the app) | <http://localhost> |
 | Backend API | <http://localhost:8080/api/v1> |
-| Swagger UI | <http://localhost:8080/swagger-ui.html> |
-| Database | `localhost:5433` (mapped to container port 5432) |
-
-> **Port conflict:** a local PostgreSQL instance on `5432` will not clash — the
-> host port is mapped to **5433**.
+| Swagger UI (API docs) | <http://localhost:8080/swagger-ui.html> |
+| Database | `localhost:5433` (Postgres, user `postgres` / password `1709`) |
 
 ### Default credentials
+
+A single administrator account is seeded automatically:
 
 | Role | Username | Password |
 |------|----------|----------|
 | Admin | `admin1` | `admin1` |
-| Instructor | `daniel` | `daniel` |
 
-## Local development
+Log in as `admin1` and create instructor and student accounts from the admin
+panel (User Management). There are no other pre-seeded users.
+
+## Local development (optional)
+
+Only needed if you want to run a service **outside** Docker for faster iteration.
+For just trying the app, the [Quick start](#quick-start) above is enough.
+
+You still don't have to install PostgreSQL — start only the database container and
+point the locally-run service at it:
+
+```bash
+docker compose up -d db        # Postgres on localhost:5433
+```
 
 ### Backend
 
-Requires a JDK (the build is run with **JDK 21**, targeting Java 17 bytecode) and a
-reachable PostgreSQL instance.
+Requires **JDK 21** (targets Java 17 bytecode). It reads its config from
+`application.properties`, which defaults to `localhost:5432`, so either run the DB
+on 5432 or override the host/port via env vars:
 
 ```bash
 cd xdata-web/backend
-mvn spring-boot:run
-mvn test                # run the test suite (Testcontainers spins up PostgreSQL)
+XDATA_DB_PORT=5433 mvn spring-boot:run     # use the Docker db from `compose up -d db`
+mvn test                                   # run the test suite
 ```
 
 ### Frontend
 
-Requires Node.js.
+Requires Node.js (the project builds on Node 18+). The dev server talks to the
+backend on port `8080`:
 
 ```bash
 cd xdata-web/frontend
@@ -139,9 +170,12 @@ The system is configured via environment variables (see `docker-compose.yml`):
 | `XDATA_DB_NAME` | Database name | `xdatadb` |
 | `XDATA_DB_USER` | Database user | `postgres` |
 | `XDATA_DB_PASS` | Database password | `1709` |
-| `HIBERNATE_DDL_AUTO` | Hibernate DDL mode | `update` (Docker) / `validate` (local) |
-| `JWT_SECRET` | Secret key for signing JWTs | random default |
-| `ALLOWED_ORIGINS` | CORS allowed origins | `http://localhost:3000, http://localhost:80` |
+| `HIBERNATE_DDL_AUTO` | Hibernate DDL mode (Flyway owns the schema) | `validate` |
+| `JWT_SECRET` | Secret key for signing JWTs | built-in dev default (set your own in production) |
+| `ALLOWED_ORIGINS` | CORS allowed origins | `http://localhost:3000,http://localhost:80,http://localhost` |
+
+All variables have working defaults, so `docker compose up --build` runs with zero
+configuration. Override them only for a real deployment.
 
 ## Project structure
 
