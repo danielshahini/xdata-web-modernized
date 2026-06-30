@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAsyncData } from '../hooks/useAsyncData';
 import api from '../api';
 import { toast } from 'react-hot-toast';
@@ -9,7 +9,7 @@ interface Material { id: number; courseId: string; title: string; type: string; 
 
 const CourseMaterials: React.FC = () => {
   const { data: coursesData } = useAsyncData<Course[]>(() => api.get('/admin/courses').then(r => r.data || []), []);
-  const courses = coursesData ?? [];
+  const courses = useMemo(() => coursesData ?? [], [coursesData]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [courseId, setCourseId] = useState('');
   const [form, setForm] = useState({ title: '', type: 'LINK', content: '' });
