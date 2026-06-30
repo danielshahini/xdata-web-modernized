@@ -56,3 +56,6 @@ bachelorarbeit/
 /docs/dataset-playground-analysis.md
 /docs/konzept-aufgaben-datensatz.md
 /docs/anforderungen-rollen.md
+
+# Handbook LaTeX sources (only the compiled PDF under docs/ is published)
+/handbook/
