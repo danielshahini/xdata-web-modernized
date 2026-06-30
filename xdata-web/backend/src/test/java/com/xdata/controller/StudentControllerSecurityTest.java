@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({SecurityConfiguration.class, JwtAuthenticationFilter.class, CourseAccessGuard.class, GlobalExceptionHandler.class})
 class StudentControllerSecurityTest {
 
-    private static final String DENIED = "Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen.";
+    private static final String DENIED = "Access denied: you do not have the required permissions.";
 
     @Autowired private MockMvc mockMvc;
     @MockBean private JwtService jwtService;

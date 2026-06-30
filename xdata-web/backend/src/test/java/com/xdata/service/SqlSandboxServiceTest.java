@@ -23,7 +23,7 @@ public class SqlSandboxServiceTest {
         Exception exception = assertThrows(RuntimeException.class, () -> 
             sqlSandboxService.validateQuery("")
         );
-        assertTrue(exception.getMessage().contains("leer"));
+        assertTrue(exception.getMessage().contains("empty"));
     }
 
     @Test
@@ -31,7 +31,7 @@ public class SqlSandboxServiceTest {
         Exception exception = assertThrows(RuntimeException.class, () -> 
             sqlSandboxService.validateQuery("DROP TABLE users")
         );
-        assertTrue(exception.getMessage().contains("Nur Lesezugriffe"));
+        assertTrue(exception.getMessage().contains("read access"));
     }
 
     @Test

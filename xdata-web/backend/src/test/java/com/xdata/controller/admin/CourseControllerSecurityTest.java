@@ -122,6 +122,6 @@ class CourseControllerSecurityTest {
 
         mockMvc.perform(get("/api/v1/admin/courses/1/members"))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value("Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen."));
+                .andExpect(jsonPath("$.message").value("Access denied: you do not have the required permissions."));
     }
 }

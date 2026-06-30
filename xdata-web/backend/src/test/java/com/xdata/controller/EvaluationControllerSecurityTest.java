@@ -62,7 +62,7 @@ class EvaluationControllerSecurityTest {
         // passes the URL matcher (students may reach /evaluation/**) but the guard denies
         mockMvc.perform(post("/api/v1/evaluation/start/1"))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value("Zugriff verweigert: Sie haben nicht die erforderlichen Berechtigungen."));
+                .andExpect(jsonPath("$.message").value("Access denied: you do not have the required permissions."));
     }
 
     @Test

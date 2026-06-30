@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAsyncData } from '../hooks/useAsyncData';
 import api from '../api';
 import { toast } from 'react-hot-toast';
@@ -13,7 +13,7 @@ interface Gb {
 
 const Gradebook: React.FC = () => {
   const { data: coursesData } = useAsyncData<Course[]>(() => api.get('/admin/courses').then(r => r.data || []), []);
-  const courses = coursesData ?? [];
+  const courses = useMemo(() => coursesData ?? [], [coursesData]);
   const [courseId, setCourseId] = useState<number | null>(null);
   const [gb, setGb] = useState<Gb | null>(null);
   const [loading, setLoading] = useState(false);
