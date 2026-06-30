@@ -196,19 +196,68 @@ configuration. Override them only for a real deployment.
 xdata-web/
 ├── xdata-web/backend       Spring Boot application (grading core, REST API, security)
 ├── xdata-web/frontend      React + TypeScript single-page app
-├── docs/                   Technical documentation, ADRs, audits
+├── docs/adr/               Architecture Decision Records
 ├── uploads/                Shared volume for schema and data uploads
 ├── docker-compose.yml      Database + backend + frontend orchestration
-├── CONTEXT.md              Domain & architecture glossary
-└── REQUIREMENTS.md         Requirements and UX audit
+└── CONTEXT.md              Domain & architecture glossary
 ```
 
-## Credits
+## License, attribution and disclaimer
 
-The original XData system was developed by the InfoLab at IIT Bombay.
+### Provenance
 
-- Website: <http://www.cse.iitb.ac.in/infolab/xdata>
-- Contact: xdata@cse.iitb.ac.in
+This project is a **derivative work** of the **XData / XData-Grading** system
+developed by the InfoLab at the **Indian Institute of Technology Bombay
+(IIT Bombay)**:
 
-This modernized platform was built by Daniel Shahini. Licensed under the terms in
-[`LICENSE`](LICENSE).
+- Upstream source: <https://gitlab.com/xdata/xdata-web>
+- Project site: <http://www.cse.iitb.ac.in/infolab/xdata/>
+
+The upstream XData is licensed under the **Apache License 2.0**, which expressly
+permits creating, using and distributing modified and derivative works. This
+repository exercises that grant.
+
+### Licensing of this repository
+
+- The whole repository is distributed under the **Apache License 2.0** — see
+  [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+- The reused XData core (under `xdata-web/backend/.../com/xdata/legacy/` and the
+  bundled `xdata-core` artifact) remains **© 2019 xdata (IIT Bombay InfoLab)**,
+  Apache-2.0. It has been **modified** as part of this modernization.
+- All new code and the modifications are **© 2026 Daniel Shahini**, Apache-2.0.
+
+If you redistribute this software, you must retain the `LICENSE` and `NOTICE`
+files and the attributions above, as required by the Apache License 2.0.
+
+### Third-party components
+
+This project bundles or depends on the following, each under its own permissive
+license: **Z3** (MIT), **Apache Derby** and **JSQLParser** (Apache-2.0),
+**dk.brics.automaton** (BSD), **Spring Boot / Spring Security** (Apache-2.0),
+**React** (MIT), and other libraries declared in `pom.xml` and
+`package.json`. All trademarks are the property of their respective owners.
+
+### No affiliation
+
+This is an independent project. It is **not affiliated with, endorsed by, or
+sponsored by IIT Bombay** or the XData authors. The name "XData" is used only to
+identify the upstream system from which this work derives.
+
+### Disclaimer of warranty
+
+This software is provided **"AS IS", without warranty of any kind**, express or
+implied, as set out in Sections 7–8 of the Apache License 2.0. It was created in
+an academic context (a Bachelor's thesis) and is **not hardened for production**.
+You use it at your own risk; the authors accept no liability for any damage or
+data loss arising from its use.
+
+### Security note for public deployments
+
+The default configuration ships **development-only credentials** — the seeded
+`admin1` account, the database password, and the built-in JWT signing key (see
+[Configuration](#configuration)). These exist only to make local startup
+frictionless. **Before exposing any instance to a network, you must** change the
+admin password, set a strong `JWT_SECRET`, and use real database credentials.
+Do not run the default configuration on a public host.
+
+*This section is provided for transparency and is not legal advice.*

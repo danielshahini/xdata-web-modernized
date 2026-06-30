@@ -43,3 +43,16 @@ yarn-error.log*
 # OS spezifisch
 Thumbs.db
 bachelorarbeit/
+
+# --- Internal working docs, reports & tooling (kept local, not published) ---
+/skills-lock.json
+/REQUIREMENTS.md
+/docs/audit/
+/docs/CHANGES.md
+/docs/CLEANUP-REMOVE.md
+/docs/FEATURE-ROADMAP.md
+/docs/PULL_REQUEST.md
+/docs/competitive-ui-analysis.md
+/docs/dataset-playground-analysis.md
+/docs/konzept-aufgaben-datensatz.md
+/docs/anforderungen-rollen.md

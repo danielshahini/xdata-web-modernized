@@ -1,0 +1,32 @@
+XData-Web
+Copyright 2026 Daniel Shahini
+
+This product is a derivative work of the XData / XData-Grading system developed
+by the InfoLab at the Indian Institute of Technology Bombay (IIT Bombay):
+
+  - https://gitlab.com/xdata/xdata-web
+  - http://www.cse.iitb.ac.in/infolab/xdata/
+
+Portions of this software — in particular the SQL test-data generation,
+constraint generation, query-mutation and partial-marking core located under
+xdata-web/backend/src/main/java/com/xdata/legacy/ and the bundled xdata-core
+artifact (xdata-web/backend/libs-repo/com/xdata/xdata-core/) — are:
+
+  Copyright 2019 xdata (IIT Bombay InfoLab)
+
+and are licensed under the Apache License, Version 2.0. These portions have been
+modified and adapted as part of the modernization described in README.md.
+
+All modifications and the surrounding Spring Boot backend, React frontend, and
+infrastructure are:
+
+  Copyright 2026 Daniel Shahini
+
+and are likewise licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This software is not affiliated with, endorsed by, or sponsored by IIT Bombay.
+The name "XData" is used solely to identify the upstream system from which this
+work is derived.
+
+Third-party dependencies are distributed under their own licenses; see the
+"License, attribution and disclaimer" section of README.md.
